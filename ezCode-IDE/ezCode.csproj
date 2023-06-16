@@ -1,0 +1,41 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+  <PropertyGroup>
+    <OutputType>WinExe</OutputType>
+    <TargetFramework>net7.0-windows</TargetFramework>
+    <Nullable>enable</Nullable>
+    <UseWindowsForms>true</UseWindowsForms>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <ApplicationIcon>ezCode.ico</ApplicationIcon>
+	  <Company>JBrosDev</Company>
+	  <Authors>Joseph H.</Authors>
+	  <Product>ezcode-packager</Product>
+	  <Version>1.4.1</Version>
+  </PropertyGroup>
+
+  <ItemGroup>
+    <Compile Remove="RichTextBoxEx.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Content Include="ezCode.ico">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Include="RichTextBoxEx.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <PackageReference Include="FCTB" Version="2.16.24" />
+    <PackageReference Include="NAudio" Version="2.1.0" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="ezcode.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
+</Project>

@@ -1,0 +1,20 @@
+list new map : 0 // map
+var map_x 10 // Map Scale
+var map_y 10 // Map Scale
+var p_x 1 // Player Position
+var p_y 1 // Player Position
+
+// Player
+var player p_x
+var p_temp p_y
+p_temp * map_x
+player + p_temp
+
+// Map
+var map_total map_x
+map_total * map_y
+playFile await ~/map_createlist.ezcode
+
+// Print Map
+playFile await ~/map_print_y.ezcode
+

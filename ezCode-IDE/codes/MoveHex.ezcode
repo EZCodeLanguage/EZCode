@@ -1,0 +1,121 @@
+move button -100 -100
+move play -100 -100
+
+color background 190 120 80
+varSet a = nothing
+varSet x = 50
+varSet y = 50
+varSet bx = 50
+varSet by = 50
+varSet x_offset = 50
+varSet y_offset = 50
+move a x y
+move background x_offset y_offset
+move b bx by
+scale b 24 24
+color b 170 180 190
+
+color a 50 40 45
+varSet _x = x_border
+varSet _x + 50
+varSet _y = y_border
+varSet _y + 50
+scale background x_border y_border
+
+varSet x_ = x_border
+varSet x_ / 2
+varSet x = x_
+
+varSet y_ = y_border
+varSet y_ / 2
+varSet y = x_
+
+move title x_offset 10
+writeRaw title Move Hex
+font title bold 25
+color title 20 45 120
+
+move time 450 15
+font time bold 20
+color time 30 55 130
+
+move points 250 15
+font points bold 20
+color points 30 55 130
+varSet points = 0
+write points points
+
+move hs x_offset 400
+font hs bold 18
+color hs 20 45 115
+var hs ReadFile C:\Users\jlham\source\repos\ezCode\MoveHex_HighScore.txt
+varSet highscore = Highscore:_
+varSet highscore + hs
+write hs highscore
+
+playFile now C:\Users\jlham\source\repos\ezCode\MoveHex_Directions.ezcode
+
+varSet zero = 0
+varSet bottom = 0
+varSet right = 0
+varSet _bx = bx
+varSet _bx + 50
+varSet _by = by
+varSet _by + 50
+varSet xx = x
+varSet yy = y
+
+loop time
+
+varSet _bx = bx
+varSet _bx + 24
+varSet _by = by
+varSet _by + 24
+varSet zero + 1
+varSet xx = x
+varSet xx + 50
+varSet yy = y
+varSet yy + 50
+varSet zero + 1
+write time zero 
+write points points
+await 1
+if a = D : varSet x + speed
+if a = A : varSet x - speed
+if a = W : varSet y - speed
+if a = S : varSet y + speed
+if a = Escape : endBuild
+
+if bottom = 0 : if right = 0 : varSet bx + bspeed
+if bottom = 0 : if right = 0 : varSet by + bspeed
+if bottom = 1 : if right = 0 : varSet bx + bspeed
+if bottom = 1 : if right = 0 : varSet by - bspeed
+if bottom = 0 : if right = 1 : varSet bx - bspeed
+if bottom = 0 : if right = 1 : varSet by + bspeed
+if bottom = 1 : if right = 1 : varSet bx - bspeed
+if bottom = 1 : if right = 1 : varSet by - bspeed
+
+if x > x_border : varSet x = x_border
+if x < x_offset : varSet x = x_offset
+if y > y_border : varSet y = y_border
+if y < y_offset : varSet y = y_offset
+if bx > x_border : varSet right = 1
+if bx < x_offset : varSet right = 0
+if by > y_border : varSet bottom = 1
+if by < y_offset : varSet bottom = 0
+
+if x < bx : if xx > _bx : if y < by : if yy > _by : varSet points + 1
+
+varInput a Key
+move a x y
+move b bx by
+//print a
+end
+
+//playFile await C:\Users\jlham\source\repos\ezCode\MoveHex_PointsLabelAnimation.ezcode
+
+if points > hs : writeToFile points C:\Users\jlham\source\repos\ezCode\MoveHex_HighScore.txt
+if points > hs : varSet hs = points
+varSet highscore = Highscore:_
+varSet highscore + hs
+write hs highscore

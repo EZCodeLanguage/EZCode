@@ -1,0 +1,21 @@
+var points_y 15
+move points left_ points_y
+var font_size 20
+var pr 30
+var pg 55
+var pb 130
+
+loop 20
+await 1
+varSet points_y + 8
+varSet left_ - 1
+varSet font_size + 1
+varSet pr + 1
+varSet pg + 1
+varSet pb + 1
+
+move points left_ points_y
+font points bold font_size
+color points pr pg pb
+
+end

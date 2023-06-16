@@ -1,0 +1,671 @@
+1
+00:00:02,895 --> 00:00:04,915
+Welcome to the basic tutorial on how to 
+
+2
+00:00:04,915 --> 00:00:05,925
+use easy code.
+
+3
+00:00:08,525 --> 00:00:10,965
+Let's first just start off with the 
+
+4
+00:00:11,175 --> 00:00:13,425
+language. So we'll start with Hello 
+
+5
+00:00:14,145 --> 00:00:14,655
+World.
+
+6
+00:00:20,595 --> 00:00:22,475
+Play it. See Hello right here.
+
+7
+00:00:24,105 --> 00:00:26,385
+Now if I put print raw.
+
+8
+00:00:28,335 --> 00:00:29,215
+Of the world.You 
+
+9
+00:00:31,255 --> 00:00:32,805
+get Hello World.
+
+10
+00:00:34,085 --> 00:00:36,165
+Can't do this though.
+
+11
+00:00:37,605 --> 00:00:40,115
+Because the print function only prints 1 
+
+12
+00:00:40,265 --> 00:00:41,635
+space in front.So what you'll 
+
+13
+00:00:42,755 --> 00:00:44,265
+do is you use.
+
+14
+00:00:45,315 --> 00:00:48,105
+Space character which is a back slash.
+
+15
+00:00:51,265 --> 00:00:53,915
+Back slash and then this so print it and 
+
+16
+00:00:54,065 --> 00:00:55,715
+it prints hello world like this.
+
+17
+00:00:57,305 --> 00:00:59,285
+So that's just kind of how the language 
+
+18
+00:00:59,685 --> 00:01:01,745
+works. It's divided by spaces.
+
+19
+00:01:03,345 --> 00:01:05,125
+So next thing we'll do.As 
+
+20
+00:01:06,325 --> 00:01:08,545
+we'll make a small little project.
+
+21
+00:01:10,415 --> 00:01:12,605
+All right. So first we'll print.
+
+22
+00:01:14,205 --> 00:01:14,805
+Draw.
+
+23
+00:01:16,995 --> 00:01:19,465
+Welcome to the mold.
+
+24
+00:01:22,095 --> 00:01:23,215
+Case in table.
+
+25
+00:01:27,485 --> 00:01:28,695
+Prince Royal.
+
+26
+00:01:34,575 --> 00:01:37,295
+Please enter a number to generate.
+
+27
+00:01:50,055 --> 00:01:51,275
+Right. And you see these?
+
+28
+00:01:53,885 --> 00:01:56,445
+Now we'll add a variable, so that's the 
+
+29
+00:01:56,865 --> 00:01:57,625
+var.And 
+
+30
+00:01:59,855 --> 00:02:01,595
+call it number.And it will be 
+
+31
+00:02:02,685 --> 00:02:04,645
+read by console input.
+
+32
+00:02:07,125 --> 00:02:09,875
+So now the test will just print number. 
+
+33
+00:02:10,615 --> 00:02:12,655
+This will do is it'll wait for you to 
+
+34
+00:02:13,235 --> 00:02:13,835
+input.
+
+35
+00:02:16,775 --> 00:02:18,725
+And it and it prints right here.
+
+36
+00:02:20,445 --> 00:02:21,935
+That's just a test now.
+
+37
+00:02:24,005 --> 00:02:25,795
+What we'll need to do is.
+
+38
+00:02:27,425 --> 00:02:30,108
+Creates A variable named.
+
+39
+00:02:30,648 --> 00:02:32,328
+R in.And we'll sign it 
+
+40
+00:02:33,638 --> 00:02:36,168
+to number. This will be the resetting 
+
+41
+00:02:36,358 --> 00:02:38,948
+variable. This will set number back.
+
+42
+00:02:40,358 --> 00:02:41,808
+You you'll see in a second.So 
+
+43
+00:02:43,168 --> 00:02:45,448
+now we'll create a 
+
+44
+00:02:45,648 --> 00:02:46,778
+variable to.
+
+45
+00:02:48,478 --> 00:02:50,318
+That will be printed.That has the 
+
+46
+00:02:51,348 --> 00:02:53,428
+inputted number, so we'll have what's 
+
+47
+00:02:53,738 --> 00:02:54,788
+called text.
+
+48
+00:03:08,818 --> 00:03:10,278
+Undo text.
+
+49
+00:03:11,798 --> 00:03:12,158
+Yes.
+
+50
+00:03:14,878 --> 00:03:15,438
+Number.
+
+51
+00:03:18,608 --> 00:03:19,998
+Text Plus.
+
+52
+00:03:21,738 --> 00:03:22,928
+Pulling tanks.
+
+53
+00:03:24,748 --> 00:03:25,448
+Plus.
+
+54
+00:03:29,678 --> 00:03:31,488
+Text.Now we put in our 
+
+55
+00:03:32,618 --> 00:03:34,058
+number.And multiplication 
+
+56
+00:03:35,528 --> 00:03:37,728
+table for five 4.5.
+
+57
+00:03:41,908 --> 00:03:44,028
+Now what we'll do is.
+
+58
+00:03:47,148 --> 00:03:49,788
+We'll create some variables, so var 
+
+59
+00:03:50,708 --> 00:03:51,618
+multiplier.
+
+60
+00:03:54,968 --> 00:03:56,868
+And it will be equal to
+
+61
+00:03:57,128 --> 00:03:59,268
+ 1 because that's the first number of 
+
+62
+00:03:59,268 --> 00:04:00,748
+multiplication.Are 
+
+63
+00:04:02,438 --> 00:04:04,198
+what's called a now, and 
+
+64
+00:04:05,298 --> 00:04:07,238
+it'll be set to nothing and bar.
+
+65
+00:04:08,268 --> 00:04:10,078
+Results. Right now they'll just be set 
+
+66
+00:04:10,688 --> 00:04:11,848
+to number.How about your 
+
+67
+00:04:13,648 --> 00:04:14,948
+league 10 times?
+
+68
+00:04:19,358 --> 00:04:21,168
+Start by doing is 
+
+69
+00:04:21,728 --> 00:04:23,368
+set number.T
+
+70
+00:04:24,658 --> 00:04:25,668
+ORN.
+
+71
+00:04:27,588 --> 00:04:29,098
+This will reset 
+
+72
+00:04:30,128 --> 00:04:32,398
+the we'll use number later and this will 
+
+73
+00:04:32,738 --> 00:04:34,658
+reset the numbers value back to the 
+
+74
+00:04:34,768 --> 00:04:35,718
+original input.
+
+75
+00:04:38,558 --> 00:04:40,788
+Will make sure a is 
+
+76
+00:04:41,078 --> 00:04:43,328
+equal to nothing again.
+
+77
+00:04:45,498 --> 00:04:48,208
+And we'll make results back to number.
+
+78
+00:04:50,368 --> 00:04:52,418
+So these just reset those 3 variables.
+
+79
+00:04:55,058 --> 00:04:57,308
+Now what we'll do is we'll do results 
+
+80
+00:04:58,138 --> 00:04:59,698
+is equal is.
+
+81
+00:05:00,708 --> 00:05:02,818
+Multiplied by the multiplier.
+
+82
+00:05:05,078 --> 00:05:06,528
+And you'll see the multiplier will be 
+
+83
+00:05:06,528 --> 00:05:08,758
+added. We'll add 1 to multiply.
+
+84
+00:05:13,038 --> 00:05:14,008
+Now in this loop.
+
+85
+00:05:16,278 --> 00:05:17,398
+And we will.
+
+86
+00:05:18,768 --> 00:05:20,208
+Prince results.
+
+87
+00:05:27,648 --> 00:05:29,518
+And so you see it will have This has 
+
+88
+00:05:29,648 --> 00:05:31,488
+errors in it, but.This right here 
+
+89
+00:05:32,538 --> 00:05:33,398
+has.The 
+
+90
+00:05:35,298 --> 00:05:37,228
+multiplication table is now.We'll 
+
+91
+00:05:38,208 --> 00:05:39,248
+finish this.I 
+
+92
+00:05:41,108 --> 00:05:41,558
+put in.
+
+93
+00:05:48,888 --> 00:05:50,168
+Here's all spelled correctly.
+
+94
+00:05:54,488 --> 00:05:56,018
+Alright, we'll put.A
+
+95
+00:05:58,408 --> 00:06:00,038
++ number.
+
+96
+00:06:02,238 --> 00:06:04,378
+A+ space.
+
+97
+00:06:05,948 --> 00:06:06,838
+8 plus.
+
+98
+00:06:08,248 --> 00:06:09,488
+Multiplier.A 
+
+99
+00:06:10,878 --> 00:06:11,758
+plus.
+
+100
+00:06:18,168 --> 00:06:20,018
+Other space.8 plus.
+
+101
+00:06:23,548 --> 00:06:25,378
+Equals A plus.
+
+102
+00:06:26,858 --> 00:06:27,678
+Results.
+
+103
+00:06:31,088 --> 00:06:32,508
+And then we will.It's.
+
+104
+00:06:38,398 --> 00:06:40,238
+But what I'm through 9.
+
+105
+00:06:43,298 --> 00:06:43,958
+I forgot.
+
+106
+00:06:46,788 --> 00:06:48,878
+One more A+ space.
+
+107
+00:06:50,108 --> 00:06:50,798
+9.
+
+108
+00:06:56,308 --> 00:06:56,838
+A.
+
+109
+00:07:03,388 --> 00:07:05,568
+So that'll fix that, and then what is 
+
+110
+00:07:05,748 --> 00:07:06,968
+the error that's happening?
+
+111
+00:07:17,868 --> 00:07:19,198
+So that fixes the.
+
+112
+00:07:20,888 --> 00:07:23,048
+Space is now What is the air that's 
+
+113
+00:07:23,368 --> 00:07:23,738
+happening?
+
+114
+00:07:29,218 --> 00:07:30,338
+Right there.Groupon equal 
+
+115
+00:07:32,008 --> 00:07:32,478
+sign.
+
+116
+00:07:34,558 --> 00:07:36,828
+Three enter So this is what we 
+
+117
+00:07:37,548 --> 00:07:39,228
+have. Welcome welcome to the 
+
+118
+00:07:39,708 --> 00:07:41,158
+multiplication table. Please enter your 
+
+119
+00:07:41,268 --> 00:07:43,418
+number to generate multiplication 
+
+120
+00:07:43,908 --> 00:07:45,378
+table for three. Then 3 * 1 three
+
+121
+00:07:45,488 --> 00:07:48,418
+ 3 * 2 six 3 * 3 is 9 and 
+
+122
+00:07:48,418 --> 00:07:50,018
+so on.And then what we'll 
+
+123
+00:07:51,408 --> 00:07:53,438
+do here is we'll put a nice 
+
+124
+00:07:54,258 --> 00:07:55,208
+little thank you.
+
+125
+00:08:18,138 --> 00:08:19,848
+And there we go.Now 
+
+126
+00:08:21,018 --> 00:08:22,428
+let's try using.
+
+127
+00:08:24,388 --> 00:08:26,568
+The visual output right here 
+
+128
+00:08:27,188 --> 00:08:28,868
+we'll do is we'll create.
+
+129
+00:08:30,298 --> 00:08:31,308
+Text box.
+
+130
+00:08:33,198 --> 00:08:33,858
+Name it.
+
+131
+00:08:43,478 --> 00:08:44,638
+Text input.
+
+132
+00:08:46,448 --> 00:08:48,728
+So that's text and nothing. So now you 
+
+133
+00:08:48,928 --> 00:08:50,268
+see we have this.
+
+134
+00:08:51,778 --> 00:08:53,928
+Visual output. We'll create a label and 
+
+135
+00:08:54,248 --> 00:08:55,538
+we'll name it text.
+
+136
+00:09:03,288 --> 00:09:04,968
+OK, now we'll create.
+
+137
+00:09:06,868 --> 00:09:09,148
+Variable set to nothing right now.
+
+138
+00:09:11,028 --> 00:09:12,448
+And then we'll move.
+
+139
+00:09:14,028 --> 00:09:15,668
+Text output to label.
+
+140
+00:09:18,648 --> 00:09:19,808
+Below the.
+
+141
+00:09:21,498 --> 00:09:23,248
+Below the text box.
+
+142
+00:09:24,908 --> 00:09:27,278
+So we'll loop just pretty much forever.
+
+143
+00:09:31,678 --> 00:09:34,048
+And we will await every loop. We'll 
+
+144
+00:09:34,658 --> 00:09:36,918
+wait 250 milliseconds per 
+
+145
+00:09:37,578 --> 00:09:37,978
+second.
+
+146
+00:09:41,378 --> 00:09:43,208
+Now we will put our 
+
+147
+00:09:43,778 --> 00:09:44,838
+equals.
+
+148
+00:09:46,748 --> 00:09:48,938
+Text and from 
+
+149
+00:09:49,288 --> 00:09:51,138
+text box modifier 
+
+150
+00:09:52,238 --> 00:09:52,838
+and then we'll put.
+
+151
+00:09:54,978 --> 00:09:57,678
+Textbox text input. So what this does is 
+
+152
+00:09:57,978 --> 00:10:00,028
+it sets the variable text 
+
+153
+00:10:00,918 --> 00:10:02,568
+to the to the.Input 
+
+154
+00:10:03,658 --> 00:10:06,038
+of the text box, text input, 
+
+155
+00:10:06,778 --> 00:10:07,838
+and then we'll end the loop.
+
+156
+00:10:11,458 --> 00:10:12,918
+One last thing I forgot.All 
+
+157
+00:10:14,418 --> 00:10:14,968
+right.
+
+158
+00:10:16,848 --> 00:10:18,478
+Text input.
+
+159
+00:10:19,968 --> 00:10:20,718
+Output.
+
+160
+00:10:26,208 --> 00:10:27,408
+Now put in that.You 
+
+161
+00:10:29,088 --> 00:10:30,858
+know, copy everything I put in there.
+
+162
+00:10:35,438 --> 00:10:36,938
+Now if I make.
+
+163
+00:10:47,338 --> 00:10:48,508
+Make.Text input 
+
+164
+00:10:50,088 --> 00:10:51,878
+multiline and do this again.
+
+165
+00:10:57,118 --> 00:10:58,598
+They will also be multi lined.
+
+166
+00:11:01,598 --> 00:11:03,738
+So I hope this helps you understand the 
+
+167
+00:11:04,058 --> 00:11:06,818
+basics of easy code and the syntax and 
+
+168
+00:11:07,038 --> 00:11:08,028
+how it works.

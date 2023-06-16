@@ -1,0 +1,145 @@
+//Pong
+await 200
+var p2_is_bot true
+playFile await ~/pong-player_count.ezcode
+
+var lab_tit_x 390
+var lab_p1_x 55
+var lab_p2_x 800
+var lab_y 5
+var play_x 20
+var play_y 100
+var ball_rad 25
+var ball_max_y 465
+var ball_min_y 60
+var ball_max_x 825
+var ball_min_x 52
+var beg_x 60
+var end_x 820
+var edge_x 800
+var mid_b_x 437
+var beg_p_x 80
+var end_p_x 795
+var beg_y 60
+var end_y 460
+var mid_y 220
+var edge_y 470
+var mid_b_y 272
+var max_y 410
+var min_y 60
+
+object player1 4
+object player2 4
+object ball 12
+object background 4
+
+move player1 beg_x mid_y
+move player2 end_x mid_y
+move ball mid_b_x mid_b_y
+move background 50 50
+
+scale player1 play_x play_y
+scale player2 play_x play_y
+scale ball ball_rad ball_rad
+scale background edge_x edge_y
+
+color player1 255 50 50
+color player2 50 50 250
+color ball 200 200 200
+color background 175 150 150
+
+label title
+label p1_score
+label p2_score
+label timer
+
+write title PONG
+write p1_score 0
+write p2_score 0
+
+font title bold 25
+font p1_score regular 25
+font p2_score regular 25
+
+move title lab_tit_x lab_y
+move p1_score lab_p1_x lab_y
+move p2_score lab_p2_x lab_y
+
+color title 30 100 30
+color p1_score 100 30 30
+color p2_score 30 30 100
+
+var p1_sc 0
+var p1_y mid_y
+var p2_sc 0
+var p2_y mid_y
+var p_speed 6
+var b_x mid_b_x
+var b_y mid_b_y
+var b_t_x Random 0 2
+var b_t_y Random 0 2
+var b_speed 4
+var time_left 50000
+var inp i
+var p1_end p1_y
+var p2_end p2_y
+var win 10
+var p2_bot Random 0 2
+
+
+loop time_left
+await 3
+time_left - 1
+write timer time_left
+varInput inp Key
+p1_end = p1_y
+p1_end + play_y
+p2_end = p2_y
+p2_end + play_y
+
+if b_t_x = 0 : b_x + b_speed
+if b_t_x = 1 : b_x - b_speed
+if b_t_y = 0 : b_y + b_speed
+if b_t_y = 1 : b_y - b_speed
+
+if b_y > ball_max_y : b_t_y = 1
+if b_y < ball_min_y : b_t_y = 0
+if b_x > ball_max_x : b_t_x = 1
+if b_x > ball_max_x : p1_sc + 1
+write p2_score p2_sc
+if b_x > ball_max_x : await 500
+if b_x > ball_max_x : b_x = mid_b_x
+if b_x > ball_max_x : b_y = mid_b_y
+if b_x < ball_min_x : b_t_x = 0
+if b_x < ball_min_x : p2_sc + 1
+write p1_score p1_sc
+if b_x < ball_min_x : await 500
+if b_x < ball_min_x : b_y = mid_b_y
+if b_x < ball_min_x : b_x = mid_b_x
+
+if inp = W : p1_y - p_speed
+if inp = S : p1_y + p_speed
+if p2_is_bot = false : if inp = I : p2_y - p_speed
+if p2_is_bot = false : if inp = K : p2_y + p_speed
+if p2_is_bot = true : if p2_bot = 0 : p2_y - p_speed
+if p2_is_bot = true : if p2_bot = 1 : p2_y + p_speed
+
+if p1_y > max_y : p1_y - p_speed
+if p1_y < min_y : p1_y + p_speed
+if p2_is_bot = false : if p2_y > max_y : p2_y - p_speed
+if p2_is_bot = false : if p2_y < min_y : p2_y + p_speed
+if p2_is_bot = true : if p2_y > max_y : p2_bot = 0
+if p2_is_bot = true : if p2_y < min_y : p2_bot = 1
+
+if b_x < beg_p_x : if b_y > p1_y : if b_y < p1_end : b_t_x = 0
+if b_x > end_p_x : if b_y > p2_y : if b_y < p2_end : b_t_x = 1
+
+if p1_sc > win : write p1_score WIN
+if p1_sc > win : endBuild
+if p2_sc > win : write p2_score WIN
+if p2_sc > win : endBuild
+
+move ball b_x b_y
+move player1 beg_x p1_y
+move player2 end_x p2_y
+end

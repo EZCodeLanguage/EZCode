@@ -1,0 +1,32 @@
+label d1
+var yd1 y_border
+varSet yd1 + 100
+move d1 x_offset yd1
+font d1 underline 14
+color d1 25 45 100
+
+label d2
+var yd2 y_border
+varSet yd2 + 130
+move d2 x_offset yd2
+font d2 underline 14
+color d2 25 45 100
+
+label d3
+var yd3 y_border
+varSet yd3 + 160
+move d3 x_offset yd3
+font d3 underline 14
+color d3 25 45 100
+
+label d4
+var yd4 y_border
+varSet yd4 + 190
+move d4 x_offset yd4
+font d4 underline 14
+color d4 25 45 100
+
+writeRaw d1 Thank you for playing Move Hex! The Directions are simple:
+writeRaw d2 AWSD are for moving. You get points by overlapping your 
+writeRaw d3 Hex with the ball. The game ends when the timer reaches 
+writeRaw d4 2000. Try to get as many points as you can. Good Luck! 

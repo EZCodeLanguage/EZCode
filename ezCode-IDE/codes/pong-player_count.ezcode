@@ -1,0 +1,13 @@
+label select
+var p2_is_bot not
+font select bold 20
+move select 100 100
+color select 80 40 60
+writeRaw select Press 2 for two players and 1 for 1 player
+var await_key AwaitKeyInput
+if await_key = D2 : p2_is_bot = false
+if await_key = NumPad2 : p2_is_bot = false
+if await_key = D1 : p2_is_bot = true
+if await_key = NumPad1 : p2_is_bot = true
+if await_key = not : playFile ~/root--pong.ezcode
+move select -100 -100

@@ -1,0 +1,14 @@
+var map_line _
+map_line + map_num
+map_line + :
+loop map_x
+
+map_num + 1
+
+var index FromList map map_num
+
+map_line + index
+
+end
+
+print map_line

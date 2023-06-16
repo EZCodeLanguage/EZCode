@@ -1,0 +1,100 @@
+label info
+label inputLabel
+write inputLabel \!
+object a 4
+scale a 250 38
+color a 255 255 255
+font inputLabel bold 16
+var x 200
+var y 10
+move a x y
+var ydif y
+ydif + 5
+var xdif x
+xdif + 5
+var yydif y
+yydif + 46
+move info x yydif
+move inputLabel xdif ydif
+list new text : \!
+writeRaw info Enter a Name for Your Player
+
+var inputText \!
+
+var key \!
+var tot 0
+
+loop 500
+varInput key AwaitKey
+if tot > 9 : writeRaw info Max Name Length
+if tot < 11 : writeRaw info Enter a Name for Your Player
+if tot < 11 : tot + 1
+if tot < 1 : tot + 1
+if key = Back : tot - 2
+if key = Back : inputText - 1
+if tot < 11 : if key = A : inputText + A 
+if tot < 11 : if key = B : inputText + B 
+if tot < 11 : if key = C : inputText + C 
+if tot < 11 : if key = D : inputText + D 
+if tot < 11 : if key = E : inputText + E 
+if tot < 11 : if key = F : inputText + F 
+if tot < 11 : if key = G : inputText + G 
+if tot < 11 : if key = H : inputText + H 
+if tot < 11 : if key = I : inputText + I 
+if tot < 11 : if key = J : inputText + J 
+if tot < 11 : if key = K : inputText + K 
+if tot < 11 : if key = L : inputText + L 
+if tot < 11 : if key = M : inputText + M 
+if tot < 11 : if key = N : inputText + N 
+if tot < 11 : if key = O : inputText + O 
+if tot < 11 : if key = P : inputText + P 
+if tot < 11 : if key = Q : inputText + Q 
+if tot < 11 : if key = R : inputText + R 
+if tot < 11 : if key = S : inputText + S 
+if tot < 11 : if key = T : inputText + T 
+if tot < 11 : if key = U : inputText + U 
+if tot < 11 : if key = V : inputText + V 
+if tot < 11 : if key = W : inputText + W 
+if tot < 11 : if key = X : inputText + X 
+if tot < 11 : if key = Y : inputText + Y 
+if tot < 11 : if key = Z : inputText + Z 
+if tot < 11 : if key = Oemcomma : inputText + ,
+if tot < 11 : if key = OemPeriod : inputText + .
+if tot < 11 : if key = OemQuestion : inputText + ?
+if tot < 11 : if key = Oem1 : inputText + ;
+if tot < 11 : if key = Oem7 : inputText + '
+if tot < 11 : if key = OemOpenBrackets : inputText + [
+if tot < 11 : if key = Oem6 : inputText + ]
+if tot < 11 : if key = Oem5 : inputText + \
+if tot < 11 : if key = Oemplus : inputText + =
+if tot < 11 : if key = OemMinus : inputText + -
+if tot < 11 : if key = Oemtilde : inputText + `
+if tot < 11 : if key = D1 : inputText + 1
+if tot < 11 : if key = D2 : inputText + 2
+if tot < 11 : if key = D3 : inputText + 3
+if tot < 11 : if key = D4 : inputText + 4
+if tot < 11 : if key = D5 : inputText + 5
+if tot < 11 : if key = D6 : inputText + 6
+if tot < 11 : if key = D7 : inputText + 7
+if tot < 11 : if key = D8 : inputText + 8
+if tot < 11 : if key = D9 : inputText + 9
+if tot < 11 : if key = D0 : inputText + 0
+if tot < 11 : if key = NumPad1 : inputText + 1
+if tot < 11 : if key = NumPad2 : inputText + 2
+if tot < 11 : if key = NumPad3 : inputText + 3
+if tot < 11 : if key = NumPad4 : inputText + 4
+if tot < 11 : if key = NumPad5 : inputText + 5
+if tot < 11 : if key = NumPad6 : inputText + 6
+if tot < 11 : if key = NumPad7 : inputText + 7
+if tot < 11 : if key = NumPad8 : inputText + 8
+if tot < 11 : if key = NumPad9 : inputText + 9
+if tot < 11 : if key = NumPad0 : inputText + 0
+if tot < 11 : if key = Space : inputText + \_
+if tot < 12 : if key = Return : tot = 1000000000
+if tot < 12 : if key = Return : move inputLabel -100 -100
+if tot < 12 : if key = Return : move a -100 -100
+if tot < 12 : if key = Return : write info \!
+if tot < 12 : if key = Return : writeToFile inputText ~/name.txt
+if tot < 12 : if key = Return : playFile await ~/Move_Cube.ezcode
+write inputLabel inputText
+end

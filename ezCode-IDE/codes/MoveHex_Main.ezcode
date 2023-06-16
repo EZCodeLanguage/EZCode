@@ -1,0 +1,45 @@
+// initialize the variables
+playFile await C:\Users\jlham\source\repos\ezCode\MoveHex_SetVars.ezcode
+var __mx MousePosition x // Mouse X Position
+var __my MousePosition y // Mouse Y Position
+var __mc MouseClick // Mouse Click State
+var __bx 150 // X Position of Button
+var __by 300 // Y Position of Button
+var __bsx 300 // X Scale of Button
+var __bsy 85 // Y Scale of Button
+var __lx __bx // X Position of Label
+var __ly __by // Y Position of Label
+var __key // Key Input
+
+// initialize the label
+label play
+varSet __lx + 9
+varSet __ly + 8
+font play bold 20
+writeRaw play Press Space to Start
+move play __lx __ly
+label exit
+font exit bold 18
+writeRaw exit Press Esc to Exit
+color exit 100 20 20
+move exit 190 348
+
+// initialize the button
+object button 4
+move button __bx __by
+color button 225 120 120
+scale button __bsx __bsy
+
+loop 1000  
+
+varInput __key AwaitKey
+
+if __key = Space : playFile await C:\Users\jlham\source\repos\ezCode\MoveHex.ezcode
+if __key = Escape : endBuild
+
+playFile await C:\Users\jlham\source\repos\ezCode\MoveHex_ResetVars.ezcode
+
+move play __lx __ly
+move button __bx __by
+
+end

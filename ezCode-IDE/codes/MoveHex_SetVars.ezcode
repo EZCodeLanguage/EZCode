@@ -1,0 +1,55 @@
+var a nothing
+var x Random 25 125
+var y Random 25 125
+var bx 30 90
+var by 30 90
+var x_offset 50
+var y_offset 50
+var speed 3 // speed of player
+var bspeed 4 // speed of ball
+var time 1000 // time of game
+var x_border 500 // scale of arena X
+var y_border 350 // scale of arena Y
+var _x x_border
+var _y y_border
+var x_ x_border
+var y_ y_border
+var _left x_border
+var left_ x_
+var points 0
+var yhs y_border
+var highscore Highscore:_
+var zero 0
+var bottom 0
+var right 0
+var _bx bx
+var _by by
+var xx x
+var yy y
+
+object b 15
+object a 6
+object background 4
+varSet a nothing
+varSet x 50
+varSet y 50
+varSet bx 50
+varSet by 50
+varSet x_offset 50
+varSet y_offset 50
+
+object b 15
+object a 6
+object background 4
+label title
+label points
+label time
+label hs
+
+move a -100 -100
+move b -100 -100
+move background -100 -100
+move points -100 -100
+move title -100 -100
+move time -100 -100
+move hs -100 -100

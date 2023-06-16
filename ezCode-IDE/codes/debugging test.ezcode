@@ -1,0 +1,22 @@
+var apple -2
+var peanut 8
+
+await 100
+
+// help me please
+
+apple + peanut
+
+label o
+move o 200 75
+
+object pea apple
+object soup 4
+
+move pea 150 150
+
+var yo yellow
+
+write o yo
+
+print yo

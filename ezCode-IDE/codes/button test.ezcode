@@ -1,0 +1,16 @@
+button a YES
+
+move a 150 150
+scale a 75 120
+color a 60 180 100
+
+button b NO
+
+move b 250 150
+scale b 75 120
+color b 180 80 80
+
+buttonClick a ~/buttontest.yes.ezcode
+buttonClick b ~/buttontest.no.ezcode
+
+await 5000

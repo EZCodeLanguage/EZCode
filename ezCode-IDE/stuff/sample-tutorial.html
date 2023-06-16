@@ -1,0 +1,124 @@
+<!DOCTYPE html>
+<html lang="en">
+   <head>
+      <!-- basic -->
+      <meta charset="utf-8">
+      <meta http-equiv="X-UA-Compatible" content="IE=edge">
+      <!-- mobile metas -->
+      <meta name="viewport" content="width=device-width, initial-scale=1">
+      <meta name="viewport" content="initial-scale=1, maximum-scale=1">
+      <!-- site metas -->
+      <title>EzCode | Tutorial | Player</title>
+      <link rel="icon" href="ezCode.png" type="image/x-icon">
+      <link rel="shortcut icon" href="images/ezCode.png" type="image/x-icon">
+      <meta name="keywords" content="Ezcode, Player, Tutorial">
+      <meta name="description" content="Ezcode by JBros Development">
+      <meta name="author" content="Joseph H">
+      <!-- bootstrap css -->
+      <link rel="stylesheet" href="css/bootstrap.min.css">
+      <!-- style css -->
+      <link rel="stylesheet" href="css/style.css">
+      <!-- responsive-->
+      <link rel="stylesheet" href="css/responsive.css">
+      <!-- awesome fontfamily -->
+      <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.7.0/css/font-awesome.min.css">
+      <!--[if lt IE 9]>
+      <script src="https://oss.maxcdn.com/html5shiv/3.7.3/html5shiv.min.js"></script>
+      <script src="https://oss.maxcdn.com/respond/1.4.2/respond.min.js"></script><![endif]-->
+   </head>
+   <!-- body -->
+   <style>
+    body {
+      font-family: Arial, sans-serif;
+      background-color: #f1f1f1;
+      display: flex;
+      justify-content: center;
+      overflow-y: auto;
+    }
+    .docs-main h1 {
+       text-align:center;
+       font-size: xx-large;
+       font-weight: bolder;
+       color: rgb(59, 59, 59);
+    }
+    .docs-item {
+       width: 95%;
+       margin: 0 auto;
+       background-color: #fff;
+       padding: 20px;
+       margin-bottom: 20px;
+       border-radius: 5px;
+       box-shadow: 0 2px 4px rgba(0, 0, 0, 0.2);
+    }
+    .docs-item h2 {
+       font-size: large;
+       font-weight: bolder;
+       color: rgb(59, 59, 59);
+    }
+    .docs-item p {
+       font-size: medium;
+       color: rgb(59, 59, 59);
+    }
+    .docs-item pre{
+       padding: 5px;
+       text-align:left;
+       background-color: rgb(44, 44, 44);
+       color: #fff;
+    }
+    .youtube{
+        width: 100%;
+        height: 600px;
+        align-self: center;
+    }
+  </style>
+<body class="docs-main">
+  <div class="docs-item"><!--Player/: build,file,full,game,help-->
+    <h1>EzCode Player</h1>
+    <p>EzCode Player is a dynamic application that reads and plays EzCode packaged files, offering users a seamless and interactive experience to execute and visualize the code within. By intelligently interpreting the packaged project file, EzCode Player provides a comprehensive runtime environment, making it a valuable tool showcasing EzCode projects.</p>
+    <iframe class="youtube" src="https://www.youtube.com/embed/" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" allowfullscreen></iframe>
+    <h1>Top Bar</h1>
+    <p>The Top Bar has the main navigation for the Editor.</p>
+    <h3>File</h3>
+    <img src="Player/file.png" alt="topbar-file">
+    <p>Open: This opens the selected file.</p>
+    <p>Exit: This Exits the program.</p>
+    <h3>Build</h3>
+    <img src="Player/build.png" alt="topbar-build">
+    <p>Play: This starts playing the project.</p>
+    <p>Stop: This stops playing the project.</p>
+    <h3>Help</h3>
+    <img src="Player/help.png" alt="topbar-help">
+    <p>Toggle Show Errors: Toggles on and off showing any errors in the console.</p>
+    <p>The Textboxes below it show the installed versions of the Editor and the programming language.</p>
+    <h3>Opened File Location</h3>
+    <img src="ide/topbar-dirctory.png" alt="topbar-dirctory">
+    <p>Shows the file location of the currently openned file.</p>
+    <h1>Project List</h1>
+    <img src="ide/project list.png" alt="project list">
+    <p>Add Files Button: Adds files to the project list.</p>
+    <p>ListBox: This is a listbox that lets the user navigate between files easily. The List's contents can be saved to a file, and opened from a file.</p>
+    <h1>Coding Box</h1>
+    <img src="ide/text.png" alt="text">
+    <p>This is where the user can type up there code.</p>
+    <h1>Visual Output Box</h1>
+    <img src="ide/space.png" alt="space">
+    <p>This is where the output from the code is visualized.</p>
+    <h1>Console Output</h1>
+    <img src="ide/console.png" alt="console">
+    <p>This is where the text ouput is seen.</p>
+    <h1>Console Bar</h1>
+    <img src="ide/bottom-bar.png" alt="bottom-bar">
+    <p>The textbox that spans most of the bar is the console input. Whenever the Send button is pressed, or when enter is pressed, it will send the input to the script. The clear button clears the console.</p>
+    <h1>Debbuger Space</h1>
+    <img src="ide/debugger.png" alt="debugger">
+    <p>This is where you can see values while the script is being debugged.</p>
+    <h3>Diagram</h3>
+    <img src="ide/debugger-diagram.png" alt="debugger-diagram">
+   <h3>Conclusion</h3>
+  <p>In conclusion, the EzCode Editor (IDE) offers a robust and user-friendly platform for developers to work with the EzCode programming language. With its powerful features and intuitive interface, it enables developers to code more efficiently and effectively. By providing essential tools and a seamless coding experience, the EzCode Editor empowers developers to streamline their software development process and bring their ideas to life with ease. Whether you're a beginner or an experienced developer, the EzCode Editor is designed to enhance your coding journey and boost your productivity.</p>
+</body>
+   <script src="js/jquery.min.js"></script>
+   <script src="js/bootstrap.bundle.min.js"></script>
+   <script src="js/jquery-3.0.0.min.js"></script>
+   <script src="js/custom.js"></script>
+</html>
