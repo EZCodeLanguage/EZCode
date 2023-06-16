@@ -11,7 +11,7 @@
         /// <summary>
         /// Directory of the script playing
         /// </summary>
-        public static string? ScriptDirectory;
+        public static string ScriptDirectory = "";
         /// <summary>
         /// Console input's bool to send
         /// </summary>
@@ -19,15 +19,15 @@
         /// <summary>
         /// The key that is currently being pressed
         /// </summary>
-        public static string? keyPreview;
+        public static string keyPreview = "";
         /// <summary>
         /// The last key that is was pressed
         /// </summary>
-        public static string? awaitKeyPreview;
+        public static string awaitKeyPreview = "";
         /// <summary>
         /// Text sent by the console's input
         /// </summary>
-        public static string? senttext;
+        public static string senttext = "";
         /// <summary>
         /// Bool to decide if a key is down
         /// </summary>
@@ -85,7 +85,7 @@
         /// <summary>
         /// Initializes the script and stars it
         /// </summary>
-        public static void Initialize(RichTextBox _console, Control _space, string _text, string directory)
+        public static async void Initialize(RichTextBox _console, Control _space, string _text, string directory)
         {
             Space = _space;
             console = _console;
@@ -119,7 +119,7 @@
                 vars.Clear();
                 VarList.Clear();
                 console.AddText("Build Started" + Environment.NewLine, false);
-                PlayAsync(text);
+                await PlayAsync(text);
             }
         }
         private static async Task PlayAsync(string text)
@@ -2292,7 +2292,7 @@
                                         if (j == -1)
                                         {
                                             Var var = new Var(name);
-                                            var.text = name;
+                                            var.text_ = name;
                                             varList.Add(var);
 
                                         }
@@ -2437,7 +2437,7 @@
                                         if (j == -1)
                                         {
                                             Var var = new Var(name);
-                                            var.text = name;
+                                            var.text_ = name;
                                             varList.Add(var);
 
                                         }
@@ -3011,6 +3011,15 @@
             keyPreview = "";
             keydown = false;
         }
+        /// <summary>
+        /// Quits Playing the Script
+        /// </summary>
+        public static void Quit()
+        {
+            if (!playing) return;
+            playing = false;
+            console.AddText("Build Stopped" + Environment.NewLine, false);
+        }
         private static void SetFont(Control label, string name, int size, FontStyle style)
         {
             Font replacementFont = new Font(name, size, style);
@@ -3057,36 +3066,45 @@
                 console.AddText("Could not find the file: " + file + " \n", true);
             }
         }
-        /*private void Form1_KeyDown(object sender, KeyEventArgs e) //keydown
+        /// <summary>
+        /// Sets the Key Input to the inputted key for the preview keydown
+        /// </summary>
+        public static void KeyInput_PrevDown(PreviewKeyDownEventArgs e)
         {
             keyPreview = e.KeyCode.ToString();
             awaitKeyPreview = e.KeyCode.ToString();
             keydown = true;
         }
-        private void Form1_KeyUp(object sender, KeyEventArgs e) //keyup
-        {
-            keyPreview = "";
-            keydown = false;
-        }
-        private void Space_MouseClick(object sender, MouseEventArgs e)
-        {
-            if (e.Button == MouseButtons.None)
-            {
-                mc = 0;
-            }
-            else if (e.Button == MouseButtons.Left)
-            {
-                mc = 1;
-            }
-            else if (e.Button == MouseButtons.Right)
-            {
-                mc = 2;
-            }
-            else if (e.Button == MouseButtons.Middle)
-            {
-                mc = 3;
-            }
-        }*/
+        /*private void Form1_KeyDown(object sender, KeyEventArgs e) //keydown
+{
+   keyPreview = e.KeyCode.ToString();
+   awaitKeyPreview = e.KeyCode.ToString();
+   keydown = true;
+}
+private void Form1_KeyUp(object sender, KeyEventArgs e) //keyup
+{
+   keyPreview = "";
+   keydown = false;
+}
+private void Space_MouseClick(object sender, MouseEventArgs e)
+{
+   if (e.Button == MouseButtons.None)
+   {
+       mc = 0;
+   }
+   else if (e.Button == MouseButtons.Left)
+   {
+       mc = 1;
+   }
+   else if (e.Button == MouseButtons.Right)
+   {
+       mc = 2;
+   }
+   else if (e.Button == MouseButtons.Middle)
+   {
+       mc = 3;
+   }
+}*/
     }
     public static class ControlExtensions
     {
@@ -3222,7 +3240,7 @@ namespace Variables
     {
         string Name { get; set; }
         float number { get; set; }
-        string text { get; set; }
+        string text_ { get; set; }
         bool isSet { get; set; }
         void set(string value);
         void change(string middle, string multiplier);
@@ -3234,7 +3252,7 @@ namespace Variables
     {
         public string Name { get; set; }
         public float number { get; set; }
-        public string text { get; set; }
+        public string text_ { get; set; }
         public bool isSet { get; set; }
 
         string StringStandered = "IF YOU GET THIS. IT IS AN ERROR MESSAGE - (23dsffdsf86dg45b64ytu7578566434654fg4g4fhjd) = just some random text";
@@ -3244,7 +3262,7 @@ namespace Variables
         {
             Name = name;
             number = FloatStatendered;
-            text = StringStandered;
+            text_ = StringStandered;
         }
         public void set(string value)
         {
@@ -3254,7 +3272,7 @@ namespace Variables
             }
             catch
             {
-                text = value;
+                text_ = value;
             }
         }
         public void change(string middle, string multiplier)
@@ -3305,11 +3323,11 @@ namespace Variables
                     {
                         case "+":
                             setted = true;
-                            text += value;
+                            text_ += value;
                             break;
                         case "=":
                             setted = true;
-                            text = value;
+                            text_ = value;
                             break;
                         case "-":
                             int v = 0;
@@ -3322,11 +3340,11 @@ namespace Variables
                                 isSet = false;
                                 return;
                             }
-                            for (int i = 0; i < text.Length; i++)
+                            for (int i = 0; i < text_.Length; i++)
                             {
-                                if (i >= text.Length - v)
+                                if (i >= text_.Length - v)
                                 {
-                                    text = text.Remove(i);
+                                    text_ = text_.Remove(i);
                                 }
                             }
                             setted = true;
@@ -3366,7 +3384,7 @@ namespace Variables
             }
             else
             {
-                return text.ToString();
+                return text_.ToString();
             }
         }
 

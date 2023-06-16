@@ -36,5 +36,15 @@ namespace EzCode_API
         {
             API.KeyInput_Up(e);
         }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            API.Quit();
+        }
+
+        private void Form1_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            API.KeyInput_PrevDown(e);
+        }
     }
 }
