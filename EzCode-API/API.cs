@@ -122,6 +122,7 @@
                 await PlayAsync(text);
             }
         }
+
         private static async Task PlayAsync(string text)
         {
             string code = text;
@@ -2991,6 +2992,7 @@
         /// <param name="text"></param>
         public static void ConsoleInput(string text)
         {
+            if (!playing) return;
             senttext = text;
             sent = true;
         }
@@ -2999,6 +3001,7 @@
         /// </summary>
         public static void KeyInput_Down(KeyEventArgs e)
         {
+            if (!playing) return;
             keyPreview = e.KeyCode.ToString();
             awaitKeyPreview = e.KeyCode.ToString();
             keydown = true;
@@ -3008,8 +3011,19 @@
         /// </summary>
         public static void KeyInput_Up(KeyEventArgs e)
         {
+            if (!playing) return;
             keyPreview = "";
             keydown = false;
+        }
+        /// <summary>
+        /// Sets the Key Input to the inputted key for the preview keydown
+        /// </summary>
+        public static void KeyInput_PrevDown(PreviewKeyDownEventArgs e)
+        {
+            if (!playing) return;
+            keyPreview = e.KeyCode.ToString();
+            awaitKeyPreview = e.KeyCode.ToString();
+            keydown = true;
         }
         /// <summary>
         /// Quits Playing the Script
@@ -3066,45 +3080,6 @@
                 console.AddText("Could not find the file: " + file + " \n", true);
             }
         }
-        /// <summary>
-        /// Sets the Key Input to the inputted key for the preview keydown
-        /// </summary>
-        public static void KeyInput_PrevDown(PreviewKeyDownEventArgs e)
-        {
-            keyPreview = e.KeyCode.ToString();
-            awaitKeyPreview = e.KeyCode.ToString();
-            keydown = true;
-        }
-        /*private void Form1_KeyDown(object sender, KeyEventArgs e) //keydown
-{
-   keyPreview = e.KeyCode.ToString();
-   awaitKeyPreview = e.KeyCode.ToString();
-   keydown = true;
-}
-private void Form1_KeyUp(object sender, KeyEventArgs e) //keyup
-{
-   keyPreview = "";
-   keydown = false;
-}
-private void Space_MouseClick(object sender, MouseEventArgs e)
-{
-   if (e.Button == MouseButtons.None)
-   {
-       mc = 0;
-   }
-   else if (e.Button == MouseButtons.Left)
-   {
-       mc = 1;
-   }
-   else if (e.Button == MouseButtons.Right)
-   {
-       mc = 2;
-   }
-   else if (e.Button == MouseButtons.Middle)
-   {
-       mc = 3;
-   }
-}*/
     }
     public static class ControlExtensions
     {

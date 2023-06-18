@@ -1410,6 +1410,15 @@ namespace ezCode
 
                                 vars.Add(var);
                             }
+                            else if (value == "KeyDown")
+                            {
+                                // Create the variable with the user's input as the value
+                                Var var = new Var(name);
+                                var.set(keydown == false ? "0" : "1");
+                                var.isSet = true;
+
+                                vars.Add(var);
+                            }
                             else if (value == "AwaitKeyInput")
                             {
                                 float qq = 0;
@@ -1635,6 +1644,15 @@ namespace ezCode
                                 // Reset the "sent" flag
                                 sent = false;
                                 senttext = string.Empty;
+                            }
+                            else if (value == "KeyDown")
+                            {
+                                // Create the variable with the user's input as the value
+                                Var var = new Var(name);
+                                var.set(keydown == false ? "0" : "1");
+                                var.isSet = true;
+
+                                vars.Add(var);
                             }
                             else if (value == "IntersectsWith")
                             {
@@ -1964,6 +1982,12 @@ namespace ezCode
                             {
                                 // Create the variable with the user's input as the value
                                 var.set(keyPreview);
+                                var.isSet = true;
+                            }
+                            else if (value == "KeyDown")
+                            {
+                                // Create the variable with the user's input as the value
+                                var.set(keydown == false ? "0" : "1");
                                 var.isSet = true;
                             }
                             else if (value == "StickyKey")
@@ -3103,35 +3127,96 @@ namespace ezCode
                                 return;
                             }
 
-                            if (!var.isNumber())
+                            if (mid == "input")
                             {
-                                var.stringChange(value, mid);
-
-                                if (!var.isSet)
+                                if (value == "Console")
                                 {
-                                    console.AddText("Their was an error with '" + name + "' the called variable is not a number and cannot be divided or subtracted. Line " + codeLine + " \n", true);
-                                    return;
+                                    // Wait for the user to press the "Send" button
+                                    float qq = 0;
+                                    while (!sent)
+                                    {
+                                        qq += .1f;
+                                        //console.AddText("waiting for console input in line " + codeLine + ": " + qq + Environment.NewLine);
+                                        await Task.Delay(100);
+                                    }
+
+                                    // Create the variable with the user's input as the value
+                                    var.set(senttext);
+                                    var.isSet = true;
+
+                                    // Reset the "sent" flag
+                                    sent = false;
+                                    senttext = string.Empty;
+                                }
+                                else if (value == "Key")
+                                {
+                                    // Create the variable with the user's input as the value
+                                    var.set(keyPreview);
+                                    var.isSet = true;
+                                }
+                                else if (value == "KeyDown")
+                                {
+                                    // Create the variable with the user's input as the value
+                                    var.set(keydown == false ? "0" : "1");
+                                    var.isSet = true;
+                                }
+                                else if (value == "StickyKey")
+                                {
+                                    // Create the variable with the user's input as the value
+                                    var.set(awaitKeyPreview);
+                                    var.isSet = true;
+                                }
+                                else if (value == "AwaitKey")
+                                {
+                                    float qq = 0;
+                                    while (!keydown)
+                                    {
+                                        qq += .1f;
+                                        //console.AddText("waiting for key input in line " + codeLine + ": " + qq + Environment.NewLine);
+                                        await Task.Delay(100);
+                                    }
+
+                                    // Create the variable with the user's input as the value
+                                    var.set(keyPreview);
+                                    var.isSet = true;
+                                    keydown = false;
+                                }
+                                else
+                                {
+                                    console.AddText("There was an error with 'varInput' Line " + codeLine + " \n", true);
                                 }
                             }
                             else
                             {
-                                var.change(mid, value);
-
-                                if (!var.isSet)
+                                if (!var.isNumber())
                                 {
-                                    console.AddText("Their was an error with 'varSet' in line " + codeLine + " \n", true);
-                                    return;
+                                    var.stringChange(value, mid);
+
+                                    if (!var.isSet)
+                                    {
+                                        console.AddText("Their was an error with '" + name + "' the called variable is not a number and cannot be divided or subtracted. Line " + codeLine + " \n", true);
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    var.change(mid, value);
+
+                                    if (!var.isSet)
+                                    {
+                                        console.AddText("Their was an error with 'varSet' in line " + codeLine + " \n", true);
+                                        return;
+                                    }
+                                }
+
+                                for (int k = 0; k < vars.Count; k++)
+                                {
+                                    if (vars[k].Name == var.Name)
+                                    {
+                                        vars[k] = var;
+                                    }
                                 }
                             }
-
-                            for (int k = 0; k < vars.Count; k++)
-                            {
-                                if (vars[k].Name == var.Name)
-                                {
-                                    vars[k] = var;
-                                }
-                            }
-
                         }
                         catch
                         {
@@ -3646,7 +3731,7 @@ namespace ezCode
         {
             OpenFileDialog openFileDialog = new OpenFileDialog();
             openFileDialog.Multiselect = true;
-            openFileDialog.Filter = "Script File (*.ezcode)|*.ezcode|Text File (*.txt)|*.txt|All Files (*.*)|*.*";
+            openFileDialog.Filter = "All Files (*.*)|*.*|Script File (*.ezcode)|*.ezcode|Text File (*.txt)|*.txt";
             openFileDialog.ShowDialog();
             if (!string.IsNullOrEmpty(openFileDialog.FileName))
             {
@@ -3753,7 +3838,6 @@ namespace ezCode
             {
                 MessageBox.Show("There was an error opening project list");
             }
-
         }
         private void saveProjectListToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -4193,6 +4277,41 @@ Ctrl + Shift + C - Comment Selected";
 
                 }
             }
+        }
+        private void addFolderToListToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            FolderBrowserDialog openFileDialog = new FolderBrowserDialog();
+            openFileDialog.ShowDialog();
+            if (!string.IsNullOrEmpty(openFileDialog.SelectedPath))
+            {
+                List<string> files = Directory.GetFiles(openFileDialog.SelectedPath).ToList();
+                List<Open_File> open_Files = new List<Open_File>();
+                List<string> directories = new List<string>();
+                List<string> names = new List<string>();
+                foreach (string name in files)
+                {
+                    directories.Add(name);
+                }
+                foreach (string name in files)
+                {
+                    string[] _ = name.Split("\\");
+                    names.Add(_[_.Length - 1]);
+                }
+                for (int i = 0; i < names.Count; i++)
+                {
+                    open_Files.Add(new Open_File(names[i], directories[i]));
+                }
+                for (int i = 0; i < open_Files.Count; i++)
+                {
+                    openfiles.Add(open_Files[i]);
+                    listBox1.Items.Add(open_Files[i].Name);
+                }
+            }
+        }
+        private void clearListToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            listBox1.Items.Clear();
+            openfiles.Clear();
         }
     }
     class Open_File

@@ -46,7 +46,9 @@
             this.toolStripMenuItem4 = new System.Windows.Forms.ToolStripDropDownButton();
             this.toolStripMenuItem6 = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem7 = new System.Windows.Forms.ToolStripMenuItem();
+            this.addFolderToListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem9 = new System.Windows.Forms.ToolStripMenuItem();
+            this.clearListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripMenuItem5 = new System.Windows.Forms.ToolStripMenuItem();
             this.openProjectListToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
             this.toolStripTextBox4 = new System.Windows.Forms.ToolStripTextBox();
@@ -196,8 +198,8 @@
             this.txt.Size = new System.Drawing.Size(415, 377);
             this.txt.TabIndex = 0;
             this.txt.Zoom = 100;
+            this.txt.KeyPressed += new System.Windows.Forms.KeyPressEventHandler(this.txt_KeyPress);
             this.txt.KeyDown += new System.Windows.Forms.KeyEventHandler(this.txt_KeyDown);
-            this.txt.KeyPress += new System.Windows.Forms.KeyPressEventHandler(this.txt_KeyPress);
             // 
             // Space
             // 
@@ -316,7 +318,9 @@
             this.toolStripMenuItem4.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
             this.toolStripMenuItem6,
             this.toolStripMenuItem7,
+            this.addFolderToListToolStripMenuItem,
             this.toolStripMenuItem9,
+            this.clearListToolStripMenuItem,
             this.toolStripMenuItem5,
             this.toolStripMenuItem8});
             this.toolStripMenuItem4.Name = "toolStripMenuItem4";
@@ -337,12 +341,26 @@
             this.toolStripMenuItem7.Text = "Save Project List";
             this.toolStripMenuItem7.Click += new System.EventHandler(this.saveProjectListToolStripMenuItem_Click);
             // 
+            // addFolderToListToolStripMenuItem
+            // 
+            this.addFolderToListToolStripMenuItem.Name = "addFolderToListToolStripMenuItem";
+            this.addFolderToListToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.addFolderToListToolStripMenuItem.Text = "Add Folder to List";
+            this.addFolderToListToolStripMenuItem.Click += new System.EventHandler(this.addFolderToListToolStripMenuItem_Click);
+            // 
             // toolStripMenuItem9
             // 
             this.toolStripMenuItem9.Name = "toolStripMenuItem9";
             this.toolStripMenuItem9.Size = new System.Drawing.Size(190, 22);
             this.toolStripMenuItem9.Text = "Remove File From List";
             this.toolStripMenuItem9.Click += new System.EventHandler(this.removeFileFromListToolStripMenuItem_Click);
+            // 
+            // clearListToolStripMenuItem
+            // 
+            this.clearListToolStripMenuItem.Name = "clearListToolStripMenuItem";
+            this.clearListToolStripMenuItem.Size = new System.Drawing.Size(190, 22);
+            this.clearListToolStripMenuItem.Text = "Clear List";
+            this.clearListToolStripMenuItem.Click += new System.EventHandler(this.clearListToolStripMenuItem_Click);
             // 
             // toolStripMenuItem5
             // 
@@ -398,7 +416,7 @@
             // 
             this.debuggerEnabledToolStripMenuItem.Name = "debuggerEnabledToolStripMenuItem";
             this.debuggerEnabledToolStripMenuItem.ShortcutKeyDisplayString = "F10";
-            this.debuggerEnabledToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.debuggerEnabledToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.debuggerEnabledToolStripMenuItem.Text = "Debug";
             this.debuggerEnabledToolStripMenuItem.Click += new System.EventHandler(this.debuggerEnabledToolStripMenuItem_Click);
             // 
@@ -406,7 +424,7 @@
             // 
             this.quitDebuggerToolStripMenuItem.Name = "quitDebuggerToolStripMenuItem";
             this.quitDebuggerToolStripMenuItem.ShortcutKeyDisplayString = "F12";
-            this.quitDebuggerToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.quitDebuggerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.quitDebuggerToolStripMenuItem.Text = "Quit Debugger";
             this.quitDebuggerToolStripMenuItem.Click += new System.EventHandler(this.quitDebuggerToolStripMenuItem_Click);
             // 
@@ -414,7 +432,7 @@
             // 
             this.nextLineToolStripMenuItem.Name = "nextLineToolStripMenuItem";
             this.nextLineToolStripMenuItem.ShortcutKeyDisplayString = "F11";
-            this.nextLineToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.nextLineToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.nextLineToolStripMenuItem.Text = "Next Line";
             this.nextLineToolStripMenuItem.Click += new System.EventHandler(this.nextLineToolStripMenuItem_Click);
             // 
@@ -435,7 +453,7 @@
             // 
             this.playToolStripMenuItem.Name = "playToolStripMenuItem";
             this.playToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl + P";
-            this.playToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
+            this.playToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.playToolStripMenuItem.Text = "Play";
             this.playToolStripMenuItem.Click += new System.EventHandler(this.toolStripButton1_Click);
             // 
@@ -443,14 +461,14 @@
             // 
             this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
             this.stopToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl + Q";
-            this.stopToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
+            this.stopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.stopToolStripMenuItem.Text = "Stop";
             this.stopToolStripMenuItem.Click += new System.EventHandler(this.stopToolStripMenuItem_Click);
             // 
             // playInViewerToolStripMenuItem
             // 
             this.playInViewerToolStripMenuItem.Name = "playInViewerToolStripMenuItem";
-            this.playInViewerToolStripMenuItem.Size = new System.Drawing.Size(147, 22);
+            this.playInViewerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.playInViewerToolStripMenuItem.Text = "Play in Viewer";
             this.playInViewerToolStripMenuItem.Click += new System.EventHandler(this.playInViewerToolStripMenuItem_Click);
             // 
@@ -474,6 +492,7 @@
             this.toolStripMenuItem10.Name = "toolStripMenuItem10";
             this.toolStripMenuItem10.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItem10.Text = "View Docs";
+            this.toolStripMenuItem10.Click += new System.EventHandler(this.viewDocsToolStripMenuItem_Click);
             // 
             // viewDocsToolStripMenuItem
             // 
@@ -1106,5 +1125,7 @@
         private ToolStripMenuItem clearProjectListToolStripMenuItem;
         private ToolStripMenuItem toolStripMenuItem8;
         private ToolStripMenuItem toolStripMenuItem10;
+        private ToolStripMenuItem addFolderToListToolStripMenuItem;
+        private ToolStripMenuItem clearListToolStripMenuItem;
     }
 }
