@@ -4,7 +4,6 @@ using System.Diagnostics;
 using Microsoft.VisualBasic;
 using System.Runtime.InteropServices;
 using System.Data;
-using System.Security.Cryptography;
 
 namespace ezCode
 {
@@ -162,23 +161,29 @@ namespace ezCode
                     // Get the number of times to loop
                     int loopTimes = 0;
                     bool iss = false;
-                    foreach (Var v in vars)
+                    try 
                     {
-                        if (v.Name == part[1])
+                        foreach (Var v in vars)
                         {
-                            try
+                            if (v.Name == part[1])
                             {
-                                iss = true;
-                                loopTimes = int.Parse(v.value());
-                            }
-                            catch
-                            {
-                                console.AddText("An error occured, 'loop' wasn't formatted correctly line " + codeLine + Environment.NewLine, true);
+                                try
+                                {
+                                    iss = true;
+                                    loopTimes = int.Parse(v.value());
+                                }
+                                catch
+                                {
+                                    console.AddText("An error occured, 'loop' wasn't formatted correctly line " + codeLine + Environment.NewLine, true);
+                                }
                             }
                         }
+                        if (!iss) loopTimes = int.Parse(part[1]);
                     }
-                    if (!iss) loopTimes = int.Parse(part[1]);
-
+                    catch
+                    {
+                        console.AddText("An error occured, couldn't get 'loop' value in line " + codeLine + Environment.NewLine, true);
+                    }
                     // Store the loop code in the list
                     loopCode.Clear();
 
@@ -210,18 +215,18 @@ namespace ezCode
                             w = k; //Jump back to the line after the endloop statement
                             hasEnded = true;
                             break; // Break out of the loop
-                        }
-                        if (innerParts[0] == "return____________________________")
+                        }/*
+                        if (innerParts[0] == "return")
                         {
                             w = k; //Jump back to the line after the endloop statement
                             break;
                         }
-                        else if (innerParts[0] == "break___________________________")
+                        else if (innerParts[0] == "break")
                         {
                             breaked = true;
                             w = endl + 1;
                             break; // Break out of the loop
-                        }
+                        }*/
                         else
                         {
                             if (!hasEnded && !breaked) loopCode.Add(lines[k]); // Add the current line to the loop code list
@@ -336,6 +341,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("There was an error with 'print' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -354,6 +360,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'printRaw' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -366,6 +373,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'consoleClear' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -463,6 +471,7 @@ namespace ezCode
                             val = labelText;
                             if (label.AccessibleName == "error" && textBox.AccessibleName == "error")
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a label or txtbox named " + labelName + "\n", true);
                                 return;
                             }
@@ -499,6 +508,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'write' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -536,6 +546,7 @@ namespace ezCode
 
                             if (label.AccessibleName == "error" && textBox.AccessibleName == "error")
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a label or txtbox named " + labelName + "\n", true);
                                 return;
                             }
@@ -550,6 +561,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'write' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -586,6 +598,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'button' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -626,6 +639,7 @@ namespace ezCode
                             }
                             if (!iss)
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a button named " + name + " in line " + codeLine + " \n", true);
                                 return;
                             }
@@ -646,8 +660,9 @@ namespace ezCode
                                 file = directory;
                             }
 
-                            if (!File.Exists(file)) 
+                            if (!File.Exists(file))
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find the file specified in line " + codeLine + ": " + file + " \n", true);
                                 return;
                             }
@@ -658,6 +673,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'buttonClcik' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -692,6 +708,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'textbox' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -722,6 +739,7 @@ namespace ezCode
 
                             if(textBox.AccessibleName == "error")
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a txtbox named " + tb + "\n", true);
                                 return;
                             }
@@ -739,6 +757,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'write' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -795,7 +814,11 @@ namespace ezCode
 
                             GObject go = new GObject(GObject.Type.Square);
 
-                            if (points < 3) console.AddText("A minumum of 3 points required for the object " + name + "\n", true);
+                            if (points < 3)
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                console.AddText("A minumum of 3 points required for the object " + name + "\n", true);
+                            }
                             else if (points == 3) go = new GObject(GObject.Type.Triangle);
                             else if (points == 4) go = new GObject(GObject.Type.Square);
                             else go = new GObject(GObject.Type.Polygon, points);
@@ -812,6 +835,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'object' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -874,6 +898,7 @@ namespace ezCode
 
                             if(go.AccessibleName == "ERROR")
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find an object named '" + name + "' in line " + codeLine + " \n", true);
                                 return;
                             }
@@ -891,11 +916,13 @@ namespace ezCode
                             }
                             catch
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("There was an error reading the image '" + file + "' in line " + codeLine + " \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'object' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -918,6 +945,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'label' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -992,7 +1020,11 @@ namespace ezCode
                                 else if (style == "underline") styl = FontStyle.Underline;
                                 else if (style == "strikeout") styl = FontStyle.Strikeout;
                                 else if (style == "regular") styl = FontStyle.Regular;
-                                else console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                else
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                }
                                 int siz = int.Parse(size);
                                 SetFont(go, name, siz, styl);
                             }
@@ -1053,7 +1085,11 @@ namespace ezCode
                                     else if (style == "underline") styl = FontStyle.Underline;
                                     else if (style == "strikeout") styl = FontStyle.Strikeout;
                                     else if (style == "regular") styl = FontStyle.Regular;
-                                    else console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                    else
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                    }
                                     int siz = int.Parse(size);
                                     SetFont(tb, name, siz, styl);
                                 }
@@ -1114,12 +1150,17 @@ namespace ezCode
                                         else if (style == "underline") styl = FontStyle.Underline;
                                         else if (style == "strikeout") styl = FontStyle.Strikeout;
                                         else if (style == "regular") styl = FontStyle.Regular;
-                                        else console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                        else
+                                        {
+                                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                            console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                        }
                                         int siz = int.Parse(size);
                                         SetFont(b, name, siz, styl);
                                     }
                                     else
                                     {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                         console.AddText("Could not find a label, textbox, or button named " + name + "\n", true);
                                     }
                                 }
@@ -1127,6 +1168,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'font' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -1244,7 +1286,8 @@ namespace ezCode
 
                             }
                             catch
-                            { 
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Their was an error with 'move' the vector was not formatted correctly in line " + codeLine + "\n", true); 
                             }
 
@@ -1327,11 +1370,13 @@ namespace ezCode
                             }
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find an object, label, textbox, or button named " + name + "\n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'move' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -1445,7 +1490,11 @@ namespace ezCode
                                 point = new Point(a, b);
 
                             }
-                            catch { console.AddText("Their was an error with 'scale' the vector was not formatted correctly in line " + codeLine + " \n", true); }
+                            catch
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                console.AddText("Their was an error with 'scale' the vector was not formatted correctly in line " + codeLine + " \n", true);
+                            }
 
                             GObject go = new GObject(GObject.Type.Square);
                             go.AccessibleName = "error";
@@ -1496,6 +1545,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'scale' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -1656,7 +1706,11 @@ namespace ezCode
                                 color = Color.FromArgb((int)a, (int)b, (int)c);
 
                             }
-                            catch { console.AddText("Their was an error with 'color' the rgb color was not formatted correctly in line " + codeLine + "\n", true); }
+                            catch
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                console.AddText("Their was an error with 'color' the rgb color was not formatted correctly in line " + codeLine + "\n", true);
+                            }
 
                             GObject go = new GObject(GObject.Type.Square);
                             go.AccessibleName = "error";
@@ -1726,11 +1780,13 @@ namespace ezCode
                             }
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find an object or label named " + name + "\n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'move' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -1780,6 +1836,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'await' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -1851,16 +1908,19 @@ namespace ezCode
                                 }
                                 if (A.AccessibleName != "" && B.AccessibleName != "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the objects: '" + a + "' and '" + b + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
                                 else if (A.AccessibleName == "" && B.AccessibleName != "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the object: '" + b + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
                                 else if (A.AccessibleName != "" && B.AccessibleName == "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the object: '" + a + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
@@ -1978,6 +2038,7 @@ namespace ezCode
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error with the minumim and maximum of Random in line " + codeLine + " \n", true);
                                 }
 
@@ -2113,6 +2174,7 @@ namespace ezCode
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error reading the file: " + file + " In line " + codeLine + " \n", true);
                                 }
 
@@ -2135,8 +2197,9 @@ namespace ezCode
                                         val = textboxes[j].Text;
                                     }
                                 }
-                                if (!found) 
+                                if (!found)
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find a textbox named " + parts[3] + " In line " + codeLine + " \n", true);
                                     return;
                                 }
@@ -2187,6 +2250,7 @@ namespace ezCode
                                 }
                                 else
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find a list by the inputted name in " + codeLine + " \n", true);
                                 }
                             }
@@ -2231,6 +2295,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("There was an error with 'var' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -2299,16 +2364,19 @@ namespace ezCode
                                 }
                                 if (A.AccessibleName != "" && B.AccessibleName != "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the objects: '" + a + "' and '" + b + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
                                 else if (A.AccessibleName == "" && B.AccessibleName != "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the object: '" + b + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
                                 else if (A.AccessibleName != "" && B.AccessibleName == "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the object: '" + a + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
@@ -2353,6 +2421,7 @@ namespace ezCode
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error with the minumim and maximum: '" + mi + "," + ma + "' in line " + codeLine + " \n", true);
                                 }
 
@@ -2479,6 +2548,7 @@ namespace ezCode
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error reading the file: " + file + " In line " + codeLine + " \n", true);
                                 }
 
@@ -2527,6 +2597,7 @@ namespace ezCode
                                 }
                                 else
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find a list by the inputted name in " + codeLine + " \n", true);
                                 }
                             }
@@ -2542,6 +2613,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("There was an error with 'var' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -2565,6 +2637,7 @@ namespace ezCode
                             }
                             if (!var.isSet)
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a variable named '" + name + "' in line " + codeLine + "\n", true);
                                 return;
                             }
@@ -2676,11 +2749,13 @@ namespace ezCode
                             }*/
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("There was an error with 'varInput' Line " + codeLine + " \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("There was an error with 'varInput' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -2792,6 +2867,7 @@ namespace ezCode
                             }
                             if (!var.isSet)
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a variable named '" + name + "' in line " + codeLine + "\n", true);
                                 return;
                             }
@@ -2833,6 +2909,7 @@ namespace ezCode
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error reading the file: " + file + " In line " + codeLine + " \n", true);
                                 }
 
@@ -2852,6 +2929,7 @@ namespace ezCode
                                 }
                                 if (!found)
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find a textbox named " + parts[3] + " In line " + codeLine + " \n", true);
                                     return;
                                 }
@@ -2884,16 +2962,19 @@ namespace ezCode
                                 }
                                 if (A.AccessibleName != "" && B.AccessibleName != "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the objects: '" + a + "' and '" + b + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
                                 else if (A.AccessibleName == "" && B.AccessibleName != "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the object: '" + b + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
                                 else if (A.AccessibleName != "" && B.AccessibleName == "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the object: '" + a + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
@@ -2945,6 +3026,7 @@ namespace ezCode
                                 }
                                 else
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find a list by the inputted name in " + codeLine + " \n", true);
                                 }
                             }
@@ -3045,6 +3127,7 @@ namespace ezCode
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error with the minumim and maximum of Random in line " + codeLine + " \n", true);
                                 }
 
@@ -3065,6 +3148,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -3177,6 +3261,7 @@ namespace ezCode
                                         }
                                         else if (ended == 1)
                                         {
+                                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                             console.AddText("Syntax error in line " + codeLine + ". Expected ')' to end equation \n", true);
                                         }
                                         values[j] = values[j].Replace(@"\n", Environment.NewLine);
@@ -3231,6 +3316,7 @@ namespace ezCode
                                 }
                                 else
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Their was an error in line " + codeLine + ". Expected ':' to initiate values in the list \n", true);
                                 }
                             }
@@ -3313,11 +3399,13 @@ namespace ezCode
                             }
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Their was an error in line " + codeLine + ". Expected 'new', 'add', 'equals', or 'clear' after 'list' \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -3363,6 +3451,7 @@ namespace ezCode
                                 }
                                 else
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Their was an error in line " + codeLine + ". Expected ':' to initiate values in the list \n", true);
                                 }
                             }
@@ -3424,11 +3513,13 @@ namespace ezCode
                             }
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Their was an error in line " + codeLine + " \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -3488,11 +3579,13 @@ namespace ezCode
                             }
                             catch
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("There was an error writing the file: " + file + " In line " + codeLine + " \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -3534,6 +3627,7 @@ namespace ezCode
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error playing the sound: " + file + " In line " + codeLine + " \n", true);
                                 }
                             }
@@ -3580,12 +3674,14 @@ namespace ezCode
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error with setting the volume in 'sound' in line " + codeLine + " \n", true);
                                 }
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -3601,6 +3697,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -3640,24 +3737,38 @@ namespace ezCode
                             string play = string.Empty;
 
                             try { play = File.ReadAllText(file); }
-                            catch { console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true); }
+                            catch
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true);
+                            }
                             if (awaits == "now") 
                             {
                                 try { PlayAsync(play); }
-                                catch { console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true); }
+                                catch
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true);
+                                }
                             } 
                             else if (awaits == "await") 
                             {
                                 try { await PlayAsync(play); }
-                                catch { console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true); }
+                                catch
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true);
+                                }
                             }
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Their was an error with 'playFile' in line " + codeLine + " \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -3804,11 +3915,13 @@ namespace ezCode
                             }
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("The if statement was not formatted correctly in line " + codeLine + " \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -3909,6 +4022,7 @@ namespace ezCode
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Their was an error with 'if' expected '=', '!', '>', or '<' " + codeLine + "\n", true);
                                 }
                                 string va = "";
@@ -3976,8 +4090,9 @@ namespace ezCode
                                 }
 
                             }
-                            catch 
-                            { 
+                            catch
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Their was an error with 'if' the values were not formatted correctly in line " + codeLine + "\n", true); 
                             }
 
@@ -3995,14 +4110,87 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
                     } // if value1 mid value2 : stuff || mid is =,!,>,<
                     else if (parts[i].Contains("//"))
                     { } // // comment text
+                    else if (parts[i] == "#" || parts[i] == "#create")
+                    {
+                        try
+                        {
+                            if (parts[i] == "#")
+                            {
+
+                                if (parts[1] == "create" && parts[2] == "error")
+                                {
+                                    try
+                                    {
+                                        string text = "";
+                                        for (int j = 3; j < parts.Count; j++)
+                                        {
+                                            text += parts[j];
+                                            if (j < parts.Count - 1) text += " ";
+                                        }
+                                        if (text == "") int.Parse("jj");
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText(text + ". In line " + codeLine + " \n", true);
+                                    }
+                                    catch
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Error in line " + codeLine + " \n", true);
+                                    }
+                                }
+                                else
+                                {
+                                    int.Parse("jj");
+                                }
+                            }
+                            if (parts[i] == "#create")
+                            {
+
+                                if (parts[1] == "error")
+                                {
+                                    try
+                                    {
+                                        string text = "";
+                                        for (int j = 2; j < parts.Count; j++)
+                                        {
+                                            text += parts[j];
+                                            if (j < parts.Count - 1) text += " ";
+                                        }
+                                        if (text == "") int.Parse("jj");
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText(text + ". In line " + codeLine + " \n", true);
+                                    }
+                                    catch
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Error in line " + codeLine + " \n", true);
+                                    }
+                                }
+                                else
+                                {
+                                    int.Parse("jj");
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                            console.AddText("Their was an error with '# create error' in line " + codeLine + " \n", true);
+                            return;
+                        }
+                    }// # create error errorText
                     else
                     {
+                        if (parts[i] == "#" || parts[i] == "#create" || parts[i] == "#suppress")
+                        {
+                            return;
+                        }
                         if (parts[i].Trim() == "") return;
                         //console.AddText("There is no function named '" + parts[i] + "' in line " + codeLine + Environment.NewLine);
                         try
@@ -4031,6 +4219,7 @@ namespace ezCode
 
                             if (!var.isSet)
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a variable named '" + name + "' in line " + codeLine + "\n", true);
                                 return;
                             }
@@ -4091,6 +4280,7 @@ namespace ezCode
                                 }
                                 else
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error with 'varInput' Line " + codeLine + " \n", true);
                                 }
                             }
@@ -4132,6 +4322,7 @@ namespace ezCode
                                     }
                                     catch
                                     {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                         console.AddText("There was an error reading the file: " + file + " In line " + codeLine + " \n", true);
                                     }
 
@@ -4151,6 +4342,7 @@ namespace ezCode
                                     }
                                     if (!found)
                                     {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                         console.AddText("Could not find a textbox named " + parts[3] + " In line " + codeLine + " \n", true);
                                         return;
                                     }
@@ -4183,16 +4375,19 @@ namespace ezCode
                                     }
                                     if (A.AccessibleName != "" && B.AccessibleName != "")
                                     {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                         console.AddText("Could not find the objects: '" + a + "' and '" + b + "' in line " + codeLine + " \n", true);
                                         return;
                                     }
                                     else if (A.AccessibleName == "" && B.AccessibleName != "")
                                     {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                         console.AddText("Could not find the object: '" + b + "' in line " + codeLine + " \n", true);
                                         return;
                                     }
                                     else if (A.AccessibleName != "" && B.AccessibleName == "")
                                     {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                         console.AddText("Could not find the object: '" + a + "' in line " + codeLine + " \n", true);
                                         return;
                                     }
@@ -4244,6 +4439,7 @@ namespace ezCode
                                     }
                                     else
                                     {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                         console.AddText("Could not find a list by the inputted name in " + codeLine + " \n", true);
                                     }
                                 }
@@ -4384,6 +4580,7 @@ namespace ezCode
 
                                     if (!var.isSet)
                                     {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                         console.AddText("Their was an error with '" + name + "' the called variable is not a number and cannot be divided or subtracted. Line " + codeLine + " \n", true);
                                         return;
                                     }
@@ -4394,6 +4591,7 @@ namespace ezCode
 
                                     if (!var.isSet)
                                     {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                         console.AddText("Their was an error with 'varSet' in line " + codeLine + " \n", true);
                                         return;
                                     }
@@ -4410,6 +4608,7 @@ namespace ezCode
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -4707,7 +4906,7 @@ namespace ezCode
                 if (keyData == (Keys.Control | Keys.S))
                 {
                     // Save the current text
-                    Save(false);
+                    saveToolStripMenuItem.PerformClick();
                 }
                 else if (keyData == (Keys.Control | Keys.Z))
                 {
@@ -4964,7 +5163,16 @@ namespace ezCode
         {
             saved = false;
 
-            if(_File != "NOTHING" && autosave)
+            try
+            {
+                if (txt.Text == File.ReadAllText(_File)) saved = true;
+            }
+            catch
+            {
+                saved = false;
+            }
+
+            if (_File != "NOTHING" && autosave)
             {
                 Save(true);
                 saved = true;
@@ -4979,6 +5187,15 @@ namespace ezCode
         private void txt_KeyDown(object sender, KeyEventArgs e) //typing
         {
             saved = false;
+
+            try
+            {
+                if (txt.Text == File.ReadAllText(_File)) saved = true;
+            }
+            catch
+            {
+                saved = false;
+            }
 
             if (_File != "NOTHING" && autosave)
             {
