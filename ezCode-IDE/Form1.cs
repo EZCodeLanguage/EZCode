@@ -98,6 +98,8 @@ namespace ezCode
             bool breaked = false;
             bool hasEnded = false;
             int endl = 0;
+            int stackNow = 0;
+            int stackBefore = 0;
 
             for (int w = 0; w < lines.Length; w++)
             {
@@ -156,6 +158,7 @@ namespace ezCode
                 string[] part = lines[w].Trim().Split(' ').ToArray();
                 if (part[0] == "loop")
                 {
+                    int stackTotal = 1;
                     hasEnded = false;
                     breaked = false;
                     // Get the number of times to loop
@@ -207,14 +210,26 @@ namespace ezCode
                     for (int k = w + 1; k < lines.Length; k++)
                     {
                         string[] innerParts = lines[k].Split(' ');
-
+                        int st = stackNow;
                         // Check if the current line is an "endloop" statement
-                        if (innerParts[0] == "end")
+                        if (innerParts[0] == "loop")
                         {
-                            endl = w;
-                            w = k; //Jump back to the line after the endloop statement
-                            hasEnded = true;
-                            break; // Break out of the loop
+                            //stackTotal++;
+                        }
+                        else if (innerParts[0] == "if" && innerParts[innerParts.Length - 1] == ":")
+                        {
+                            //stackTotal++;
+                        }
+                        else if (innerParts[0] == "end")
+                        {
+                            //st++;
+                            if (/*st == stackTotal*/ true)
+                            {
+                                endl = w;
+                                w = k; //Jump back to the line after the endloop statement
+                                hasEnded = true;
+                                break; // Break out of the loop
+                            }
                         }/*
                         if (innerParts[0] == "return")
                         {
@@ -1875,6 +1890,7 @@ namespace ezCode
                                 Var var = new Var(name);
                                 var.set(senttext);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
 
@@ -1938,6 +1954,7 @@ namespace ezCode
                                 Var var = new Var(name);
                                 var.set(intersects);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -2048,6 +2065,7 @@ namespace ezCode
                                 Var var = new Var(name);
                                 var.set(rnd.ToString());
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -2057,6 +2075,7 @@ namespace ezCode
                                 Var var = new Var(name);
                                 var.set(keyPreview);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -2066,6 +2085,7 @@ namespace ezCode
                                 Var var = new Var(name);
                                 var.set(keydown == false ? "0" : "1");
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -2083,6 +2103,7 @@ namespace ezCode
                                 Var var = new Var(name);
                                 var.set(keyPreview);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -2182,6 +2203,7 @@ namespace ezCode
                                 Var var = new Var(name);
                                 var.set(val);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -2208,6 +2230,7 @@ namespace ezCode
                                 Var var = new Var(name);
                                 var.set(val);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -2245,6 +2268,7 @@ namespace ezCode
                                     Var var = new Var(name);
                                     var.set(list[numberValue].value());
                                     var.isSet = true;
+                                    var.stack = stackNow;
 
                                     vars.Add(var);
                                 }
@@ -2289,6 +2313,7 @@ namespace ezCode
                                 Var var = new Var(name);
                                 var.set(value);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }

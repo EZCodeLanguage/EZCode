@@ -14,6 +14,7 @@ namespace ezCode
         float number { get; set; }
         string text { get; set; }
         bool isSet { get; set; }
+        int stack { get; set; }
         void set(string value);
         void change(string middle, string multiplier);
         void stringChange(string adds, string mid);
@@ -25,6 +26,7 @@ namespace ezCode
         public string Name { get; set; }
         public float number { get; set; }
         public string text { get; set; }
+        public int stack { get; set; }
         public bool isSet { get; set; }
 
         string StringStandered = "IF YOU GET THIS. IT IS AN ERROR MESSAGE - (23dsffdsf86dg45b64ytu7578566434654fg4g4fhjd) = just some random text";
