@@ -1,13 +1,32 @@
-﻿namespace EzCode_API
+﻿using System.Globalization;
+
+namespace EzCode_API
 {
     using NAudio.Wave;
     using Objects;
+    using System.Data;
     using Variables;
     /// <summary>
     /// API for Ezcode programming language
     /// </summary>
     public static class API
     {
+        /// <summary>
+        /// enum for modifiers
+        /// </summary>
+        public enum multimids
+        {
+            plus,
+            minus,
+            add,
+            subtract,
+            multiply,
+            divide,
+            equals,
+            greater,
+            less,
+            not
+        }
         /// <summary>
         /// Directory of the script playing
         /// </summary>
@@ -133,6 +152,8 @@
             bool breaked = false;
             bool hasEnded = false;
             int endl = 0;
+            int stackNow = 0;
+            int stackBefore = 0;
 
             for (int w = 0; w < lines.Length; w++)
             {
@@ -141,26 +162,35 @@
                 string[] part = lines[w].Trim().Split(' ').ToArray();
                 if (part[0] == "loop")
                 {
+                    int stackTotal = 1;
+                    hasEnded = false;
+                    breaked = false;
                     // Get the number of times to loop
                     int loopTimes = 0;
                     bool iss = false;
-                    foreach (Var v in vars)
+                    try
                     {
-                        if (v.Name == part[1])
+                        foreach (Var v in vars)
                         {
-                            try
+                            if (v.Name == part[1])
                             {
-                                iss = true;
-                                loopTimes = int.Parse(v.value());
-                            }
-                            catch
-                            {
-                                console.AddText("An error occured, 'loop' wasn't formatted correctly line " + codeLine + Environment.NewLine, true);
+                                try
+                                {
+                                    iss = true;
+                                    loopTimes = int.Parse(v.value());
+                                }
+                                catch
+                                {
+                                    console.AddText("An error occured, 'loop' wasn't formatted correctly line " + codeLine + Environment.NewLine, true);
+                                }
                             }
                         }
+                        if (!iss) loopTimes = int.Parse(part[1]);
                     }
-                    if (!iss) loopTimes = int.Parse(part[1]);
-
+                    catch
+                    {
+                        console.AddText("An error occured, couldn't get 'loop' value in line " + codeLine + Environment.NewLine, true);
+                    }
                     // Store the loop code in the list
                     loopCode.Clear();
 
@@ -170,7 +200,7 @@
                     {
                         if (lines[k].Trim() == "end")
                         {
-                            endl = k + 1;
+                            if (!containsEnd) endl = k + 1;
                             containsEnd = true;
                         }
                     }
@@ -184,26 +214,38 @@
                     for (int k = w + 1; k < lines.Length; k++)
                     {
                         string[] innerParts = lines[k].Split(' ');
-
+                        int st = stackNow;
                         // Check if the current line is an "endloop" statement
-                        if (innerParts[0] == "end")
+                        if (innerParts[0] == "loop")
                         {
-                            endl = w;
-                            w = k; //Jump back to the line after the endloop statement
-                            hasEnded = true;
-                            break; // Break out of the loop
+                            //stackTotal++;
                         }
-                        if (innerParts[0] == "return____________________________")
+                        else if (innerParts[0] == "if" && innerParts[innerParts.Length - 1] == ":")
+                        {
+                            //stackTotal++;
+                        }
+                        else if (innerParts[0] == "end")
+                        {
+                            //st++;
+                            if (/*st == stackTotal*/ true)
+                            {
+                                endl = w;
+                                w = k; //Jump back to the line after the endloop statement
+                                hasEnded = true;
+                                break; // Break out of the loop
+                            }
+                        }/*
+                        if (innerParts[0] == "return")
                         {
                             w = k; //Jump back to the line after the endloop statement
                             break;
                         }
-                        else if (innerParts[0] == "break___________________________")
+                        else if (innerParts[0] == "break")
                         {
                             breaked = true;
                             w = endl + 1;
                             break; // Break out of the loop
-                        }
+                        }*/
                         else
                         {
                             if (!hasEnded && !breaked) loopCode.Add(lines[k]); // Add the current line to the loop code list
@@ -234,20 +276,74 @@
                     {
                         try
                         {
-                            string text = parts[i + 1];
+                            string text = "";
+                            for (int j = 1; j < parts.Count; j++)
+                            {
+                                text += parts[j];
+                                if (j < parts.Count - 1) text += " ";
+                            }
+
                             bool isVar = false;
                             string val = text;
+                            List<string> texts = text.Split(" ").ToList();
+                            int ended = 0;
+                            string brackets = "";
+                            int started = 0;
+                            int count = 0;
 
-                            for (int j = 0; j < vars.Count; j++)
+                            for (int j = 0; j < texts.Count; j++)
                             {
-                                if (vars[j].Name == text)
+                                for (int k = 0; k < vars.Count; k++)
                                 {
-                                    isVar = true;
-                                    text = vars[j].value();
-                                    console.AddText(text + Environment.NewLine, false);
-
+                                    if (vars[k].Name == texts[j])
+                                    {
+                                        isVar = true;
+                                        texts[j] = vars[k].value();
+                                    }
+                                }
+                                if (texts[j].StartsWith(@"\("))
+                                {
+                                    ended = 1;
+                                    count = 1;
+                                    started = j;
+                                    for (int l = j; l < texts.Count; l++)
+                                    {
+                                        if (ended == 1)
+                                        {
+                                            count++;
+                                            brackets += texts[l];
+                                            if (l < texts.Count - 1) brackets += " ";
+                                        }
+                                        if (texts[l].EndsWith(@")\"))
+                                        {
+                                            ended = 2;
+                                        }
+                                    }
                                 }
                             }
+                            if (ended != 0)
+                            {
+                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                string result = SolveEquation(equation);
+                                texts[started] = result;
+
+                                int endIndex = started + count;
+                                if (endIndex < texts.Count)
+                                {
+                                    texts.RemoveRange(started + 1, count - 2);
+                                }
+                                else
+                                {
+                                    texts.RemoveRange(started + 1, texts.Count - (started + 1));
+                                }
+                            }
+                            text = "";
+                            for (int j = 0; j < texts.Count; j++)
+                            {
+                                text += texts[j];
+                                if (j < texts.Count - 1) text += " ";
+                            }
+                            val = text;
 
                             if (!isVar)
                             {
@@ -258,10 +354,15 @@
                                 console.AddText(val + Environment.NewLine, false);
                                 return;
                             }
+                            else
+                            {
+                                console.AddText(text + Environment.NewLine, false);
+                            }
                         }
                         catch
                         {
-                            console.AddText("Their was an error with 'print' in line " + codeLine + " \n", true);
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                            console.AddText("There was an error with 'print' in line " + codeLine + " \n", true);
                             return;
                         }
                     } // print text
@@ -279,6 +380,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'printRaw' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -291,6 +393,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'consoleClear' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -300,7 +403,12 @@
                         try
                         {
                             string labelName = parts[i + 1];
-                            string labelText = parts[i + 2];
+                            string labelText = "";
+                            for (int j = 2; j < parts.Count; j++)
+                            {
+                                labelText += parts[j];
+                                if (j < parts.Count - 1) labelText += " ";
+                            }
                             string val = labelText;
                             Label label = new Label();
                             label.AccessibleName = "error";
@@ -321,17 +429,69 @@
                                 }
                             }
                             bool isvar = false;
-                            for (int j = 0; j < vars.Count; j++)
+
+                            List<string> texts = labelText.Split(" ").ToList();
+                            int ended = 0;
+                            string brackets = "";
+                            int started = 0;
+                            int count = 0;
+
+                            for (int j = 0; j < texts.Count; j++)
                             {
-                                if (vars[j].Name == labelText)
+                                for (int k = 0; k < vars.Count; k++)
                                 {
-                                    isvar = true;
-                                    labelText = vars[j].value();
+                                    if (vars[k].Name == texts[j])
+                                    {
+                                        isvar = true;
+                                        texts[j] = vars[k].value();
+                                    }
+                                }
+                                if (texts[j].StartsWith(@"\("))
+                                {
+                                    ended = 1;
+                                    count = 1;
+                                    started = j;
+                                    for (int l = j; l < texts.Count; l++)
+                                    {
+                                        if (ended == 1)
+                                        {
+                                            count++;
+                                            brackets += texts[l];
+                                            if (l < texts.Count - 1) brackets += " ";
+                                        }
+                                        if (texts[l].EndsWith(@")\"))
+                                        {
+                                            ended = 2;
+                                        }
+                                    }
                                 }
                             }
+                            if (ended != 0)
+                            {
+                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                string result = SolveEquation(equation);
+                                texts[started] = result;
 
+                                int endIndex = started + count;
+                                if (endIndex < texts.Count)
+                                {
+                                    texts.RemoveRange(started + 1, count - 2);
+                                }
+                                else
+                                {
+                                    texts.RemoveRange(started + 1, texts.Count - (started + 1));
+                                }
+                            }
+                            labelText = "";
+                            for (int j = 0; j < texts.Count; j++)
+                            {
+                                labelText += texts[j];
+                                if (j < texts.Count - 1) labelText += " ";
+                            }
+                            val = labelText;
                             if (label.AccessibleName == "error" && textBox.AccessibleName == "error")
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a label or txtbox named " + labelName + "\n", true);
                                 return;
                             }
@@ -368,6 +528,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'write' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -405,6 +566,7 @@
 
                             if (label.AccessibleName == "error" && textBox.AccessibleName == "error")
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a label or txtbox named " + labelName + "\n", true);
                                 return;
                             }
@@ -419,6 +581,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'write' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -455,6 +618,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'button' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -495,6 +659,7 @@
                             }
                             if (!iss)
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a button named " + name + " in line " + codeLine + " \n", true);
                                 return;
                             }
@@ -517,6 +682,7 @@
 
                             if (!File.Exists(file))
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find the file specified in line " + codeLine + ": " + file + " \n", true);
                                 return;
                             }
@@ -527,6 +693,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'buttonClcik' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -561,6 +728,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'textbox' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -591,6 +759,7 @@
 
                             if (textBox.AccessibleName == "error")
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a txtbox named " + tb + "\n", true);
                                 return;
                             }
@@ -608,6 +777,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'write' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -628,11 +798,47 @@
                                     isVar = true;
                                 }
                             }
-                            if (!isVar) points = Convert.ToInt16(parts[i + 2]);
+                            string brackets = "";
+                            int ended = 0;
+                            if (parts[2].StartsWith(@"("))
+                            {
+                                ended = 1;
+                                List<string> texts = new List<string>();
+                                for (int l = 2; l < parts.Count; l++)
+                                {
+                                    texts.Add(parts[l]);
+                                }
+                                for (int l = 0; l < texts.Count; l++)
+                                {
+                                    if (ended == 1)
+                                    {
+                                        brackets += texts[l];
+                                        if (l < texts.Count - 1) brackets += " ";
+                                    }
+                                    if (texts[l].EndsWith(@")"))
+                                    {
+                                        ended = 2;
+                                    }
+                                }
+                            }
+                            if (ended != 0)
+                            {
+                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                string result = SolveEquation(equation);
+                                points = (int)float.Parse(result);
+                            }
+                            else
+                            {
+                                if (!isVar) points = Convert.ToInt16(parts[i + 2]);
+                            }
 
                             GObject go = new GObject(GObject.Type.Square);
 
-                            if (points < 3) console.AddText("A minumum of 3 points required for the object " + name + "\n", true);
+                            if (points < 3)
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                console.AddText("A minumum of 3 points required for the object " + name + "\n", true);
+                            }
                             else if (points == 3) go = new GObject(GObject.Type.Triangle);
                             else if (points == 4) go = new GObject(GObject.Type.Square);
                             else go = new GObject(GObject.Type.Polygon, points);
@@ -649,6 +855,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'object' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -711,6 +918,7 @@
 
                             if (go.AccessibleName == "ERROR")
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find an object named '" + name + "' in line " + codeLine + " \n", true);
                                 return;
                             }
@@ -724,15 +932,17 @@
                                 else if (type == "tile") imageLayout = ImageLayout.Tile;
                                 else if (type == "stretch") imageLayout = ImageLayout.Stretch;
                                 go.BackgroundImageLayout = imageLayout;
-                                go.BackgroundImage = Image.FromFile(file);
+                                go.BackgroundImage = System.Drawing.Image.FromFile(file);
                             }
                             catch
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("There was an error reading the image '" + file + "' in line " + codeLine + " \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'object' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -755,6 +965,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'label' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -766,6 +977,13 @@
                             string name = parts[i + 1];
                             string style = parts[i + 2];
                             string size = parts[i + 3];
+                            string brackets = "";
+                            int ended = 0;
+                            List<string> texts = new List<string>();
+                            for (int l = 3; l < parts.Count; l++)
+                            {
+                                texts.Add(parts[l]);
+                            }
 
                             Label go = new Label();
                             go.AccessibleName = "error";
@@ -794,13 +1012,39 @@
                                         size = vars[j].value();
                                     }
                                 }
+                                if (size.StartsWith(@"("))
+                                {
+                                    ended = 1;
+                                    for (int l = 0; l < texts.Count; l++)
+                                    {
+                                        if (ended == 1)
+                                        {
+                                            brackets += texts[l];
+                                            if (l < texts.Count - 1) brackets += " ";
+                                        }
+                                        if (texts[l].EndsWith(@")"))
+                                        {
+                                            ended = 2;
+                                        }
+                                    }
+                                }
+                                if (ended != 0)
+                                {
+                                    string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                    string result = SolveEquation(equation);
+                                    size = result;
+                                }
                                 FontStyle styl = new FontStyle();
                                 if (style == "bold") styl = FontStyle.Bold;
                                 else if (style == "italic") styl = FontStyle.Italic;
                                 else if (style == "underline") styl = FontStyle.Underline;
                                 else if (style == "strikeout") styl = FontStyle.Strikeout;
                                 else if (style == "regular") styl = FontStyle.Regular;
-                                else console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                else
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                }
                                 int siz = int.Parse(size);
                                 SetFont(go, name, siz, styl);
                             }
@@ -833,13 +1077,39 @@
                                             size = vars[j].value();
                                         }
                                     }
+                                    if (size.StartsWith(@"("))
+                                    {
+                                        ended = 1;
+                                        for (int l = 0; l < texts.Count; l++)
+                                        {
+                                            if (ended == 1)
+                                            {
+                                                brackets += texts[l];
+                                                if (l < texts.Count - 1) brackets += " ";
+                                            }
+                                            if (texts[l].EndsWith(@")"))
+                                            {
+                                                ended = 2;
+                                            }
+                                        }
+                                    }
+                                    if (ended != 0)
+                                    {
+                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                        string result = SolveEquation(equation);
+                                        size = result;
+                                    }
                                     FontStyle styl = new FontStyle();
                                     if (style == "bold") styl = FontStyle.Bold;
                                     else if (style == "italic") styl = FontStyle.Italic;
                                     else if (style == "underline") styl = FontStyle.Underline;
                                     else if (style == "strikeout") styl = FontStyle.Strikeout;
                                     else if (style == "regular") styl = FontStyle.Regular;
-                                    else console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                    else
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                    }
                                     int siz = int.Parse(size);
                                     SetFont(tb, name, siz, styl);
                                 }
@@ -872,18 +1142,45 @@
                                                 size = vars[j].value();
                                             }
                                         }
+                                        if (size.StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < texts.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += texts[l];
+                                                    if (l < texts.Count - 1) brackets += " ";
+                                                }
+                                                if (texts[l].EndsWith(@")"))
+                                                {
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            size = result;
+                                        }
                                         FontStyle styl = new FontStyle();
                                         if (style == "bold") styl = FontStyle.Bold;
                                         else if (style == "italic") styl = FontStyle.Italic;
                                         else if (style == "underline") styl = FontStyle.Underline;
                                         else if (style == "strikeout") styl = FontStyle.Strikeout;
                                         else if (style == "regular") styl = FontStyle.Regular;
-                                        else console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                        else
+                                        {
+                                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                            console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                        }
                                         int siz = int.Parse(size);
                                         SetFont(b, name, siz, styl);
                                     }
                                     else
                                     {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                         console.AddText("Could not find a label, textbox, or button named " + name + "\n", true);
                                     }
                                 }
@@ -891,6 +1188,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'font' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -901,6 +1199,14 @@
                         {
                             string name = parts[i + 1];
                             Point point = new Point(0, 0);
+                            string brackets = "";
+                            int ended = 0;
+                            int endindex = 0;
+                            List<string> textsA = new List<string>();
+                            for (int l = 2; l < parts.Count; l++)
+                            {
+                                textsA.Add(parts[l]);
+                            }
                             bool aV = false, bV = false;
                             try
                             {
@@ -924,17 +1230,86 @@
                                 }
                                 if (!aV)
                                 {
-                                    a = Convert.ToInt16(parts[i + 2]);
+                                    try
+                                    {
+                                        a = Convert.ToInt16(parts[i + 2]);
+                                    }
+                                    catch
+                                    {
+                                        if (parts[2].StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsA.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsA[l];
+                                                    if (l < textsA.Count - 1) brackets += " ";
+                                                }
+                                                if (textsA[l].EndsWith(@")"))
+                                                {
+                                                    if (endindex == 0) endindex = l;
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            a = (int)float.Parse(result);
+                                        }
+                                    }
                                 }
                                 if (!bV)
                                 {
-                                    b = Convert.ToInt16(parts[i + 3]);
+                                    try
+                                    {
+                                        b = Convert.ToInt16(textsA[endindex + 1]);
+                                    }
+                                    catch
+                                    {
+                                        string newended = textsA[endindex + 1];
+                                        List<string> textsB = new List<string>();
+                                        for (int l = endindex + 1; l < textsA.Count; l++)
+                                        {
+                                            textsB.Add(textsA[l]);
+                                        }
+                                        ended = 0;
+                                        brackets = "";
+                                        if (newended.StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsB.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsB[l];
+                                                    if (l < textsB.Count - 1) brackets += " ";
+                                                }
+                                                if (textsB[l].EndsWith(@")"))
+                                                {
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            b = (int)float.Parse(result);
+                                        }
+                                    }
                                 }
 
                                 point = new Point(a, b);
 
                             }
-                            catch { console.AddText("Their was an error with 'move' the vector was not formatted correctly in line " + codeLine + "\n", true); }
+                            catch
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                console.AddText("Their was an error with 'move' the vector was not formatted correctly in line " + codeLine + "\n", true);
+                            }
 
                             GObject go = new GObject(GObject.Type.Square);
                             go.AccessibleName = "error";
@@ -1015,11 +1390,13 @@
                             }
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find an object, label, textbox, or button named " + name + "\n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'move' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -1030,6 +1407,14 @@
                         {
                             string name = parts[i + 1];
                             Point point = new Point(0, 0);
+                            string brackets = "";
+                            int ended = 0;
+                            int endindex = 0;
+                            List<string> textsA = new List<string>();
+                            for (int l = 2; l < parts.Count; l++)
+                            {
+                                textsA.Add(parts[l]);
+                            }
                             bool aV = false, bV = false;
                             try
                             {
@@ -1050,17 +1435,86 @@
                                 }
                                 if (!aV)
                                 {
-                                    a = Convert.ToInt16(parts[i + 2]);
+                                    try
+                                    {
+                                        a = Convert.ToInt16(parts[i + 2]);
+                                    }
+                                    catch
+                                    {
+                                        if (parts[2].StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsA.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsA[l];
+                                                    if (l < textsA.Count - 1) brackets += " ";
+                                                }
+                                                if (textsA[l].EndsWith(@")"))
+                                                {
+                                                    if (endindex == 0) endindex = l;
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            a = (int)float.Parse(result);
+                                        }
+                                    }
                                 }
                                 if (!bV)
                                 {
-                                    b = Convert.ToInt16(parts[i + 3]);
+                                    try
+                                    {
+                                        b = Convert.ToInt16(textsA[endindex + 1]);
+                                    }
+                                    catch
+                                    {
+                                        string newended = textsA[endindex + 1];
+                                        List<string> textsB = new List<string>();
+                                        for (int l = endindex + 1; l < textsA.Count; l++)
+                                        {
+                                            textsB.Add(textsA[l]);
+                                        }
+                                        ended = 0;
+                                        brackets = "";
+                                        if (newended.StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsB.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsB[l];
+                                                    if (l < textsB.Count - 1) brackets += " ";
+                                                }
+                                                if (textsB[l].EndsWith(@")"))
+                                                {
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            b = (int)float.Parse(result);
+                                        }
+                                    }
                                 }
 
                                 point = new Point(a, b);
 
                             }
-                            catch { console.AddText("Their was an error with 'scale' the vector was not formatted correctly in line " + codeLine + " \n", true); }
+                            catch
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                console.AddText("Their was an error with 'scale' the vector was not formatted correctly in line " + codeLine + " \n", true);
+                            }
 
                             GObject go = new GObject(GObject.Type.Square);
                             go.AccessibleName = "error";
@@ -1111,6 +1565,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'scale' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -1121,6 +1576,14 @@
                         {
                             string name = parts[i + 1];
                             Color color = Color.Black;
+                            string brackets = "";
+                            int ended = 0;
+                            int endindex = 0;
+                            List<string> textsA = new List<string>();
+                            for (int l = 2; l < parts.Count; l++)
+                            {
+                                textsA.Add(parts[l]);
+                            }
                             bool aV = false, bV = false, cV = false;
                             try
                             {
@@ -1147,21 +1610,127 @@
                                 }
                                 if (!aV)
                                 {
-                                    a = float.Parse(parts[i + 2]);
+                                    try
+                                    {
+                                        a = Convert.ToInt16(parts[i + 2]);
+                                    }
+                                    catch
+                                    {
+                                        if (parts[2].StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsA.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsA[l];
+                                                    if (l < textsA.Count - 1) brackets += " ";
+                                                }
+                                                if (textsA[l].EndsWith(@")"))
+                                                {
+                                                    if (endindex == 0) endindex = l;
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            a = (int)float.Parse(result);
+                                        }
+                                    }
+                                }
+                                List<string> textsB = new List<string>();
+                                for (int l = endindex + 1; l < textsA.Count; l++)
+                                {
+                                    textsB.Add(textsA[l]);
                                 }
                                 if (!bV)
                                 {
-                                    b = float.Parse(parts[i + 3]);
+                                    try
+                                    {
+                                        b = Convert.ToInt16(textsA[endindex + 1]);
+                                    }
+                                    catch
+                                    {
+                                        string newended = textsA[endindex + 1];
+                                        ended = 0;
+                                        brackets = "";
+                                        if (newended.StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsB.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsB[l];
+                                                    if (l < textsB.Count - 1) brackets += " ";
+                                                }
+                                                if (textsB[l].EndsWith(@")"))
+                                                {
+                                                    if (endindex == 0) endindex = l;
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            b = (int)float.Parse(result);
+                                        }
+                                    }
                                 }
                                 if (!cV)
                                 {
-                                    c = float.Parse(parts[i + 4]);
+                                    try
+                                    {
+                                        c = Convert.ToInt16(textsB[endindex + 1]);
+                                    }
+                                    catch
+                                    {
+                                        string newended = textsB[endindex + 1];
+                                        List<string> textsC = new List<string>();
+                                        for (int l = endindex + 1; l < textsB.Count; l++)
+                                        {
+                                            textsC.Add(textsB[l]);
+                                        }
+                                        ended = 0;
+                                        brackets = "";
+                                        if (newended.StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsC.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsC[l];
+                                                    if (l < textsC.Count - 1) brackets += " ";
+                                                }
+                                                if (textsC[l].EndsWith(@")"))
+                                                {
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            c = (int)float.Parse(result);
+                                        }
+                                    }
                                 }
 
                                 color = Color.FromArgb((int)a, (int)b, (int)c);
 
                             }
-                            catch { console.AddText("Their was an error with 'color' the rgb color was not formatted correctly in line " + codeLine + "\n", true); }
+                            catch
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                console.AddText("Their was an error with 'color' the rgb color was not formatted correctly in line " + codeLine + "\n", true);
+                            }
 
                             GObject go = new GObject(GObject.Type.Square);
                             go.AccessibleName = "error";
@@ -1231,11 +1800,13 @@
                             }
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find an object or label named " + name + "\n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'move' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -1245,6 +1816,13 @@
                         try
                         {
                             string time = parts[i + 1];
+                            string brackets = "";
+                            int ended = 0;
+                            List<string> texts = new List<string>();
+                            for (int l = 1; l < parts.Count; l++)
+                            {
+                                texts.Add(parts[l]);
+                            }
                             for (int j = 0; j < vars.Count; j++)
                             {
                                 if (vars[j].Name == time)
@@ -1252,10 +1830,33 @@
                                     time = vars[j].value();
                                 }
                             }
+                            if (time.StartsWith(@"("))
+                            {
+                                ended = 1;
+                                for (int l = 0; l < texts.Count; l++)
+                                {
+                                    if (ended == 1)
+                                    {
+                                        brackets += texts[l];
+                                        if (l < texts.Count - 1) brackets += " ";
+                                    }
+                                    if (texts[l].EndsWith(@")"))
+                                    {
+                                        ended = 2;
+                                    }
+                                }
+                            }
+                            if (ended != 0)
+                            {
+                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                string result = SolveEquation(equation);
+                                time = result;
+                            }
                             await Task.Delay(Convert.ToInt16(time));
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error with 'await' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -1294,6 +1895,7 @@
                                 Var var = new Var(name);
                                 var.set(senttext);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
 
@@ -1327,16 +1929,19 @@
                                 }
                                 if (A.AccessibleName != "" && B.AccessibleName != "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the objects: '" + a + "' and '" + b + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
                                 else if (A.AccessibleName == "" && B.AccessibleName != "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the object: '" + b + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
                                 else if (A.AccessibleName != "" && B.AccessibleName == "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the object: '" + a + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
@@ -1354,6 +1959,7 @@
                                 Var var = new Var(name);
                                 var.set(intersects);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -1363,6 +1969,14 @@
                                 string ma = parts[4];
                                 int min = 0;
                                 int max = 0;
+                                string brackets = "";
+                                int ended = 0;
+                                int endindex = 0;
+                                List<string> textsA = new List<string>();
+                                for (int l = 3; l < parts.Count; l++)
+                                {
+                                    textsA.Add(parts[l]);
+                                }
                                 for (int j = 0; j < vars.Count; j++)
                                 {
                                     if (mi == vars[j].Name)
@@ -1376,12 +1990,78 @@
                                 }
                                 try
                                 {
-                                    min = int.Parse(mi);
-                                    max = int.Parse(ma);
+                                    try
+                                    {
+                                        min = int.Parse(mi);
+                                    }
+                                    catch
+                                    {
+                                        if (parts[3].StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsA.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsA[l];
+                                                    if (l < textsA.Count - 1) brackets += " ";
+                                                }
+                                                if (textsA[l].EndsWith(@")"))
+                                                {
+                                                    if (endindex == 0) endindex = l;
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            min = (int)float.Parse(result);
+                                        }
+                                    }
+                                    try
+                                    {
+                                        max = int.Parse(ma);
+                                    }
+                                    catch
+                                    {
+                                        string newended = textsA[endindex + 1];
+                                        List<string> textsB = new List<string>();
+                                        for (int l = endindex + 1; l < textsA.Count; l++)
+                                        {
+                                            textsB.Add(textsA[l]);
+                                        }
+                                        ended = 0;
+                                        brackets = "";
+                                        if (newended.StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsB.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsB[l];
+                                                    if (l < textsB.Count - 1) brackets += " ";
+                                                }
+                                                if (textsB[l].EndsWith(@")"))
+                                                {
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            max = (int)float.Parse(result);
+                                        }
+                                    }
                                 }
                                 catch
                                 {
-                                    console.AddText("There was an error with the minumim and maximum: '" + mi + "," + ma + "' in line " + codeLine + " \n", true);
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("There was an error with the minumim and maximum of Random in line " + codeLine + " \n", true);
                                 }
 
                                 Random rand = new Random();
@@ -1390,6 +2070,7 @@
                                 Var var = new Var(name);
                                 var.set(rnd.ToString());
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -1399,6 +2080,17 @@
                                 Var var = new Var(name);
                                 var.set(keyPreview);
                                 var.isSet = true;
+                                var.stack = stackNow;
+
+                                vars.Add(var);
+                            }
+                            else if (value == "KeyDown")
+                            {
+                                // Create the variable with the user's input as the value
+                                Var var = new Var(name);
+                                var.set(keydown == false ? "0" : "1");
+                                var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -1416,6 +2108,7 @@
                                 Var var = new Var(name);
                                 var.set(keyPreview);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -1507,6 +2200,7 @@
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error reading the file: " + file + " In line " + codeLine + " \n", true);
                                 }
 
@@ -1514,6 +2208,7 @@
                                 Var var = new Var(name);
                                 var.set(val);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -1531,6 +2226,7 @@
                                 }
                                 if (!found)
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find a textbox named " + parts[3] + " In line " + codeLine + " \n", true);
                                     return;
                                 }
@@ -1539,6 +2235,7 @@
                                 Var var = new Var(name);
                                 var.set(val);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
@@ -1560,6 +2257,7 @@
                                 {
                                     bool isVar = false;
                                     string number = parts[4];
+                                    number = getEquation(number, 4, parts);
                                     int numberValue = 0;
                                     for (int k = 0; k < vars.Count; k++)
                                     {
@@ -1575,26 +2273,59 @@
                                     Var var = new Var(name);
                                     var.set(list[numberValue].value());
                                     var.isSet = true;
+                                    var.stack = stackNow;
 
                                     vars.Add(var);
                                 }
                                 else
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find a list by the inputted name in " + codeLine + " \n", true);
                                 }
                             }
                             else
                             {
+                                string brackets = "";
+                                int ended = 0;
+                                List<string> texts = new List<string>();
+                                for (int l = 2; l < parts.Count; l++)
+                                {
+                                    texts.Add(parts[l]);
+                                }
+                                if (value.StartsWith(@"("))
+                                {
+                                    ended = 1;
+                                    for (int l = 0; l < texts.Count; l++)
+                                    {
+                                        if (ended == 1)
+                                        {
+                                            brackets += texts[l];
+                                            if (l < texts.Count - 1) brackets += " ";
+                                        }
+                                        if (texts[l].EndsWith(@")"))
+                                        {
+                                            ended = 2;
+                                        }
+                                    }
+                                }
+                                if (ended != 0)
+                                {
+                                    string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                    string result = SolveEquation(equation);
+                                    value = result;
+                                }
                                 // Create a new variable with the specified name and value
                                 Var var = new Var(name);
                                 var.set(value);
                                 var.isSet = true;
+                                var.stack = stackNow;
 
                                 vars.Add(var);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("There was an error with 'var' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -1628,6 +2359,15 @@
                                 sent = false;
                                 senttext = string.Empty;
                             }
+                            else if (value == "KeyDown")
+                            {
+                                // Create the variable with the user's input as the value
+                                Var var = new Var(name);
+                                var.set(keydown == false ? "0" : "1");
+                                var.isSet = true;
+
+                                vars.Add(var);
+                            }
                             else if (value == "IntersectsWith")
                             {
                                 string a = parts[3];
@@ -1654,16 +2394,19 @@
                                 }
                                 if (A.AccessibleName != "" && B.AccessibleName != "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the objects: '" + a + "' and '" + b + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
                                 else if (A.AccessibleName == "" && B.AccessibleName != "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the object: '" + b + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
                                 else if (A.AccessibleName != "" && B.AccessibleName == "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the object: '" + a + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
@@ -1708,6 +2451,7 @@
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error with the minumim and maximum: '" + mi + "," + ma + "' in line " + codeLine + " \n", true);
                                 }
 
@@ -1834,6 +2578,7 @@
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error reading the file: " + file + " In line " + codeLine + " \n", true);
                                 }
 
@@ -1882,6 +2627,7 @@
                                 }
                                 else
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find a list by the inputted name in " + codeLine + " \n", true);
                                 }
                             }
@@ -1897,6 +2643,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("There was an error with 'var' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -1920,6 +2667,7 @@
                             }
                             if (!var.isSet)
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a variable named '" + name + "' in line " + codeLine + "\n", true);
                                 return;
                             }
@@ -1956,6 +2704,12 @@
                             {
                                 // Create the variable with the user's input as the value
                                 var.set(keyPreview);
+                                var.isSet = true;
+                            }
+                            else if (value == "KeyDown")
+                            {
+                                // Create the variable with the user's input as the value
+                                var.set(keydown == false ? "0" : "1");
                                 var.isSet = true;
                             }
                             else if (value == "StickyKey")
@@ -2025,11 +2779,13 @@
                             }*/
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("There was an error with 'varInput' Line " + codeLine + " \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("There was an error with 'varInput' in line " + codeLine + " \n", true);
                             return;
                         }
@@ -2061,6 +2817,7 @@
                             }
                             if (!var.isSet)
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a variable named '" + name + "' in line " + codeLine + "\n", true);
                                 return;
                             }
@@ -2102,6 +2859,7 @@
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error reading the file: " + file + " In line " + codeLine + " \n", true);
                                 }
 
@@ -2121,6 +2879,7 @@
                                 }
                                 if (!found)
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find a textbox named " + parts[3] + " In line " + codeLine + " \n", true);
                                     return;
                                 }
@@ -2153,16 +2912,19 @@
                                 }
                                 if (A.AccessibleName != "" && B.AccessibleName != "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the objects: '" + a + "' and '" + b + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
                                 else if (A.AccessibleName == "" && B.AccessibleName != "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the object: '" + b + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
                                 else if (A.AccessibleName != "" && B.AccessibleName == "")
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find the object: '" + a + "' in line " + codeLine + " \n", true);
                                     return;
                                 }
@@ -2197,6 +2959,7 @@
                                 {
                                     bool isVar = false;
                                     string number = parts[4];
+                                    number = getEquation(number, 4, parts);
                                     int numberValue = 0;
                                     for (int k = 0; k < vars.Count; k++)
                                     {
@@ -2213,6 +2976,7 @@
                                 }
                                 else
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Could not find a list by the inputted name in " + codeLine + " \n", true);
                                 }
                             }
@@ -2222,6 +2986,14 @@
                                 string ma = parts[4];
                                 int min = 0;
                                 int max = 0;
+                                string brackets = "";
+                                int ended = 0;
+                                int endindex = 0;
+                                List<string> textsA = new List<string>();
+                                for (int l = 3; l < parts.Count; l++)
+                                {
+                                    textsA.Add(parts[l]);
+                                }
                                 for (int j = 0; j < vars.Count; j++)
                                 {
                                     if (mi == vars[j].Name)
@@ -2235,12 +3007,78 @@
                                 }
                                 try
                                 {
-                                    min = int.Parse(mi);
-                                    max = int.Parse(ma);
+                                    try
+                                    {
+                                        min = int.Parse(mi);
+                                    }
+                                    catch
+                                    {
+                                        if (parts[3].StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsA.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsA[l];
+                                                    if (l < textsA.Count - 1) brackets += " ";
+                                                }
+                                                if (textsA[l].EndsWith(@")"))
+                                                {
+                                                    if (endindex == 0) endindex = l;
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            min = (int)float.Parse(result);
+                                        }
+                                    }
+                                    try
+                                    {
+                                        max = int.Parse(ma);
+                                    }
+                                    catch
+                                    {
+                                        string newended = textsA[endindex + 1];
+                                        List<string> textsB = new List<string>();
+                                        for (int l = endindex + 1; l < textsA.Count; l++)
+                                        {
+                                            textsB.Add(textsA[l]);
+                                        }
+                                        ended = 0;
+                                        brackets = "";
+                                        if (newended.StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsB.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsB[l];
+                                                    if (l < textsB.Count - 1) brackets += " ";
+                                                }
+                                                if (textsB[l].EndsWith(@")"))
+                                                {
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            max = (int)float.Parse(result);
+                                        }
+                                    }
                                 }
                                 catch
                                 {
-                                    console.AddText("There was an error with the minumim and maximum: '" + mi + "," + ma + "' in line " + codeLine + " \n", true);
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("There was an error with the minumim and maximum of Random in line " + codeLine + " \n", true);
                                 }
 
                                 Random rand = new Random();
@@ -2260,6 +3098,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -2273,12 +3112,39 @@
                             {
                                 string name = parts[i + 2];
                                 string mid = parts[i + 3];
-                                string valuesRaw = parts[i + 4];
+                                string valuesRaw = "";
+                                for (int j = 4; j < parts.Count; j++)
+                                {
+                                    valuesRaw += parts[j].ToString();
+                                }
                                 if (mid == ":")
                                 {
                                     List<string> values = valuesRaw.Split(",").ToList();
                                     for (int j = 0; j < values.Count; j++)
                                     {
+                                        string brackets = "";
+                                        int ended = 0;
+                                        if (values[j].StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            brackets = values[j];
+                                            if (values[j].EndsWith(@")"))
+                                            {
+                                                ended = 2;
+                                            }
+
+                                        }
+                                        if (ended == 2)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            values[j] = result;
+                                        }
+                                        else if (ended == 1)
+                                        {
+                                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                            console.AddText("Syntax error in line " + codeLine + ". Expected ')' to end equation \n", true);
+                                        }
                                         values[j] = values[j].Replace(@"\n", Environment.NewLine);
                                         values[j] = values[j].Replace(@"\_", " ");
                                         values[j] = values[j].Replace(@"\!", string.Empty);
@@ -2293,7 +3159,7 @@
                                         if (j == -1)
                                         {
                                             Var var = new Var(name);
-                                            var.text_ = name;
+                                            var.text = name;
                                             varList.Add(var);
 
                                         }
@@ -2322,15 +3188,16 @@
 
                                     if (!allNumbers && !allText)
                                     {
-                                        varList.Clear();
-                                        console.AddText("Their was an error in line " + codeLine + ". Mixed value types \n", true);
-                                        return;
+                                        //varList.Clear();
+                                        //console.AddText("Their was an error in line " + codeLine + ". Mixed value types \n", true);
+                                        //return;
                                     }
 
                                     VarList.Add(varList);
                                 }
                                 else
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Their was an error in line " + codeLine + ". Expected ':' to initiate values in the list \n", true);
                                 }
                             }
@@ -2338,6 +3205,8 @@
                             {
                                 string name = parts[i + 2];
                                 string value = parts[i + 3];
+
+                                value = getEquation(value, 3, parts);
 
                                 value = value.Replace(@"\n", Environment.NewLine);
                                 value = value.Replace(@"\_", " ");
@@ -2366,6 +3235,8 @@
                                 string name = parts[i + 2];
                                 string index = parts[i + 3];
                                 string value = parts[i + 4];
+
+                                value = getEquation(value, 3, parts);
 
                                 value = value.Replace(@"\n", Environment.NewLine);
                                 value = value.Replace(@"\_", " ");
@@ -2409,11 +3280,13 @@
                             }
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Their was an error in line " + codeLine + ". Expected 'new', 'add', 'equals', or 'clear' after 'list' \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -2438,7 +3311,7 @@
                                         if (j == -1)
                                         {
                                             Var var = new Var(name);
-                                            var.text_ = name;
+                                            var.text = name;
                                             varList.Add(var);
 
                                         }
@@ -2459,6 +3332,7 @@
                                 }
                                 else
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Their was an error in line " + codeLine + ". Expected ':' to initiate values in the list \n", true);
                                 }
                             }
@@ -2520,11 +3394,13 @@
                             }
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Their was an error in line " + codeLine + " \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -2584,11 +3460,13 @@
                             }
                             catch
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("There was an error writing the file: " + file + " In line " + codeLine + " \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -2630,6 +3508,7 @@
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error playing the sound: " + file + " In line " + codeLine + " \n", true);
                                 }
                             }
@@ -2641,16 +3520,49 @@
                             {
                                 try
                                 {
-                                    outputPlayer.Volume = float.Parse(parts[2]);
+                                    string p = parts[2];
+                                    string brackets = "";
+                                    int ended = 0;
+                                    List<string> texts = new List<string>();
+                                    for (int l = 2; l < parts.Count; l++)
+                                    {
+                                        texts.Add(parts[l]);
+                                    }
+                                    if (p.StartsWith(@"("))
+                                    {
+                                        ended = 1;
+                                        for (int l = 0; l < texts.Count; l++)
+                                        {
+                                            if (ended == 1)
+                                            {
+                                                brackets += texts[l];
+                                                if (l < texts.Count - 1) brackets += " ";
+                                            }
+                                            if (texts[l].EndsWith(@")"))
+                                            {
+                                                ended = 2;
+                                            }
+                                        }
+                                    }
+                                    if (ended != 0)
+                                    {
+                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                        string result = SolveEquation(equation);
+                                        p = result;
+                                    }
+                                    WaveOutEvent outputPlayer = new WaveOutEvent();
+                                    outputPlayer.Volume = float.Parse(p);
                                 }
                                 catch
                                 {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("There was an error with setting the volume in 'sound' in line " + codeLine + " \n", true);
                                 }
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -2665,6 +3577,7 @@
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -2704,55 +3617,49 @@
                             string play = string.Empty;
 
                             try { play = File.ReadAllText(file); }
-                            catch { console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true); }
+                            catch
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true);
+                            }
                             if (awaits == "now")
                             {
                                 try { PlayAsync(play); }
-                                catch { console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true); }
+                                catch
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true);
+                                }
                             }
                             else if (awaits == "await")
                             {
                                 try { await PlayAsync(play); }
-                                catch { console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true); }
+                                catch
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true);
+                                }
                             }
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Their was an error with 'playFile' in line " + codeLine + " \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
                     } // playFile await PathToFile |or| playFile now PathToFile
-                    else if (parts[i] == "if")
+                    else if (parts[i] == "ifRaw")
                     {
                         try
                         {
                             string v1 = parts[1];
                             string mid = parts[2];
                             string v2 = parts[3];
-
-                            v1 = v1.Replace(@"\n", Environment.NewLine);
-                            v1 = v1.Replace(@"\_", " ");
-                            v1 = v1.Replace(@"\!", string.Empty);
-
-                            v2 = v2.Replace(@"\n", Environment.NewLine);
-                            v2 = v2.Replace(@"\_", " ");
-                            v2 = v2.Replace(@"\!", string.Empty);
-
-                            for (int j = 0; j < vars.Count; j++)
-                            {
-                                if (v1 == vars[j].Name)
-                                {
-                                    v1 = vars[j].value();
-                                }
-                                if (v2 == vars[j].Name)
-                                {
-                                    v2 = vars[j].value();
-                                }
-                            }
 
                             if (mid == "=" && parts[4] == ":") // equal to
                             {
@@ -2888,30 +3795,288 @@
                             }
                             else
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("The if statement was not formatted correctly in line " + codeLine + " \n", true);
                             }
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            return;
+                        }
+                    } // if value1 mid value2 : stuff || mid is =,!,>,<
+                    else if (parts[i] == "if")
+                    {
+                        try
+                        {
+                            multimids Mid = new multimids();
+                            string brackets = "";
+                            int ended = 0;
+                            int endindex = 0;
+                            List<string> textsA = new List<string>();
+                            for (int l = 1; l < parts.Count; l++)
+                            {
+                                textsA.Add(parts[l]);
+                            }
+                            bool aV = false, bV = false;
+                            string a = "";
+                            string c = "";
+                            try
+                            {
+                                if (parts[1].StartsWith(@"("))
+                                {
+                                    ended = 1;
+                                    for (int l = 0; l < textsA.Count; l++)
+                                    {
+                                        if (ended == 1)
+                                        {
+                                            brackets += textsA[l];
+                                            if (l < textsA.Count - 1) brackets += " ";
+                                        }
+                                        if (textsA[l].EndsWith(@")"))
+                                        {
+                                            if (endindex == 0) endindex = l;
+                                            ended = 2;
+                                        }
+                                    }
+                                    if (ended != 0)
+                                    {
+                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                        string result = SolveEquation(equation);
+                                        a = float.Parse(result).ToString();
+                                    }
+                                }
+                                else
+                                {
+                                    string prt = parts[1];
+                                    aV = true;
+                                    try
+                                    {
+                                        a = Convert.ToInt16(prt).ToString();
+                                    }
+                                    catch
+                                    {
+                                        bool v = false;
+                                        prt = prt.Replace(@"\n", Environment.NewLine);
+                                        prt = prt.Replace(@"\_", " ");
+                                        prt = prt.Replace(@"\!", string.Empty);
+                                        for (int j = 0; j < vars.Count; j++)
+                                        {
+                                            if (vars[j].Name == prt)
+                                            {
+                                                a = vars[j].value();
+                                                v = true;
+                                            }
+                                        }
+                                        if (!v)
+                                        {
+                                            a = prt;
+                                        }
+                                    }
+                                }
+                                try
+                                {
+                                    string val = "";
+                                    if (aV)
+                                    {
+                                        val = parts[2];
+                                        bV = true;
+                                    }
+                                    else
+                                    {
+                                        val = textsA[endindex + 1];
+                                    }
+                                    for (int j = 0; j < vars.Count; j++)
+                                    {
+                                        if (vars[j].Name == val)
+                                        {
+                                            val = vars[j].value();
+                                        }
+                                    }
+                                    if (val == "=") Mid = multimids.equals;
+                                    if (val == "!") Mid = multimids.not;
+                                    if (val == ">") Mid = multimids.less;
+                                    if (val == "<") Mid = multimids.greater;
+                                    endindex++;
+                                }
+                                catch
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Their was an error with 'if' expected '=', '!', '>', or '<' " + codeLine + "\n", true);
+                                }
+                                string va = "";
+                                endindex++;
+                                int ne = endindex;
+                                if (bV)
+                                {
+                                    va = parts[3];
+                                }
+                                else
+                                {
+                                    va = textsA[ne];
+                                }
+                                brackets = "";
+                                ended = 0;
+                                if (va.StartsWith(@"("))
+                                {
+                                    ended = 1;
+                                    for (int l = ne; l < textsA.Count; l++)
+                                    {
+                                        if (ended == 1)
+                                        {
+                                            brackets += textsA[l];
+                                            if (l < textsA.Count - 1) brackets += " ";
+                                        }
+                                        if (textsA[l].EndsWith(@")"))
+                                        {
+                                            if (endindex == ne) endindex = l;
+                                            ended = 2;
+                                        }
+                                    }
+                                    if (ended != 0)
+                                    {
+                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                        string result = SolveEquation(equation);
+                                        c = float.Parse(result).ToString();
+                                    }
+                                }
+                                else
+                                {
+                                    string prt = va;
+                                    try
+                                    {
+                                        c = Convert.ToInt16(prt).ToString();
+                                    }
+                                    catch
+                                    {
+                                        bool v = false;
+                                        prt = prt.Replace(@"\n", Environment.NewLine);
+                                        prt = prt.Replace(@"\_", " ");
+                                        prt = prt.Replace(@"\!", string.Empty);
+                                        for (int j = 0; j < vars.Count; j++)
+                                        {
+                                            if (vars[j].Name == prt)
+                                            {
+                                                c = vars[j].value();
+                                                v = true;
+                                            }
+                                        }
+                                        if (!v)
+                                        {
+                                            c = prt;
+                                        }
+                                    }
+                                }
+
+                            }
+                            catch
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                console.AddText("Their was an error with 'if' the values were not formatted correctly in line " + codeLine + "\n", true);
+                            }
+
+                            bool is_true = ifcheck(Mid, a, c);
+
+                            if (is_true && textsA[endindex + 1] == ":")
+                            {
+                                string upcode = string.Empty;
+                                for (int j = endindex + 2; j < textsA.Count; j++)
+                                {
+                                    upcode += textsA[j] + " ";
+                                }
+                                await PlayAsync(upcode);
+                            }
+                        }
+                        catch
+                        {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
                     } // if value1 mid value2 : stuff || mid is =,!,>,<
                     else if (parts[i].Contains("//"))
                     { } // // comment text
+                    else if (parts[i] == "#" || parts[i] == "#create")
+                    {
+                        try
+                        {
+                            if (parts[i] == "#")
+                            {
+
+                                if (parts[1] == "create" && parts[2] == "error")
+                                {
+                                    try
+                                    {
+                                        string text = "";
+                                        for (int j = 3; j < parts.Count; j++)
+                                        {
+                                            text += parts[j];
+                                            if (j < parts.Count - 1) text += " ";
+                                        }
+                                        if (text == "") int.Parse("jj");
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText(text + ". In line " + codeLine + " \n", true);
+                                    }
+                                    catch
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Error in line " + codeLine + " \n", true);
+                                    }
+                                }
+                                else
+                                {
+                                    int.Parse("jj");
+                                }
+                            }
+                            if (parts[i] == "#create")
+                            {
+
+                                if (parts[1] == "error")
+                                {
+                                    try
+                                    {
+                                        string text = "";
+                                        for (int j = 2; j < parts.Count; j++)
+                                        {
+                                            text += parts[j];
+                                            if (j < parts.Count - 1) text += " ";
+                                        }
+                                        if (text == "") int.Parse("jj");
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText(text + ". In line " + codeLine + " \n", true);
+                                    }
+                                    catch
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Error in line " + codeLine + " \n", true);
+                                    }
+                                }
+                                else
+                                {
+                                    int.Parse("jj");
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                            console.AddText("Their was an error with '# create error' in line " + codeLine + " \n", true);
+                            return;
+                        }
+                    }// # create error errorText
                     else
                     {
+                        if (parts[i] == "#" || parts[i] == "#create" || parts[i] == "#suppress")
+                        {
+                            return;
+                        }
                         if (parts[i].Trim() == "") return;
                         //console.AddText("There is no function named '" + parts[i] + "' in line " + codeLine + Environment.NewLine);
                         try
                         {
                             string name = parts[0];
                             string mid = parts[1];
-                            string value = parts[2];
-
-                            value = value.Replace(@"\n", Environment.NewLine);
-                            value = value.Replace(@"\_", " ");
-                            value = value.Replace(@"\!", string.Empty);
 
                             Var var = new Var(name);
                             var.isSet = false;
@@ -2931,52 +4096,399 @@
                                     mid = vars[j].value();
                                 }
                             }
-                            for (int j = 0; j < vars.Count; j++)
-                            {
-                                if (vars[j].Name == value)
-                                {
-                                    value = vars[j].value();
-                                }
-                            }
 
                             if (!var.isSet)
                             {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a variable named '" + name + "' in line " + codeLine + "\n", true);
                                 return;
                             }
 
-                            if (!var.isNumber())
+                            if (mid == "Console" || mid == "Key" || mid == "KeyDown" || mid == "StickKey" || mid == "AwaitKey")
                             {
-                                var.stringChange(value, mid);
-
-                                if (!var.isSet)
+                                if (mid == "Console")
                                 {
-                                    console.AddText("Their was an error with '" + name + "' the called variable is not a number and cannot be divided or subtracted. Line " + codeLine + " \n", true);
-                                    return;
+                                    // Wait for the user to press the "Send" button
+                                    float qq = 0;
+                                    while (!sent)
+                                    {
+                                        qq += .1f;
+                                        //console.AddText("waiting for console input in line " + codeLine + ": " + qq + Environment.NewLine);
+                                        await Task.Delay(100);
+                                    }
+
+                                    // Create the variable with the user's input as the value
+                                    var.set(senttext);
+                                    var.isSet = true;
+
+                                    // Reset the "sent" flag
+                                    sent = false;
+                                    senttext = string.Empty;
+                                }
+                                else if (mid == "Key")
+                                {
+                                    // Create the variable with the user's input as the value
+                                    var.set(keyPreview);
+                                    var.isSet = true;
+                                }
+                                else if (mid == "KeyDown")
+                                {
+                                    // Create the variable with the user's input as the value
+                                    var.set(keydown == false ? "0" : "1");
+                                    var.isSet = true;
+                                }
+                                else if (mid == "StickyKey")
+                                {
+                                    // Create the variable with the user's input as the value
+                                    var.set(awaitKeyPreview);
+                                    var.isSet = true;
+                                }
+                                else if (mid == "AwaitKey")
+                                {
+                                    float qq = 0;
+                                    while (!keydown)
+                                    {
+                                        qq += .1f;
+                                        //console.AddText("waiting for key input in line " + codeLine + ": " + qq + Environment.NewLine);
+                                        await Task.Delay(100);
+                                    }
+
+                                    // Create the variable with the user's input as the value
+                                    var.set(keyPreview);
+                                    var.isSet = true;
+                                    keydown = false;
+                                }
+                                else
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("There was an error with 'varInput' Line " + codeLine + " \n", true);
+                                }
+                            }
+                            else if (mid == "ReadFile" || mid == "FromTextBox" || mid == "IntersectsWith" || mid == "FromList" || mid == "Random")
+                            {
+                                if (mid == "ReadFile")
+                                {
+                                    string file = "";
+                                    for (int j = 2; j < parts.Count; j++)
+                                    {
+                                        file += parts[j];
+                                        if (j < parts.Count - 1) file += " ";
+                                    }
+                                    if (file.Contains("~/"))
+                                    {
+                                        string[] dp = ScriptDirectory.Split(@"\");
+                                        string directory = "";
+                                        for (int j = 0; j < dp.Length; j++)
+                                        {
+                                            if (j < dp.Length - 1)
+                                            {
+                                                directory += dp[j] + @"\\";
+                                            }
+                                        }
+                                        directory += file.Remove(0, 2);
+                                        file = directory;
+                                    }
+                                    string val = "";
+                                    for (int j = 0; j < vars.Count; j++)
+                                    {
+                                        if (vars[j].Name == file)
+                                        {
+                                            file = vars[j].value();
+                                        }
+                                    }
+                                    try
+                                    {
+                                        val = File.ReadAllText(file);
+                                    }
+                                    catch
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("There was an error reading the file: " + file + " In line " + codeLine + " \n", true);
+                                    }
+
+                                    var.set(val);
+                                }
+                                else if (mid == "FromTextBox")
+                                {
+                                    bool found = false;
+                                    string val = "";
+                                    for (int j = 0; j < textboxes.Count; j++)
+                                    {
+                                        if (textboxes[j].Name == parts[2])
+                                        {
+                                            found = true;
+                                            val = textboxes[j].Text;
+                                        }
+                                    }
+                                    if (!found)
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Could not find a textbox named " + parts[3] + " In line " + codeLine + " \n", true);
+                                        return;
+                                    }
+
+                                    var.set(val);
+                                }
+                                else if (mid == "IntersectsWith")
+                                {
+                                    string a = parts[2];
+                                    string b = parts[3];
+                                    string intersects;
+
+                                    GObject A = new GObject(GObject.Type.Square);
+                                    A.AccessibleName = "Error";
+                                    GObject B = new GObject(GObject.Type.Square);
+                                    B.AccessibleName = "Error";
+
+                                    for (int j = 0; j < gameObjects.Count; j++)
+                                    {
+                                        if (a == gameObjects[j].Name)
+                                        {
+                                            A = gameObjects[j];
+                                            A.AccessibleName = "";
+                                        }
+                                        if (b == gameObjects[j].Name)
+                                        {
+                                            B = gameObjects[j];
+                                            B.AccessibleName = "";
+                                        }
+                                    }
+                                    if (A.AccessibleName != "" && B.AccessibleName != "")
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Could not find the objects: '" + a + "' and '" + b + "' in line " + codeLine + " \n", true);
+                                        return;
+                                    }
+                                    else if (A.AccessibleName == "" && B.AccessibleName != "")
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Could not find the object: '" + b + "' in line " + codeLine + " \n", true);
+                                        return;
+                                    }
+                                    else if (A.AccessibleName != "" && B.AccessibleName == "")
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Could not find the object: '" + a + "' in line " + codeLine + " \n", true);
+                                        return;
+                                    }
+
+                                    if (A.Bounds.IntersectsWith(B.Bounds))
+                                    {
+                                        intersects = "1";
+                                    }
+                                    else
+                                    {
+                                        intersects = "0";
+                                    }
+
+                                    // Create the variable with the user's input as the value
+                                    var.set(intersects);
+                                }
+                                else if (mid == "FromList")
+                                {
+                                    bool isSet = false;
+                                    string listN = parts[2];
+                                    List<Var> list = new List<Var>();
+
+                                    for (int j = 0; j < VarList.Count; j++)
+                                    {
+                                        if (VarList[j][0].Name == listN)
+                                        {
+                                            list = VarList[j];
+                                            isSet = true;
+                                        }
+                                    }
+                                    if (isSet)
+                                    {
+                                        bool isVar = false;
+                                        string number = parts[3];
+                                        number = getEquation(number, 3, parts);
+                                        int numberValue = 0;
+                                        for (int k = 0; k < vars.Count; k++)
+                                        {
+                                            if (vars[k].Name == number.Trim() && vars[k].isNumber())
+                                            {
+                                                numberValue = (int)vars[k].number;
+                                                isVar = true;
+                                            }
+                                        }
+                                        if (!isVar) numberValue = Convert.ToInt16(number);
+
+                                        // Create the variable with the user's input as the value
+                                        var.set(list[numberValue].value());
+                                    }
+                                    else
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Could not find a list by the inputted name in " + codeLine + " \n", true);
+                                    }
+                                }
+                                else if (mid == "Random")
+                                {
+                                    string mi = parts[2];
+                                    string ma = parts[3];
+                                    int min = 0;
+                                    int max = 0;
+                                    string brackets = "";
+                                    int ended = 0;
+                                    int endindex = 0;
+                                    List<string> textsA = new List<string>();
+                                    for (int l = 2; l < parts.Count; l++)
+                                    {
+                                        textsA.Add(parts[l]);
+                                    }
+                                    for (int j = 0; j < vars.Count; j++)
+                                    {
+                                        if (mi == vars[j].Name)
+                                        {
+                                            mi = vars[j].value();
+                                        }
+                                        if (ma == vars[j].Name)
+                                        {
+                                            ma = vars[j].value();
+                                        }
+                                    }
+                                    try
+                                    {
+                                        try
+                                        {
+                                            min = int.Parse(mi);
+                                        }
+                                        catch
+                                        {
+                                            if (parts[2].StartsWith(@"("))
+                                            {
+                                                ended = 1;
+                                                for (int l = 0; l < textsA.Count; l++)
+                                                {
+                                                    if (ended == 1)
+                                                    {
+                                                        brackets += textsA[l];
+                                                        if (l < textsA.Count - 1) brackets += " ";
+                                                    }
+                                                    if (textsA[l].EndsWith(@")"))
+                                                    {
+                                                        if (endindex == 0) endindex = l;
+                                                        ended = 2;
+                                                    }
+                                                }
+                                            }
+                                            if (ended != 0)
+                                            {
+                                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                                string result = SolveEquation(equation);
+                                                min = (int)float.Parse(result);
+                                            }
+                                        }
+                                        try
+                                        {
+                                            ma = textsA[endindex + 1];
+                                            max = int.Parse(ma);
+                                        }
+                                        catch
+                                        {
+                                            string newended = textsA[endindex + 1];
+                                            List<string> textsB = new List<string>();
+                                            for (int l = endindex + 1; l < textsA.Count; l++)
+                                            {
+                                                textsB.Add(textsA[l]);
+                                            }
+                                            ended = 0;
+                                            brackets = "";
+                                            if (newended.StartsWith(@"("))
+                                            {
+                                                ended = 1;
+                                                for (int l = 0; l < textsB.Count; l++)
+                                                {
+                                                    if (ended == 1)
+                                                    {
+                                                        brackets += textsB[l];
+                                                        if (l < textsB.Count - 1) brackets += " ";
+                                                    }
+                                                    if (textsB[l].EndsWith(@")"))
+                                                    {
+                                                        ended = 2;
+                                                    }
+                                                }
+                                            }
+                                            if (ended != 0)
+                                            {
+                                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                                string result = SolveEquation(equation);
+                                                max = (int)float.Parse(result);
+                                            }
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        console.AddText("There was an error with the minumim and maximum of Random in line " + codeLine + " \n", true);
+                                    }
+
+                                    Random rand = new Random();
+                                    int rnd = rand.Next(min, max);
+                                    // Create the variable with the user's input as the value
+                                    var.set(rnd.ToString());
+                                }
+
+                                for (int k = 0; k < vars.Count; k++)
+                                {
+                                    if (vars[k].Name == var.Name)
+                                    {
+                                        vars[k] = var;
+                                    }
                                 }
                             }
                             else
                             {
-                                var.change(mid, value);
+                                string value = parts[2];
+                                value = getEquation(value, 2, parts);
 
-                                if (!var.isSet)
+                                value = value.Replace(@"\n", Environment.NewLine);
+                                value = value.Replace(@"\_", " ");
+                                value = value.Replace(@"\!", string.Empty);
+                                for (int j = 0; j < vars.Count; j++)
                                 {
-                                    console.AddText("Their was an error with 'varSet' in line " + codeLine + " \n", true);
-                                    return;
+                                    if (vars[j].Name == value)
+                                    {
+                                        value = vars[j].value();
+                                    }
+                                }
+
+                                if (!var.isNumber())
+                                {
+                                    var.stringChange(value, mid);
+
+                                    if (!var.isSet)
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Their was an error with '" + name + "' the called variable is not a number and cannot be divided or subtracted. Line " + codeLine + " \n", true);
+                                        return;
+                                    }
+                                }
+                                else
+                                {
+                                    var.change(mid, value);
+
+                                    if (!var.isSet)
+                                    {
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Their was an error with 'varSet' in line " + codeLine + " \n", true);
+                                        return;
+                                    }
+                                }
+
+                                for (int k = 0; k < vars.Count; k++)
+                                {
+                                    if (vars[k].Name == var.Name)
+                                    {
+                                        vars[k] = var;
+                                    }
                                 }
                             }
-
-                            for (int k = 0; k < vars.Count; k++)
-                            {
-                                if (vars[k].Name == var.Name)
-                                {
-                                    vars[k] = var;
-                                }
-                            }
-
                         }
                         catch
                         {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                             console.AddText("Their was an error in line " + codeLine + " \n", true);
                             return;
                         }
@@ -2985,6 +4497,165 @@
             }
             playing = false;
             console.AddText("Build Ended" + Environment.NewLine + Environment.NewLine, false);
+        }
+        static bool ifcheck(multimids Mid, string v1, string v2)
+        {
+
+            if (Mid == multimids.equals) // equal to
+            {
+                if (v1 == v2)
+                {
+                    return true;
+                }
+            }
+            else if (Mid == multimids.not) // not equal
+            {
+                if (v1 != v2)
+                {
+                    return true;
+                }
+            }
+            else if (Mid == multimids.less) // less than
+            {
+                float vA = 0, vB = 0;
+                bool vA_int = true, vB_int = true;
+                try
+                {
+                    vA = float.Parse(v1);
+                }
+                catch
+                {
+                    vA_int = false;
+                }
+                try
+                {
+                    vB = float.Parse(v2);
+                }
+                catch
+                {
+                    vB_int = false;
+                }
+
+                if (vA_int && vB_int)
+                {
+                    if (vA > vB) return true;
+                }
+                else if (!vA_int && vB_int)
+                {
+                    if (v1.Length > vB) return true;
+                }
+                else if (vA_int && !vB_int)
+                {
+                    if (vA > v2.Length) return true;
+                }
+                else if (!vA_int && !vB_int)
+                {
+                    if (v1.Length > v2.Length) return true;
+                }
+            }
+            else if (Mid == multimids.greater) // greater than
+            {
+                float vA = 0, vB = 0;
+                bool vA_int = true, vB_int = true;
+                try
+                {
+                    vA = float.Parse(v1);
+                }
+                catch
+                {
+                    vA_int = false;
+                }
+                try
+                {
+                    vB = float.Parse(v2);
+                }
+                catch
+                {
+                    vB_int = false;
+                }
+
+                if (vA_int && vB_int)
+                {
+                    if (vA < vB) return true;
+                }
+                else if (!vA_int && vB_int)
+                {
+                    if (v1.Length < vB) return true;
+                }
+                else if (vA_int && !vB_int)
+                {
+                    if (vA < v2.Length) return true;
+                }
+                else if (!vA_int && !vB_int)
+                {
+                    if (v1.Length < v2.Length) return true;
+                }
+            }
+            else
+            {
+                return false;
+            }
+            return false;
+        }
+        static string getEquation(string value, int a, List<string> parts)
+        {
+            string brackets = "";
+            int ended = 0;
+            List<string> texts = new List<string>();
+            for (int l = a; l < parts.Count; l++)
+            {
+                texts.Add(parts[l]);
+            }
+            if (value.StartsWith(@"("))
+            {
+                ended = 1;
+                for (int l = 0; l < texts.Count; l++)
+                {
+                    if (ended == 1)
+                    {
+                        brackets += texts[l];
+                        if (l < texts.Count - 1) brackets += " ";
+                    }
+                    if (texts[l].EndsWith(@")"))
+                    {
+                        ended = 2;
+                    }
+                }
+            }
+            if (ended != 0)
+            {
+                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                string result = SolveEquation(equation);
+                value = result;
+            }
+            else if (ended == 1)
+            {
+                console.AddText("Syntax error in line " + codeLine + ". Expected ')' to end equation \n", true);
+            }
+
+            return value;
+        }
+        static  string SolveEquation(string equation)
+        {
+            try
+            {
+                // Replace variables with their values
+                foreach (Var variable in vars)
+                {
+                    equation = equation.Replace(variable.Name, variable.value());
+                }
+
+                DataTable dt = new DataTable();
+                dt.Columns.Add("expression", typeof(string), equation);
+                DataRow row = dt.NewRow();
+                dt.Rows.Add(row);
+                object result = row["expression"];
+                return result.ToString();
+            }
+            catch
+            {
+                return "Error: Unable to solve the equation.";
+            }
         }
         /// <summary>
         /// Sets the Console Input to the inputted text
@@ -3215,8 +4886,9 @@ namespace Variables
     {
         string Name { get; set; }
         float number { get; set; }
-        string text_ { get; set; }
+        string text { get; set; }
         bool isSet { get; set; }
+        int stack { get; set; }
         void set(string value);
         void change(string middle, string multiplier);
         void stringChange(string adds, string mid);
@@ -3227,7 +4899,8 @@ namespace Variables
     {
         public string Name { get; set; }
         public float number { get; set; }
-        public string text_ { get; set; }
+        public string text { get; set; }
+        public int stack { get; set; }
         public bool isSet { get; set; }
 
         string StringStandered = "IF YOU GET THIS. IT IS AN ERROR MESSAGE - (23dsffdsf86dg45b64ytu7578566434654fg4g4fhjd) = just some random text";
@@ -3237,7 +4910,7 @@ namespace Variables
         {
             Name = name;
             number = FloatStatendered;
-            text_ = StringStandered;
+            text = StringStandered;
         }
         public void set(string value)
         {
@@ -3247,7 +4920,7 @@ namespace Variables
             }
             catch
             {
-                text_ = value;
+                text = value;
             }
         }
         public void change(string middle, string multiplier)
@@ -3298,11 +4971,11 @@ namespace Variables
                     {
                         case "+":
                             setted = true;
-                            text_ += value;
+                            text += value;
                             break;
                         case "=":
                             setted = true;
-                            text_ = value;
+                            text = value;
                             break;
                         case "-":
                             int v = 0;
@@ -3315,11 +4988,11 @@ namespace Variables
                                 isSet = false;
                                 return;
                             }
-                            for (int i = 0; i < text_.Length; i++)
+                            for (int i = 0; i < text.Length; i++)
                             {
-                                if (i >= text_.Length - v)
+                                if (i >= text.Length - v)
                                 {
-                                    text_ = text_.Remove(i);
+                                    text = text.Remove(i);
                                 }
                             }
                             setted = true;
@@ -3359,7 +5032,7 @@ namespace Variables
             }
             else
             {
-                return text_.ToString();
+                return text.ToString();
             }
         }
 
