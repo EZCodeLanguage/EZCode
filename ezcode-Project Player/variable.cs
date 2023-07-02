@@ -14,6 +14,7 @@ namespace ezcode_Project_Player
         float number { get; set; }
         string text { get; set; }
         bool isSet { get; set; }
+        int stack { get; set; }
         void set(string value);
         void change(string middle, string multiplier);
         void stringChange(string adds, string mid);
@@ -25,12 +26,13 @@ namespace ezcode_Project_Player
         public string Name { get; set; }
         public float number { get; set; }
         public string text { get; set; }
+        public int stack { get; set; }
         public bool isSet { get; set; }
 
         string StringStandered = "IF YOU GET THIS. IT IS AN ERROR MESSAGE - (23dsffdsf86dg45b64ytu7578566434654fg4g4fhjd) = just some random text";
         float FloatStatendered = 1111.111100015684465464864f;
 
-        public Var(string name) 
+        public Var(string name)
         {
             Name = name;
             number = FloatStatendered;
@@ -53,23 +55,23 @@ namespace ezcode_Project_Player
             {
                 float value = float.Parse(multiplier, CultureInfo.InvariantCulture.NumberFormat);
                 float final;
-                if(middle == "+")
+                if (middle == "+")
                 {
                     final = number + value;
                 }
-                else if(middle == "*")
+                else if (middle == "*")
                 {
                     final = number * value;
                 }
-                else if(middle == "-")
+                else if (middle == "-")
                 {
                     final = number - value;
                 }
-                else if(middle == "/")
+                else if (middle == "/")
                 {
                     final = number / value;
                 }
-                else if(middle == "=")
+                else if (middle == "=")
                 {
                     final = value;
                 }
@@ -122,7 +124,7 @@ namespace ezcode_Project_Player
                             setted = true;
                             break;
                     }
-                    if(!setted)
+                    if (!setted)
                     {
                         isSet = false;
                     }
@@ -139,7 +141,7 @@ namespace ezcode_Project_Player
         }
         public bool isNumber()
         {
-            if(number != FloatStatendered)
+            if (number != FloatStatendered)
             {
                 return true;
             }
