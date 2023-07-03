@@ -90,7 +90,7 @@ namespace ezCode
                 }
             }
         }
-        public if_check ifs;
+        /*public if_check ifs;
         public struct if_check
         {
             public int num { get; set; }
@@ -128,7 +128,7 @@ namespace ezCode
                 istrue = itrue;
                 lines = lines_;
             }
-        }
+        }*/
         private async Task PlayAsync(string text)
         {
             string code = text;
@@ -140,11 +140,7 @@ namespace ezCode
             bool hasEnded = false;
             int endl = 0;
             int stackNow = 0;
-            int stackBefore = 0;
-            int ifnum = 0;
-            int ifnow = 0;
             bool iftrue = true;
-            StringBuilder ifStatementLines = new StringBuilder();
 
             for (int w = 0; w < lines.Length; w++)
             {
@@ -312,20 +308,11 @@ namespace ezCode
                 async Task ExecuteLine(string line) { 
                     List<string> parts = line.Trim().Split(' ').ToList();
                     int i = 0;
-                    if (ifnum - ifnow > 1) ifnow = ifnum;
                     if (parts[0] == "endIf")
                     {
                         try
                         {
-                            ifnum--;
-                            //if (ifnum == ifnow) iftrue = true;
-
-                            if (ifStatementLines.Length > 0)
-                            {
-                                string ifStatementCode = ifStatementLines.ToString();
-                                ifStatementLines.Clear();
-                                await PlayAsync(ifStatementCode);
-                            }
+                            iftrue = true;
                         }
                         catch
                         {
@@ -334,7 +321,7 @@ namespace ezCode
                             return;
                         }
                     }
-                    if (ifnum != 0) return;
+                    if (!iftrue) return;
                     if (parts[i] == "print")
                     {
                         try
@@ -4570,21 +4557,23 @@ namespace ezCode
                                     upcode += textsA[j] + " ";
                                 }
                                 if (upcode != string.Empty) await PlayAsync(upcode);
-                                if (upcode == string.Empty)
-                                {
-                                    ifStatementLines.Append(upcode);
-                                }
                                 else
                                 {
-                                    ifnum++;
-                                    //ifs.Add(new if_check(ifnum, true, if_check.SetIf(lines, w)));
-                                    var iff = new if_check(ifnum, true, if_check.SetIf(lines, w));
-                                    for (int j = 0; j < iff.lines.Count; j++)
+                                    bool aa = false;
+                                    for (int z = lines.ToList().IndexOf(line) + 1; z < lines.Length; z++)
                                     {
-                                        ifStatementLines.Append(iff.lines[j]);
-                                        ifStatementLines.Append(Environment.NewLine);
+                                        if (lines[z] == "endIf")
+                                        {
+                                            aa = true;
+                                        }
                                     }
-                                    ifs = new if_check(ifnum, true, if_check.SetIf(lines, w));
+                                    if (!aa)
+                                    {
+                                        iftrue = false;
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Their is no 'endIf' for the if statement in line " + codeLine + " \n", true);
+                                        return;
+                                    }
                                 }
                             }
                             else
@@ -4596,8 +4585,22 @@ namespace ezCode
                                 }
                                 if (upcode == string.Empty)
                                 {
-                                    ifs = new if_check(ifnum, true, if_check.SetIf(lines, w));
-                                    ifnum++;
+                                    iftrue = false;
+                                }
+                                bool aa = false;
+                                for (int z = lines.ToList().IndexOf(line) + 1; z < lines.Length; z++)
+                                {
+                                    if (lines[z].Trim() == "endIf")
+                                    {
+                                        aa = true;
+                                    }
+                                }
+                                if (!aa)
+                                {
+                                    iftrue = false;
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Their is no 'endIf' for the if statement in line " + codeLine + " \n", true);
+                                    return;
                                 }
                             }
                         }
@@ -4680,7 +4683,7 @@ namespace ezCode
                     }// # create error errorText
                     else
                     {
-                        if (parts[i] == "#" || parts[i] == "#create" || parts[i] == "#suppress")
+                        if (parts[i] == "#" || parts[i] == "#create" || parts[i] == "#suppress" || parts[i] == "endIf")
                         {
                             return;
                         }
