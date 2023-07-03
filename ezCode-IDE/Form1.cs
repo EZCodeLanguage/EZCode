@@ -448,7 +448,7 @@ namespace ezCode
                             return;
                         }
                     } // printRaw text
-                    else if (parts[i] == "Group")
+                    else if (parts[i] == "group")
                     {
                         try
                         {
@@ -836,7 +836,7 @@ namespace ezCode
                             console.AddText("Their was an error with 'Group' in line " + codeLine + " \n", true);
                             return;
                         }
-                    } // Group groupName add mid name |or| Group new name |or| Group groupName change abs/rel mid v1 v2 v3
+                    } // group groupName add mid name |or| group new name |or| group groupName change abs/rel mid v1 v2 v3
                     else if (parts[i] == "consoleClear")
                     {
                         try
@@ -2327,6 +2327,7 @@ namespace ezCode
                                     value = vars[j].value();
                                 }
                             }
+                            Var var = new Var(name);
 
                             value = value.Replace(@"\n", Environment.NewLine);
                             value = value.Replace(@"\_", " ");
@@ -2344,12 +2345,9 @@ namespace ezCode
                                 }
 
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(senttext);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
 
                                 // Reset the "sent" flag
                                 sent = false;
@@ -2408,12 +2406,9 @@ namespace ezCode
                                 }
 
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(intersects);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             else if (value == "Random")
                             {
@@ -2519,32 +2514,23 @@ namespace ezCode
                                 Random rand = new Random();
                                 int rnd = rand.Next(min, max);
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(rnd.ToString());
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             else if (value == "KeyInput")
                             {
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(keyPreview);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             else if (value == "KeyDown")
                             {
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(keydown == false ? "0" : "1");
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             else if (value == "AwaitKeyInput")
                             {
@@ -2557,12 +2543,9 @@ namespace ezCode
                                 }
 
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(keyPreview);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             /*else if (value == "MousePosition")
                             {
@@ -2657,12 +2640,9 @@ namespace ezCode
                                 }
 
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(val);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             else if (value == "FromTextBox")
                             {
@@ -2684,12 +2664,9 @@ namespace ezCode
                                 }
 
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(val);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             else if (value == "FromList")
                             {
@@ -2722,12 +2699,9 @@ namespace ezCode
                                     if (!isVar) numberValue = Convert.ToInt16(number);
 
                                     // Create the variable with the user's input as the value
-                                    Var var = new Var(name);
                                     var.set(list[numberValue].value());
                                     var.isSet = true;
                                     var.stack = stackNow;
-
-                                    vars.Add(var);
                                 }
                                 else
                                 {
@@ -2767,13 +2741,21 @@ namespace ezCode
                                     value = result;
                                 }
                                 // Create a new variable with the specified name and value
-                                Var var = new Var(name);
                                 var.set(value);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
+
+                            bool first = true;
+                            for (int j = 0; j < vars.Count; j++)
+                            {
+                                if (vars[j].Name == var.Name)
+                                {
+                                    first = false;
+                                    vars[j] = var;
+                                }
+                            }
+                            if (first) vars.Add(var);
                         }
                         catch
                         {

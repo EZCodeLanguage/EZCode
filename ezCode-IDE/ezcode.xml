@@ -6,10 +6,10 @@
 	<style name="Comment" color="LightGreen" fontStyle="Regular" />
 	<style name="Comment2" color="GreenYellow" fontStyle="Italic" />
 	<style name="hashtag" color="DarkRed" fontStyle="Italic" />
-	<rule style="Keyword">print |printRaw |write |writeRaw | change |object |image |label |font |move |scale |color |var |varRaw |textbox |multiLine |varInput|varSet |varEquals |varAddText |list |listRaw |writeToFile |sound |playFile |button |buttonClick </rule>
+	<rule style="Keyword">print |printRaw |write |writeRaw |group |object |image |label |font |move |scale |color |var |varRaw |textbox |multiLine |varInput|varSet |varEquals |varAddText |list |listRaw |writeToFile |sound |playFile |button |buttonClick </rule>
 	<rule style="Loop">loop |end |: |if |endIf</rule>
 	<rule style="OneWords">consoleClear|await |endBuild</rule>
-	<rule style="Afters">~/|\/ |\* |\- |\+ | \!|\\_|\\n|\\!|&gt;|&lt;| ReadFile | AwaitKeyInput| KeyDown| KeyInput| ConsoleInput| Random | MousePosition| MouseClick| FromList| Key | Console | StickKey | await | AwaitKey | IntersectsWith | bold | italic | strikeout | underline | regular | FromTextBox | input | now |</rule>
+	<rule style="Afters">~/|\/ |\* |\- |\+ | \!|\\_|\\n|\\!|&gt;|&lt;| ReadFile | change | abs | rel | new | relative | absolute | AwaitKeyInput| KeyDown| KeyInput| ConsoleInput| Random | MousePosition| MouseClick| FromList| Key | Console | StickKey | await | AwaitKey | IntersectsWith | bold | italic | strikeout | underline | regular | FromTextBox | input | now |</rule>
 	<rule style="Comment">\/\/.*$</rule>
 	<rule style="Comment2">\/\/\/.*$</rule>
 	<rule style="hashtag">#.*$</rule>
