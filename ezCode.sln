@@ -3,7 +3,7 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezCode-IDE", "ezCode-IDE\ezCode.csproj", "{B13343D0-C819-4A3B-86A2-21ACDF136C90}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezCode", "ezCode-IDE\ezCode.csproj", "{B13343D0-C819-4A3B-86A2-21ACDF136C90}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezcode_Viewer", "ezcode_Viewer\ezcode_Viewer.csproj", "{821D180D-C51E-4C1E-93A7-638F1E410127}"
 EndProject
@@ -14,6 +14,8 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EzCode-API", "EzCode-API\EzCode-API.csproj", "{39BE6D7A-C9DF-49A0-9023-5E3548F998C7}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "EzCode-All_Programs", "EzCode-All_Programs\EzCode-All_Programs.vdproj", "{F9472726-2E05-4332-BC54-0B74D716CE67}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ezcode-Application", "ezcode-Application\ezcode-Application.csproj", "{3DFE8866-594F-47B4-8CC4-65378F6C58AD}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -43,6 +45,10 @@ Global
 		{39BE6D7A-C9DF-49A0-9023-5E3548F998C7}.Release|Any CPU.Build.0 = Release|Any CPU
 		{F9472726-2E05-4332-BC54-0B74D716CE67}.Debug|Any CPU.ActiveCfg = Debug
 		{F9472726-2E05-4332-BC54-0B74D716CE67}.Release|Any CPU.ActiveCfg = Release
+		{3DFE8866-594F-47B4-8CC4-65378F6C58AD}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{3DFE8866-594F-47B4-8CC4-65378F6C58AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{3DFE8866-594F-47B4-8CC4-65378F6C58AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{3DFE8866-594F-47B4-8CC4-65378F6C58AD}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
