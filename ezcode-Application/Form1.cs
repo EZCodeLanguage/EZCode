@@ -1,16 +1,99 @@
-using NAudio.Wave;
-using Objects;
-using System.Drawing.Drawing2D;
-using System.IO.Compression;
-using System.Net.Http.Headers;
-using System.Xml.Linq;
-using PackageSystem;
+﻿using Microsoft.CSharp;
+using System;
+using System.CodeDom.Compiler;
+using System.Collections.Generic;
 using System.IO;
-using System.Data;
+using System.IO.Compression;
+using System.Windows.Forms;
 
-namespace ezcode_Project_Player
+namespace ezcode_Application
 {
     public partial class Form1 : Form
+    {
+        string iconPath;
+        string zipfile;
+
+        public Form1()
+        {
+            InitializeComponent();
+        }
+
+        private void radioButton1_CheckedChanged(object sender, EventArgs e)
+        {
+            panel2.Enabled = false;
+        }
+
+        private void radioButton2_CheckedChanged(object sender, EventArgs e)
+        {
+            panel2.Enabled = true;
+        }
+
+        private void IconButton_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.Filter = "Icon Files (*.ico)|*.ico";
+            fileDialog.ShowDialog();
+            iconPath = fileDialog.FileName;
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            string width = widthTextBox.Text;
+            string height = heightTextBox.Text;
+            string title = titleTextBox.Text;
+
+            if (string.IsNullOrWhiteSpace(textBox1.Text))
+            {
+                MessageBox.Show("Please provide a valid output folder path.");
+                return;
+            }
+
+            string code = GenerateCode(width, height, iconPath, title);
+
+            if (BuildApplication(code))
+            {
+                try
+                {
+                    string[] str = textBox1.Text.Split('/');
+                    string st = "";
+                    for (int i = 0; i < str.Length; i++)
+                    {
+                        if(i < str.Length)
+                            st += str[i] + "\\";
+                    }
+                    PackageHandler.CopyFile(zipfile, Path.Combine(st, title + ".gp.ezproj1"), true);
+                    MessageBox.Show("Application built successfully!");
+                }
+                catch
+                {
+                    MessageBox.Show("Failed to build the application.");
+                }
+            }
+            else
+            {
+                MessageBox.Show("Failed to build the application.");
+            }
+        }
+        private string GenerateCode(string width, string height, string iconPath, string title)
+        {  // Generate the code for the new application based on user input
+            string code = @"
+using System;
+using System.Drawing;
+using System.Windows.Forms;
+using System.IO;
+using System.IO.Compression;
+using System.Collections.Generic;
+using System.Data;
+using Variables;
+using Objects;
+//using NAudio.Wave;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Xml.Serialization;
+
+namespace GeneratedApplication
+{
+    public class MainForm : Form
     {
         enum multimids
         {
@@ -25,18 +108,18 @@ namespace ezcode_Project_Player
             less,
             not
         }
-        string _File;
-        public static bool showerrors;
-        bool playing;
+        public static string title = """ + title + @""";
+        public string _File;
+        public static bool showerrors = false;
         bool sent;
         int codeLine = 0;
-        int mc;
-        string keyPreview;
-        string awaitKeyPreview;
+        string keyPreview = """";
+        string awaitKeyPreview = """";
         string senttext;
         bool keydown;
         string txt;
-        WaveOutEvent outputPlayer;
+        RichTextBox console = new RichTextBox();
+        //WaveOutEvent outputPlayer;
         List<Label> labels = new List<Label>();
         List<GObject> gameObjects = new List<GObject>();
         List<Var> vars = new List<Var>();
@@ -44,38 +127,108 @@ namespace ezcode_Project_Player
         List<TextBox> textboxes = new List<TextBox>();
         List<Button> buttons = new List<Button>();
 
-        public Form1(string file)
+        public MainForm()
         {
             InitializeComponent();
-            toolStripComboBox1.SelectedIndex = 0;
-            
-            _File = file;
+            this.Load += Form_Load;
+            this.FormClosing += TestingForm_FormClosing;
+            this.PreviewKeyDown += TestingForm_PreviewKeyDown;
+            this.KeyPress += TestingForm_KeyPress;
+            this.KeyDown += Form1_KeyDown;
+            this.KeyUp += Form1_KeyUp;
+        }
 
-            if (_File != "NOTHING")
+        private void InitializeComponent()
+        {
+            this.ClientSize = new System.Drawing.Size(" + width + ", " + height + @");
+            this.Icon = new System.Drawing.Icon(@""" + iconPath + @""");
+            this.Text = title;
+
+            if (" + (Maximized.Checked ? "true" : "false") + @")
+            {
+                this.FormBorderStyle = FormBorderStyle.None;
+                this.Bounds = Screen.PrimaryScreen.Bounds;
+                this.TopMost = true;
+            }
+        }
+
+        private async void Form_Load(object sender, EventArgs e)
+        {
+            string file = AppDomain.CurrentDomain.BaseDirectory + title + "".gp.ezproj1"";
+            string[] a = file.Split('\\');
+            string f = ""Apps\\"" + title;
+            string d = ""C:\\Users\\Public\\Temp\\ezcode\\"" + f + ""\\"";
+            if (file != """")
             {
                 try
                 {
-                    StreamReader streamReader = new StreamReader(_File);
+                    try
+                    {
+                        if (Directory.Exists(d)) Directory.Delete(d, true);
+                    }
+                    catch 
+                    {
+                        
+                    } 
+                    Directory.CreateDirectory(d);
+                    ZipFile.ExtractToDirectory(file, d);
+
+                    //string[] lis = File.ReadAllLines(d + ""Lisence.txt"");
+
+                    StreamReader streamReader = new StreamReader(d + ""root_.ezcode"");
                     txt = streamReader.ReadToEnd();
                     streamReader.Close();
-                    Space.BackColor = Color.Gray;
                 }
                 catch
                 {
-                    MessageBox.Show("Could not open the document");
-                    Space.BackColor = Color.DarkGray;
+                    MessageBox.Show(""Could not play project"");
                 }
             }
             else
             {
-                Space.BackColor = Color.DarkGray;
+                MessageBox.Show(""Could not play project"");
+                return;
+            }
+            labels.Clear();
+            buttons.Clear();
+            textboxes.Clear();
+            gameObjects.Clear();
+            vars.Clear();
+            VarList.Clear();
+            console.Clear();
+            _File = d + ""root_.ezcode"";
+            await PlayAsync(txt);
+        }
+        private async void TestingForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            try
+            {
+                string file = AppDomain.CurrentDomain.BaseDirectory + title + "".gp.ezproj1"";
+                string[] a = file.Split('\\');
+                string f = ""Apps\\"" + title;
+                string d = ""C:\\Users\\Public\\Temp\\ezcode\\"" + f + ""\\"";
+                string[] q = Directory.GetFiles(d);
+                for (int i = 0; i < q.Length; i++)
+                {
+                    try
+                    {
+                        File.Delete(q[i]);
+                    }
+                    catch
+                    {
+
+                    }
+                }
+                await Task.Delay(250);
+            }
+            catch
+            {
+
             }
         }
-
-        private async Task PlayAsync(string text, string di)
+        private Task PlayAsync(string code)
         {
-            string code = text;
-            string[] lines = code.Split(Environment.NewLine);
+            string[] lines = code.Split('\n');
 
             List<string> loopCode = new List<string>(); // Create a list to store the loop code
 
@@ -83,16 +236,13 @@ namespace ezcode_Project_Player
             bool hasEnded = false;
             int endl = 0;
             int stackNow = 0;
-            int stackBefore = 0;
 
             for (int w = 0; w < lines.Length; w++)
             {
-                if (!playing) return;
                 codeLine = w + 1;
                 string[] part = lines[w].Trim().Split(' ').ToArray();
-                if (part[0] == "loop")
+                if (part[0] == ""loop"")
                 {
-                    int stackTotal = 1;
                     hasEnded = false;
                     breaked = false;
                     // Get the number of times to loop
@@ -111,7 +261,7 @@ namespace ezcode_Project_Player
                                 }
                                 catch
                                 {
-                                    console.AddText("An error occured, 'loop' wasn't formatted correctly line " + codeLine + Environment.NewLine, true);
+                                    console.AddText(""An error occured, 'loop' wasn't formatted correctly line "" + codeLine + Environment.NewLine, true);
                                 }
                             }
                         }
@@ -119,7 +269,7 @@ namespace ezcode_Project_Player
                     }
                     catch
                     {
-                        console.AddText("An error occured, couldn't get 'loop' value in line " + codeLine + Environment.NewLine, true);
+                        console.AddText(""An error occured, couldn't get 'loop' value in line "" + codeLine + Environment.NewLine, true);
                     }
                     // Store the loop code in the list
                     loopCode.Clear();
@@ -128,7 +278,7 @@ namespace ezcode_Project_Player
 
                     for (int k = w + 1; k < lines.Length; k++)
                     {
-                        if (lines[k].Trim() == "end")
+                        if (lines[k].Trim() == ""end"")
                         {
                             if (!containsEnd) endl = k + 1;
                             containsEnd = true;
@@ -137,7 +287,7 @@ namespace ezcode_Project_Player
 
                     if (!containsEnd)
                     {
-                        console.AddText("loop doesn't have and 'end'" + Environment.NewLine, true);
+                        console.AddText(""loop doesn't have and 'end'"" + Environment.NewLine, true);
                         return;
                     }
 
@@ -145,16 +295,16 @@ namespace ezcode_Project_Player
                     {
                         string[] innerParts = lines[k].Split(' ');
                         int st = stackNow;
-                        // Check if the current line is an "endloop" statement
-                        if (innerParts[0] == "loop")
+                        // Check if the current line is an ""endloop"" statement
+                        if (innerParts[0] == ""loop"")
                         {
                             //stackTotal++;
                         }
-                        else if (innerParts[0] == "if" && innerParts[innerParts.Length - 1] == ":")
+                        else if (innerParts[0] == ""if"" && innerParts[innerParts.Length - 1] == "":"")
                         {
                             //stackTotal++;
                         }
-                        else if (innerParts[0] == "end")
+                        else if (innerParts[0] == ""end"")
                         {
                             //st++;
                             if (/*st == stackTotal*/ true)
@@ -165,12 +315,12 @@ namespace ezcode_Project_Player
                                 break; // Break out of the loop
                             }
                         }/*
-                        if (innerParts[0] == "return")
+                        if (innerParts[0] == ""return"")
                         {
                             w = k; //Jump back to the line after the endloop statement
                             break;
                         }
-                        else if (innerParts[0] == "break")
+                        else if (innerParts[0] == ""break"")
                         {
                             breaked = true;
                             w = endl + 1;
@@ -188,7 +338,7 @@ namespace ezcode_Project_Player
                         // Execute the code in the loop code list
                         foreach (string loopLine in loopCode)
                         {
-                            if (!breaked && playing) await ExecuteLine(loopLine);
+                            if (!breaked) await ExecuteLine(loopLine);
                         }
                     }
                 }
@@ -200,24 +350,26 @@ namespace ezcode_Project_Player
                 // using filePath list name : values,from,that,script |or| using filePath var name ValueFromScript
                 async Task ExecuteLine(string line)
                 {
+                    if (keyPreview == null) keyPreview = """";
+                    if (awaitKeyPreview == null) awaitKeyPreview = """";
                     List<string> parts = line.Trim().Split(' ').ToList();
                     int i = 0;
-                    if (parts[i] == "print")
+                    if (parts[i] == ""print"")
                     {
                         try
                         {
-                            string text = "";
+                            string text = """";
                             for (int j = 1; j < parts.Count; j++)
                             {
                                 text += parts[j];
-                                if (j < parts.Count - 1) text += " ";
+                                if (j < parts.Count - 1) text += "" "";
                             }
 
                             bool isVar = false;
                             string val = text;
-                            List<string> texts = text.Split(" ").ToList();
+                            List<string> texts = text.Split(' ').ToList();
                             int ended = 0;
-                            string brackets = "";
+                            string brackets = """";
                             int started = 0;
                             int count = 0;
 
@@ -231,7 +383,7 @@ namespace ezcode_Project_Player
                                         texts[j] = vars[k].value();
                                     }
                                 }
-                                if (texts[j].StartsWith(@"\("))
+                                if (texts[j].StartsWith(@""\(""))
                                 {
                                     ended = 1;
                                     count = 1;
@@ -242,9 +394,9 @@ namespace ezcode_Project_Player
                                         {
                                             count++;
                                             brackets += texts[l];
-                                            if (l < texts.Count - 1) brackets += " ";
+                                            if (l < texts.Count - 1) brackets += "" "";
                                         }
-                                        if (texts[l].EndsWith(@")\"))
+                                        if (texts[l].EndsWith(@"")\""))
                                         {
                                             ended = 2;
                                         }
@@ -253,7 +405,7 @@ namespace ezcode_Project_Player
                             }
                             if (ended != 0)
                             {
-                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                 string result = SolveEquation(equation);
                                 texts[started] = result;
 
@@ -267,19 +419,19 @@ namespace ezcode_Project_Player
                                     texts.RemoveRange(started + 1, texts.Count - (started + 1));
                                 }
                             }
-                            text = "";
+                            text = """";
                             for (int j = 0; j < texts.Count; j++)
                             {
                                 text += texts[j];
-                                if (j < texts.Count - 1) text += " ";
+                                if (j < texts.Count - 1) text += "" "";
                             }
                             val = text;
 
                             if (!isVar)
                             {
-                                val = val.Replace(@"\n", Environment.NewLine);
-                                val = val.Replace(@"\_", " ");
-                                val = val.Replace(@"\!", string.Empty);
+                                val = val.Replace(@""\n"", Environment.NewLine);
+                                val = val.Replace(@""\_"", "" "");
+                                val = val.Replace(@""\!"", string.Empty);
 
                                 console.AddText(val + Environment.NewLine, false);
                                 return;
@@ -291,31 +443,31 @@ namespace ezcode_Project_Player
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("There was an error with 'print' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""There was an error with 'print' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // print text
-                    else if (parts[i] == "printRaw")
+                    else if (parts[i] == ""printRaw"")
                     {
                         try
                         {
-                            string text = "";
+                            string text = """";
                             for (int j = 1; j < parts.Count; j++)
                             {
                                 text += parts[j];
-                                if (j < parts.Count - 1) text += " ";
+                                if (j < parts.Count - 1) text += "" "";
                             }
-                            console.AddText(text + "\n", false);
+                            console.AddText(text + ""\n"", false);
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'printRaw' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'printRaw' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // printRaw text
-                    else if (parts[i] == "consoleClear")
+                    else if (parts[i] == ""consoleClear"")
                     {
                         try
                         {
@@ -323,27 +475,27 @@ namespace ezcode_Project_Player
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'consoleClear' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'consoleClear' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // consoleClear
-                    else if (parts[i] == "write")
+                    else if (parts[i] == ""write"")
                     {
                         try
                         {
                             string labelName = parts[i + 1];
-                            string labelText = "";
+                            string labelText = """";
                             for (int j = 2; j < parts.Count; j++)
                             {
                                 labelText += parts[j];
-                                if (j < parts.Count - 1) labelText += " ";
+                                if (j < parts.Count - 1) labelText += "" "";
                             }
                             string val = labelText;
                             Label label = new Label();
-                            label.AccessibleName = "error";
+                            label.AccessibleName = ""error"";
                             TextBox textBox = new TextBox();
-                            textBox.AccessibleName = "error";
+                            textBox.AccessibleName = ""error"";
                             for (int j = 0; j < labels.Count; j++)
                             {
                                 if (labels[j].Name == labelName)
@@ -360,9 +512,9 @@ namespace ezcode_Project_Player
                             }
                             bool isvar = false;
 
-                            List<string> texts = labelText.Split(" ").ToList();
+                            List<string> texts = labelText.Split(' ').ToList();
                             int ended = 0;
-                            string brackets = "";
+                            string brackets = """";
                             int started = 0;
                             int count = 0;
 
@@ -376,7 +528,7 @@ namespace ezcode_Project_Player
                                         texts[j] = vars[k].value();
                                     }
                                 }
-                                if (texts[j].StartsWith(@"\("))
+                                if (texts[j].StartsWith(@""\(""))
                                 {
                                     ended = 1;
                                     count = 1;
@@ -387,9 +539,9 @@ namespace ezcode_Project_Player
                                         {
                                             count++;
                                             brackets += texts[l];
-                                            if (l < texts.Count - 1) brackets += " ";
+                                            if (l < texts.Count - 1) brackets += "" "";
                                         }
-                                        if (texts[l].EndsWith(@")\"))
+                                        if (texts[l].EndsWith(@"")\""))
                                         {
                                             ended = 2;
                                         }
@@ -398,7 +550,7 @@ namespace ezcode_Project_Player
                             }
                             if (ended != 0)
                             {
-                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                 string result = SolveEquation(equation);
                                 texts[started] = result;
 
@@ -412,26 +564,26 @@ namespace ezcode_Project_Player
                                     texts.RemoveRange(started + 1, texts.Count - (started + 1));
                                 }
                             }
-                            labelText = "";
+                            labelText = """";
                             for (int j = 0; j < texts.Count; j++)
                             {
                                 labelText += texts[j];
-                                if (j < texts.Count - 1) labelText += " ";
+                                if (j < texts.Count - 1) labelText += "" "";
                             }
                             val = labelText;
-                            if (label.AccessibleName == "error" && textBox.AccessibleName == "error")
+                            if (label.AccessibleName == ""error"" && textBox.AccessibleName == ""error"")
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Could not find a label or txtbox named " + labelName + "\n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Could not find a label or txtbox named "" + labelName + ""\n"", true);
                                 return;
                             }
-                            else if (label.AccessibleName != "error" && textBox.AccessibleName == "error")
+                            else if (label.AccessibleName != ""error"" && textBox.AccessibleName == ""error"")
                             {
                                 if (!isvar)
                                 {
-                                    val = val.Replace(@"\n", Environment.NewLine);
-                                    val = val.Replace(@"\_", " ");
-                                    val = val.Replace(@"\!", string.Empty);
+                                    val = val.Replace(@""\n"", Environment.NewLine);
+                                    val = val.Replace(@""\_"", "" "");
+                                    val = val.Replace(@""\!"", string.Empty);
 
                                     label.Text = val;
                                 }
@@ -440,13 +592,13 @@ namespace ezcode_Project_Player
                                     label.Text = labelText;
                                 }
                             }
-                            else if (label.AccessibleName == "error" && textBox.AccessibleName != "error")
+                            else if (label.AccessibleName == ""error"" && textBox.AccessibleName != ""error"")
                             {
                                 if (!isvar)
                                 {
-                                    val = val.Replace(@"\n", Environment.NewLine);
-                                    val = val.Replace(@"\_", " ");
-                                    val = val.Replace(@"\!", string.Empty);
+                                    val = val.Replace(@""\n"", Environment.NewLine);
+                                    val = val.Replace(@""\_"", "" "");
+                                    val = val.Replace(@""\!"", string.Empty);
 
                                     textBox.Text = val;
                                 }
@@ -458,27 +610,27 @@ namespace ezcode_Project_Player
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'write' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'write' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // write labelName text
-                    else if (parts[i] == "writeRaw")
+                    else if (parts[i] == ""writeRaw"")
                     {
                         try
                         {
                             string labelName = parts[i + 1];
-                            string labelText = "";
+                            string labelText = """";
                             for (int j = 2; j < parts.Count; j++)
                             {
                                 labelText += parts[j];
-                                if (j < parts.Count - 1) labelText += " ";
+                                if (j < parts.Count - 1) labelText += "" "";
                             }
                             string val = string.Empty;
                             Label label = new Label();
-                            label.AccessibleName = "error";
+                            label.AccessibleName = ""error"";
                             TextBox textBox = new TextBox();
-                            textBox.AccessibleName = "error";
+                            textBox.AccessibleName = ""error"";
                             for (int j = 0; j < labels.Count; j++)
                             {
                                 if (labels[j].Name == labelName)
@@ -494,38 +646,38 @@ namespace ezcode_Project_Player
                                 }
                             }
 
-                            if (label.AccessibleName == "error" && textBox.AccessibleName == "error")
+                            if (label.AccessibleName == ""error"" && textBox.AccessibleName == ""error"")
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Could not find a label or txtbox named " + labelName + "\n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Could not find a label or txtbox named "" + labelName + ""\n"", true);
                                 return;
                             }
-                            else if (label.AccessibleName != "error" && textBox.AccessibleName == "error")
+                            else if (label.AccessibleName != ""error"" && textBox.AccessibleName == ""error"")
                             {
                                 label.Text = labelText;
                             }
-                            else if (label.AccessibleName == "error" && textBox.AccessibleName != "error")
+                            else if (label.AccessibleName == ""error"" && textBox.AccessibleName != ""error"")
                             {
                                 textBox.Text = labelText;
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'write' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'write' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // writeRaw labelName text
-                    else if (parts[i] == "button")
+                    else if (parts[i] == ""button"")
                     {
                         try
                         {
                             string name = parts[i + 1];
                             string text = parts[i + 2];
 
-                            text = text.Replace(@"\n", Environment.NewLine);
-                            text = text.Replace(@"\_", " ");
-                            text = text.Replace(@"\!", string.Empty);
+                            text = text.Replace(@""\n"", Environment.NewLine);
+                            text = text.Replace(@""\_"", "" "");
+                            text = text.Replace(@""\!"", string.Empty);
 
                             for (int j = 0; j < vars.Count; j++)
                             {
@@ -543,35 +695,35 @@ namespace ezcode_Project_Player
                             b.FlatStyle = FlatStyle.Flat;
                             b.FlatAppearance.BorderSize = 1;
 
-                            Space.Controls.Add(b);
+                            this.Controls.Add(b);
                             buttons.Add(b);
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'button' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'button' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // button name text
-                    else if (parts[i] == "buttonClick")
+                    else if (parts[i] == ""buttonClick"")
                     {
                         try
                         {
                             string name = parts[i + 1];
-                            string file = "";
+                            string file = """";
                             for (int j = 2; j < parts.Count; j++)
                             {
                                 file += parts[j];
-                                if (j < parts.Count - 1) file += " ";
+                                if (j < parts.Count - 1) file += "" "";
                             }
                             bool iss = false;
                             Button b = new Button();
 
                             for (int j = 0; j < vars.Count; j++)
                             {
-                                if (vars[j].Name == text)
+                                if (vars[j].Name == code)
                                 {
-                                    text = vars[j].value();
+                                    code = vars[j].value();
                                 }
                                 if (vars[j].Name == file)
                                 {
@@ -589,21 +741,21 @@ namespace ezcode_Project_Player
                             }
                             if (!iss)
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Could not find a button named " + name + " in line " + codeLine + " \n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Could not find a button named "" + name + "" in line "" + codeLine + "" \n"", true);
                                 return;
                             }
 
 
-                            if (file.Contains("~/"))
+                            if (file.Contains(""~/""))
                             {
-                                string[] dp = _File.Split(@"\");
-                                string directory = "";
+                                string[] dp = _File.Split('\\');
+                                string directory = """";
                                 for (int j = 0; j < dp.Length; j++)
                                 {
                                     if (j < dp.Length - 1)
                                     {
-                                        directory += dp[j] + @"\\";
+                                        directory += dp[j] + @""\\"";
                                     }
                                 }
                                 directory += file.Remove(0, 2);
@@ -612,8 +764,8 @@ namespace ezcode_Project_Player
 
                             if (!File.Exists(file))
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Could not find the file specified in line " + codeLine + ": " + file + " \n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Could not find the file specified in line "" + codeLine + "": "" + file + "" \n"", true);
                                 return;
                             }
 
@@ -623,21 +775,21 @@ namespace ezcode_Project_Player
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'buttonClcik' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'buttonClcik' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // buttonClick buttonname PathtoFile
-                    else if (parts[i] == "textbox")
+                    else if (parts[i] == ""textbox"")
                     {
                         try
                         {
                             string name = parts[i + 1];
                             string text = parts[i + 2];
 
-                            text = text.Replace(@"\n", Environment.NewLine);
-                            text = text.Replace(@"\_", " ");
-                            text = text.Replace(@"\!", string.Empty);
+                            text = text.Replace(@""\n"", Environment.NewLine);
+                            text = text.Replace(@""\_"", "" "");
+                            text = text.Replace(@""\!"", string.Empty);
 
                             for (int j = 0; j < vars.Count; j++)
                             {
@@ -653,24 +805,24 @@ namespace ezcode_Project_Player
                             tb.Name = name;
                             tb.Text = text;
 
-                            Space.Controls.Add(tb);
+                            this.Controls.Add(tb);
                             textboxes.Add(tb);
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'textbox' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'textbox' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // textbox name text
-                    else if (parts[i] == "multiLine")
+                    else if (parts[i] == ""multiLine"")
                     {
                         try
                         {
                             string tb = parts[i + 1];
                             string t = parts[i + 2];
                             TextBox textBox = new TextBox();
-                            textBox.AccessibleName = "error";
+                            textBox.AccessibleName = ""error"";
                             for (int j = 0; j < textboxes.Count; j++)
                             {
                                 if (textboxes[j].Name == tb)
@@ -687,19 +839,19 @@ namespace ezcode_Project_Player
                                 }
                             }
 
-                            if (textBox.AccessibleName == "error")
+                            if (textBox.AccessibleName == ""error"")
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Could not find a txtbox named " + tb + "\n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Could not find a txtbox named "" + tb + ""\n"", true);
                                 return;
                             }
                             else
                             {
-                                if (t == "yes" || t == "Yes" || t == "1" || t == "true" || t == "True")
+                                if (t == ""yes"" || t == ""Yes"" || t == ""1"" || t == ""true"" || t == ""True"")
                                 {
                                     textBox.Multiline = true;
                                 }
-                                if (t == "no" || t == "No" || t == "0" || t == "false" || t == "False")
+                                if (t == ""no"" || t == ""No"" || t == ""0"" || t == ""false"" || t == ""False"")
                                 {
                                     textBox.Multiline = false;
                                 }
@@ -707,12 +859,12 @@ namespace ezcode_Project_Player
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'write' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'write' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // multLine textboxname value
-                    else if (parts[i] == "object")
+                    else if (parts[i] == ""object"")
                     {
                         try
                         {
@@ -728,9 +880,9 @@ namespace ezcode_Project_Player
                                     isVar = true;
                                 }
                             }
-                            string brackets = "";
+                            string brackets = """";
                             int ended = 0;
-                            if (parts[2].StartsWith(@"("))
+                            if (parts[2].StartsWith(@""(""))
                             {
                                 ended = 1;
                                 List<string> texts = new List<string>();
@@ -743,9 +895,9 @@ namespace ezcode_Project_Player
                                     if (ended == 1)
                                     {
                                         brackets += texts[l];
-                                        if (l < texts.Count - 1) brackets += " ";
+                                        if (l < texts.Count - 1) brackets += "" "";
                                     }
-                                    if (texts[l].EndsWith(@")"))
+                                    if (texts[l].EndsWith(@"")""))
                                     {
                                         ended = 2;
                                     }
@@ -753,7 +905,7 @@ namespace ezcode_Project_Player
                             }
                             if (ended != 0)
                             {
-                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                 string result = SolveEquation(equation);
                                 points = (int)float.Parse(result);
                             }
@@ -766,8 +918,8 @@ namespace ezcode_Project_Player
 
                             if (points < 3)
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("A minumum of 3 points required for the object " + name + "\n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""A minumum of 3 points required for the object "" + name + ""\n"", true);
                             }
                             else if (points == 3) go = new GObject(GObject.Type.Triangle);
                             else if (points == 4) go = new GObject(GObject.Type.Square);
@@ -780,38 +932,38 @@ namespace ezcode_Project_Player
                             go.Name = name;
                             go.BackColor = Color.Black;
 
-                            Space.Controls.Add(go);
+                            this.Controls.Add(go);
                             gameObjects.Add(go);
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'object' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'object' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // object name x
-                    else if (parts[i] == "image")
+                    else if (parts[i] == ""image"")
                     {
                         try
                         {
                             string name = parts[i + 1];
-                            string file = "";
+                            string file = """";
                             for (int j = 3; j < parts.Count; j++)
                             {
                                 file += parts[j];
-                                if (j < parts.Count - 1) file += " ";
+                                if (j < parts.Count - 1) file += "" "";
                             }
                             string type = parts[i + 2].Trim();
 
-                            if (file.Contains("~/"))
+                            if (file.Contains(""~/""))
                             {
-                                string[] dp = _File.Split(@"\");
-                                string directory = "";
+                                string[] dp = _File.Split('\\');
+                                string directory = """";
                                 for (int j = 0; j < dp.Length; j++)
                                 {
                                     if (j < dp.Length - 1)
                                     {
-                                        directory += dp[j] + @"\\";
+                                        directory += dp[j] + @""\\"";
                                     }
                                 }
                                 directory += file.Remove(0, 2);
@@ -835,49 +987,49 @@ namespace ezcode_Project_Player
                             }
 
                             GObject go = new GObject(GObject.Type.Square);
-                            go.AccessibleName = "ERROR";
+                            go.AccessibleName = ""ERROR"";
 
                             for (int j = 0; j < gameObjects.Count; j++)
                             {
                                 if (gameObjects[j].Name == name)
                                 {
                                     go = gameObjects[j];
-                                    go.AccessibleName = "";
+                                    go.AccessibleName = """";
                                 }
                             }
 
-                            if (go.AccessibleName == "ERROR")
+                            if (go.AccessibleName == ""ERROR"")
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Could not find an object named '" + name + "' in line " + codeLine + " \n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Could not find an object named '"" + name + ""' in line "" + codeLine + "" \n"", true);
                                 return;
                             }
 
                             try
                             {
                                 ImageLayout imageLayout = ImageLayout.Stretch;
-                                if (type == "center") imageLayout = ImageLayout.Center;
-                                else if (type == "none") imageLayout = ImageLayout.None;
-                                else if (type == "zoom") imageLayout = ImageLayout.Zoom;
-                                else if (type == "tile") imageLayout = ImageLayout.Tile;
-                                else if (type == "stretch") imageLayout = ImageLayout.Stretch;
+                                if (type == ""center"") imageLayout = ImageLayout.Center;
+                                else if (type == ""none"") imageLayout = ImageLayout.None;
+                                else if (type == ""zoom"") imageLayout = ImageLayout.Zoom;
+                                else if (type == ""tile"") imageLayout = ImageLayout.Tile;
+                                else if (type == ""stretch"") imageLayout = ImageLayout.Stretch;
                                 go.BackgroundImageLayout = imageLayout;
                                 go.BackgroundImage = System.Drawing.Image.FromFile(file);
                             }
                             catch
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("There was an error reading the image '" + file + "' in line " + codeLine + " \n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""There was an error reading the image '"" + file + ""' in line "" + codeLine + "" \n"", true);
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'object' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'object' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // image name fit PathToFile
-                    else if (parts[i] == "label")
+                    else if (parts[i] == ""label"")
                     {
                         try
                         {
@@ -890,24 +1042,24 @@ namespace ezcode_Project_Player
                             label.Name = name;
                             label.Text = name;
 
-                            Space.Controls.Add(label);
+                            this.Controls.Add(label);
                             labels.Add(label);
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'label' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'label' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // label name
-                    else if (parts[i] == "font")
+                    else if (parts[i] == ""font"")
                     {
                         try
                         {
                             string name = parts[i + 1];
                             string style = parts[i + 2];
                             string size = parts[i + 3];
-                            string brackets = "";
+                            string brackets = """";
                             int ended = 0;
                             List<string> texts = new List<string>();
                             for (int l = 3; l < parts.Count; l++)
@@ -916,7 +1068,7 @@ namespace ezcode_Project_Player
                             }
 
                             Label go = new Label();
-                            go.AccessibleName = "error";
+                            go.AccessibleName = ""error"";
 
                             for (int j = 0; j < labels.Count; j++)
                             {
@@ -926,7 +1078,7 @@ namespace ezcode_Project_Player
                                     go.AccessibleName = name;
                                 }
                             }
-                            if (go.AccessibleName != "error")
+                            if (go.AccessibleName != ""error"")
                             {
                                 for (int j = 0; j < vars.Count; j++)
                                 {
@@ -942,7 +1094,7 @@ namespace ezcode_Project_Player
                                         size = vars[j].value();
                                     }
                                 }
-                                if (size.StartsWith(@"("))
+                                if (size.StartsWith(@""(""))
                                 {
                                     ended = 1;
                                     for (int l = 0; l < texts.Count; l++)
@@ -950,9 +1102,9 @@ namespace ezcode_Project_Player
                                         if (ended == 1)
                                         {
                                             brackets += texts[l];
-                                            if (l < texts.Count - 1) brackets += " ";
+                                            if (l < texts.Count - 1) brackets += "" "";
                                         }
-                                        if (texts[l].EndsWith(@")"))
+                                        if (texts[l].EndsWith(@"")""))
                                         {
                                             ended = 2;
                                         }
@@ -960,20 +1112,20 @@ namespace ezcode_Project_Player
                                 }
                                 if (ended != 0)
                                 {
-                                    string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                    string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                     string result = SolveEquation(equation);
                                     size = result;
                                 }
                                 FontStyle styl = new FontStyle();
-                                if (style == "bold") styl = FontStyle.Bold;
-                                else if (style == "italic") styl = FontStyle.Italic;
-                                else if (style == "underline") styl = FontStyle.Underline;
-                                else if (style == "strikeout") styl = FontStyle.Strikeout;
-                                else if (style == "regular") styl = FontStyle.Regular;
+                                if (style == ""bold"") styl = FontStyle.Bold;
+                                else if (style == ""italic"") styl = FontStyle.Italic;
+                                else if (style == ""underline"") styl = FontStyle.Underline;
+                                else if (style == ""strikeout"") styl = FontStyle.Strikeout;
+                                else if (style == ""regular"") styl = FontStyle.Regular;
                                 else
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""There was an error with 'font' there is no font style called "" + style + ""\n"", true);
                                 }
                                 int siz = int.Parse(size);
                                 SetFont(go, name, siz, styl);
@@ -981,7 +1133,7 @@ namespace ezcode_Project_Player
                             else
                             {
                                 TextBox tb = new TextBox();
-                                tb.AccessibleName = "error";
+                                tb.AccessibleName = ""error"";
 
                                 for (int j = 0; j < textboxes.Count; j++)
                                 {
@@ -991,7 +1143,7 @@ namespace ezcode_Project_Player
                                         tb.AccessibleName = name;
                                     }
                                 }
-                                if (tb.AccessibleName != "error")
+                                if (tb.AccessibleName != ""error"")
                                 {
                                     for (int j = 0; j < vars.Count; j++)
                                     {
@@ -1007,7 +1159,7 @@ namespace ezcode_Project_Player
                                             size = vars[j].value();
                                         }
                                     }
-                                    if (size.StartsWith(@"("))
+                                    if (size.StartsWith(@""(""))
                                     {
                                         ended = 1;
                                         for (int l = 0; l < texts.Count; l++)
@@ -1015,9 +1167,9 @@ namespace ezcode_Project_Player
                                             if (ended == 1)
                                             {
                                                 brackets += texts[l];
-                                                if (l < texts.Count - 1) brackets += " ";
+                                                if (l < texts.Count - 1) brackets += "" "";
                                             }
-                                            if (texts[l].EndsWith(@")"))
+                                            if (texts[l].EndsWith(@"")""))
                                             {
                                                 ended = 2;
                                             }
@@ -1025,20 +1177,20 @@ namespace ezcode_Project_Player
                                     }
                                     if (ended != 0)
                                     {
-                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                         string result = SolveEquation(equation);
                                         size = result;
                                     }
                                     FontStyle styl = new FontStyle();
-                                    if (style == "bold") styl = FontStyle.Bold;
-                                    else if (style == "italic") styl = FontStyle.Italic;
-                                    else if (style == "underline") styl = FontStyle.Underline;
-                                    else if (style == "strikeout") styl = FontStyle.Strikeout;
-                                    else if (style == "regular") styl = FontStyle.Regular;
+                                    if (style == ""bold"") styl = FontStyle.Bold;
+                                    else if (style == ""italic"") styl = FontStyle.Italic;
+                                    else if (style == ""underline"") styl = FontStyle.Underline;
+                                    else if (style == ""strikeout"") styl = FontStyle.Strikeout;
+                                    else if (style == ""regular"") styl = FontStyle.Regular;
                                     else
                                     {
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(""There was an error with 'font' there is no font style called "" + style + ""\n"", true);
                                     }
                                     int siz = int.Parse(size);
                                     SetFont(tb, name, siz, styl);
@@ -1046,7 +1198,7 @@ namespace ezcode_Project_Player
                                 else
                                 {
                                     Button b = new Button();
-                                    b.AccessibleName = "error";
+                                    b.AccessibleName = ""error"";
 
                                     for (int j = 0; j < buttons.Count; j++)
                                     {
@@ -1056,7 +1208,7 @@ namespace ezcode_Project_Player
                                             b.AccessibleName = name;
                                         }
                                     }
-                                    if (b.AccessibleName != "error")
+                                    if (b.AccessibleName != ""error"")
                                     {
                                         for (int j = 0; j < vars.Count; j++)
                                         {
@@ -1072,7 +1224,7 @@ namespace ezcode_Project_Player
                                                 size = vars[j].value();
                                             }
                                         }
-                                        if (size.StartsWith(@"("))
+                                        if (size.StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             for (int l = 0; l < texts.Count; l++)
@@ -1080,9 +1232,9 @@ namespace ezcode_Project_Player
                                                 if (ended == 1)
                                                 {
                                                     brackets += texts[l];
-                                                    if (l < texts.Count - 1) brackets += " ";
+                                                    if (l < texts.Count - 1) brackets += "" "";
                                                 }
-                                                if (texts[l].EndsWith(@")"))
+                                                if (texts[l].EndsWith(@"")""))
                                                 {
                                                     ended = 2;
                                                 }
@@ -1090,46 +1242,46 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended != 0)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             size = result;
                                         }
                                         FontStyle styl = new FontStyle();
-                                        if (style == "bold") styl = FontStyle.Bold;
-                                        else if (style == "italic") styl = FontStyle.Italic;
-                                        else if (style == "underline") styl = FontStyle.Underline;
-                                        else if (style == "strikeout") styl = FontStyle.Strikeout;
-                                        else if (style == "regular") styl = FontStyle.Regular;
+                                        if (style == ""bold"") styl = FontStyle.Bold;
+                                        else if (style == ""italic"") styl = FontStyle.Italic;
+                                        else if (style == ""underline"") styl = FontStyle.Underline;
+                                        else if (style == ""strikeout"") styl = FontStyle.Strikeout;
+                                        else if (style == ""regular"") styl = FontStyle.Regular;
                                         else
                                         {
-                                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                            console.AddText("There was an error with 'font' there is no font style called " + style + "\n", true);
+                                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                            console.AddText(""There was an error with 'font' there is no font style called "" + style + ""\n"", true);
                                         }
                                         int siz = int.Parse(size);
                                         SetFont(b, name, siz, styl);
                                     }
                                     else
                                     {
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText("Could not find a label, textbox, or button named " + name + "\n", true);
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(""Could not find a label, textbox, or button named "" + name + ""\n"", true);
                                     }
                                 }
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'font' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'font' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // font labelName fontStyle size
-                    else if (parts[i] == "move")
+                    else if (parts[i] == ""move"")
                     {
                         try
                         {
                             string name = parts[i + 1];
                             Point point = new Point(0, 0);
-                            string brackets = "";
+                            string brackets = """";
                             int ended = 0;
                             int endindex = 0;
                             List<string> textsA = new List<string>();
@@ -1166,7 +1318,7 @@ namespace ezcode_Project_Player
                                     }
                                     catch
                                     {
-                                        if (parts[2].StartsWith(@"("))
+                                        if (parts[2].StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             for (int l = 0; l < textsA.Count; l++)
@@ -1174,9 +1326,9 @@ namespace ezcode_Project_Player
                                                 if (ended == 1)
                                                 {
                                                     brackets += textsA[l];
-                                                    if (l < textsA.Count - 1) brackets += " ";
+                                                    if (l < textsA.Count - 1) brackets += "" "";
                                                 }
-                                                if (textsA[l].EndsWith(@")"))
+                                                if (textsA[l].EndsWith(@"")""))
                                                 {
                                                     if (endindex == 0) endindex = l;
                                                     ended = 2;
@@ -1185,7 +1337,7 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended != 0)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             a = (int)float.Parse(result);
                                         }
@@ -1206,8 +1358,8 @@ namespace ezcode_Project_Player
                                             textsB.Add(textsA[l]);
                                         }
                                         ended = 0;
-                                        brackets = "";
-                                        if (newended.StartsWith(@"("))
+                                        brackets = """";
+                                        if (newended.StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             for (int l = 0; l < textsB.Count; l++)
@@ -1215,9 +1367,9 @@ namespace ezcode_Project_Player
                                                 if (ended == 1)
                                                 {
                                                     brackets += textsB[l];
-                                                    if (l < textsB.Count - 1) brackets += " ";
+                                                    if (l < textsB.Count - 1) brackets += "" "";
                                                 }
-                                                if (textsB[l].EndsWith(@")"))
+                                                if (textsB[l].EndsWith(@"")""))
                                                 {
                                                     ended = 2;
                                                 }
@@ -1225,7 +1377,7 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended != 0)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             b = (int)float.Parse(result);
                                         }
@@ -1237,18 +1389,18 @@ namespace ezcode_Project_Player
                             }
                             catch
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Their was an error with 'move' the vector was not formatted correctly in line " + codeLine + "\n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Their was an error with 'move' the vector was not formatted correctly in line "" + codeLine + ""\n"", true);
                             }
 
                             GObject go = new GObject(GObject.Type.Square);
-                            go.AccessibleName = "error";
+                            go.AccessibleName = ""error"";
                             Label la = new Label();
-                            la.AccessibleName = "error";
+                            la.AccessibleName = ""error"";
                             TextBox tb = new TextBox();
-                            tb.AccessibleName = "error";
+                            tb.AccessibleName = ""error"";
                             Button bt = new Button();
-                            bt.AccessibleName = "error";
+                            bt.AccessibleName = ""error"";
 
                             for (int j = 0; j < labels.Count; j++)
                             {
@@ -1258,7 +1410,7 @@ namespace ezcode_Project_Player
                                     la.AccessibleName = name;
                                 }
                             }
-                            if (la.AccessibleName == "error")
+                            if (la.AccessibleName == ""error"")
                             {
                                 for (int j = 0; j < gameObjects.Count; j++)
                                 {
@@ -1269,7 +1421,7 @@ namespace ezcode_Project_Player
                                     }
                                 }
                             }
-                            if (la.AccessibleName == "error" && go.AccessibleName == "error")
+                            if (la.AccessibleName == ""error"" && go.AccessibleName == ""error"")
                             {
                                 for (int j = 0; j < textboxes.Count; j++)
                                 {
@@ -1280,7 +1432,7 @@ namespace ezcode_Project_Player
                                     }
                                 }
                             }
-                            if (la.AccessibleName == "error" && go.AccessibleName == "error")
+                            if (la.AccessibleName == ""error"" && go.AccessibleName == ""error"")
                             {
                                 for (int j = 0; j < textboxes.Count; j++)
                                 {
@@ -1291,7 +1443,7 @@ namespace ezcode_Project_Player
                                     }
                                 }
                             }
-                            if (la.AccessibleName == "error" && go.AccessibleName == "error" && tb.AccessibleName == "error")
+                            if (la.AccessibleName == ""error"" && go.AccessibleName == ""error"" && tb.AccessibleName == ""error"")
                             {
                                 for (int j = 0; j < buttons.Count; j++)
                                 {
@@ -1302,42 +1454,42 @@ namespace ezcode_Project_Player
                                     }
                                 }
                             }
-                            if (la.AccessibleName != "error")
+                            if (la.AccessibleName != ""error"")
                             {
                                 la.Location = point;
                             }
-                            else if (go.AccessibleName != "error")
+                            else if (go.AccessibleName != ""error"")
                             {
                                 go.Location = point;
                             }
-                            else if (tb.AccessibleName != "error")
+                            else if (tb.AccessibleName != ""error"")
                             {
                                 tb.Location = point;
                             }
-                            else if (bt.AccessibleName != "error")
+                            else if (bt.AccessibleName != ""error"")
                             {
                                 bt.Location = point;
                             }
                             else
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Could not find an object, label, textbox, or button named " + name + "\n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Could not find an object, label, textbox, or button named "" + name + ""\n"", true);
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'move' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'move' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // move object/label_Name x y 
-                    else if (parts[i] == "scale")
+                    else if (parts[i] == ""scale"")
                     {
                         try
                         {
                             string name = parts[i + 1];
                             Point point = new Point(0, 0);
-                            string brackets = "";
+                            string brackets = """";
                             int ended = 0;
                             int endindex = 0;
                             List<string> textsA = new List<string>();
@@ -1371,7 +1523,7 @@ namespace ezcode_Project_Player
                                     }
                                     catch
                                     {
-                                        if (parts[2].StartsWith(@"("))
+                                        if (parts[2].StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             for (int l = 0; l < textsA.Count; l++)
@@ -1379,9 +1531,9 @@ namespace ezcode_Project_Player
                                                 if (ended == 1)
                                                 {
                                                     brackets += textsA[l];
-                                                    if (l < textsA.Count - 1) brackets += " ";
+                                                    if (l < textsA.Count - 1) brackets += "" "";
                                                 }
-                                                if (textsA[l].EndsWith(@")"))
+                                                if (textsA[l].EndsWith(@"")""))
                                                 {
                                                     if (endindex == 0) endindex = l;
                                                     ended = 2;
@@ -1390,7 +1542,7 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended != 0)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             a = (int)float.Parse(result);
                                         }
@@ -1411,8 +1563,8 @@ namespace ezcode_Project_Player
                                             textsB.Add(textsA[l]);
                                         }
                                         ended = 0;
-                                        brackets = "";
-                                        if (newended.StartsWith(@"("))
+                                        brackets = """";
+                                        if (newended.StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             for (int l = 0; l < textsB.Count; l++)
@@ -1420,9 +1572,9 @@ namespace ezcode_Project_Player
                                                 if (ended == 1)
                                                 {
                                                     brackets += textsB[l];
-                                                    if (l < textsB.Count - 1) brackets += " ";
+                                                    if (l < textsB.Count - 1) brackets += "" "";
                                                 }
-                                                if (textsB[l].EndsWith(@")"))
+                                                if (textsB[l].EndsWith(@"")""))
                                                 {
                                                     ended = 2;
                                                 }
@@ -1430,7 +1582,7 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended != 0)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             b = (int)float.Parse(result);
                                         }
@@ -1442,16 +1594,16 @@ namespace ezcode_Project_Player
                             }
                             catch
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Their was an error with 'scale' the vector was not formatted correctly in line " + codeLine + " \n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Their was an error with 'scale' the vector was not formatted correctly in line "" + codeLine + "" \n"", true);
                             }
 
                             GObject go = new GObject(GObject.Type.Square);
-                            go.AccessibleName = "error";
+                            go.AccessibleName = ""error"";
                             TextBox tb = new TextBox();
-                            tb.AccessibleName = "error";
+                            tb.AccessibleName = ""error"";
                             Button bt = new Button();
-                            bt.AccessibleName = "error";
+                            bt.AccessibleName = ""error"";
 
                             for (int j = 0; j < gameObjects.Count; j++)
                             {
@@ -1461,7 +1613,7 @@ namespace ezcode_Project_Player
                                     go.AccessibleName = name;
                                 }
                             }
-                            if (go.AccessibleName != "error")
+                            if (go.AccessibleName != ""error"")
                             {
                                 go.Size = new Size(point.X, point.Y);
                             }
@@ -1476,8 +1628,8 @@ namespace ezcode_Project_Player
                                     }
                                 }
                                 //if (tb.Multiline) tb.Size = new Size(point.X, point.Y);
-                                //else console.AddText("The textbox " + name + " is not multi lined\n", true);
-                                if (tb.AccessibleName == "error")
+                                //else console.AddText(""The textbox "" + name + "" is not multi lined\n"", true);
+                                if (tb.AccessibleName == ""error"")
                                 {
                                     for (int j = 0; j < buttons.Count; j++)
                                     {
@@ -1487,7 +1639,7 @@ namespace ezcode_Project_Player
                                             bt.AccessibleName = name;
                                         }
                                     }
-                                    if (bt.AccessibleName == "error") console.AddText("Could not find an object or textbox named " + name + "\n", true);
+                                    if (bt.AccessibleName == ""error"") console.AddText(""Could not find an object or textbox named "" + name + ""\n"", true);
                                     bt.Size = new Size(point.X, point.Y);
                                 }
                                 tb.Size = new Size(point.X, point.Y);
@@ -1495,18 +1647,18 @@ namespace ezcode_Project_Player
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'scale' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'scale' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // scale objectName x y
-                    else if (parts[i] == "color")
+                    else if (parts[i] == ""color"")
                     {
                         try
                         {
                             string name = parts[i + 1];
                             Color color = Color.Black;
-                            string brackets = "";
+                            string brackets = """";
                             int ended = 0;
                             int endindex = 0;
                             List<string> textsA = new List<string>();
@@ -1546,7 +1698,7 @@ namespace ezcode_Project_Player
                                     }
                                     catch
                                     {
-                                        if (parts[2].StartsWith(@"("))
+                                        if (parts[2].StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             for (int l = 0; l < textsA.Count; l++)
@@ -1554,9 +1706,9 @@ namespace ezcode_Project_Player
                                                 if (ended == 1)
                                                 {
                                                     brackets += textsA[l];
-                                                    if (l < textsA.Count - 1) brackets += " ";
+                                                    if (l < textsA.Count - 1) brackets += "" "";
                                                 }
-                                                if (textsA[l].EndsWith(@")"))
+                                                if (textsA[l].EndsWith(@"")""))
                                                 {
                                                     if (endindex == 0) endindex = l;
                                                     ended = 2;
@@ -1565,7 +1717,7 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended != 0)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             a = (int)float.Parse(result);
                                         }
@@ -1586,8 +1738,8 @@ namespace ezcode_Project_Player
                                     {
                                         string newended = textsA[endindex + 1];
                                         ended = 0;
-                                        brackets = "";
-                                        if (newended.StartsWith(@"("))
+                                        brackets = """";
+                                        if (newended.StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             for (int l = 0; l < textsB.Count; l++)
@@ -1595,9 +1747,9 @@ namespace ezcode_Project_Player
                                                 if (ended == 1)
                                                 {
                                                     brackets += textsB[l];
-                                                    if (l < textsB.Count - 1) brackets += " ";
+                                                    if (l < textsB.Count - 1) brackets += "" "";
                                                 }
-                                                if (textsB[l].EndsWith(@")"))
+                                                if (textsB[l].EndsWith(@"")""))
                                                 {
                                                     if (endindex == 0) endindex = l;
                                                     ended = 2;
@@ -1606,7 +1758,7 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended != 0)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             b = (int)float.Parse(result);
                                         }
@@ -1627,8 +1779,8 @@ namespace ezcode_Project_Player
                                             textsC.Add(textsB[l]);
                                         }
                                         ended = 0;
-                                        brackets = "";
-                                        if (newended.StartsWith(@"("))
+                                        brackets = """";
+                                        if (newended.StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             for (int l = 0; l < textsC.Count; l++)
@@ -1636,9 +1788,9 @@ namespace ezcode_Project_Player
                                                 if (ended == 1)
                                                 {
                                                     brackets += textsC[l];
-                                                    if (l < textsC.Count - 1) brackets += " ";
+                                                    if (l < textsC.Count - 1) brackets += "" "";
                                                 }
-                                                if (textsC[l].EndsWith(@")"))
+                                                if (textsC[l].EndsWith(@"")""))
                                                 {
                                                     ended = 2;
                                                 }
@@ -1646,7 +1798,7 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended != 0)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             c = (int)float.Parse(result);
                                         }
@@ -1658,18 +1810,18 @@ namespace ezcode_Project_Player
                             }
                             catch
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Their was an error with 'color' the rgb color was not formatted correctly in line " + codeLine + "\n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Their was an error with 'color' the rgb color was not formatted correctly in line "" + codeLine + ""\n"", true);
                             }
 
                             GObject go = new GObject(GObject.Type.Square);
-                            go.AccessibleName = "error";
+                            go.AccessibleName = ""error"";
                             Label la = new Label();
-                            la.AccessibleName = "error";
+                            la.AccessibleName = ""error"";
                             TextBox tb = new TextBox();
-                            tb.AccessibleName = "error";
+                            tb.AccessibleName = ""error"";
                             Button bt = new Button();
-                            bt.AccessibleName = "error";
+                            bt.AccessibleName = ""error"";
 
                             for (int j = 0; j < labels.Count; j++)
                             {
@@ -1679,7 +1831,7 @@ namespace ezcode_Project_Player
                                     la.AccessibleName = name;
                                 }
                             }
-                            if (la.AccessibleName == "error")
+                            if (la.AccessibleName == ""error"")
                             {
                                 for (int j = 0; j < gameObjects.Count; j++)
                                 {
@@ -1690,7 +1842,7 @@ namespace ezcode_Project_Player
                                     }
                                 }
                             }
-                            if (la.AccessibleName == "error" && go.AccessibleName == "error")
+                            if (la.AccessibleName == ""error"" && go.AccessibleName == ""error"")
                             {
                                 for (int j = 0; j < textboxes.Count; j++)
                                 {
@@ -1701,7 +1853,7 @@ namespace ezcode_Project_Player
                                     }
                                 }
                             }
-                            if (la.AccessibleName == "error" && go.AccessibleName == "error" && tb.AccessibleName == "error")
+                            if (la.AccessibleName == ""error"" && go.AccessibleName == ""error"" && tb.AccessibleName == ""error"")
                             {
                                 for (int j = 0; j < buttons.Count; j++)
                                 {
@@ -1712,41 +1864,41 @@ namespace ezcode_Project_Player
                                     }
                                 }
                             }
-                            if (la.AccessibleName != "error")
+                            if (la.AccessibleName != ""error"")
                             {
                                 la.ForeColor = color;
                             }
-                            else if (go.AccessibleName != "error")
+                            else if (go.AccessibleName != ""error"")
                             {
                                 go.BackColor = color;
                             }
-                            else if (tb.AccessibleName != "error")
+                            else if (tb.AccessibleName != ""error"")
                             {
                                 tb.ForeColor = color;
                             }
-                            else if (bt.AccessibleName != "error")
+                            else if (bt.AccessibleName != ""error"")
                             {
                                 bt.BackColor = color;
                             }
                             else
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Could not find an object or label named " + name + "\n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Could not find an object or label named "" + name + ""\n"", true);
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'move' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'move' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // color object/label_Name r g b
-                    else if (parts[i] == "await")
+                    else if (parts[i] == ""await"")
                     {
                         try
                         {
                             string time = parts[i + 1];
-                            string brackets = "";
+                            string brackets = """";
                             int ended = 0;
                             List<string> texts = new List<string>();
                             for (int l = 1; l < parts.Count; l++)
@@ -1760,7 +1912,7 @@ namespace ezcode_Project_Player
                                     time = vars[j].value();
                                 }
                             }
-                            if (time.StartsWith(@"("))
+                            if (time.StartsWith(@""(""))
                             {
                                 ended = 1;
                                 for (int l = 0; l < texts.Count; l++)
@@ -1768,9 +1920,9 @@ namespace ezcode_Project_Player
                                     if (ended == 1)
                                     {
                                         brackets += texts[l];
-                                        if (l < texts.Count - 1) brackets += " ";
+                                        if (l < texts.Count - 1) brackets += "" "";
                                     }
-                                    if (texts[l].EndsWith(@")"))
+                                    if (texts[l].EndsWith(@"")""))
                                     {
                                         ended = 2;
                                     }
@@ -1778,7 +1930,7 @@ namespace ezcode_Project_Player
                             }
                             if (ended != 0)
                             {
-                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                 string result = SolveEquation(equation);
                                 time = result;
                             }
@@ -1786,12 +1938,12 @@ namespace ezcode_Project_Player
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with 'await' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with 'await' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // await miliseconds
-                    else if (parts[i] == "var")
+                    else if (parts[i] == ""var"")
                     {
                         try
                         {
@@ -1806,18 +1958,18 @@ namespace ezcode_Project_Player
                                 }
                             }
 
-                            value = value.Replace(@"\n", Environment.NewLine);
-                            value = value.Replace(@"\_", " ");
-                            value = value.Replace(@"\!", string.Empty);
+                            value = value.Replace(@""\n"", Environment.NewLine);
+                            value = value.Replace(@""\_"", "" "");
+                            value = value.Replace(@""\!"", string.Empty);
 
-                            if (value == "ConsoleInput")
+                            if (value == ""ConsoleInput"")
                             {
-                                // Wait for the user to press the "Send" button
+                                // Wait for the user to press the ""Send"" button
                                 float qq = 0;
                                 while (!sent)
                                 {
                                     qq += .1f;
-                                    //console.AddText("waiting for console input in line " + codeLine + ": " + qq + Environment.NewLine);
+                                    //console.AddText(""waiting for console input in line "" + codeLine + "": "" + qq + Environment.NewLine);
                                     await Task.Delay(100);
                                 }
 
@@ -1829,60 +1981,60 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
 
-                                // Reset the "sent" flag
+                                // Reset the ""sent"" flag
                                 sent = false;
                                 senttext = string.Empty;
                             }
-                            else if (value == "IntersectsWith")
+                            else if (value == ""IntersectsWith"")
                             {
                                 string a = parts[3];
                                 string b = parts[4];
                                 string intersects;
 
                                 GObject A = new GObject(GObject.Type.Square);
-                                A.AccessibleName = "Error";
+                                A.AccessibleName = ""Error"";
                                 GObject B = new GObject(GObject.Type.Square);
-                                B.AccessibleName = "Error";
+                                B.AccessibleName = ""Error"";
 
                                 for (int j = 0; j < gameObjects.Count; j++)
                                 {
                                     if (a == gameObjects[j].Name)
                                     {
                                         A = gameObjects[j];
-                                        A.AccessibleName = "";
+                                        A.AccessibleName = """";
                                     }
                                     if (b == gameObjects[j].Name)
                                     {
                                         B = gameObjects[j];
-                                        B.AccessibleName = "";
+                                        B.AccessibleName = """";
                                     }
                                 }
-                                if (A.AccessibleName != "" && B.AccessibleName != "")
+                                if (A.AccessibleName != """" && B.AccessibleName != """")
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find the objects: '" + a + "' and '" + b + "' in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find the objects: '"" + a + ""' and '"" + b + ""' in line "" + codeLine + "" \n"", true);
                                     return;
                                 }
-                                else if (A.AccessibleName == "" && B.AccessibleName != "")
+                                else if (A.AccessibleName == """" && B.AccessibleName != """")
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find the object: '" + b + "' in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find the object: '"" + b + ""' in line "" + codeLine + "" \n"", true);
                                     return;
                                 }
-                                else if (A.AccessibleName != "" && B.AccessibleName == "")
+                                else if (A.AccessibleName != """" && B.AccessibleName == """")
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find the object: '" + a + "' in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find the object: '"" + a + ""' in line "" + codeLine + "" \n"", true);
                                     return;
                                 }
 
                                 if (A.Bounds.IntersectsWith(B.Bounds))
                                 {
-                                    intersects = "1";
+                                    intersects = ""1"";
                                 }
                                 else
                                 {
-                                    intersects = "0";
+                                    intersects = ""0"";
                                 }
 
                                 // Create the variable with the user's input as the value
@@ -1893,13 +2045,13 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            else if (value == "Random")
+                            else if (value == ""Random"")
                             {
                                 string mi = parts[3];
                                 string ma = parts[4];
                                 int min = 0;
                                 int max = 0;
-                                string brackets = "";
+                                string brackets = """";
                                 int ended = 0;
                                 int endindex = 0;
                                 List<string> textsA = new List<string>();
@@ -1926,7 +2078,7 @@ namespace ezcode_Project_Player
                                     }
                                     catch
                                     {
-                                        if (parts[3].StartsWith(@"("))
+                                        if (parts[3].StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             for (int l = 0; l < textsA.Count; l++)
@@ -1934,9 +2086,9 @@ namespace ezcode_Project_Player
                                                 if (ended == 1)
                                                 {
                                                     brackets += textsA[l];
-                                                    if (l < textsA.Count - 1) brackets += " ";
+                                                    if (l < textsA.Count - 1) brackets += "" "";
                                                 }
-                                                if (textsA[l].EndsWith(@")"))
+                                                if (textsA[l].EndsWith(@"")""))
                                                 {
                                                     if (endindex == 0) endindex = l;
                                                     ended = 2;
@@ -1945,7 +2097,7 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended != 0)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             min = (int)float.Parse(result);
                                         }
@@ -1963,8 +2115,8 @@ namespace ezcode_Project_Player
                                             textsB.Add(textsA[l]);
                                         }
                                         ended = 0;
-                                        brackets = "";
-                                        if (newended.StartsWith(@"("))
+                                        brackets = """";
+                                        if (newended.StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             for (int l = 0; l < textsB.Count; l++)
@@ -1972,9 +2124,9 @@ namespace ezcode_Project_Player
                                                 if (ended == 1)
                                                 {
                                                     brackets += textsB[l];
-                                                    if (l < textsB.Count - 1) brackets += " ";
+                                                    if (l < textsB.Count - 1) brackets += "" "";
                                                 }
-                                                if (textsB[l].EndsWith(@")"))
+                                                if (textsB[l].EndsWith(@"")""))
                                                 {
                                                     ended = 2;
                                                 }
@@ -1982,7 +2134,7 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended != 0)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             max = (int)float.Parse(result);
                                         }
@@ -1990,8 +2142,8 @@ namespace ezcode_Project_Player
                                 }
                                 catch
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("There was an error with the minumim and maximum of Random in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""There was an error with the minumim and maximum of Random in line "" + codeLine + "" \n"", true);
                                 }
 
                                 Random rand = new Random();
@@ -2004,7 +2156,7 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            else if (value == "KeyInput")
+                            else if (value == ""KeyInput"")
                             {
                                 // Create the variable with the user's input as the value
                                 Var var = new Var(name);
@@ -2014,23 +2166,23 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            else if (value == "KeyDown")
+                            else if (value == ""KeyDown"")
                             {
                                 // Create the variable with the user's input as the value
                                 Var var = new Var(name);
-                                var.set(keydown == false ? "0" : "1");
+                                var.set(keydown == false ? ""0"" : ""1"");
                                 var.isSet = true;
                                 var.stack = stackNow;
 
                                 vars.Add(var);
                             }
-                            else if (value == "AwaitKeyInput")
+                            else if (value == ""AwaitKeyInput"")
                             {
                                 float qq = 0;
                                 while (!keydown)
                                 {
                                     qq += .1f;
-                                    //console.AddText("waiting for key input in line " + codeLine + ": " + qq + Environment.NewLine);
+                                    //console.AddText(""waiting for key input in line "" + codeLine + "": "" + qq + Environment.NewLine);
                                     await Task.Delay(100);
                                 }
 
@@ -2042,21 +2194,21 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            /*else if (value == "MousePosition")
+                            /*else if (value == ""MousePosition"")
                             {
                                 string vector = parts[3];
                                 float pos = 1111.111100015684465464864f;
-                                if(vector == "x")
+                                if(vector == ""x"")
                                 {
                                     pos = MousePosition.X;
                                 }
-                                else if(vector == "y")
+                                else if(vector == ""y"")
                                 {
                                     pos = MousePosition.Y;
                                 }
                                 else
                                 {
-                                    console.AddText("There was an error with the vector: " + vector + ". Expected 'x' or 'y' in line " + codeLine + " \n", true);
+                                    console.AddText(""There was an error with the vector: "" + vector + "". Expected 'x' or 'y' in line "" + codeLine + "" \n"", true);
                                 }
 
                                 // Create the variable with the user's input as the value
@@ -2066,7 +2218,7 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            else if (value == "MouseClick")
+                            else if (value == ""MouseClick"")
                             {
                                 float pos = 1111.111100015684465464864f;
                                 if(mc == 0)
@@ -2094,29 +2246,29 @@ namespace ezcode_Project_Player
 
                                 mc = 0;
                             }*/
-                            else if (value == "ReadFile")
+                            else if (value == ""ReadFile"")
                             {
-                                string file = "";
+                                string file = """";
                                 for (int j = 3; j < parts.Count; j++)
                                 {
                                     file += parts[j];
-                                    if (j < parts.Count - 1) file += " ";
+                                    if (j < parts.Count - 1) file += "" "";
                                 }
-                                if (file.Contains("~/"))
+                                if (file.Contains(""~/""))
                                 {
-                                    string[] dp = _File.Split(@"\");
-                                    string directory = "";
+                                    string[] dp = _File.Split('\\');
+                                    string directory = """";
                                     for (int j = 0; j < dp.Length; j++)
                                     {
                                         if (j < dp.Length - 1)
                                         {
-                                            directory += dp[j] + @"\\";
+                                            directory += dp[j] + @""\\"";
                                         }
                                     }
                                     directory += file.Remove(0, 2);
                                     file = directory;
                                 }
-                                string val = "";
+                                string val = """";
                                 for (int j = 0; j < vars.Count; j++)
                                 {
                                     if (vars[j].Name == file)
@@ -2130,8 +2282,8 @@ namespace ezcode_Project_Player
                                 }
                                 catch
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("There was an error reading the file: " + file + " In line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""There was an error reading the file: "" + file + "" In line "" + codeLine + "" \n"", true);
                                 }
 
                                 // Create the variable with the user's input as the value
@@ -2142,10 +2294,10 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            else if (value == "FromTextBox")
+                            else if (value == ""FromTextBox"")
                             {
                                 bool found = false;
-                                string val = "";
+                                string val = """";
                                 for (int j = 0; j < textboxes.Count; j++)
                                 {
                                     if (textboxes[j].Name == parts[3])
@@ -2156,8 +2308,8 @@ namespace ezcode_Project_Player
                                 }
                                 if (!found)
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find a textbox named " + parts[3] + " In line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find a textbox named "" + parts[3] + "" In line "" + codeLine + "" \n"", true);
                                     return;
                                 }
 
@@ -2169,7 +2321,7 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            else if (value == "FromList")
+                            else if (value == ""FromList"")
                             {
                                 bool isSet = false;
                                 string listN = parts[3];
@@ -2209,20 +2361,20 @@ namespace ezcode_Project_Player
                                 }
                                 else
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find a list by the inputted name in " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find a list by the inputted name in "" + codeLine + "" \n"", true);
                                 }
                             }
                             else
                             {
-                                string brackets = "";
+                                string brackets = """";
                                 int ended = 0;
                                 List<string> texts = new List<string>();
                                 for (int l = 2; l < parts.Count; l++)
                                 {
                                     texts.Add(parts[l]);
                                 }
-                                if (value.StartsWith(@"("))
+                                if (value.StartsWith(@""(""))
                                 {
                                     ended = 1;
                                     for (int l = 0; l < texts.Count; l++)
@@ -2230,9 +2382,9 @@ namespace ezcode_Project_Player
                                         if (ended == 1)
                                         {
                                             brackets += texts[l];
-                                            if (l < texts.Count - 1) brackets += " ";
+                                            if (l < texts.Count - 1) brackets += "" "";
                                         }
-                                        if (texts[l].EndsWith(@")"))
+                                        if (texts[l].EndsWith(@"")""))
                                         {
                                             ended = 2;
                                         }
@@ -2240,7 +2392,7 @@ namespace ezcode_Project_Player
                                 }
                                 if (ended != 0)
                                 {
-                                    string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                    string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                     string result = SolveEquation(equation);
                                     value = result;
                                 }
@@ -2255,26 +2407,26 @@ namespace ezcode_Project_Player
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("There was an error with 'var' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""There was an error with 'var' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // var name value |or| var name FromList listName varNumber 
-                    else if (parts[i] == "varRaw")
+                    else if (parts[i] == ""varRaw"")
                     {
                         try
                         {
                             string name = parts[1];
                             string value = parts[2];
 
-                            if (value == "ConsoleInput")
+                            if (value == ""ConsoleInput"")
                             {
-                                // Wait for the user to press the "Send" button
+                                // Wait for the user to press the ""Send"" button
                                 float qq = 0;
                                 while (!sent)
                                 {
                                     qq += .1f;
-                                    //console.AddText("waiting for console input in line " + codeLine + ": " + qq + Environment.NewLine);
+                                    //console.AddText(""waiting for console input in line "" + codeLine + "": "" + qq + Environment.NewLine);
                                     await Task.Delay(100);
                                 }
 
@@ -2285,69 +2437,69 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
 
-                                // Reset the "sent" flag
+                                // Reset the ""sent"" flag
                                 sent = false;
                                 senttext = string.Empty;
                             }
-                            else if (value == "KeyDown")
+                            else if (value == ""KeyDown"")
                             {
                                 // Create the variable with the user's input as the value
                                 Var var = new Var(name);
-                                var.set(keydown == false ? "0" : "1");
+                                var.set(keydown == false ? ""0"" : ""1"");
                                 var.isSet = true;
 
                                 vars.Add(var);
                             }
-                            else if (value == "IntersectsWith")
+                            else if (value == ""IntersectsWith"")
                             {
                                 string a = parts[3];
                                 string b = parts[4];
                                 string intersects;
 
                                 GObject A = new GObject(GObject.Type.Square);
-                                A.AccessibleName = "Error";
+                                A.AccessibleName = ""Error"";
                                 GObject B = new GObject(GObject.Type.Square);
-                                B.AccessibleName = "Error";
+                                B.AccessibleName = ""Error"";
 
                                 for (int j = 0; j < gameObjects.Count; j++)
                                 {
                                     if (a == gameObjects[j].Name)
                                     {
                                         A = gameObjects[j];
-                                        A.AccessibleName = "";
+                                        A.AccessibleName = """";
                                     }
                                     if (b == gameObjects[j].Name)
                                     {
                                         B = gameObjects[j];
-                                        B.AccessibleName = "";
+                                        B.AccessibleName = """";
                                     }
                                 }
-                                if (A.AccessibleName != "" && B.AccessibleName != "")
+                                if (A.AccessibleName != """" && B.AccessibleName != """")
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find the objects: '" + a + "' and '" + b + "' in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find the objects: '"" + a + ""' and '"" + b + ""' in line "" + codeLine + "" \n"", true);
                                     return;
                                 }
-                                else if (A.AccessibleName == "" && B.AccessibleName != "")
+                                else if (A.AccessibleName == """" && B.AccessibleName != """")
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find the object: '" + b + "' in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find the object: '"" + b + ""' in line "" + codeLine + "" \n"", true);
                                     return;
                                 }
-                                else if (A.AccessibleName != "" && B.AccessibleName == "")
+                                else if (A.AccessibleName != """" && B.AccessibleName == """")
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find the object: '" + a + "' in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find the object: '"" + a + ""' in line "" + codeLine + "" \n"", true);
                                     return;
                                 }
 
                                 if (A.Bounds.IntersectsWith(B.Bounds))
                                 {
-                                    intersects = "1";
+                                    intersects = ""1"";
                                 }
                                 else
                                 {
-                                    intersects = "0";
+                                    intersects = ""0"";
                                 }
 
                                 // Create the variable with the user's input as the value
@@ -2357,7 +2509,7 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            else if (value == "Random")
+                            else if (value == ""Random"")
                             {
                                 string mi = parts[3];
                                 string ma = parts[4];
@@ -2381,8 +2533,8 @@ namespace ezcode_Project_Player
                                 }
                                 catch
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("There was an error with the minumim and maximum: '" + mi + "," + ma + "' in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""There was an error with the minumim and maximum: '"" + mi + "","" + ma + ""' in line "" + codeLine + "" \n"", true);
                                 }
 
                                 Random rand = new Random();
@@ -2394,7 +2546,7 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            else if (value == "KeyInput")
+                            else if (value == ""KeyInput"")
                             {
                                 // Create the variable with the user's input as the value
                                 Var var = new Var(name);
@@ -2403,13 +2555,13 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            else if (value == "AwaitKeyInput")
+                            else if (value == ""AwaitKeyInput"")
                             {
                                 float qq = 0;
                                 while (!keydown)
                                 {
                                     qq += .1f;
-                                    //console.AddText("waiting for key input in line " + codeLine + ": " + qq + Environment.NewLine);
+                                    //console.AddText(""waiting for key input in line "" + codeLine + "": "" + qq + Environment.NewLine);
                                     await Task.Delay(100);
                                 }
 
@@ -2420,21 +2572,21 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            /*else if (value == "MousePosition")
+                            /*else if (value == ""MousePosition"")
                             {
                                 string vector = parts[3];
                                 float pos = 1111.111100015684465464864f;
-                                if (vector == "x")
+                                if (vector == ""x"")
                                 {
                                     pos = MousePosition.X;
                                 }
-                                else if (vector == "y")
+                                else if (vector == ""y"")
                                 {
                                     pos = MousePosition.Y;
                                 }
                                 else
                                 {
-                                    console.AddText("There was an error with the vector: " + vector + ". Expected 'x' or 'y' in line " + codeLine + " \n", true);
+                                    console.AddText(""There was an error with the vector: "" + vector + "". Expected 'x' or 'y' in line "" + codeLine + "" \n"", true);
                                 }
 
                                 // Create the variable with the user's input as the value
@@ -2444,7 +2596,7 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            else if (value == "MouseClick")
+                            else if (value == ""MouseClick"")
                             {
                                 float pos = 1111.111100015684465464864f;
                                 if (mc == 0)
@@ -2472,29 +2624,29 @@ namespace ezcode_Project_Player
 
                                 mc = 0;
                             }*/
-                            else if (value == "ReadFile")
+                            else if (value == ""ReadFile"")
                             {
-                                string file = "";
+                                string file = """";
                                 for (int j = 3; j < parts.Count; j++)
                                 {
                                     file += parts[j];
-                                    if (j < parts.Count - 1) file += " ";
+                                    if (j < parts.Count - 1) file += "" "";
                                 }
-                                if (file.Contains("~/"))
+                                if (file.Contains(""~/""))
                                 {
-                                    string[] dp = _File.Split(@"\");
-                                    string directory = "";
+                                    string[] dp = _File.Split('\\');
+                                    string directory = """";
                                     for (int j = 0; j < dp.Length; j++)
                                     {
                                         if (j < dp.Length - 1)
                                         {
-                                            directory += dp[j] + @"\\";
+                                            directory += dp[j] + @""\\"";
                                         }
                                     }
                                     directory += file.Remove(0, 2);
                                     file = directory;
                                 }
-                                string val = "";
+                                string val = """";
                                 for (int j = 0; j < vars.Count; j++)
                                 {
                                     if (vars[j].Name == file)
@@ -2508,8 +2660,8 @@ namespace ezcode_Project_Player
                                 }
                                 catch
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("There was an error reading the file: " + file + " In line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""There was an error reading the file: "" + file + "" In line "" + codeLine + "" \n"", true);
                                 }
 
                                 // Create the variable with the user's input as the value
@@ -2519,7 +2671,7 @@ namespace ezcode_Project_Player
 
                                 vars.Add(var);
                             }
-                            else if (value == "FromList")
+                            else if (value == ""FromList"")
                             {
                                 bool isSet = false;
                                 string listN = parts[3];
@@ -2557,8 +2709,8 @@ namespace ezcode_Project_Player
                                 }
                                 else
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find a list by the inputted name in " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find a list by the inputted name in "" + codeLine + "" \n"", true);
                                 }
                             }
                             else
@@ -2573,12 +2725,12 @@ namespace ezcode_Project_Player
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("There was an error with 'var' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""There was an error with 'var' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // varRaw name value |or| varRaw name FromList listName varNumber 
-                    else if (parts[i] == "varInput")
+                    else if (parts[i] == ""varInput"")
                     {
                         try
                         {
@@ -2597,8 +2749,8 @@ namespace ezcode_Project_Player
                             }
                             if (!var.isSet)
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Could not find a variable named '" + name + "' in line " + codeLine + "\n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Could not find a variable named '"" + name + ""' in line "" + codeLine + ""\n"", true);
                                 return;
                             }
 
@@ -2610,15 +2762,15 @@ namespace ezcode_Project_Player
                                 }
                             }
 
-                            // Check if the name is "ConsoleInput"
-                            if (value == "Console")
+                            // Check if the name is ""ConsoleInput""
+                            if (value == ""Console"")
                             {
-                                // Wait for the user to press the "Send" button
+                                // Wait for the user to press the ""Send"" button
                                 float qq = 0;
                                 while (!sent)
                                 {
                                     qq += .1f;
-                                    //console.AddText("waiting for console input in line " + codeLine + ": " + qq + Environment.NewLine);
+                                    //console.AddText(""waiting for console input in line "" + codeLine + "": "" + qq + Environment.NewLine);
                                     await Task.Delay(100);
                                 }
 
@@ -2626,35 +2778,35 @@ namespace ezcode_Project_Player
                                 var.set(senttext);
                                 var.isSet = true;
 
-                                // Reset the "sent" flag
+                                // Reset the ""sent"" flag
                                 sent = false;
                                 senttext = string.Empty;
                             }
-                            else if (value == "Key")
+                            else if (value == ""Key"")
                             {
                                 // Create the variable with the user's input as the value
                                 var.set(keyPreview);
                                 var.isSet = true;
                             }
-                            else if (value == "KeyDown")
+                            else if (value == ""KeyDown"")
                             {
                                 // Create the variable with the user's input as the value
-                                var.set(keydown == false ? "0" : "1");
+                                var.set(keydown == false ? ""0"" : ""1"");
                                 var.isSet = true;
                             }
-                            else if (value == "StickyKey")
+                            else if (value == ""StickyKey"")
                             {
                                 // Create the variable with the user's input as the value
                                 var.set(awaitKeyPreview);
                                 var.isSet = true;
                             }
-                            else if (value == "AwaitKey")
+                            else if (value == ""AwaitKey"")
                             {
                                 float qq = 0;
                                 while (!keydown)
                                 {
                                     qq += .1f;
-                                    //console.AddText("waiting for key input in line " + codeLine + ": " + qq + Environment.NewLine);
+                                    //console.AddText(""waiting for key input in line "" + codeLine + "": "" + qq + Environment.NewLine);
                                     await Task.Delay(100);
                                 }
 
@@ -2663,27 +2815,27 @@ namespace ezcode_Project_Player
                                 var.isSet = true;
                                 keydown = false;
                             }
-                            /*else if (value == "MousePosition")
+                            /*else if (value == ""MousePosition"")
                             {
                                 string vector = parts[3];
                                 float pos = 1111.111100015684465464864f;
-                                if (vector == "x")
+                                if (vector == ""x"")
                                 {
                                     pos = MousePosition.X;
                                 }
-                                else if (vector == "y")
+                                else if (vector == ""y"")
                                 {
                                     pos = MousePosition.Y;
                                 }
                                 else
                                 {
-                                    console.AddText("There was an error with the vector: " + vector + ". Expected 'x' or 'y' in line " + codeLine + " \n", true);
+                                    console.AddText(""There was an error with the vector: "" + vector + "". Expected 'x' or 'y' in line "" + codeLine + "" \n"", true);
                                 }
 
                                 // Create the variable with the user's input as the value
                                 var.set(pos.ToString());
                             }
-                            else if (value == "MouseClick")
+                            else if (value == ""MouseClick"")
                             {
                                 float pos = 1111.111100015684465464864f;
                                 if (mc == 0)
@@ -2709,18 +2861,18 @@ namespace ezcode_Project_Player
                             }*/
                             else
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("There was an error with 'varInput' Line " + codeLine + " \n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""There was an error with 'varInput' Line "" + codeLine + "" \n"", true);
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("There was an error with 'varInput' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""There was an error with 'varInput' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // varInput varName INPUT
-                    else if (parts[i] == "varEquals")
+                    else if (parts[i] == ""varEquals"")
                     {
                         try
                         {
@@ -2747,35 +2899,35 @@ namespace ezcode_Project_Player
                             }
                             if (!var.isSet)
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Could not find a variable named '" + name + "' in line " + codeLine + "\n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Could not find a variable named '"" + name + ""' in line "" + codeLine + ""\n"", true);
                                 return;
                             }
 
 
-                            if (value == "ReadFile")
+                            if (value == ""ReadFile"")
                             {
-                                string file = "";
+                                string file = """";
                                 for (int j = 3; j < parts.Count; j++)
                                 {
                                     file += parts[j];
-                                    if (j < parts.Count - 1) file += " ";
+                                    if (j < parts.Count - 1) file += "" "";
                                 }
-                                if (file.Contains("~/"))
+                                if (file.Contains(""~/""))
                                 {
-                                    string[] dp = _File.Split(@"\");
-                                    string directory = "";
+                                    string[] dp = _File.Split('\\');
+                                    string directory = """";
                                     for (int j = 0; j < dp.Length; j++)
                                     {
                                         if (j < dp.Length - 1)
                                         {
-                                            directory += dp[j] + @"\\";
+                                            directory += dp[j] + @""\\"";
                                         }
                                     }
                                     directory += file.Remove(0, 2);
                                     file = directory;
                                 }
-                                string val = "";
+                                string val = """";
                                 for (int j = 0; j < vars.Count; j++)
                                 {
                                     if (vars[j].Name == file)
@@ -2789,16 +2941,16 @@ namespace ezcode_Project_Player
                                 }
                                 catch
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("There was an error reading the file: " + file + " In line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""There was an error reading the file: "" + file + "" In line "" + codeLine + "" \n"", true);
                                 }
 
                                 var.set(val);
                             }
-                            else if (value == "FromTextBox")
+                            else if (value == ""FromTextBox"")
                             {
                                 bool found = false;
-                                string val = "";
+                                string val = """";
                                 for (int j = 0; j < textboxes.Count; j++)
                                 {
                                     if (textboxes[j].Name == parts[3])
@@ -2809,69 +2961,69 @@ namespace ezcode_Project_Player
                                 }
                                 if (!found)
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find a textbox named " + parts[3] + " In line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find a textbox named "" + parts[3] + "" In line "" + codeLine + "" \n"", true);
                                     return;
                                 }
 
                                 var.set(val);
                             }
-                            else if (value == "IntersectsWith")
+                            else if (value == ""IntersectsWith"")
                             {
                                 string a = parts[3];
                                 string b = parts[4];
                                 string intersects;
 
                                 GObject A = new GObject(GObject.Type.Square);
-                                A.AccessibleName = "Error";
+                                A.AccessibleName = ""Error"";
                                 GObject B = new GObject(GObject.Type.Square);
-                                B.AccessibleName = "Error";
+                                B.AccessibleName = ""Error"";
 
                                 for (int j = 0; j < gameObjects.Count; j++)
                                 {
                                     if (a == gameObjects[j].Name)
                                     {
                                         A = gameObjects[j];
-                                        A.AccessibleName = "";
+                                        A.AccessibleName = """";
                                     }
                                     if (b == gameObjects[j].Name)
                                     {
                                         B = gameObjects[j];
-                                        B.AccessibleName = "";
+                                        B.AccessibleName = """";
                                     }
                                 }
-                                if (A.AccessibleName != "" && B.AccessibleName != "")
+                                if (A.AccessibleName != """" && B.AccessibleName != """")
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find the objects: '" + a + "' and '" + b + "' in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find the objects: '"" + a + ""' and '"" + b + ""' in line "" + codeLine + "" \n"", true);
                                     return;
                                 }
-                                else if (A.AccessibleName == "" && B.AccessibleName != "")
+                                else if (A.AccessibleName == """" && B.AccessibleName != """")
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find the object: '" + b + "' in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find the object: '"" + b + ""' in line "" + codeLine + "" \n"", true);
                                     return;
                                 }
-                                else if (A.AccessibleName != "" && B.AccessibleName == "")
+                                else if (A.AccessibleName != """" && B.AccessibleName == """")
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find the object: '" + a + "' in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find the object: '"" + a + ""' in line "" + codeLine + "" \n"", true);
                                     return;
                                 }
 
                                 if (A.Bounds.IntersectsWith(B.Bounds))
                                 {
-                                    intersects = "1";
+                                    intersects = ""1"";
                                 }
                                 else
                                 {
-                                    intersects = "0";
+                                    intersects = ""0"";
                                 }
 
                                 // Create the variable with the user's input as the value
                                 var.set(intersects);
                             }
-                            else if (value == "FromList")
+                            else if (value == ""FromList"")
                             {
                                 bool isSet = false;
                                 string listN = parts[3];
@@ -2906,17 +3058,17 @@ namespace ezcode_Project_Player
                                 }
                                 else
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Could not find a list by the inputted name in " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Could not find a list by the inputted name in "" + codeLine + "" \n"", true);
                                 }
                             }
-                            else if (value == "Random")
+                            else if (value == ""Random"")
                             {
                                 string mi = parts[3];
                                 string ma = parts[4];
                                 int min = 0;
                                 int max = 0;
-                                string brackets = "";
+                                string brackets = """";
                                 int ended = 0;
                                 int endindex = 0;
                                 List<string> textsA = new List<string>();
@@ -2943,7 +3095,7 @@ namespace ezcode_Project_Player
                                     }
                                     catch
                                     {
-                                        if (parts[3].StartsWith(@"("))
+                                        if (parts[3].StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             for (int l = 0; l < textsA.Count; l++)
@@ -2951,9 +3103,9 @@ namespace ezcode_Project_Player
                                                 if (ended == 1)
                                                 {
                                                     brackets += textsA[l];
-                                                    if (l < textsA.Count - 1) brackets += " ";
+                                                    if (l < textsA.Count - 1) brackets += "" "";
                                                 }
-                                                if (textsA[l].EndsWith(@")"))
+                                                if (textsA[l].EndsWith(@"")""))
                                                 {
                                                     if (endindex == 0) endindex = l;
                                                     ended = 2;
@@ -2962,7 +3114,7 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended != 0)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             min = (int)float.Parse(result);
                                         }
@@ -2980,8 +3132,8 @@ namespace ezcode_Project_Player
                                             textsB.Add(textsA[l]);
                                         }
                                         ended = 0;
-                                        brackets = "";
-                                        if (newended.StartsWith(@"("))
+                                        brackets = """";
+                                        if (newended.StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             for (int l = 0; l < textsB.Count; l++)
@@ -2989,9 +3141,9 @@ namespace ezcode_Project_Player
                                                 if (ended == 1)
                                                 {
                                                     brackets += textsB[l];
-                                                    if (l < textsB.Count - 1) brackets += " ";
+                                                    if (l < textsB.Count - 1) brackets += "" "";
                                                 }
-                                                if (textsB[l].EndsWith(@")"))
+                                                if (textsB[l].EndsWith(@"")""))
                                                 {
                                                     ended = 2;
                                                 }
@@ -2999,7 +3151,7 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended != 0)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             max = (int)float.Parse(result);
                                         }
@@ -3007,8 +3159,8 @@ namespace ezcode_Project_Player
                                 }
                                 catch
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("There was an error with the minumim and maximum of Random in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""There was an error with the minumim and maximum of Random in line "" + codeLine + "" \n"", true);
                                 }
 
                                 Random rand = new Random();
@@ -3028,37 +3180,37 @@ namespace ezcode_Project_Player
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // varEquals varName Modfier valueA(maybe) valueB(maybe)
-                    else if (parts[i] == "list")
+                    else if (parts[i] == ""list"")
                     {
                         try
                         {
                             string next = parts[i + 1];
-                            if (next == "new")
+                            if (next == ""new"")
                             {
                                 string name = parts[i + 2];
                                 string mid = parts[i + 3];
-                                string valuesRaw = "";
+                                string valuesRaw = """";
                                 for (int j = 4; j < parts.Count; j++)
                                 {
                                     valuesRaw += parts[j].ToString();
                                 }
-                                if (mid == ":")
+                                if (mid == "":"")
                                 {
-                                    List<string> values = valuesRaw.Split(",").ToList();
+                                    List<string> values = valuesRaw.Split(',').ToList();
                                     for (int j = 0; j < values.Count; j++)
                                     {
-                                        string brackets = "";
+                                        string brackets = """";
                                         int ended = 0;
-                                        if (values[j].StartsWith(@"("))
+                                        if (values[j].StartsWith(@""(""))
                                         {
                                             ended = 1;
                                             brackets = values[j];
-                                            if (values[j].EndsWith(@")"))
+                                            if (values[j].EndsWith(@"")""))
                                             {
                                                 ended = 2;
                                             }
@@ -3066,18 +3218,18 @@ namespace ezcode_Project_Player
                                         }
                                         if (ended == 2)
                                         {
-                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                             string result = SolveEquation(equation);
                                             values[j] = result;
                                         }
                                         else if (ended == 1)
                                         {
-                                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                            console.AddText("Syntax error in line " + codeLine + ". Expected ')' to end equation \n", true);
+                                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                            console.AddText(""Syntax error in line "" + codeLine + "". Expected ')' to end equation \n"", true);
                                         }
-                                        values[j] = values[j].Replace(@"\n", Environment.NewLine);
-                                        values[j] = values[j].Replace(@"\_", " ");
-                                        values[j] = values[j].Replace(@"\!", string.Empty);
+                                        values[j] = values[j].Replace(@""\n"", Environment.NewLine);
+                                        values[j] = values[j].Replace(@""\_"", "" "");
+                                        values[j] = values[j].Replace(@""\!"", string.Empty);
                                     }
 
                                     bool allNumbers = true;
@@ -3111,7 +3263,7 @@ namespace ezcode_Project_Player
 
                                             Var v = var;
                                             v.isSet = true;
-                                            v.Name = name + ":" + j;
+                                            v.Name = name + "":"" + j;
                                             vars.Add(v);
                                         }
                                     }
@@ -3119,7 +3271,7 @@ namespace ezcode_Project_Player
                                     if (!allNumbers && !allText)
                                     {
                                         //varList.Clear();
-                                        //console.AddText("Their was an error in line " + codeLine + ". Mixed value types \n", true);
+                                        //console.AddText(""Their was an error in line "" + codeLine + "". Mixed value types \n"", true);
                                         //return;
                                     }
 
@@ -3127,20 +3279,20 @@ namespace ezcode_Project_Player
                                 }
                                 else
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Their was an error in line " + codeLine + ". Expected ':' to initiate values in the list \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Their was an error in line "" + codeLine + "". Expected ':' to initiate values in the list \n"", true);
                                 }
                             }
-                            else if (next == "add")
+                            else if (next == ""add"")
                             {
                                 string name = parts[i + 2];
                                 string value = parts[i + 3];
 
                                 value = getEquation(value, 3, parts);
 
-                                value = value.Replace(@"\n", Environment.NewLine);
-                                value = value.Replace(@"\_", " ");
-                                value = value.Replace(@"\!", string.Empty);
+                                value = value.Replace(@""\n"", Environment.NewLine);
+                                value = value.Replace(@""\_"", "" "");
+                                value = value.Replace(@""\!"", string.Empty);
 
                                 for (int j = 0; j < VarList.Count; j++)
                                 {
@@ -3153,14 +3305,14 @@ namespace ezcode_Project_Player
                                     }
                                     if (VarList[j][0].Name == name)
                                     {
-                                        Var var = new Var(name + ":" + (VarList[j].Count - 1).ToString());
+                                        Var var = new Var(name + "":"" + (VarList[j].Count - 1).ToString());
                                         var.set(value);
                                         VarList[j].Add(var);
                                         vars.Add(var);
                                     }
                                 }
                             }
-                            else if (next == "equals")
+                            else if (next == ""equals"")
                             {
                                 string name = parts[i + 2];
                                 string index = parts[i + 3];
@@ -3168,9 +3320,9 @@ namespace ezcode_Project_Player
 
                                 value = getEquation(value, 3, parts);
 
-                                value = value.Replace(@"\n", Environment.NewLine);
-                                value = value.Replace(@"\_", " ");
-                                value = value.Replace(@"\!", string.Empty);
+                                value = value.Replace(@""\n"", Environment.NewLine);
+                                value = value.Replace(@""\_"", "" "");
+                                value = value.Replace(@""\!"", string.Empty);
 
                                 for (int k = 0; k < vars.Count; k++)
                                 {
@@ -3182,7 +3334,7 @@ namespace ezcode_Project_Player
                                 for (int j = 0; j < VarList.Count; j++)
                                 {
                                     string a = VarList[j][int.Parse(index) + 1].Name;
-                                    string b = name + ":" + int.Parse(index);
+                                    string b = name + "":"" + int.Parse(index);
                                     if (a == b)
                                     {
                                         Var var = VarList[j][int.Parse(index) + 1];
@@ -3190,7 +3342,7 @@ namespace ezcode_Project_Player
                                     }
                                 }
                             }
-                            else if (next == "clear")
+                            else if (next == ""clear"")
                             {
                                 string name = parts[i + 2];
                                 for (int j = 0; j < VarList.Count; j++)
@@ -3210,30 +3362,30 @@ namespace ezcode_Project_Player
                             }
                             else
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Their was an error in line " + codeLine + ". Expected 'new', 'add', 'equals', or 'clear' after 'list' \n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Their was an error in line "" + codeLine + "". Expected 'new', 'add', 'equals', or 'clear' after 'list' \n"", true);
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // list new name : 0,1,2,3 |or| list add name value |or| list equals name x(index) value |or| list clear name
-                    else if (parts[i] == "listRaw")
+                    else if (parts[i] == ""listRaw"")
                     {
                         try
                         {
                             string next = parts[i + 1];
-                            if (next == "new")
+                            if (next == ""new"")
                             {
                                 string name = parts[i + 2];
                                 string mid = parts[i + 3];
                                 string valuesRaw = parts[i + 4];
-                                if (mid == ":")
+                                if (mid == "":"")
                                 {
-                                    List<string> values = valuesRaw.Split(",").ToList();
+                                    List<string> values = valuesRaw.Split(',').ToList();
                                     List<Var> varList = new List<Var>();
 
                                     for (int j = -1; j < values.Count; j++)
@@ -3253,7 +3405,7 @@ namespace ezcode_Project_Player
 
                                             Var v = var;
                                             v.isSet = true;
-                                            v.Name = name + ":" + j;
+                                            v.Name = name + "":"" + j;
                                             vars.Add(v);
                                         }
                                     }
@@ -3262,11 +3414,11 @@ namespace ezcode_Project_Player
                                 }
                                 else
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Their was an error in line " + codeLine + ". Expected ':' to initiate values in the list \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Their was an error in line "" + codeLine + "". Expected ':' to initiate values in the list \n"", true);
                                 }
                             }
-                            else if (next == "add")
+                            else if (next == ""add"")
                             {
                                 string name = parts[i + 2];
                                 string value = parts[i + 3];
@@ -3274,14 +3426,14 @@ namespace ezcode_Project_Player
                                 {
                                     if (VarList[i][0].Name == name)
                                     {
-                                        Var var = new Var(name + ":" + (VarList[i].Count - 1).ToString());
+                                        Var var = new Var(name + "":"" + (VarList[i].Count - 1).ToString());
                                         var.set(value);
                                         VarList[i].Add(var);
                                         vars.Add(var);
                                     }
                                 }
                             }
-                            else if (next == "equals")
+                            else if (next == ""equals"")
                             {
                                 string name = parts[i + 2];
                                 string index = parts[i + 3];
@@ -3296,7 +3448,7 @@ namespace ezcode_Project_Player
                                 for (int j = 0; j < VarList.Count; j++)
                                 {
                                     string a = VarList[j][int.Parse(index) + 1].Name;
-                                    string b = name + ":" + int.Parse(index);
+                                    string b = name + "":"" + int.Parse(index);
                                     if (a == b)
                                     {
                                         Var var = VarList[j][int.Parse(index) + 1];
@@ -3304,7 +3456,7 @@ namespace ezcode_Project_Player
                                     }
                                 }
                             }
-                            else if (next == "clear")
+                            else if (next == ""clear"")
                             {
                                 string name = parts[i + 2];
                                 for (int j = 0; j < VarList.Count; j++)
@@ -3324,43 +3476,43 @@ namespace ezcode_Project_Player
                             }
                             else
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Their was an error in line " + codeLine + " \n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Their was an error in line "" + codeLine + "" \n"", true);
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // listRaw new name : 0,1,2,3 |or| listRaw add name value
-                    else if (parts[i] == "writeToFile")
+                    else if (parts[i] == ""writeToFile"")
                     {
                         try
                         {
                             string name = parts[1];
-                            string file = "";
+                            string file = """";
                             for (int j = 2; j < parts.Count; j++)
                             {
                                 file += parts[j];
-                                if (j < parts.Count - 1) file += " ";
+                                if (j < parts.Count - 1) file += "" "";
                             }
-                            if (file.Contains("~/"))
+                            if (file.Contains(""~/""))
                             {
-                                string[] dp = _File.Split(@"\");
-                                string directory = "";
+                                string[] dp = _File.Split('\\');
+                                string directory = """";
                                 for (int j = 0; j < dp.Length; j++)
                                 {
                                     if (j < dp.Length - 1)
                                     {
-                                        directory += dp[j] + @"\\";
+                                        directory += dp[j] + @""\\"";
                                     }
                                 }
                                 directory += file.Remove(0, 2);
                                 file = directory;
                             }
-                            string val = "";
+                            string val = """";
                             bool isSet = false;
                             for (int j = 0; j < vars.Count; j++)
                             {
@@ -3380,9 +3532,9 @@ namespace ezcode_Project_Player
                             if (!isSet)
                             {
                                 val = name;
-                                val = val.Replace(@"\n", Environment.NewLine);
-                                val = val.Replace(@"\_", " ");
-                                val = val.Replace(@"\!", string.Empty);
+                                val = val.Replace(@""\n"", Environment.NewLine);
+                                val = val.Replace(@""\_"", "" "");
+                                val = val.Replace(@""\!"", string.Empty);
                             }
                             try
                             {
@@ -3390,33 +3542,33 @@ namespace ezcode_Project_Player
                             }
                             catch
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("There was an error writing the file: " + file + " In line " + codeLine + " \n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""There was an error writing the file: "" + file + "" In line "" + codeLine + "" \n"", true);
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // writeToFile varName filePath
-                    else if (parts[i] == "sound")
+                    else if (parts[i] == ""sound"")
                     {
                         try
                         {
-                            if (parts[1] == "play")
+                            if (parts[1] == ""play"")
                             {
                                 string file = part[2].Trim();
-                                if (file.Contains("~/"))
+                                if (file.Contains(""~/""))
                                 {
-                                    string[] dp = _File.Split(@"\");
-                                    string directory = "";
+                                    string[] dp = _File.Split('\\');
+                                    string directory = """";
                                     for (int j = 0; j < dp.Length; j++)
                                     {
                                         if (j < dp.Length - 1)
                                         {
-                                            directory += dp[j] + @"\\";
+                                            directory += dp[j] + @""\\"";
                                         }
                                     }
                                     directory += file.Remove(0, 2);
@@ -3431,34 +3583,34 @@ namespace ezcode_Project_Player
                                 }
                                 try
                                 {
-                                    outputPlayer = new WaveOutEvent();
-                                    AudioFileReader player = new AudioFileReader(file);
-                                    outputPlayer.Init(player);
-                                    outputPlayer.Play();
+                                    //outputPlayer = new WaveOutEvent();
+                                    //AudioFileReader player = new AudioFileReader(file);
+                                    //outputPlayer.Init(player);
+                                    //outputPlayer.Play();
                                 }
                                 catch
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("There was an error playing the sound: " + file + " In line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""There was an error playing the sound: "" + file + "" In line "" + codeLine + "" \n"", true);
                                 }
                             }
-                            if (parts[1] == "stop")
+                            if (parts[1] == ""stop"")
                             {
-                                outputPlayer.Stop();
+                                //outputPlayer.Stop();
                             }
-                            if (parts[1] == "volume")
+                            if (parts[1] == ""volume"")
                             {
                                 try
                                 {
                                     string p = parts[2];
-                                    string brackets = "";
+                                    string brackets = """";
                                     int ended = 0;
                                     List<string> texts = new List<string>();
                                     for (int l = 2; l < parts.Count; l++)
                                     {
                                         texts.Add(parts[l]);
                                     }
-                                    if (p.StartsWith(@"("))
+                                    if (p.StartsWith(@""(""))
                                     {
                                         ended = 1;
                                         for (int l = 0; l < texts.Count; l++)
@@ -3466,9 +3618,9 @@ namespace ezcode_Project_Player
                                             if (ended == 1)
                                             {
                                                 brackets += texts[l];
-                                                if (l < texts.Count - 1) brackets += " ";
+                                                if (l < texts.Count - 1) brackets += "" "";
                                             }
-                                            if (texts[l].EndsWith(@")"))
+                                            if (texts[l].EndsWith(@"")""))
                                             {
                                                 ended = 2;
                                             }
@@ -3476,62 +3628,61 @@ namespace ezcode_Project_Player
                                     }
                                     if (ended != 0)
                                     {
-                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                         string result = SolveEquation(equation);
                                         p = result;
                                     }
-                                    WaveOutEvent outputPlayer = new WaveOutEvent();
-                                    outputPlayer.Volume = float.Parse(p);
+                                    //WaveOutEvent outputPlayer = new WaveOutEvent();
+                                    //outputPlayer.Volume = float.Parse(p);
                                 }
                                 catch
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("There was an error with setting the volume in 'sound' in line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""There was an error with setting the volume in 'sound' in line "" + codeLine + "" \n"", true);
                                 }
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // sound name (play,pause,stop) PathToFile(maybe)
-                    else if (parts[i] == "endBuild")
+                    else if (parts[i] == ""endBuild"")
                     {
                         try
                         {
-                            playing = false;
-                            await Task.Delay(100);
-                            console.AddText("Build Ended by Script" + Environment.NewLine + Environment.NewLine, false);
+                            await Task.Delay(300);
+                            Application.Exit();
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // endBuild
-                    else if (parts[i] == "playFile")
+                    else if (parts[i] == ""playFile"")
                     {
                         try
                         {
                             string awaits = parts[i + 1];
-                            string file = "";
+                            string file = """";
                             for (int j = 2; j < parts.Count; j++)
                             {
                                 file += parts[j];
-                                if (j < parts.Count - 1) file += " ";
+                                if (j < parts.Count - 1) file += "" "";
                             }
-                            if (file.Contains("~/"))
+                            if (file.Contains(""~/""))
                             {
-                                string[] dp = _File.Split(@"\");
-                                string directory = "";
+                                string[] dp = _File.Split('\\');
+                                string directory = """";
                                 for (int j = 0; j < dp.Length; j++)
                                 {
                                     if (j < dp.Length - 1)
                                     {
-                                        directory += dp[j] + @"\\";
+                                        directory += dp[j] + @""\\"";
                                     }
                                 }
                                 directory += file.Remove(0, 2);
@@ -3549,41 +3700,41 @@ namespace ezcode_Project_Player
                             try { play = File.ReadAllText(file); }
                             catch
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""could not find a file in the path "" + file + "" in line "" + codeLine + Environment.NewLine, true);
                             }
-                            if (awaits == "now")
+                            if (awaits == ""now"")
                             {
-                                try { PlayAsync(play, _File); }
+                                try { PlayAsync(play); }
                                 catch
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Their was an error in reading the file "" + file + "" in line "" + codeLine + Environment.NewLine, true);
                                 }
                             }
-                            else if (awaits == "await")
+                            else if (awaits == ""await"")
                             {
-                                try { await PlayAsync(play, _File); }
+                                try { await PlayAsync(play); }
                                 catch
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Their was an error in reading the file "" + file + "" in line "" + codeLine + Environment.NewLine, true);
                                 }
                             }
                             else
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Their was an error with 'playFile' in line " + codeLine + " \n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Their was an error with 'playFile' in line "" + codeLine + "" \n"", true);
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // playFile await PathToFile |or| playFile now PathToFile
-                    else if (parts[i] == "ifRaw")
+                    else if (parts[i] == ""ifRaw"")
                     {
                         try
                         {
@@ -3591,31 +3742,31 @@ namespace ezcode_Project_Player
                             string mid = parts[2];
                             string v2 = parts[3];
 
-                            if (mid == "=" && parts[4] == ":") // equal to
+                            if (mid == ""="" && parts[4] == "":"") // equal to
                             {
                                 if (v1 == v2)
                                 {
                                     string upcode = string.Empty;
                                     for (int j = 5; j < parts.Count; j++)
                                     {
-                                        upcode += parts[j] + " ";
+                                        upcode += parts[j] + "" "";
                                     }
-                                    await PlayAsync(upcode, _File);
+                                    await PlayAsync(upcode);
                                 }
                             }
-                            else if (mid == "!" && parts[4] == ":") // not equal
+                            else if (mid == ""!"" && parts[4] == "":"") // not equal
                             {
                                 if (v1 != v2)
                                 {
                                     string upcode = string.Empty;
                                     for (int j = 5; j < parts.Count; j++)
                                     {
-                                        upcode += parts[j] + " ";
+                                        upcode += parts[j] + "" "";
                                     }
-                                    await PlayAsync(upcode, _File);
+                                    await PlayAsync(upcode);
                                 }
                             }
-                            else if (mid == ">" && parts[4] == ":") // less than
+                            else if (mid == "">"" && parts[4] == "":"") // less than
                             {
                                 int vA = 0, vB = 0;
                                 bool vA_int = true, vB_int = true;
@@ -3664,12 +3815,12 @@ namespace ezcode_Project_Player
                                     string upcode = string.Empty;
                                     for (int j = 5; j < parts.Count; j++)
                                     {
-                                        upcode += parts[j] + " ";
+                                        upcode += parts[j] + "" "";
                                     }
-                                    await PlayAsync(upcode, _File);
+                                    await PlayAsync(upcode);
                                 }
                             }
-                            else if (mid == "<" && parts[4] == ":") // greater than
+                            else if (mid == ""<"" && parts[4] == "":"") // greater than
                             {
                                 int vA = 0, vB = 0;
                                 bool vA_int = true, vB_int = true;
@@ -3718,30 +3869,30 @@ namespace ezcode_Project_Player
                                     string upcode = string.Empty;
                                     for (int j = 5; j < parts.Count; j++)
                                     {
-                                        upcode += parts[j] + " ";
+                                        upcode += parts[j] + "" "";
                                     }
-                                    await PlayAsync(upcode, _File);
+                                    await PlayAsync(upcode);
                                 }
                             }
                             else
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("The if statement was not formatted correctly in line " + codeLine + " \n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""The if statement was not formatted correctly in line "" + codeLine + "" \n"", true);
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // if value1 mid value2 : stuff || mid is =,!,>,<
-                    else if (parts[i] == "if")
+                    else if (parts[i] == ""if"")
                     {
                         try
                         {
                             multimids Mid = new multimids();
-                            string brackets = "";
+                            string brackets = """";
                             int ended = 0;
                             int endindex = 0;
                             List<string> textsA = new List<string>();
@@ -3750,11 +3901,11 @@ namespace ezcode_Project_Player
                                 textsA.Add(parts[l]);
                             }
                             bool aV = false, bV = false;
-                            string a = "";
-                            string c = "";
+                            string a = """";
+                            string c = """";
                             try
                             {
-                                if (parts[1].StartsWith(@"("))
+                                if (parts[1].StartsWith(@""(""))
                                 {
                                     ended = 1;
                                     for (int l = 0; l < textsA.Count; l++)
@@ -3762,9 +3913,9 @@ namespace ezcode_Project_Player
                                         if (ended == 1)
                                         {
                                             brackets += textsA[l];
-                                            if (l < textsA.Count - 1) brackets += " ";
+                                            if (l < textsA.Count - 1) brackets += "" "";
                                         }
-                                        if (textsA[l].EndsWith(@")"))
+                                        if (textsA[l].EndsWith(@"")""))
                                         {
                                             if (endindex == 0) endindex = l;
                                             ended = 2;
@@ -3772,7 +3923,7 @@ namespace ezcode_Project_Player
                                     }
                                     if (ended != 0)
                                     {
-                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                         string result = SolveEquation(equation);
                                         a = float.Parse(result).ToString();
                                     }
@@ -3788,9 +3939,9 @@ namespace ezcode_Project_Player
                                     catch
                                     {
                                         bool v = false;
-                                        prt = prt.Replace(@"\n", Environment.NewLine);
-                                        prt = prt.Replace(@"\_", " ");
-                                        prt = prt.Replace(@"\!", string.Empty);
+                                        prt = prt.Replace(@""\n"", Environment.NewLine);
+                                        prt = prt.Replace(@""\_"", "" "");
+                                        prt = prt.Replace(@""\!"", string.Empty);
                                         for (int j = 0; j < vars.Count; j++)
                                         {
                                             if (vars[j].Name == prt)
@@ -3807,7 +3958,7 @@ namespace ezcode_Project_Player
                                 }
                                 try
                                 {
-                                    string val = "";
+                                    string val = """";
                                     if (aV)
                                     {
                                         val = parts[2];
@@ -3824,18 +3975,18 @@ namespace ezcode_Project_Player
                                             val = vars[j].value();
                                         }
                                     }
-                                    if (val == "=") Mid = multimids.equals;
-                                    if (val == "!") Mid = multimids.not;
-                                    if (val == ">") Mid = multimids.less;
-                                    if (val == "<") Mid = multimids.greater;
+                                    if (val == ""="") Mid = multimids.equals;
+                                    if (val == ""!"") Mid = multimids.not;
+                                    if (val == "">"") Mid = multimids.less;
+                                    if (val == ""<"") Mid = multimids.greater;
                                     endindex++;
                                 }
                                 catch
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Their was an error with 'if' expected '=', '!', '>', or '<' " + codeLine + "\n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""Their was an error with 'if' expected '=', '!', '>', or '<' "" + codeLine + ""\n"", true);
                                 }
-                                string va = "";
+                                string va = """";
                                 endindex++;
                                 int ne = endindex;
                                 if (bV)
@@ -3846,9 +3997,9 @@ namespace ezcode_Project_Player
                                 {
                                     va = textsA[ne];
                                 }
-                                brackets = "";
+                                brackets = """";
                                 ended = 0;
-                                if (va.StartsWith(@"("))
+                                if (va.StartsWith(@""(""))
                                 {
                                     ended = 1;
                                     for (int l = ne; l < textsA.Count; l++)
@@ -3856,9 +4007,9 @@ namespace ezcode_Project_Player
                                         if (ended == 1)
                                         {
                                             brackets += textsA[l];
-                                            if (l < textsA.Count - 1) brackets += " ";
+                                            if (l < textsA.Count - 1) brackets += "" "";
                                         }
-                                        if (textsA[l].EndsWith(@")"))
+                                        if (textsA[l].EndsWith(@"")""))
                                         {
                                             if (endindex == ne) endindex = l;
                                             ended = 2;
@@ -3866,7 +4017,7 @@ namespace ezcode_Project_Player
                                     }
                                     if (ended != 0)
                                     {
-                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                         string result = SolveEquation(equation);
                                         c = float.Parse(result).ToString();
                                     }
@@ -3881,9 +4032,9 @@ namespace ezcode_Project_Player
                                     catch
                                     {
                                         bool v = false;
-                                        prt = prt.Replace(@"\n", Environment.NewLine);
-                                        prt = prt.Replace(@"\_", " ");
-                                        prt = prt.Replace(@"\!", string.Empty);
+                                        prt = prt.Replace(@""\n"", Environment.NewLine);
+                                        prt = prt.Replace(@""\_"", "" "");
+                                        prt = prt.Replace(@""\!"", string.Empty);
                                         for (int j = 0; j < vars.Count; j++)
                                         {
                                             if (vars[j].Name == prt)
@@ -3902,107 +4053,107 @@ namespace ezcode_Project_Player
                             }
                             catch
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Their was an error with 'if' the values were not formatted correctly in line " + codeLine + "\n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Their was an error with 'if' the values were not formatted correctly in line "" + codeLine + ""\n"", true);
                             }
 
                             bool is_true = ifcheck(Mid, a, c);
 
-                            if (is_true && textsA[endindex + 1] == ":")
+                            if (is_true && textsA[endindex + 1] == "":"")
                             {
                                 string upcode = string.Empty;
                                 for (int j = endindex + 2; j < textsA.Count; j++)
                                 {
-                                    upcode += textsA[j] + " ";
+                                    upcode += textsA[j] + "" "";
                                 }
-                                await PlayAsync(upcode, _File);
+                                await PlayAsync(upcode);
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     } // if value1 mid value2 : stuff || mid is =,!,>,<
-                    else if (parts[i].Contains("//"))
+                    else if (parts[i].Contains(""//""))
                     { } // // comment text
-                    else if (parts[i] == "#" || parts[i] == "#create")
+                    else if (parts[i] == ""#"" || parts[i] == ""#create"")
                     {
                         try
                         {
-                            if (parts[i] == "#")
+                            if (parts[i] == ""#"")
                             {
 
-                                if (parts[1] == "create" && parts[2] == "error")
+                                if (parts[1] == ""create"" && parts[2] == ""error"")
                                 {
                                     try
                                     {
-                                        string text = "";
+                                        string text = """";
                                         for (int j = 3; j < parts.Count; j++)
                                         {
                                             text += parts[j];
-                                            if (j < parts.Count - 1) text += " ";
+                                            if (j < parts.Count - 1) text += "" "";
                                         }
-                                        if (text == "") int.Parse("jj");
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText(text + ". In line " + codeLine + " \n", true);
+                                        if (text == """") int.Parse(""jj"");
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(text + "". In line "" + codeLine + "" \n"", true);
                                     }
                                     catch
                                     {
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText("Error in line " + codeLine + " \n", true);
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(""Error in line "" + codeLine + "" \n"", true);
                                     }
                                 }
                                 else
                                 {
-                                    int.Parse("jj");
+                                    int.Parse(""jj"");
                                 }
                             }
-                            if (parts[i] == "#create")
+                            if (parts[i] == ""#create"")
                             {
 
-                                if (parts[1] == "error")
+                                if (parts[1] == ""error"")
                                 {
                                     try
                                     {
-                                        string text = "";
+                                        string text = """";
                                         for (int j = 2; j < parts.Count; j++)
                                         {
                                             text += parts[j];
-                                            if (j < parts.Count - 1) text += " ";
+                                            if (j < parts.Count - 1) text += "" "";
                                         }
-                                        if (text == "") int.Parse("jj");
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText(text + ". In line " + codeLine + " \n", true);
+                                        if (text == """") int.Parse(""jj"");
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(text + "". In line "" + codeLine + "" \n"", true);
                                     }
                                     catch
                                     {
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText("Error in line " + codeLine + " \n", true);
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(""Error in line "" + codeLine + "" \n"", true);
                                     }
                                 }
                                 else
                                 {
-                                    int.Parse("jj");
+                                    int.Parse(""jj"");
                                 }
                             }
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error with '# create error' in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error with '# create error' in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     }// # create error errorText
                     else
                     {
-                        if (parts[i] == "#" || parts[i] == "#create" || parts[i] == "#suppress")
+                        if (parts[i] == ""#"" || parts[i] == ""#create"" || parts[i] == ""#suppress"")
                         {
                             return;
                         }
-                        if (parts[i].Trim() == "") return;
-                        //console.AddText("There is no function named '" + parts[i] + "' in line " + codeLine + Environment.NewLine);
+                        if (parts[i].Trim() == """") return;
+                        //console.AddText(""There is no function named '"" + parts[i] + ""' in line "" + codeLine + Environment.NewLine);
                         try
                         {
                             string name = parts[0];
@@ -4029,21 +4180,21 @@ namespace ezcode_Project_Player
 
                             if (!var.isSet)
                             {
-                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Could not find a variable named '" + name + "' in line " + codeLine + "\n", true);
+                                if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                console.AddText(""Could not find a variable named '"" + name + ""' in line "" + codeLine + ""\n"", true);
                                 return;
                             }
 
-                            if (mid == "Console" || mid == "Key" || mid == "KeyDown" || mid == "StickKey" || mid == "AwaitKey")
+                            if (mid == ""Console"" || mid == ""Key"" || mid == ""KeyDown"" || mid == ""StickKey"" || mid == ""AwaitKey"")
                             {
-                                if (mid == "Console")
+                                if (mid == ""Console"")
                                 {
-                                    // Wait for the user to press the "Send" button
+                                    // Wait for the user to press the ""Send"" button
                                     float qq = 0;
                                     while (!sent)
                                     {
                                         qq += .1f;
-                                        //console.AddText("waiting for console input in line " + codeLine + ": " + qq + Environment.NewLine);
+                                        //console.AddText(""waiting for console input in line "" + codeLine + "": "" + qq + Environment.NewLine);
                                         await Task.Delay(100);
                                     }
 
@@ -4051,35 +4202,35 @@ namespace ezcode_Project_Player
                                     var.set(senttext);
                                     var.isSet = true;
 
-                                    // Reset the "sent" flag
+                                    // Reset the ""sent"" flag
                                     sent = false;
                                     senttext = string.Empty;
                                 }
-                                else if (mid == "Key")
+                                else if (mid == ""Key"")
                                 {
                                     // Create the variable with the user's input as the value
                                     var.set(keyPreview);
                                     var.isSet = true;
                                 }
-                                else if (mid == "KeyDown")
+                                else if (mid == ""KeyDown"")
                                 {
                                     // Create the variable with the user's input as the value
-                                    var.set(keydown == false ? "0" : "1");
+                                    var.set(keydown == false ? ""0"" : ""1"");
                                     var.isSet = true;
                                 }
-                                else if (mid == "StickyKey")
+                                else if (mid == ""StickyKey"")
                                 {
                                     // Create the variable with the user's input as the value
                                     var.set(awaitKeyPreview);
                                     var.isSet = true;
                                 }
-                                else if (mid == "AwaitKey")
+                                else if (mid == ""AwaitKey"")
                                 {
                                     float qq = 0;
                                     while (!keydown)
                                     {
                                         qq += .1f;
-                                        //console.AddText("waiting for key input in line " + codeLine + ": " + qq + Environment.NewLine);
+                                        //console.AddText(""waiting for key input in line "" + codeLine + "": "" + qq + Environment.NewLine);
                                         await Task.Delay(100);
                                     }
 
@@ -4090,35 +4241,35 @@ namespace ezcode_Project_Player
                                 }
                                 else
                                 {
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("There was an error with 'varInput' Line " + codeLine + " \n", true);
+                                    if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                    console.AddText(""There was an error with 'varInput' Line "" + codeLine + "" \n"", true);
                                 }
                             }
-                            else if (mid == "ReadFile" || mid == "FromTextBox" || mid == "IntersectsWith" || mid == "FromList" || mid == "Random")
+                            else if (mid == ""ReadFile"" || mid == ""FromTextBox"" || mid == ""IntersectsWith"" || mid == ""FromList"" || mid == ""Random"")
                             {
-                                if (mid == "ReadFile")
+                                if (mid == ""ReadFile"")
                                 {
-                                    string file = "";
+                                    string file = """";
                                     for (int j = 2; j < parts.Count; j++)
                                     {
                                         file += parts[j];
-                                        if (j < parts.Count - 1) file += " ";
+                                        if (j < parts.Count - 1) file += "" "";
                                     }
-                                    if (file.Contains("~/"))
+                                    if (file.Contains(""~/""))
                                     {
-                                        string[] dp = _File.Split(@"\");
-                                        string directory = "";
+                                        string[] dp = _File.Split('\\');
+                                        string directory = """";
                                         for (int j = 0; j < dp.Length; j++)
                                         {
                                             if (j < dp.Length - 1)
                                             {
-                                                directory += dp[j] + @"\\";
+                                                directory += dp[j] + @""\\"";
                                             }
                                         }
                                         directory += file.Remove(0, 2);
                                         file = directory;
                                     }
-                                    string val = "";
+                                    string val = """";
                                     for (int j = 0; j < vars.Count; j++)
                                     {
                                         if (vars[j].Name == file)
@@ -4132,16 +4283,16 @@ namespace ezcode_Project_Player
                                     }
                                     catch
                                     {
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText("There was an error reading the file: " + file + " In line " + codeLine + " \n", true);
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(""There was an error reading the file: "" + file + "" In line "" + codeLine + "" \n"", true);
                                     }
 
                                     var.set(val);
                                 }
-                                else if (mid == "FromTextBox")
+                                else if (mid == ""FromTextBox"")
                                 {
                                     bool found = false;
-                                    string val = "";
+                                    string val = """";
                                     for (int j = 0; j < textboxes.Count; j++)
                                     {
                                         if (textboxes[j].Name == parts[2])
@@ -4152,69 +4303,69 @@ namespace ezcode_Project_Player
                                     }
                                     if (!found)
                                     {
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText("Could not find a textbox named " + parts[3] + " In line " + codeLine + " \n", true);
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(""Could not find a textbox named "" + parts[3] + "" In line "" + codeLine + "" \n"", true);
                                         return;
                                     }
 
                                     var.set(val);
                                 }
-                                else if (mid == "IntersectsWith")
+                                else if (mid == ""IntersectsWith"")
                                 {
                                     string a = parts[2];
                                     string b = parts[3];
                                     string intersects;
 
                                     GObject A = new GObject(GObject.Type.Square);
-                                    A.AccessibleName = "Error";
+                                    A.AccessibleName = ""Error"";
                                     GObject B = new GObject(GObject.Type.Square);
-                                    B.AccessibleName = "Error";
+                                    B.AccessibleName = ""Error"";
 
                                     for (int j = 0; j < gameObjects.Count; j++)
                                     {
                                         if (a == gameObjects[j].Name)
                                         {
                                             A = gameObjects[j];
-                                            A.AccessibleName = "";
+                                            A.AccessibleName = """";
                                         }
                                         if (b == gameObjects[j].Name)
                                         {
                                             B = gameObjects[j];
-                                            B.AccessibleName = "";
+                                            B.AccessibleName = """";
                                         }
                                     }
-                                    if (A.AccessibleName != "" && B.AccessibleName != "")
+                                    if (A.AccessibleName != """" && B.AccessibleName != """")
                                     {
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText("Could not find the objects: '" + a + "' and '" + b + "' in line " + codeLine + " \n", true);
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(""Could not find the objects: '"" + a + ""' and '"" + b + ""' in line "" + codeLine + "" \n"", true);
                                         return;
                                     }
-                                    else if (A.AccessibleName == "" && B.AccessibleName != "")
+                                    else if (A.AccessibleName == """" && B.AccessibleName != """")
                                     {
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText("Could not find the object: '" + b + "' in line " + codeLine + " \n", true);
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(""Could not find the object: '"" + b + ""' in line "" + codeLine + "" \n"", true);
                                         return;
                                     }
-                                    else if (A.AccessibleName != "" && B.AccessibleName == "")
+                                    else if (A.AccessibleName != """" && B.AccessibleName == """")
                                     {
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText("Could not find the object: '" + a + "' in line " + codeLine + " \n", true);
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(""Could not find the object: '"" + a + ""' in line "" + codeLine + "" \n"", true);
                                         return;
                                     }
 
                                     if (A.Bounds.IntersectsWith(B.Bounds))
                                     {
-                                        intersects = "1";
+                                        intersects = ""1"";
                                     }
                                     else
                                     {
-                                        intersects = "0";
+                                        intersects = ""0"";
                                     }
 
                                     // Create the variable with the user's input as the value
                                     var.set(intersects);
                                 }
-                                else if (mid == "FromList")
+                                else if (mid == ""FromList"")
                                 {
                                     bool isSet = false;
                                     string listN = parts[2];
@@ -4249,17 +4400,17 @@ namespace ezcode_Project_Player
                                     }
                                     else
                                     {
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText("Could not find a list by the inputted name in " + codeLine + " \n", true);
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(""Could not find a list by the inputted name in "" + codeLine + "" \n"", true);
                                     }
                                 }
-                                else if (mid == "Random")
+                                else if (mid == ""Random"")
                                 {
                                     string mi = parts[2];
                                     string ma = parts[3];
                                     int min = 0;
                                     int max = 0;
-                                    string brackets = "";
+                                    string brackets = """";
                                     int ended = 0;
                                     int endindex = 0;
                                     List<string> textsA = new List<string>();
@@ -4286,7 +4437,7 @@ namespace ezcode_Project_Player
                                         }
                                         catch
                                         {
-                                            if (parts[2].StartsWith(@"("))
+                                            if (parts[2].StartsWith(@""(""))
                                             {
                                                 ended = 1;
                                                 for (int l = 0; l < textsA.Count; l++)
@@ -4294,9 +4445,9 @@ namespace ezcode_Project_Player
                                                     if (ended == 1)
                                                     {
                                                         brackets += textsA[l];
-                                                        if (l < textsA.Count - 1) brackets += " ";
+                                                        if (l < textsA.Count - 1) brackets += "" "";
                                                     }
-                                                    if (textsA[l].EndsWith(@")"))
+                                                    if (textsA[l].EndsWith(@"")""))
                                                     {
                                                         if (endindex == 0) endindex = l;
                                                         ended = 2;
@@ -4305,7 +4456,7 @@ namespace ezcode_Project_Player
                                             }
                                             if (ended != 0)
                                             {
-                                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                                 string result = SolveEquation(equation);
                                                 min = (int)float.Parse(result);
                                             }
@@ -4324,8 +4475,8 @@ namespace ezcode_Project_Player
                                                 textsB.Add(textsA[l]);
                                             }
                                             ended = 0;
-                                            brackets = "";
-                                            if (newended.StartsWith(@"("))
+                                            brackets = """";
+                                            if (newended.StartsWith(@""(""))
                                             {
                                                 ended = 1;
                                                 for (int l = 0; l < textsB.Count; l++)
@@ -4333,9 +4484,9 @@ namespace ezcode_Project_Player
                                                     if (ended == 1)
                                                     {
                                                         brackets += textsB[l];
-                                                        if (l < textsB.Count - 1) brackets += " ";
+                                                        if (l < textsB.Count - 1) brackets += "" "";
                                                     }
-                                                    if (textsB[l].EndsWith(@")"))
+                                                    if (textsB[l].EndsWith(@"")""))
                                                     {
                                                         ended = 2;
                                                     }
@@ -4343,7 +4494,7 @@ namespace ezcode_Project_Player
                                             }
                                             if (ended != 0)
                                             {
-                                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                                                 string result = SolveEquation(equation);
                                                 max = (int)float.Parse(result);
                                             }
@@ -4351,7 +4502,7 @@ namespace ezcode_Project_Player
                                     }
                                     catch
                                     {
-                                        console.AddText("There was an error with the minumim and maximum of Random in line " + codeLine + " \n", true);
+                                        console.AddText(""There was an error with the minumim and maximum of Random in line "" + codeLine + "" \n"", true);
                                     }
 
                                     Random rand = new Random();
@@ -4373,9 +4524,9 @@ namespace ezcode_Project_Player
                                 string value = parts[2];
                                 value = getEquation(value, 2, parts);
 
-                                value = value.Replace(@"\n", Environment.NewLine);
-                                value = value.Replace(@"\_", " ");
-                                value = value.Replace(@"\!", string.Empty);
+                                value = value.Replace(@""\n"", Environment.NewLine);
+                                value = value.Replace(@""\_"", "" "");
+                                value = value.Replace(@""\!"", string.Empty);
                                 for (int j = 0; j < vars.Count; j++)
                                 {
                                     if (vars[j].Name == value)
@@ -4390,8 +4541,8 @@ namespace ezcode_Project_Player
 
                                     if (!var.isSet)
                                     {
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText("Their was an error with '" + name + "' the called variable is not a number and cannot be divided or subtracted. Line " + codeLine + " \n", true);
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(""Their was an error with '"" + name + ""' the called variable is not a number and cannot be divided or subtracted. Line "" + codeLine + "" \n"", true);
                                         return;
                                     }
                                 }
@@ -4401,8 +4552,8 @@ namespace ezcode_Project_Player
 
                                     if (!var.isSet)
                                     {
-                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                        console.AddText("Their was an error with 'varSet' in line " + codeLine + " \n", true);
+                                        if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                                        console.AddText(""Their was an error with 'varSet' in line "" + codeLine + "" \n"", true);
                                         return;
                                     }
                                 }
@@ -4418,13 +4569,86 @@ namespace ezcode_Project_Player
                         }
                         catch
                         {
-                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            if (line.Contains(""# suppress error"") || line.Contains(""#suppress error"")) return;
+                            console.AddText(""Their was an error in line "" + codeLine + "" \n"", true);
                             return;
                         }
                     }
                 }
             }
+        }
+        public async void InGameButtonClicked(object sender, EventArgs e)
+        {
+            Button b = (Button)sender;
+
+            string file = b.AccessibleDescription;
+
+            if (file != string.Empty && File.Exists(file))
+            {
+                if (file.Contains(""~/""))
+                {
+                    string[] dp = _File.Split('\\');
+                    string directory = """";
+                    for (int j = 0; j < dp.Length; j++)
+                    {
+                        if (j < dp.Length - 1)
+                        {
+                            directory += dp[j] + @""\\"";
+                        }
+                    }
+                    directory += file.Remove(0, 2);
+                    file = directory;
+                }
+                for (int j = 0; j < vars.Count; j++)
+                {
+                    if (vars[j].Name == file)
+                    {
+                        file = vars[j].value();
+                    }
+                }
+                string play = string.Empty;
+
+                try { play = File.ReadAllText(file); }
+                catch { console.AddText(""could not find a file in the path "" + file + "" in line "" + codeLine + Environment.NewLine, true); }
+                try { await PlayAsync(play); }
+                catch { console.AddText(""Their was an error in reading the file "" + file + "" in line "" + codeLine + Environment.NewLine, true); }
+            }
+            else
+            {
+                console.AddText(""Could not find the file: "" + file + "" \n"", true);
+            }
+        }
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            MessageBox.Show(e.KeyCode.ToString());
+            keyPreview = e.KeyCode.ToString();
+            awaitKeyPreview = e.KeyCode.ToString();
+            keydown = true;
+        }
+        private void Form1_KeyUp(object sender, KeyEventArgs e)
+        {
+            MessageBox.Show(""keyup"");
+            keyPreview = """";
+            keydown = false;
+        }
+        private void TestingForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            MessageBox.Show(e.KeyChar.ToString());
+            keyPreview = e.KeyChar.ToString();
+            awaitKeyPreview = e.KeyChar.ToString();
+            keydown = true;
+        }
+        private void TestingForm_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            MessageBox.Show(e.KeyCode.ToString());
+            keyPreview = e.KeyCode.ToString();
+            awaitKeyPreview = e.KeyCode.ToString();
+            keydown = true;
+        }
+        private void SetFont(Control label, string name, int size, FontStyle style)
+        {
+            Font replacementFont = new Font(name, size, style);
+            label.Font = replacementFont;
         }
         private bool ifcheck(multimids Mid, string v1, string v2)
         {
@@ -4524,17 +4748,17 @@ namespace ezcode_Project_Player
                 return false;
             }
             return false;
-        }
+        } 
         private string getEquation(string value, int a, List<string> parts)
         {
-            string brackets = "";
+            string brackets = """";
             int ended = 0;
             List<string> texts = new List<string>();
             for (int l = a; l < parts.Count; l++)
             {
                 texts.Add(parts[l]);
             }
-            if (value.StartsWith(@"("))
+            if (value.StartsWith(@""(""))
             {
                 ended = 1;
                 for (int l = 0; l < texts.Count; l++)
@@ -4542,23 +4766,22 @@ namespace ezcode_Project_Player
                     if (ended == 1)
                     {
                         brackets += texts[l];
-                        if (l < texts.Count - 1) brackets += " ";
                     }
-                    if (texts[l].EndsWith(@")"))
+                    if (texts[l].EndsWith("")""))
                     {
-                        ended = 2;
+                    ended = 2;
                     }
                 }
             }
             if (ended != 0)
             {
-                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace(""\\"", """");
                 string result = SolveEquation(equation);
                 value = result;
             }
             else if (ended == 1)
             {
-                console.AddText("Syntax error in line " + codeLine + ". Expected ')' to end equation \n", true);
+                console.AddText(""Syntax error in line "" + codeLine + "". Expected ')' to end equation \n"", true);
             }
 
             return value;
@@ -4574,313 +4797,434 @@ namespace ezcode_Project_Player
                 }
 
                 DataTable dt = new DataTable();
-                dt.Columns.Add("expression", typeof(string), equation);
+                dt.Columns.Add(""expression"", typeof(string), equation);
                 DataRow row = dt.NewRow();
                 dt.Rows.Add(row);
-                object result = row["expression"];
+                object result = row[""expression""];
                 return result.ToString();
             }
             catch
             {
-                return "Error: Unable to solve the equation.";
+                return ""Error: Unable to solve the equation."";
             }
         }
-        private void SetFont(Control label, string name, int size, FontStyle style)
-        {
-            
-            Font replacementFont = new Font(name, size, style);
-            label.Font = replacementFont;
-        }
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
-        {
-            if (msg.Msg == 256)
-            {
-                if (keyData == (Keys.Control | Keys.P))
-                {
-                    playToolStripMenuItem.PerformClick();
-                }
-                else if (keyData == (Keys.Control | Keys.B))
-                {
-                    playToolStripMenuItem.PerformClick();
-                }
-                else if (keyData == (Keys.Control | Keys.O))
-                {
-                    openToolStripMenuItem.PerformClick();
-                }
-                else if (keyData == (Keys.Control | Keys.Q))
-                {
-                    stopToolStripMenuItem.PerformClick();
-                }
-            }
-            return base.ProcessCmdKey(ref msg, keyData);
-        }
-        private void openToolStripMenuItem_Click(object sender, EventArgs e) //open
-        {
-            try
-            {
-                // The current document is saved, so open a new document
-                OpenFileDialog openFileDialog = new OpenFileDialog();
-                openFileDialog.Filter = "EzCode Project (*.ezproj)|*.ezproj";
-                openFileDialog.ShowDialog();
+    }
 
-                StreamReader streamReader = new StreamReader(openFileDialog.FileName);
-                txt = streamReader.ReadToEnd();
-                streamReader.Close();
-                _File = openFileDialog.FileName;
-                
-                Space.BackColor = Color.Gray;
-            }
-            catch
-            {
-                MessageBox.Show("Did not open a document");
-                Space.BackColor = Color.DarkGray;
-            }
-        }
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e) //exit
+    public static class Program
+    {
+        [STAThread]
+        public static void Main()
         {
-            Application.Exit();
-        }
-        private async void toolStripButton1_Click(object sender, EventArgs e) //play
-        {
-            if (!playing)
-            {
-                string[] a = _File.Split("\\");
-                string f = a.Last();
-                string d = "C:\\Users\\Public\\Temp\\ezcode\\" + f + "\\";
-                if (_File != "NOTHING")
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(d);
-                        ZipFile.ExtractToDirectory(_File, d, true);
-
-                        string[] lis = File.ReadAllLines(d + "Lisence.txt");
-                        toolStripTextBox1.Text = lis[3];
-                        toolStripTextBox2.Text = lis[1];
-
-                        StreamReader streamReader = new StreamReader(d + "root_.ezcode");
-                        txt = streamReader.ReadToEnd();
-                        streamReader.Close();
-                    }
-                    catch
-                    {
-                        MessageBox.Show("Could not open the document");
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Please select a fiile to play");
-                    return;
-                }
-                playing = true;
-
-                for (int i = 0; i < labels.Count; i++)
-                {
-                    Space.Controls.Remove(labels[i]);
-                }
-                for (int i = 0; i < gameObjects.Count; i++)
-                {
-                    Space.Controls.Remove(gameObjects[i]);
-                }
-                for (int i = 0; i < textboxes.Count; i++)
-                {
-                    Space.Controls.Remove(textboxes[i]);
-                }
-                for (int i = 0; i < buttons.Count; i++)
-                {
-                    Space.Controls.Remove(buttons[i]);
-                }
-                labels.Clear();
-                buttons.Clear();
-                textboxes.Clear();
-                gameObjects.Clear();
-                vars.Clear();
-                VarList.Clear();
-                console.Clear();
-                await PlayAsync(txt, d);
-                for (int i = 0; i < labels.Count; i++)
-                {
-                    Space.Controls.Remove(labels[i]);
-                }
-                for (int i = 0; i < gameObjects.Count; i++)
-                {
-                    Space.Controls.Remove(gameObjects[i]);
-                }
-                for (int i = 0; i < textboxes.Count; i++)
-                {
-                    Space.Controls.Remove(textboxes[i]);
-                }
-                for (int i = 0; i < buttons.Count; i++)
-                {
-                    Space.Controls.Remove(buttons[i]);
-                }
-                Directory.Delete(d, true);
-
-            }
-            playing = false;
-            await Task.Delay(100);
-        }
-        private void stopToolStripMenuItem_Click(object sender, EventArgs e) //stoped
-        {
-            playing = false;
-        }
-        private void ConsoleSend_KeyDown(object sender, KeyEventArgs e) //Console Sender pressed enter
-        {
-            sent = false;
-            if (e.KeyCode == Keys.Enter)
-            {
-                senttext = ConsoleSend.Text;
-                sent = true;
-                ConsoleSend.Clear();
-            }
-        }
-        private void Send_Click(object sender, EventArgs e) //send
-        {
-            senttext = ConsoleSend.Text;
-            sent = true;
-            ConsoleSend.Clear();
-        }
-        private void console_TextChanged(object sender, EventArgs e) //scrolls to bottom of console
-        {
-            console.SelectionStart = console.TextLength;
-            console.ScrollToCaret();
-        }
-        private void timer1_Tick(object sender, EventArgs e) //playing and stopping buttons
-        {
-            if (playing)
-            {
-                playToolStripMenuItem.Enabled = false;
-                stopToolStripMenuItem.Enabled = true;
-                splitContainer1.BackColor = Color.IndianRed;
-            }
-            else
-            {
-                playToolStripMenuItem.Enabled = true;
-                stopToolStripMenuItem.Enabled = false;
-                splitContainer1.BackColor = Color.Maroon;
-            }
-            if(_File != "NOTHING")
-            {
-                toolStripLabel1.Text = _File;
-            }
-        } 
-        private void Form1_KeyDown(object sender, KeyEventArgs e) //keydown
-        {
-            keyPreview = e.KeyCode.ToString();
-            awaitKeyPreview = e.KeyCode.ToString();
-            keydown = true;
-            //console.AppendText(keyPreview + Environment.NewLine);
-            if (!playing && e.KeyCode == Keys.Space)
-            {
-                //playToolStripMenuItem.PerformClick();
-            }
-            if (playing && e.KeyCode == Keys.Escape)
-            {
-                //stopToolStripMenuItem.PerformClick();
-            }
-        }
-        private void Form1_KeyUp(object sender, KeyEventArgs e) //keyup
-        {
-            keyPreview = "";
-            keydown = false;
-        }
-        private void Space_MouseClick(object sender, MouseEventArgs e)
-        {
-            if(e.Button == MouseButtons.None)
-            {
-                mc = 0;
-            }
-            else if(e.Button == MouseButtons.Left)
-            {
-                mc = 1;
-            }
-            else if(e.Button == MouseButtons.Right)
-            {
-                mc = 2;
-            }
-            else if(e.Button == MouseButtons.Middle)
-            {
-                mc = 3;
-            }
-        }
-        private void toolStripComboBox1_Click(object sender, EventArgs e)
-        {
-            int num = toolStripComboBox1.SelectedIndex;
-            if (num == 0)
-            {
-                splitContainer1.SplitterDistance = Height;
-            }
-            else if (num == 1)
-            {
-                splitContainer1.SplitterDistance = 0;
-            }
-            else if (num == 2)
-            {
-                splitContainer1.SplitterDistance = Height / 2;
-            }
-        }
-        private async void InGameButtonClicked(object sender, EventArgs e)
-        {
-            string[] a = _File.Split("\\");
-            string f = a.Last();
-            string d = "C:\\Users\\Public\\Temp\\ezcode\\" + f + "\\";
-
-            Button b = (Button)sender;
-
-            string file = b.AccessibleDescription;
-
-            if (file != string.Empty && File.Exists(file))
-            {
-                if (file.Contains("~/"))
-                {
-                    string[] dp = _File.Split(@"\");
-                    string directory = "";
-                    for (int j = 0; j < dp.Length; j++)
-                    {
-                        if (j < dp.Length - 1)
-                        {
-                            directory += dp[j] + @"\\";
-                        }
-                    }
-                    directory += file.Remove(0, 2);
-                    file = directory;
-                }
-                for (int j = 0; j < vars.Count; j++)
-                {
-                    if (vars[j].Name == file)
-                    {
-                        file = vars[j].value();
-                    }
-                }
-                string play = string.Empty;
-
-                try { play = File.ReadAllText(file); }
-                catch { console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true); }
-                try { await PlayAsync(play, d); }
-                catch { console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true); }
-            }
-            else
-            {
-                console.AddText("Could not find the file: " + file + " \n", true);
-            }
-        }
-        private void showErrorsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            showerrors = !showerrors;
+            Application.EnableVisualStyles();
+            Application.SetCompatibleTextRenderingDefault(false);
+            Application.Run(new MainForm());
         }
     }
     public static class ControlExtensions
     {
         public static void AddText(this Control control, string text, bool error)
         {
-            if (!error) control.Text += text;
-            if (control is RichTextBox && error && Form1.showerrors)
+            if (control is RichTextBox && error)
             {
-                RichTextBox richTextBox = control as RichTextBox;
-                richTextBox.SelectionStart = richTextBox.TextLength;
-                richTextBox.SelectionLength = 0;
-                richTextBox.SelectionColor = Color.Red;
-                richTextBox.AppendText(text);
+                MessageBox.Show(text, ""ERROR"", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+    }
+}
+namespace Objects
+{
+    using System.Drawing.Drawing2D;
+    using Point = System.Drawing.Point;
+    interface IObject
+    {
+        PointF[] Points { get; set; }
+        int Poly { get; set; }
+    }
+    public partial class GObject : IObject
+    {
+        public enum Type
+        {
+            Square,
+            Circle,
+            Triangle,
+            Polygon,
+            Custom,
+        }
+        public PointF[] Points { get; set; }
+        public int Poly { get; set; }
+        public Type Square { get; set; }
+        int types;
+
+        public GObject(Type type, int? poly = null, PointF[] points = null)
+        {
+            //sets all values
+            if (poly != null) Poly = (int)poly;
+            if (points != null) Points = points;
+
+            switch (type)
+            {
+                case Type.Square:
+                    types = 1;
+                    break;
+                case Type.Circle:
+                    types = 2;
+                    break;
+                case Type.Triangle:
+                    types = 3;
+                    break;
+                case Type.Polygon:
+                    types = 4;
+                    break;
+                case Type.Custom:
+                    types = 5;
+                    break;
+            }
+        }
+    }
+    public partial class GObject : PictureBox
+    {
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            using (GraphicsPath obj = new GraphicsPath())
+            {
+                if (types == 1)
+                {
+                    Rectangle rectangle = new Rectangle(0, 0, this.Width - 1, this.Height - 1);
+                    obj.AddRectangle(rectangle);
+                    Region = new Region(obj);
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.DrawEllipse(new Pen(new SolidBrush(this.BackColor), 1), 0, 0, this.Width - 1, this.Height - 1);
+                }
+                else if (types == 2)
+                {
+                    obj.AddEllipse(0, 0, this.Width - 1, this.Height - 1);
+                    Region = new Region(obj);
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.DrawEllipse(new Pen(new SolidBrush(this.BackColor), 1), 0, 0, this.Width - 1, this.Height - 1);
+                }
+                else if (types == 3)
+                {
+                    obj.AddPolygon(new Point[] {
+                        new Point(this.Width / 2, 0),
+                        new Point(0, Height),
+                        new Point(Width, Height) }
+                    );
+                    Region = new Region(obj);
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.DrawEllipse(new Pen(new SolidBrush(this.BackColor), 1), 0, 0, this.Width - 1, this.Height - 1);
+                }
+                else if (types == 4 && Poly > 2)
+                {
+                    PointF center = new PointF(this.Width / 2, this.Height / 2);
+                    PointF[] points = new PointF[Poly];
+                    for (int i = 0; i < Poly; i++)
+                    {
+                        float angle = (2 * (float)Math.PI / Poly) * i;
+                        float x = center.X + (this.Width / 2) * (float)Math.Cos(angle);
+                        float y = center.Y + (this.Height / 2) * (float)Math.Sin(angle);
+                        points[i] = new PointF(x, y);
+                    }
+                    obj.AddPolygon(points);
+                    Region = new Region(obj);
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.DrawEllipse(new Pen(new SolidBrush(this.BackColor), 1), 0, 0, this.Width - 1, this.Height - 1);
+                }
+                else if (types == 5)
+                {
+                    PointF center = new PointF(this.Width / 2, this.Height / 2);
+                    obj.AddPolygon(Points);
+                    Region = new Region(obj);
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.DrawEllipse(new Pen(new SolidBrush(this.BackColor), 1), 0, 0, this.Width - 1, this.Height - 1);
+                }
+            }
+        }
+    }
+}
+namespace Variables
+{
+    using System.Globalization;
+    internal interface Ivar
+    {
+        string Name { get; set; }
+        float number { get; set; }
+        string text { get; set; }
+        bool isSet { get; set; }
+        int stack { get; set; }
+        void set(string value);
+        void change(string middle, string multiplier);
+        void stringChange(string adds, string mid);
+        bool isNumber();
+        string value();
+    }
+    public class Var : Ivar
+    {
+        public string Name { get; set; }
+        public float number { get; set; }
+        public string text { get; set; }
+        public int stack { get; set; }
+        public bool isSet { get; set; }
+
+        string StringStandered = ""IF YOU GET THIS. IT IS AN ERROR MESSAGE - (23dsffdsf86dg45b64ytu7578566434654fg4g4fhjd) = just some random text"";
+        float FloatStatendered = 1111.111100015684465464864f;
+
+        public Var(string name)
+        {
+            Name = name;
+            number = FloatStatendered;
+            text = StringStandered;
+        }
+        public void set(string value)
+        {
+            try
+            {
+                number = float.Parse(value, CultureInfo.InvariantCulture.NumberFormat);
+            }
+            catch
+            {
+                text = value;
+            }
+        }
+        public void change(string middle, string multiplier)
+        {
+            try
+            {
+                float value = float.Parse(multiplier, CultureInfo.InvariantCulture.NumberFormat);
+                float final;
+                if (middle == ""+"")
+                {
+                    final = number + value;
+                }
+                else if (middle == ""*"")
+                {
+                    final = number * value;
+                }
+                else if (middle == ""-"")
+                {
+                    final = number - value;
+                }
+                else if (middle == ""/"")
+                {
+                    final = number / value;
+                }
+                else if (middle == ""="")
+                {
+                    final = value;
+                }
+                else
+                {
+                    final = number;
+                }
+                number = final;
+            }
+            catch
+            {
+                isSet = false;
+            }
+        }
+        public void stringChange(string value, string mid)
+        {
+            try
+            {
+                bool setted = false;
+                if (!isNumber())
+                {
+                    switch (mid)
+                    {
+                        case ""+"":
+                            setted = true;
+                            text += value;
+                            break;
+                        case ""="":
+                            setted = true;
+                            text = value;
+                            break;
+                        case ""-"":
+                            int v = 0;
+                            try
+                            {
+                                v = int.Parse(value);
+                            }
+                            catch
+                            {
+                                isSet = false;
+                                return;
+                            }
+                            for (int i = 0; i < text.Length; i++)
+                            {
+                                if (i >= text.Length - v)
+                                {
+                                    text = text.Remove(i);
+                                }
+                            }
+                            setted = true;
+                            break;
+                    }
+                    if (!setted)
+                    {
+                        isSet = false;
+                    }
+                }
+                else
+                {
+                    isSet = false;
+                }
+            }
+            catch
+            {
+                isSet = false;
+            }
+        }
+        public bool isNumber()
+        {
+            if (number != FloatStatendered)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public string value()
+        {
+            if (isNumber())
+            {
+                return number.ToString();
+            }
+            else
+            {
+                return text.ToString();
+            }
+        }
+
+    }
+}
+";
+            return code;
+        }
+
+        private bool BuildApplication(string code)
+        {
+            // Set up the compiler parameters
+            CompilerParameters parameters = new CompilerParameters();
+            parameters.GenerateExecutable = true;
+            parameters.OutputAssembly = Path.Combine(textBox1.Text, titleTextBox.Text + ".exe");
+
+            // Add necessary references
+            parameters.ReferencedAssemblies.Add("System.dll");
+            parameters.ReferencedAssemblies.Add("System.Drawing.dll");
+            parameters.ReferencedAssemblies.Add("System.Windows.Forms.dll");
+            parameters.ReferencedAssemblies.Add("System.IO.dll");
+            parameters.ReferencedAssemblies.Add("System.IO.Compression.dll");
+            //parameters.ReferencedAssemblies.Add("System.Collections.Generic.dll");
+            parameters.ReferencedAssemblies.Add("System.Data.dll");
+            parameters.ReferencedAssemblies.Add("System.Linq.dll");
+            parameters.ReferencedAssemblies.Add("System.Threading.Tasks.dll");
+            parameters.ReferencedAssemblies.Add("System.IO.Compression.FileSystem.dll");
+            parameters.ReferencedAssemblies.Add("System.Xml.dll");
+
+            // Set the compiler options to remove the console window
+            parameters.CompilerOptions = "/target:winexe";
+
+            // Embed the icon file as a resource
+            parameters.EmbeddedResources.Add(iconPath);
+
+            // Compile the code using the C# CodeProvider
+            CSharpCodeProvider provider = new CSharpCodeProvider();
+            CompilerResults results = provider.CompileAssemblyFromSource(parameters, code);
+
+            if (results.Errors.Count > 0)
+            {
+                // Output any compiler errors
+                foreach (CompilerError error in results.Errors)
+                {
+                    MessageBox.Show($"Error: {error.ErrorText} Line: {error.Line}");
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+
+        private void button2_Click(object sender, EventArgs e)
+        {
+            folderBrowserDialog1 = new FolderBrowserDialog();
+            folderBrowserDialog1.ShowDialog();
+            textBox1.Text = folderBrowserDialog1.SelectedPath.Replace('\\', '/');
+        }
+
+        private void Maximized_CheckedChanged(object sender, EventArgs e)
+        {
+            if (Maximized.Checked)
+            {
+                widthTextBox.Enabled = false;
+                heightTextBox.Enabled = false;
+            }
+            else
+            {
+                widthTextBox.Enabled = true;
+                heightTextBox.Enabled = true;
+            }
+        }
+
+        private void button1_Click(object sender, EventArgs e)
+        {
+            OpenFileDialog fileDialog = new OpenFileDialog();
+            fileDialog.Filter = "EZ-Project Files (*.ezproj)|*.ezproj";
+            fileDialog.ShowDialog();
+            zipfile = fileDialog.FileName;
+        }
+    }
+
+    public static class PackageHandler
+    {
+        public static void CreatePackage(string inputFolderPath, string outputFilePath)
+        {
+            if (File.Exists(outputFilePath)) File.Delete(outputFilePath);
+            ZipFile.CreateFromDirectory(inputFolderPath, outputFilePath);
+        }
+
+        public static void ExtractPackage(string output, string location)
+        {
+            if (!Directory.Exists(location)) Directory.CreateDirectory(location);
+            if (File.Exists(output))
+            {
+                ZipFile.ExtractToDirectory(output, location);
+            }
+        }
+
+        public static void DeleteDirectory(string directory)
+        {
+            if (Directory.Exists(directory))
+            {
+                Directory.Delete(directory, true);
+            }
+        }
+
+        public static void DeleteFile(string file)
+        {
+            if (File.Exists(file))
+            {
+                File.Delete(file);
+            }
+        }
+        public static void CopyFile(string inputFilePath, string outputFolderPath, bool overwrite)
+        {
+            try
+            {
+                if (File.Exists(inputFilePath))
+                {
+                    string outputFilePath = Path.Combine(outputFolderPath, outputFolderPath);
+                    File.Copy(inputFilePath, outputFilePath, overwrite);
+                    //File.WriteAllText(outputFilePath, File.ReadAllText(outputFilePath).Replace("e", "a954ply544__-xfdsA8854A_qwertyTHSI_AAAAJL98900om*-a"));
+                }
+            }
+            catch
+            {
+                MessageBox.Show("An Error Occured");
             }
         }
     }

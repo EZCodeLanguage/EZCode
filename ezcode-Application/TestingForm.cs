@@ -1,16 +1,20 @@
-using NAudio.Wave;
-using Objects;
-using System.Drawing.Drawing2D;
-using System.IO.Compression;
-using System.Net.Http.Headers;
-using System.Xml.Linq;
-using PackageSystem;
+﻿using System;
+using System.Drawing;
+using System.Windows.Forms;
 using System.IO;
+using System.IO.Compression;
+using System.Collections.Generic;
 using System.Data;
+using Variables;
+using Objects;
+//using NAudio.Wave;
+using System.Linq;
+using System.Threading.Tasks;
+using System.Xml.Serialization;
 
-namespace ezcode_Project_Player
+namespace ezcode_Application
 {
-    public partial class Form1 : Form
+    partial class TestingForm : Form
     {
         enum multimids
         {
@@ -25,18 +29,18 @@ namespace ezcode_Project_Player
             less,
             not
         }
-        string _File;
-        public static bool showerrors;
-        bool playing;
+        public static string title = "title";
+        public string _File;
+        public static bool showerrors = false;
         bool sent;
         int codeLine = 0;
-        int mc;
-        string keyPreview;
-        string awaitKeyPreview;
+        string keyPreview = "";
+        string awaitKeyPreview = "";
         string senttext;
         bool keydown;
         string txt;
-        WaveOutEvent outputPlayer;
+        RichTextBox console = new RichTextBox();
+        //WaveOutEvent outputPlayer;
         List<Label> labels = new List<Label>();
         List<GObject> gameObjects = new List<GObject>();
         List<Var> vars = new List<Var>();
@@ -44,38 +48,95 @@ namespace ezcode_Project_Player
         List<TextBox> textboxes = new List<TextBox>();
         List<Button> buttons = new List<Button>();
 
-        public Form1(string file)
+        public TestingForm()
         {
             InitializeComponent();
-            toolStripComboBox1.SelectedIndex = 0;
-            
-            _File = file;
+            this.Load += Form_Load;
+            this.FormClosing += TestingForm_FormClosing;
+            this.PreviewKeyDown += TestingForm_PreviewKeyDown;
+            this.KeyPress += TestingForm_KeyPress;
+            this.KeyDown += Form1_KeyDown;
+            this.KeyUp += Form1_KeyUp;
+        }
 
-            if (_File != "NOTHING")
+        private async void Form_Load(object sender, EventArgs e)
+        {
+            string file = AppDomain.CurrentDomain.BaseDirectory + title + ".gp.ezproj1";
+            string[] a = file.Split('\\');
+            string f = "Apps\\" + title;
+            string d = "C:\\Users\\Public\\Temp\\ezcode\\" + f + "\\";
+            if (file != "")
             {
                 try
                 {
-                    StreamReader streamReader = new StreamReader(_File);
+                    try
+                    {
+                        if (Directory.Exists(d)) Directory.Delete(d, true);
+                    }
+                    catch 
+                    {
+                        
+                    } 
+                    Directory.CreateDirectory(d);
+                    ZipFile.ExtractToDirectory(file, d);
+
+                    //string[] lis = File.ReadAllLines(d + "Lisence.txt");
+
+                    StreamReader streamReader = new StreamReader(d + "root_.ezcode");
                     txt = streamReader.ReadToEnd();
                     streamReader.Close();
-                    Space.BackColor = Color.Gray;
                 }
                 catch
                 {
-                    MessageBox.Show("Could not open the document");
-                    Space.BackColor = Color.DarkGray;
+                    MessageBox.Show("Could not play project");
                 }
             }
             else
             {
-                Space.BackColor = Color.DarkGray;
+                MessageBox.Show("Could not play project");
+                return;
+            }
+            labels.Clear();
+            buttons.Clear();
+            textboxes.Clear();
+            gameObjects.Clear();
+            vars.Clear();
+            VarList.Clear();
+            console.Clear();
+            _File = d + "root_.ezcode";
+            await PlayAsync(txt);
+        }
+        private async void TestingForm_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            try
+            {
+                string file = AppDomain.CurrentDomain.BaseDirectory + title + ".gp.ezproj1";
+                string[] a = file.Split('\\');
+                string f = "Apps\\" + title;
+                string d = "C:\\Users\\Public\\Temp\\ezcode\\" + f + "\\";
+                string[] q = Directory.GetFiles(d);
+                for (int i = 0; i < q.Length; i++)
+                {
+                    try
+                    {
+                        File.Delete(q[i]);
+                    }
+                    catch
+                    {
+
+                    }
+                }
+                await Task.Delay(250);
+            }
+            catch
+            {
+
             }
         }
 
-        private async Task PlayAsync(string text, string di)
+        private async Task PlayAsync(string code)
         {
-            string code = text;
-            string[] lines = code.Split(Environment.NewLine);
+            string[] lines = code.Split('\n');
 
             List<string> loopCode = new List<string>(); // Create a list to store the loop code
 
@@ -83,16 +144,13 @@ namespace ezcode_Project_Player
             bool hasEnded = false;
             int endl = 0;
             int stackNow = 0;
-            int stackBefore = 0;
 
             for (int w = 0; w < lines.Length; w++)
             {
-                if (!playing) return;
                 codeLine = w + 1;
                 string[] part = lines[w].Trim().Split(' ').ToArray();
                 if (part[0] == "loop")
                 {
-                    int stackTotal = 1;
                     hasEnded = false;
                     breaked = false;
                     // Get the number of times to loop
@@ -188,7 +246,7 @@ namespace ezcode_Project_Player
                         // Execute the code in the loop code list
                         foreach (string loopLine in loopCode)
                         {
-                            if (!breaked && playing) await ExecuteLine(loopLine);
+                            if (!breaked) await ExecuteLine(loopLine);
                         }
                     }
                 }
@@ -200,6 +258,8 @@ namespace ezcode_Project_Player
                 // using filePath list name : values,from,that,script |or| using filePath var name ValueFromScript
                 async Task ExecuteLine(string line)
                 {
+                    if (keyPreview == null) keyPreview = "";
+                    if (awaitKeyPreview == null) awaitKeyPreview = "";
                     List<string> parts = line.Trim().Split(' ').ToList();
                     int i = 0;
                     if (parts[i] == "print")
@@ -215,7 +275,7 @@ namespace ezcode_Project_Player
 
                             bool isVar = false;
                             string val = text;
-                            List<string> texts = text.Split(" ").ToList();
+                            List<string> texts = text.Split(' ').ToList();
                             int ended = 0;
                             string brackets = "";
                             int started = 0;
@@ -360,7 +420,7 @@ namespace ezcode_Project_Player
                             }
                             bool isvar = false;
 
-                            List<string> texts = labelText.Split(" ").ToList();
+                            List<string> texts = labelText.Split(' ').ToList();
                             int ended = 0;
                             string brackets = "";
                             int started = 0;
@@ -543,7 +603,7 @@ namespace ezcode_Project_Player
                             b.FlatStyle = FlatStyle.Flat;
                             b.FlatAppearance.BorderSize = 1;
 
-                            Space.Controls.Add(b);
+                            this.Controls.Add(b);
                             buttons.Add(b);
                         }
                         catch
@@ -569,9 +629,9 @@ namespace ezcode_Project_Player
 
                             for (int j = 0; j < vars.Count; j++)
                             {
-                                if (vars[j].Name == text)
+                                if (vars[j].Name == code)
                                 {
-                                    text = vars[j].value();
+                                    code = vars[j].value();
                                 }
                                 if (vars[j].Name == file)
                                 {
@@ -597,7 +657,7 @@ namespace ezcode_Project_Player
 
                             if (file.Contains("~/"))
                             {
-                                string[] dp = _File.Split(@"\");
+                                string[] dp = _File.Split('\\');
                                 string directory = "";
                                 for (int j = 0; j < dp.Length; j++)
                                 {
@@ -653,7 +713,7 @@ namespace ezcode_Project_Player
                             tb.Name = name;
                             tb.Text = text;
 
-                            Space.Controls.Add(tb);
+                            this.Controls.Add(tb);
                             textboxes.Add(tb);
                         }
                         catch
@@ -780,7 +840,7 @@ namespace ezcode_Project_Player
                             go.Name = name;
                             go.BackColor = Color.Black;
 
-                            Space.Controls.Add(go);
+                            this.Controls.Add(go);
                             gameObjects.Add(go);
                         }
                         catch
@@ -805,7 +865,7 @@ namespace ezcode_Project_Player
 
                             if (file.Contains("~/"))
                             {
-                                string[] dp = _File.Split(@"\");
+                                string[] dp = _File.Split('\\');
                                 string directory = "";
                                 for (int j = 0; j < dp.Length; j++)
                                 {
@@ -890,7 +950,7 @@ namespace ezcode_Project_Player
                             label.Name = name;
                             label.Text = name;
 
-                            Space.Controls.Add(label);
+                            this.Controls.Add(label);
                             labels.Add(label);
                         }
                         catch
@@ -2104,7 +2164,7 @@ namespace ezcode_Project_Player
                                 }
                                 if (file.Contains("~/"))
                                 {
-                                    string[] dp = _File.Split(@"\");
+                                    string[] dp = _File.Split('\\');
                                     string directory = "";
                                     for (int j = 0; j < dp.Length; j++)
                                     {
@@ -2482,7 +2542,7 @@ namespace ezcode_Project_Player
                                 }
                                 if (file.Contains("~/"))
                                 {
-                                    string[] dp = _File.Split(@"\");
+                                    string[] dp = _File.Split('\\');
                                     string directory = "";
                                     for (int j = 0; j < dp.Length; j++)
                                     {
@@ -2763,7 +2823,7 @@ namespace ezcode_Project_Player
                                 }
                                 if (file.Contains("~/"))
                                 {
-                                    string[] dp = _File.Split(@"\");
+                                    string[] dp = _File.Split('\\');
                                     string directory = "";
                                     for (int j = 0; j < dp.Length; j++)
                                     {
@@ -3049,7 +3109,7 @@ namespace ezcode_Project_Player
                                 }
                                 if (mid == ":")
                                 {
-                                    List<string> values = valuesRaw.Split(",").ToList();
+                                    List<string> values = valuesRaw.Split(',').ToList();
                                     for (int j = 0; j < values.Count; j++)
                                     {
                                         string brackets = "";
@@ -3233,7 +3293,7 @@ namespace ezcode_Project_Player
                                 string valuesRaw = parts[i + 4];
                                 if (mid == ":")
                                 {
-                                    List<string> values = valuesRaw.Split(",").ToList();
+                                    List<string> values = valuesRaw.Split(',').ToList();
                                     List<Var> varList = new List<Var>();
 
                                     for (int j = -1; j < values.Count; j++)
@@ -3348,7 +3408,7 @@ namespace ezcode_Project_Player
                             }
                             if (file.Contains("~/"))
                             {
-                                string[] dp = _File.Split(@"\");
+                                string[] dp = _File.Split('\\');
                                 string directory = "";
                                 for (int j = 0; j < dp.Length; j++)
                                 {
@@ -3410,7 +3470,7 @@ namespace ezcode_Project_Player
                                 string file = part[2].Trim();
                                 if (file.Contains("~/"))
                                 {
-                                    string[] dp = _File.Split(@"\");
+                                    string[] dp = _File.Split('\\');
                                     string directory = "";
                                     for (int j = 0; j < dp.Length; j++)
                                     {
@@ -3431,10 +3491,10 @@ namespace ezcode_Project_Player
                                 }
                                 try
                                 {
-                                    outputPlayer = new WaveOutEvent();
-                                    AudioFileReader player = new AudioFileReader(file);
-                                    outputPlayer.Init(player);
-                                    outputPlayer.Play();
+                                    //outputPlayer = new WaveOutEvent();
+                                    //AudioFileReader player = new AudioFileReader(file);
+                                    //outputPlayer.Init(player);
+                                    //outputPlayer.Play();
                                 }
                                 catch
                                 {
@@ -3444,7 +3504,7 @@ namespace ezcode_Project_Player
                             }
                             if (parts[1] == "stop")
                             {
-                                outputPlayer.Stop();
+                                //outputPlayer.Stop();
                             }
                             if (parts[1] == "volume")
                             {
@@ -3480,8 +3540,8 @@ namespace ezcode_Project_Player
                                         string result = SolveEquation(equation);
                                         p = result;
                                     }
-                                    WaveOutEvent outputPlayer = new WaveOutEvent();
-                                    outputPlayer.Volume = float.Parse(p);
+                                    //WaveOutEvent outputPlayer = new WaveOutEvent();
+                                    //outputPlayer.Volume = float.Parse(p);
                                 }
                                 catch
                                 {
@@ -3501,9 +3561,8 @@ namespace ezcode_Project_Player
                     {
                         try
                         {
-                            playing = false;
-                            await Task.Delay(100);
-                            console.AddText("Build Ended by Script" + Environment.NewLine + Environment.NewLine, false);
+                            await Task.Delay(300);
+                            Application.Exit();
                         }
                         catch
                         {
@@ -3525,7 +3584,7 @@ namespace ezcode_Project_Player
                             }
                             if (file.Contains("~/"))
                             {
-                                string[] dp = _File.Split(@"\");
+                                string[] dp = _File.Split('\\');
                                 string directory = "";
                                 for (int j = 0; j < dp.Length; j++)
                                 {
@@ -3554,7 +3613,7 @@ namespace ezcode_Project_Player
                             }
                             if (awaits == "now")
                             {
-                                try { PlayAsync(play, _File); }
+                                try { PlayAsync(play); }
                                 catch
                                 {
                                     if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
@@ -3563,7 +3622,7 @@ namespace ezcode_Project_Player
                             }
                             else if (awaits == "await")
                             {
-                                try { await PlayAsync(play, _File); }
+                                try { await PlayAsync(play); }
                                 catch
                                 {
                                     if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
@@ -3600,7 +3659,7 @@ namespace ezcode_Project_Player
                                     {
                                         upcode += parts[j] + " ";
                                     }
-                                    await PlayAsync(upcode, _File);
+                                    await PlayAsync(upcode);
                                 }
                             }
                             else if (mid == "!" && parts[4] == ":") // not equal
@@ -3612,7 +3671,7 @@ namespace ezcode_Project_Player
                                     {
                                         upcode += parts[j] + " ";
                                     }
-                                    await PlayAsync(upcode, _File);
+                                    await PlayAsync(upcode);
                                 }
                             }
                             else if (mid == ">" && parts[4] == ":") // less than
@@ -3666,7 +3725,7 @@ namespace ezcode_Project_Player
                                     {
                                         upcode += parts[j] + " ";
                                     }
-                                    await PlayAsync(upcode, _File);
+                                    await PlayAsync(upcode);
                                 }
                             }
                             else if (mid == "<" && parts[4] == ":") // greater than
@@ -3720,7 +3779,7 @@ namespace ezcode_Project_Player
                                     {
                                         upcode += parts[j] + " ";
                                     }
-                                    await PlayAsync(upcode, _File);
+                                    await PlayAsync(upcode);
                                 }
                             }
                             else
@@ -3915,7 +3974,7 @@ namespace ezcode_Project_Player
                                 {
                                     upcode += textsA[j] + " ";
                                 }
-                                await PlayAsync(upcode, _File);
+                                await PlayAsync(upcode);
                             }
                         }
                         catch
@@ -4106,7 +4165,7 @@ namespace ezcode_Project_Player
                                     }
                                     if (file.Contains("~/"))
                                     {
-                                        string[] dp = _File.Split(@"\");
+                                        string[] dp = _File.Split('\\');
                                         string directory = "";
                                         for (int j = 0; j < dp.Length; j++)
                                         {
@@ -4426,6 +4485,79 @@ namespace ezcode_Project_Player
                 }
             }
         }
+        private async void InGameButtonClicked(object sender, EventArgs e)
+        {
+            Button b = (Button)sender;
+
+            string file = b.AccessibleDescription;
+
+            if (file != string.Empty && File.Exists(file))
+            {
+                if (file.Contains("~/"))
+                {
+                    string[] dp = _File.Split('\\');
+                    string directory = "";
+                    for (int j = 0; j < dp.Length; j++)
+                    {
+                        if (j < dp.Length - 1)
+                        {
+                            directory += dp[j] + @"\\";
+                        }
+                    }
+                    directory += file.Remove(0, 2);
+                    file = directory;
+                }
+                for (int j = 0; j < vars.Count; j++)
+                {
+                    if (vars[j].Name == file)
+                    {
+                        file = vars[j].value();
+                    }
+                }
+                string play = string.Empty;
+
+                try { play = File.ReadAllText(file); }
+                catch { console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true); }
+                try { await PlayAsync(play); }
+                catch { console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true); }
+            }
+            else
+            {
+                console.AddText("Could not find the file: " + file + " \n", true);
+            }
+        }
+        private void Form1_KeyDown(object sender, KeyEventArgs e)
+        {
+            MessageBox.Show(e.KeyCode.ToString());
+            keyPreview = e.KeyCode.ToString();
+            awaitKeyPreview = e.KeyCode.ToString();
+            keydown = true;
+        }
+        private void Form1_KeyUp(object sender, KeyEventArgs e)
+        {
+            MessageBox.Show("keyup");
+            keyPreview = "";
+            keydown = false;
+        }
+        private void TestingForm_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            MessageBox.Show(e.KeyChar.ToString());
+            keyPreview = e.KeyChar.ToString();
+            awaitKeyPreview = e.KeyChar.ToString();
+            keydown = true;
+        }
+        private void TestingForm_PreviewKeyDown(object sender, PreviewKeyDownEventArgs e)
+        {
+            MessageBox.Show(e.KeyCode.ToString());
+            keyPreview = e.KeyCode.ToString();
+            awaitKeyPreview = e.KeyCode.ToString();
+            keydown = true;
+        }
+        private void SetFont(Control label, string name, int size, FontStyle style)
+        {
+            Font replacementFont = new Font(name, size, style);
+            label.Font = replacementFont;
+        }
         private bool ifcheck(multimids Mid, string v1, string v2)
         {
 
@@ -4524,7 +4656,7 @@ namespace ezcode_Project_Player
                 return false;
             }
             return false;
-        }
+        } 
         private string getEquation(string value, int a, List<string> parts)
         {
             string brackets = "";
@@ -4542,11 +4674,11 @@ namespace ezcode_Project_Player
                     if (ended == 1)
                     {
                         brackets += texts[l];
-                        if (l < texts.Count - 1) brackets += " ";
+                        if (l < texts.Count - 1) brackets += "";
                     }
                     if (texts[l].EndsWith(@")"))
                     {
-                        ended = 2;
+                    ended = 2;
                     }
                 }
             }
@@ -4585,303 +4717,286 @@ namespace ezcode_Project_Player
                 return "Error: Unable to solve the equation.";
             }
         }
-        private void SetFont(Control label, string name, int size, FontStyle style)
-        {
-            
-            Font replacementFont = new Font(name, size, style);
-            label.Font = replacementFont;
-        }
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
-        {
-            if (msg.Msg == 256)
-            {
-                if (keyData == (Keys.Control | Keys.P))
-                {
-                    playToolStripMenuItem.PerformClick();
-                }
-                else if (keyData == (Keys.Control | Keys.B))
-                {
-                    playToolStripMenuItem.PerformClick();
-                }
-                else if (keyData == (Keys.Control | Keys.O))
-                {
-                    openToolStripMenuItem.PerformClick();
-                }
-                else if (keyData == (Keys.Control | Keys.Q))
-                {
-                    stopToolStripMenuItem.PerformClick();
-                }
-            }
-            return base.ProcessCmdKey(ref msg, keyData);
-        }
-        private void openToolStripMenuItem_Click(object sender, EventArgs e) //open
-        {
-            try
-            {
-                // The current document is saved, so open a new document
-                OpenFileDialog openFileDialog = new OpenFileDialog();
-                openFileDialog.Filter = "EzCode Project (*.ezproj)|*.ezproj";
-                openFileDialog.ShowDialog();
-
-                StreamReader streamReader = new StreamReader(openFileDialog.FileName);
-                txt = streamReader.ReadToEnd();
-                streamReader.Close();
-                _File = openFileDialog.FileName;
-                
-                Space.BackColor = Color.Gray;
-            }
-            catch
-            {
-                MessageBox.Show("Did not open a document");
-                Space.BackColor = Color.DarkGray;
-            }
-        }
-        private void exitToolStripMenuItem_Click(object sender, EventArgs e) //exit
-        {
-            Application.Exit();
-        }
-        private async void toolStripButton1_Click(object sender, EventArgs e) //play
-        {
-            if (!playing)
-            {
-                string[] a = _File.Split("\\");
-                string f = a.Last();
-                string d = "C:\\Users\\Public\\Temp\\ezcode\\" + f + "\\";
-                if (_File != "NOTHING")
-                {
-                    try
-                    {
-                        Directory.CreateDirectory(d);
-                        ZipFile.ExtractToDirectory(_File, d, true);
-
-                        string[] lis = File.ReadAllLines(d + "Lisence.txt");
-                        toolStripTextBox1.Text = lis[3];
-                        toolStripTextBox2.Text = lis[1];
-
-                        StreamReader streamReader = new StreamReader(d + "root_.ezcode");
-                        txt = streamReader.ReadToEnd();
-                        streamReader.Close();
-                    }
-                    catch
-                    {
-                        MessageBox.Show("Could not open the document");
-                    }
-                }
-                else
-                {
-                    MessageBox.Show("Please select a fiile to play");
-                    return;
-                }
-                playing = true;
-
-                for (int i = 0; i < labels.Count; i++)
-                {
-                    Space.Controls.Remove(labels[i]);
-                }
-                for (int i = 0; i < gameObjects.Count; i++)
-                {
-                    Space.Controls.Remove(gameObjects[i]);
-                }
-                for (int i = 0; i < textboxes.Count; i++)
-                {
-                    Space.Controls.Remove(textboxes[i]);
-                }
-                for (int i = 0; i < buttons.Count; i++)
-                {
-                    Space.Controls.Remove(buttons[i]);
-                }
-                labels.Clear();
-                buttons.Clear();
-                textboxes.Clear();
-                gameObjects.Clear();
-                vars.Clear();
-                VarList.Clear();
-                console.Clear();
-                await PlayAsync(txt, d);
-                for (int i = 0; i < labels.Count; i++)
-                {
-                    Space.Controls.Remove(labels[i]);
-                }
-                for (int i = 0; i < gameObjects.Count; i++)
-                {
-                    Space.Controls.Remove(gameObjects[i]);
-                }
-                for (int i = 0; i < textboxes.Count; i++)
-                {
-                    Space.Controls.Remove(textboxes[i]);
-                }
-                for (int i = 0; i < buttons.Count; i++)
-                {
-                    Space.Controls.Remove(buttons[i]);
-                }
-                Directory.Delete(d, true);
-
-            }
-            playing = false;
-            await Task.Delay(100);
-        }
-        private void stopToolStripMenuItem_Click(object sender, EventArgs e) //stoped
-        {
-            playing = false;
-        }
-        private void ConsoleSend_KeyDown(object sender, KeyEventArgs e) //Console Sender pressed enter
-        {
-            sent = false;
-            if (e.KeyCode == Keys.Enter)
-            {
-                senttext = ConsoleSend.Text;
-                sent = true;
-                ConsoleSend.Clear();
-            }
-        }
-        private void Send_Click(object sender, EventArgs e) //send
-        {
-            senttext = ConsoleSend.Text;
-            sent = true;
-            ConsoleSend.Clear();
-        }
-        private void console_TextChanged(object sender, EventArgs e) //scrolls to bottom of console
-        {
-            console.SelectionStart = console.TextLength;
-            console.ScrollToCaret();
-        }
-        private void timer1_Tick(object sender, EventArgs e) //playing and stopping buttons
-        {
-            if (playing)
-            {
-                playToolStripMenuItem.Enabled = false;
-                stopToolStripMenuItem.Enabled = true;
-                splitContainer1.BackColor = Color.IndianRed;
-            }
-            else
-            {
-                playToolStripMenuItem.Enabled = true;
-                stopToolStripMenuItem.Enabled = false;
-                splitContainer1.BackColor = Color.Maroon;
-            }
-            if(_File != "NOTHING")
-            {
-                toolStripLabel1.Text = _File;
-            }
-        } 
-        private void Form1_KeyDown(object sender, KeyEventArgs e) //keydown
-        {
-            keyPreview = e.KeyCode.ToString();
-            awaitKeyPreview = e.KeyCode.ToString();
-            keydown = true;
-            //console.AppendText(keyPreview + Environment.NewLine);
-            if (!playing && e.KeyCode == Keys.Space)
-            {
-                //playToolStripMenuItem.PerformClick();
-            }
-            if (playing && e.KeyCode == Keys.Escape)
-            {
-                //stopToolStripMenuItem.PerformClick();
-            }
-        }
-        private void Form1_KeyUp(object sender, KeyEventArgs e) //keyup
-        {
-            keyPreview = "";
-            keydown = false;
-        }
-        private void Space_MouseClick(object sender, MouseEventArgs e)
-        {
-            if(e.Button == MouseButtons.None)
-            {
-                mc = 0;
-            }
-            else if(e.Button == MouseButtons.Left)
-            {
-                mc = 1;
-            }
-            else if(e.Button == MouseButtons.Right)
-            {
-                mc = 2;
-            }
-            else if(e.Button == MouseButtons.Middle)
-            {
-                mc = 3;
-            }
-        }
-        private void toolStripComboBox1_Click(object sender, EventArgs e)
-        {
-            int num = toolStripComboBox1.SelectedIndex;
-            if (num == 0)
-            {
-                splitContainer1.SplitterDistance = Height;
-            }
-            else if (num == 1)
-            {
-                splitContainer1.SplitterDistance = 0;
-            }
-            else if (num == 2)
-            {
-                splitContainer1.SplitterDistance = Height / 2;
-            }
-        }
-        private async void InGameButtonClicked(object sender, EventArgs e)
-        {
-            string[] a = _File.Split("\\");
-            string f = a.Last();
-            string d = "C:\\Users\\Public\\Temp\\ezcode\\" + f + "\\";
-
-            Button b = (Button)sender;
-
-            string file = b.AccessibleDescription;
-
-            if (file != string.Empty && File.Exists(file))
-            {
-                if (file.Contains("~/"))
-                {
-                    string[] dp = _File.Split(@"\");
-                    string directory = "";
-                    for (int j = 0; j < dp.Length; j++)
-                    {
-                        if (j < dp.Length - 1)
-                        {
-                            directory += dp[j] + @"\\";
-                        }
-                    }
-                    directory += file.Remove(0, 2);
-                    file = directory;
-                }
-                for (int j = 0; j < vars.Count; j++)
-                {
-                    if (vars[j].Name == file)
-                    {
-                        file = vars[j].value();
-                    }
-                }
-                string play = string.Empty;
-
-                try { play = File.ReadAllText(file); }
-                catch { console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true); }
-                try { await PlayAsync(play, d); }
-                catch { console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true); }
-            }
-            else
-            {
-                console.AddText("Could not find the file: " + file + " \n", true);
-            }
-        }
-        private void showErrorsToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            showerrors = !showerrors;
-        }
     }
     public static class ControlExtensions
     {
         public static void AddText(this Control control, string text, bool error)
         {
-            if (!error) control.Text += text;
-            if (control is RichTextBox && error && Form1.showerrors)
+            if (control is RichTextBox && error)
             {
-                RichTextBox richTextBox = control as RichTextBox;
-                richTextBox.SelectionStart = richTextBox.TextLength;
-                richTextBox.SelectionLength = 0;
-                richTextBox.SelectionColor = Color.Red;
-                richTextBox.AppendText(text);
+                MessageBox.Show(text, "ERROR", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
         }
+    }
+}
+
+namespace Objects
+{
+    using System.Drawing.Drawing2D;
+    using Point = System.Drawing.Point;
+    interface IObject
+    {
+        PointF[] Points { get; set; }
+        int Poly { get; set; }
+    }
+    public partial class GObject : IObject
+    {
+        public enum Type
+        {
+            Square,
+            Circle,
+            Triangle,
+            Polygon,
+            Custom,
+        }
+        public PointF[] Points { get; set; }
+        public int Poly { get; set; }
+        public Type Square { get; }
+        int types;
+
+        public GObject(Type type, int? poly = null, PointF[] points = null)
+        {
+            //sets all values
+            if (poly != null) Poly = (int)poly;
+            if (points != null) Points = points;
+
+            switch (type)
+            {
+                case Type.Square:
+                    types = 1;
+                    break;
+                case Type.Circle:
+                    types = 2;
+                    break;
+                case Type.Triangle:
+                    types = 3;
+                    break;
+                case Type.Polygon:
+                    types = 4;
+                    break;
+                case Type.Custom:
+                    types = 5;
+                    break;
+            }
+        }
+    }
+    public partial class GObject : PictureBox
+    {
+        protected override void OnPaint(PaintEventArgs e)
+        {
+            base.OnPaint(e);
+            using (GraphicsPath obj = new GraphicsPath())
+            {
+                if (types == 1)
+                {
+                    Rectangle rectangle = new Rectangle(0, 0, this.Width - 1, this.Height - 1);
+                    obj.AddRectangle(rectangle);
+                    Region = new Region(obj);
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.DrawEllipse(new Pen(new SolidBrush(this.BackColor), 1), 0, 0, this.Width - 1, this.Height - 1);
+                }
+                else if (types == 2)
+                {
+                    obj.AddEllipse(0, 0, this.Width - 1, this.Height - 1);
+                    Region = new Region(obj);
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.DrawEllipse(new Pen(new SolidBrush(this.BackColor), 1), 0, 0, this.Width - 1, this.Height - 1);
+                }
+                else if (types == 3)
+                {
+                    obj.AddPolygon(new Point[] {
+                        new Point(this.Width / 2, 0),
+                        new Point(0, Height),
+                        new Point(Width, Height) }
+                    );
+                    Region = new Region(obj);
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.DrawEllipse(new Pen(new SolidBrush(this.BackColor), 1), 0, 0, this.Width - 1, this.Height - 1);
+                }
+                else if (types == 4 && Poly > 2)
+                {
+                    PointF center = new PointF(this.Width / 2, this.Height / 2);
+                    PointF[] points = new PointF[Poly];
+                    for (int i = 0; i < Poly; i++)
+                    {
+                        float angle = (2 * (float)Math.PI / Poly) * i;
+                        float x = center.X + (this.Width / 2) * (float)Math.Cos(angle);
+                        float y = center.Y + (this.Height / 2) * (float)Math.Sin(angle);
+                        points[i] = new PointF(x, y);
+                    }
+                    obj.AddPolygon(points);
+                    Region = new Region(obj);
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.DrawEllipse(new Pen(new SolidBrush(this.BackColor), 1), 0, 0, this.Width - 1, this.Height - 1);
+                }
+                else if (types == 5)
+                {
+                    PointF center = new PointF(this.Width / 2, this.Height / 2);
+                    obj.AddPolygon(Points);
+                    Region = new Region(obj);
+                    e.Graphics.SmoothingMode = SmoothingMode.AntiAlias;
+                    e.Graphics.DrawEllipse(new Pen(new SolidBrush(this.BackColor), 1), 0, 0, this.Width - 1, this.Height - 1);
+                }
+            }
+        }
+    }
+}
+namespace Variables
+{
+    using System.Globalization;
+    internal interface Ivar
+    {
+        string Name { get; set; }
+        float number { get; set; }
+        string text { get; set; }
+        bool isSet { get; set; }
+        int stack { get; set; }
+        void set(string value);
+        void change(string middle, string multiplier);
+        void stringChange(string adds, string mid);
+        bool isNumber();
+        string value();
+    }
+    public class Var : Ivar
+    {
+        public string Name { get; set; }
+        public float number { get; set; }
+        public string text { get; set; }
+        public int stack { get; set; }
+        public bool isSet { get; set; }
+
+        string StringStandered = "IF YOU GET THIS. IT IS AN ERROR MESSAGE - (23dsffdsf86dg45b64ytu7578566434654fg4g4fhjd) = just some random text";
+        float FloatStatendered = 1111.111100015684465464864f;
+
+        public Var(string name)
+        {
+            Name = name;
+            number = FloatStatendered;
+            text = StringStandered;
+        }
+        public void set(string value)
+        {
+            try
+            {
+                number = float.Parse(value, CultureInfo.InvariantCulture.NumberFormat);
+            }
+            catch
+            {
+                text = value;
+            }
+        }
+        public void change(string middle, string multiplier)
+        {
+            try
+            {
+                float value = float.Parse(multiplier, CultureInfo.InvariantCulture.NumberFormat);
+                float final;
+                if (middle == "+")
+                {
+                    final = number + value;
+                }
+                else if (middle == "*")
+                {
+                    final = number * value;
+                }
+                else if (middle == "-")
+                {
+                    final = number - value;
+                }
+                else if (middle == "/")
+                {
+                    final = number / value;
+                }
+                else if (middle == "=")
+                {
+                    final = value;
+                }
+                else
+                {
+                    final = number;
+                }
+                number = final;
+            }
+            catch
+            {
+                isSet = false;
+            }
+        }
+        public void stringChange(string value, string mid)
+        {
+            try
+            {
+                bool setted = false;
+                if (!isNumber())
+                {
+                    switch (mid)
+                    {
+                        case "+":
+                            setted = true;
+                            text += value;
+                            break;
+                        case "=":
+                            setted = true;
+                            text = value;
+                            break;
+                        case "-":
+                            int v = 0;
+                            try
+                            {
+                                v = int.Parse(value);
+                            }
+                            catch
+                            {
+                                isSet = false;
+                                return;
+                            }
+                            for (int i = 0; i < text.Length; i++)
+                            {
+                                if (i >= text.Length - v)
+                                {
+                                    text = text.Remove(i);
+                                }
+                            }
+                            setted = true;
+                            break;
+                    }
+                    if (!setted)
+                    {
+                        isSet = false;
+                    }
+                }
+                else
+                {
+                    isSet = false;
+                }
+            }
+            catch
+            {
+                isSet = false;
+            }
+        }
+        public bool isNumber()
+        {
+            if (number != FloatStatendered)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public string value()
+        {
+            if (isNumber())
+            {
+                return number.ToString();
+            }
+            else
+            {
+                return text.ToString();
+            }
+        }
+
     }
 }
