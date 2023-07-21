@@ -39,6 +39,7 @@ namespace ezcode_Viewer
         List<List<Var>> VarList = new List<List<Var>>();
         List<TextBox> textboxes = new List<TextBox>();
         List<Button> buttons = new List<Button>();
+        List<Group> Group = new List<Group>();
 
         public Form1(string file)
         {
@@ -79,7 +80,7 @@ namespace ezcode_Viewer
             bool hasEnded = false;
             int endl = 0;
             int stackNow = 0;
-            int stackBefore = 0;
+            bool iftrue = true;
 
             for (int w = 0; w < lines.Length; w++)
             {
@@ -88,7 +89,6 @@ namespace ezcode_Viewer
                 string[] part = lines[w].Trim().Split(' ').ToArray();
                 if (part[0] == "loop")
                 {
-                    int stackTotal = 1;
                     hasEnded = false;
                     breaked = false;
                     // Get the number of times to loop
@@ -198,6 +198,20 @@ namespace ezcode_Viewer
                 {
                     List<string> parts = line.Trim().Split(' ').ToList();
                     int i = 0;
+                    if (parts[0] == "endIf")
+                    {
+                        try
+                        {
+                            iftrue = true;
+                        }
+                        catch
+                        {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            return;
+                        }
+                    }
+                    if (!iftrue) return;
                     if (parts[i] == "print")
                     {
                         try
@@ -324,6 +338,395 @@ namespace ezcode_Viewer
                             return;
                         }
                     } // consoleClear
+                    else if (parts[i] == "group")
+                    {
+                        try
+                        {
+                            if (parts[2] == "add")
+                            {
+                                Group g = new Group("");
+                                bool found = false;
+                                for (int j = 0; j < Group.Count; j++)
+                                {
+                                    if (Group[j].Name == parts[1])
+                                    {
+                                        found = true;
+                                        g = Group[j];
+                                    }
+                                }
+                                if (!found)
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Could not find a group named '" + parts[1] + "' in 'Group' in line " + codeLine + " \n", true);
+                                    return;
+                                }
+                                string name = parts[4];
+                                bool er = true;
+                                if (parts[3] == "button")
+                                {
+                                    Button b = new Button();
+                                    for (int j = 0; j < buttons.Count; j++)
+                                    {
+                                        if (buttons[j].Name == name)
+                                        {
+                                            b = buttons[j];
+                                            b.AccessibleName = name;
+                                            er = false;
+                                        }
+                                    }
+                                    if (er)
+                                    {
+                                        int.Parse("error");
+                                    }
+                                    g.Buttons.Add(b);
+                                }
+                                else if (parts[3] == "label")
+                                {
+                                    Label b = new Label();
+                                    for (int j = 0; j < labels.Count; j++)
+                                    {
+                                        if (labels[j].Name == name)
+                                        {
+                                            b = labels[j];
+                                            b.AccessibleName = name;
+                                            er = false;
+                                        }
+                                    }
+                                    if (er)
+                                    {
+                                        int.Parse("error");
+                                    }
+                                    g.Labels.Add(b);
+                                }
+                                else if (parts[3] == "object")
+                                {
+                                    GObject b = new GObject(GObject.Type.Square);
+                                    for (int j = 0; j < gameObjects.Count; j++)
+                                    {
+                                        if (gameObjects[j].Name == name)
+                                        {
+                                            b = gameObjects[j];
+                                            b.AccessibleName = name;
+                                            er = false;
+                                        }
+                                    }
+                                    if (er)
+                                    {
+                                        int.Parse("error");
+                                    }
+                                    g.Objects.Add(b);
+                                }
+                                else if (parts[3] == "textbox")
+                                {
+                                    TextBox b = new TextBox();
+                                    for (int j = 0; j < textboxes.Count; j++)
+                                    {
+                                        if (textboxes[j].Name == name)
+                                        {
+                                            b = textboxes[j];
+                                            er = false;
+                                        }
+                                    }
+                                    if (er)
+                                    {
+                                        int.Parse("error");
+                                    }
+                                    g.Textboxes.Add(b);
+                                }
+                                else
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Expected the modifier 'button', 'label', 'textbox, or 'button' in 'Group' in line " + codeLine + " \n", true);
+                                    return;
+                                }
+                            }
+                            else if (parts[2] == "change")
+                            {
+                                Group g = new Group("");
+                                bool found = false;
+                                for (int j = 0; j < Group.Count; j++)
+                                {
+                                    if (Group[j].Name == parts[1])
+                                    {
+                                        found = true;
+                                        g = Group[j];
+                                    }
+                                }
+                                if (!found)
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Could not find a group named '" + parts[1] + "' in 'Group' in line " + codeLine + " \n", true);
+                                    return;
+                                }
+                                bool abs = false;
+                                bool rel = false;
+                                if (parts[3] == "relative" || parts[3] == "rel") rel = true;
+                                if (parts[3] == "absolute" || parts[3] == "abs") abs = true;
+                                if (!abs && !rel)
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Expected 'absoulute' or 'relative' in 'Group' in line " + codeLine + " \n", true);
+                                    return;
+                                }
+                                if (parts[4] == "move")
+                                {
+                                    for (int j = 0; j < g.Buttons.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Buttons[j].Left = (int)float.Parse(parts[5]);
+                                            g.Buttons[j].Top = (int)float.Parse(parts[6]);
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Buttons[j].Left += (int)float.Parse(parts[5]);
+                                            g.Buttons[j].Top += (int)float.Parse(parts[6]);
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                    for (int j = 0; j < g.Objects.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Objects[j].Left = (int)float.Parse(parts[5]);
+                                            g.Objects[j].Top = (int)float.Parse(parts[6]);
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Objects[j].Left = (int)float.Parse(parts[5]);
+                                            g.Objects[j].Top = (int)float.Parse(parts[6]);
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                    for (int j = 0; j < g.Labels.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Labels[j].Left = (int)float.Parse(parts[5]);
+                                            g.Labels[j].Top = (int)float.Parse(parts[6]);
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Labels[j].Left += (int)float.Parse(parts[5]);
+                                            g.Labels[j].Top += (int)float.Parse(parts[6]);
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                    for (int j = 0; j < g.Textboxes.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Textboxes[j].Left = (int)float.Parse(parts[5]);
+                                            g.Textboxes[j].Top = (int)float.Parse(parts[6]);
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Textboxes[j].Left += (int)float.Parse(parts[5]);
+                                            g.Textboxes[j].Top += (int)float.Parse(parts[6]);
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                }
+                                else if (parts[4] == "scale")
+                                {
+                                    for (int j = 0; j < g.Buttons.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Buttons[j].Width = (int)float.Parse(parts[5]);
+                                            g.Buttons[j].Height = (int)float.Parse(parts[6]);
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Buttons[j].Width += (int)float.Parse(parts[5]);
+                                            g.Buttons[j].Height += (int)float.Parse(parts[6]);
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                    for (int j = 0; j < g.Objects.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Objects[j].Width = (int)float.Parse(parts[5]);
+                                            g.Objects[j].Height = (int)float.Parse(parts[6]);
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Objects[j].Width = (int)float.Parse(parts[5]);
+                                            g.Objects[j].Height = (int)float.Parse(parts[6]);
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                    for (int j = 0; j < g.Labels.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Labels[j].Width = (int)float.Parse(parts[5]);
+                                            g.Labels[j].Height = (int)float.Parse(parts[6]);
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Labels[j].Width += (int)float.Parse(parts[5]);
+                                            g.Labels[j].Height += (int)float.Parse(parts[6]);
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                    for (int j = 0; j < g.Textboxes.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Textboxes[j].Width = (int)float.Parse(parts[5]);
+                                            g.Textboxes[j].Height = (int)float.Parse(parts[6]);
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Textboxes[j].Width += (int)float.Parse(parts[5]);
+                                            g.Textboxes[j].Height += (int)float.Parse(parts[6]);
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                }
+                                else if (parts[4] == "color")
+                                {
+                                    int r = 0;
+                                    int g_ = 0;
+                                    int b = 0;
+                                    for (int j = 0; j < g.Buttons.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            r = (int)float.Parse(parts[5]);
+                                            g_ = (int)float.Parse(parts[6]);
+                                            b = (int)float.Parse(parts[7]);
+                                        }
+                                        else if (rel)
+                                        {
+                                            r = (int)float.Parse(parts[5]) + g.Buttons[j].BackColor.R;
+                                            g_ = (int)float.Parse(parts[6]) + g.Buttons[j].BackColor.G;
+                                            b = (int)float.Parse(parts[7]) + g.Buttons[j].BackColor.B;
+                                            if (r > 255) r = 255;
+                                            if (g_ > 255) g_ = 255;
+                                            if (b > 255) b = 255;
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                        g.Buttons[j].BackColor = Color.FromArgb(r, g_, b);
+                                    }
+                                    for (int j = 0; j < g.Objects.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            r = (int)float.Parse(parts[5]);
+                                            g_ = (int)float.Parse(parts[6]);
+                                            b = (int)float.Parse(parts[7]);
+                                        }
+                                        else if (rel)
+                                        {
+                                            r = (int)float.Parse(parts[5]) + g.Objects[j].BackColor.R;
+                                            g_ = (int)float.Parse(parts[6]) + g.Objects[j].BackColor.G;
+                                            b = (int)float.Parse(parts[7]) + g.Objects[j].BackColor.B;
+                                            if (r > 255) r = 255;
+                                            if (g_ > 255) g_ = 255;
+                                            if (b > 255) b = 255;
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                        g.Objects[j].BackColor = Color.FromArgb(r, g_, b);
+                                    }
+                                    for (int j = 0; j < g.Labels.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            r = (int)float.Parse(parts[5]);
+                                            g_ = (int)float.Parse(parts[6]);
+                                            b = (int)float.Parse(parts[7]);
+                                        }
+                                        else if (rel)
+                                        {
+                                            r = (int)float.Parse(parts[5]) + g.Labels[j].ForeColor.R;
+                                            g_ = (int)float.Parse(parts[6]) + g.Labels[j].ForeColor.G;
+                                            b = (int)float.Parse(parts[7]) + g.Labels[j].ForeColor.B;
+                                            if (r > 255) r = 255;
+                                            if (g_ > 255) g_ = 255;
+                                            if (b > 255) b = 255;
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                        g.Labels[j].ForeColor = Color.FromArgb(r, g_, b);
+                                    }
+                                    for (int j = 0; j < g.Textboxes.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            r = (int)float.Parse(parts[5]);
+                                            g_ = (int)float.Parse(parts[6]);
+                                            b = (int)float.Parse(parts[7]);
+                                        }
+                                        else if (rel)
+                                        {
+                                            r = (int)float.Parse(parts[5]) + g.Textboxes[j].ForeColor.R;
+                                            g_ = (int)float.Parse(parts[6]) + g.Textboxes[j].ForeColor.G;
+                                            b = (int)float.Parse(parts[7]) + g.Textboxes[j].ForeColor.B;
+                                            if (r > 255) r = 255;
+                                            if (g_ > 255) g_ = 255;
+                                            if (b > 255) b = 255;
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                        g.Textboxes[j].ForeColor = Color.FromArgb(r, g_, b);
+                                    }
+                                }
+                            }
+                            else if (parts[1] == "new")
+                            {
+                                Group.Add(new Group(parts[2]));
+                            }
+                            else
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                console.AddText("Expected 'new', 'change', or 'add' in 'Group' in line " + codeLine + " \n", true);
+                                return;
+                            }
+                        }
+                        catch
+                        {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                            console.AddText("Their was an error with 'Group' in line " + codeLine + " \n", true);
+                            return;
+                        }
+                    } // group groupName add mid name |or| group new name |or| group groupName change abs/rel mid v1 v2 v3
                     else if (parts[i] == "write")
                     {
                         try
@@ -1801,6 +2204,7 @@ namespace ezcode_Viewer
                                     value = vars[j].value();
                                 }
                             }
+                            Var var = new Var(name);
 
                             value = value.Replace(@"\n", Environment.NewLine);
                             value = value.Replace(@"\_", " ");
@@ -1818,12 +2222,9 @@ namespace ezcode_Viewer
                                 }
 
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(senttext);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
 
                                 // Reset the "sent" flag
                                 sent = false;
@@ -1882,12 +2283,9 @@ namespace ezcode_Viewer
                                 }
 
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(intersects);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             else if (value == "Random")
                             {
@@ -1993,32 +2391,23 @@ namespace ezcode_Viewer
                                 Random rand = new Random();
                                 int rnd = rand.Next(min, max);
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(rnd.ToString());
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             else if (value == "KeyInput")
                             {
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(keyPreview);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             else if (value == "KeyDown")
                             {
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(keydown == false ? "0" : "1");
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             else if (value == "AwaitKeyInput")
                             {
@@ -2031,12 +2420,9 @@ namespace ezcode_Viewer
                                 }
 
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(keyPreview);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             /*else if (value == "MousePosition")
                             {
@@ -2131,12 +2517,9 @@ namespace ezcode_Viewer
                                 }
 
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(val);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             else if (value == "FromTextBox")
                             {
@@ -2158,12 +2541,9 @@ namespace ezcode_Viewer
                                 }
 
                                 // Create the variable with the user's input as the value
-                                Var var = new Var(name);
                                 var.set(val);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
                             else if (value == "FromList")
                             {
@@ -2196,12 +2576,9 @@ namespace ezcode_Viewer
                                     if (!isVar) numberValue = Convert.ToInt16(number);
 
                                     // Create the variable with the user's input as the value
-                                    Var var = new Var(name);
                                     var.set(list[numberValue].value());
                                     var.isSet = true;
                                     var.stack = stackNow;
-
-                                    vars.Add(var);
                                 }
                                 else
                                 {
@@ -2241,13 +2618,21 @@ namespace ezcode_Viewer
                                     value = result;
                                 }
                                 // Create a new variable with the specified name and value
-                                Var var = new Var(name);
                                 var.set(value);
                                 var.isSet = true;
                                 var.stack = stackNow;
-
-                                vars.Add(var);
                             }
+
+                            bool first = true;
+                            for (int j = 0; j < vars.Count; j++)
+                            {
+                                if (vars[j].Name == var.Name)
+                                {
+                                    first = false;
+                                    vars[j] = var;
+                                }
+                            }
+                            if (first) vars.Add(var);
                         }
                         catch
                         {
@@ -3911,7 +4296,52 @@ namespace ezcode_Viewer
                                 {
                                     upcode += textsA[j] + " ";
                                 }
-                                await PlayAsync(upcode);
+                                if (upcode != string.Empty) await PlayAsync(upcode);
+                                else
+                                {
+                                    bool aa = false;
+                                    for (int z = lines.ToList().IndexOf(line) + 1; z < lines.Length; z++)
+                                    {
+                                        if (lines[z] == "endIf")
+                                        {
+                                            aa = true;
+                                        }
+                                    }
+                                    if (!aa)
+                                    {
+                                        iftrue = false;
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Their is no 'endIf' for the if statement in line " + codeLine + " \n", true);
+                                        return;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                string upcode = string.Empty;
+                                for (int j = endindex + 2; j < textsA.Count; j++)
+                                {
+                                    upcode += textsA[j] + " ";
+                                }
+                                if (upcode == string.Empty)
+                                {
+                                    iftrue = false;
+                                }
+                                bool aa = false;
+                                for (int z = lines.ToList().IndexOf(line) + 1; z < lines.Length; z++)
+                                {
+                                    if (lines[z].Trim() == "endIf")
+                                    {
+                                        aa = true;
+                                    }
+                                }
+                                if (!aa)
+                                {
+                                    iftrue = false;
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Their is no 'endIf' for the if statement in line " + codeLine + " \n", true);
+                                    return;
+                                }
                             }
                         }
                         catch
@@ -3993,7 +4423,7 @@ namespace ezcode_Viewer
                     }// # create error errorText
                     else
                     {
-                        if (parts[i] == "#" || parts[i] == "#create" || parts[i] == "#suppress")
+                        if (parts[i] == "#" || parts[i] == "#create" || parts[i] == "#suppress" || parts[i] == "endIf")
                         {
                             return;
                         }
@@ -4835,6 +5265,22 @@ namespace ezcode_Viewer
                 //richTextBox.SelectionColor = Color.Red;
                 //richTextBox.AppendText(text);
             }
+        }
+    }
+    class Group
+    {
+        public List<Button> Buttons = new List<Button>();
+        public List<Label> Labels = new List<Label>();
+        public List<GObject> Objects = new List<GObject>();
+        public List<TextBox> Textboxes = new List<TextBox>();
+        public string Name { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int scaleX { get; set; }
+        public int scaleY { get; set; }
+        public Group(string name)
+        {
+            this.Name = name;
         }
     }
 }

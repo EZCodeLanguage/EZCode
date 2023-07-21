@@ -28,110 +28,93 @@
         /// </summary>
         private void InitializeComponent()
         {
-            textBox1 = new TextBox();
-            pictureBox1 = new PictureBox();
-            richTextBox1 = new RichTextBox();
-            button1 = new Button();
-            textBox2 = new TextBox();
-            button2 = new Button();
-            button3 = new Button();
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).BeginInit();
-            SuspendLayout();
+            this.textBox1 = new System.Windows.Forms.TextBox();
+            this.pictureBox1 = new System.Windows.Forms.PictureBox();
+            this.richTextBox1 = new System.Windows.Forms.RichTextBox();
+            this.button1 = new System.Windows.Forms.Button();
+            this.textBox2 = new System.Windows.Forms.TextBox();
+            this.button2 = new System.Windows.Forms.Button();
+            this.button3 = new System.Windows.Forms.Button();
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).BeginInit();
+            this.SuspendLayout();
             // 
             // textBox1
             // 
-            textBox1.Location = new Point(22, 26);
-            textBox1.Margin = new Padding(6);
-            textBox1.Multiline = true;
-            textBox1.Name = "textBox1";
-            textBox1.Size = new Size(643, 469);
-            textBox1.TabIndex = 0;
+            this.textBox1.Location = new System.Drawing.Point(12, 12);
+            this.textBox1.Multiline = true;
+            this.textBox1.Name = "textBox1";
+            this.textBox1.Size = new System.Drawing.Size(348, 222);
+            this.textBox1.TabIndex = 0;
             // 
             // pictureBox1
             // 
-            pictureBox1.BorderStyle = BorderStyle.FixedSingle;
-            pictureBox1.Location = new Point(680, 26);
-            pictureBox1.Margin = new Padding(6);
-            pictureBox1.Name = "pictureBox1";
-            pictureBox1.Size = new Size(758, 471);
-            pictureBox1.TabIndex = 1;
-            pictureBox1.TabStop = false;
-            pictureBox1.PreviewKeyDown += Form1_PreviewKeyDown;
+            this.pictureBox1.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.pictureBox1.Location = new System.Drawing.Point(366, 12);
+            this.pictureBox1.Name = "pictureBox1";
+            this.pictureBox1.Size = new System.Drawing.Size(409, 222);
+            this.pictureBox1.TabIndex = 1;
+            this.pictureBox1.TabStop = false;
             // 
             // richTextBox1
             // 
-            richTextBox1.Location = new Point(22, 567);
-            richTextBox1.Margin = new Padding(6);
-            richTextBox1.Name = "richTextBox1";
-            richTextBox1.Size = new Size(1414, 307);
-            richTextBox1.TabIndex = 2;
-            richTextBox1.Text = "";
-            richTextBox1.KeyDown += Form1_KeyDown;
-            richTextBox1.KeyUp += Form1_KeyUp;
-            richTextBox1.PreviewKeyDown += Form1_PreviewKeyDown;
+            this.richTextBox1.Location = new System.Drawing.Point(12, 266);
+            this.richTextBox1.Name = "richTextBox1";
+            this.richTextBox1.Size = new System.Drawing.Size(763, 146);
+            this.richTextBox1.TabIndex = 2;
+            this.richTextBox1.Text = "";
             // 
             // button1
             // 
-            button1.Location = new Point(22, 512);
-            button1.Margin = new Padding(6);
-            button1.Name = "button1";
-            button1.Size = new Size(1226, 49);
-            button1.TabIndex = 3;
-            button1.Text = "Start";
-            button1.UseVisualStyleBackColor = true;
-            button1.Click += button1_Click;
+            this.button1.Location = new System.Drawing.Point(12, 240);
+            this.button1.Name = "button1";
+            this.button1.Size = new System.Drawing.Size(660, 23);
+            this.button1.TabIndex = 3;
+            this.button1.Text = "Start";
+            this.button1.UseVisualStyleBackColor = true;
             // 
             // textBox2
             // 
-            textBox2.Location = new Point(22, 892);
-            textBox2.Margin = new Padding(6);
-            textBox2.Name = "textBox2";
-            textBox2.Size = new Size(1226, 39);
-            textBox2.TabIndex = 4;
+            this.textBox2.Location = new System.Drawing.Point(12, 418);
+            this.textBox2.Name = "textBox2";
+            this.textBox2.Size = new System.Drawing.Size(662, 23);
+            this.textBox2.TabIndex = 4;
             // 
             // button2
             // 
-            button2.Location = new Point(1263, 892);
-            button2.Margin = new Padding(6);
-            button2.Name = "button2";
-            button2.Size = new Size(176, 49);
-            button2.TabIndex = 5;
-            button2.Text = "Send";
-            button2.UseVisualStyleBackColor = true;
-            button2.Click += button2_Click;
+            this.button2.Location = new System.Drawing.Point(680, 418);
+            this.button2.Name = "button2";
+            this.button2.Size = new System.Drawing.Size(95, 23);
+            this.button2.TabIndex = 5;
+            this.button2.Text = "Send";
+            this.button2.UseVisualStyleBackColor = true;
             // 
             // button3
             // 
-            button3.Location = new Point(1260, 512);
-            button3.Margin = new Padding(6);
-            button3.Name = "button3";
-            button3.Size = new Size(176, 49);
-            button3.TabIndex = 6;
-            button3.Text = "Quit";
-            button3.UseVisualStyleBackColor = true;
-            button3.Click += button3_Click;
+            this.button3.Location = new System.Drawing.Point(678, 240);
+            this.button3.Name = "button3";
+            this.button3.Size = new System.Drawing.Size(95, 23);
+            this.button3.TabIndex = 6;
+            this.button3.Text = "Quit";
+            this.button3.UseVisualStyleBackColor = true;
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(13F, 32F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1460, 960);
-            Controls.Add(button3);
-            Controls.Add(button2);
-            Controls.Add(textBox2);
-            Controls.Add(button1);
-            Controls.Add(richTextBox1);
-            Controls.Add(pictureBox1);
-            Controls.Add(textBox1);
-            Margin = new Padding(6);
-            Name = "Form1";
-            Text = "Form1";
-            KeyDown += Form1_KeyDown;
-            KeyUp += Form1_KeyUp;
-            PreviewKeyDown += Form1_PreviewKeyDown;
-            ((System.ComponentModel.ISupportInitialize)pictureBox1).EndInit();
-            ResumeLayout(false);
-            PerformLayout();
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(781, 449);
+            this.Controls.Add(this.button3);
+            this.Controls.Add(this.button2);
+            this.Controls.Add(this.textBox2);
+            this.Controls.Add(this.button1);
+            this.Controls.Add(this.richTextBox1);
+            this.Controls.Add(this.pictureBox1);
+            this.Controls.Add(this.textBox1);
+            this.Name = "Form1";
+            this.Text = "Form1";
+            ((System.ComponentModel.ISupportInitialize)(this.pictureBox1)).EndInit();
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
 
         #endregion

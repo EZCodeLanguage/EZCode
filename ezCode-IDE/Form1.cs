@@ -5580,6 +5580,7 @@ namespace ezCode
                 textboxes.Clear();
                 vars.Clear();
                 VarList.Clear();
+                Group.Clear();
                 console.AddText("Build Started" + Environment.NewLine, false);
                 await PlayAsync(txt.Text);
             }
