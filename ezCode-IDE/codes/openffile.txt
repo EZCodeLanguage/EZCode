@@ -1,9 +1,0 @@
-Input.ezcode|C:\Users\jlham\OneDrive\Desktop\Input.ezcode
-map_createlist.ezcode|C:\Users\jlham\OneDrive\Desktop\Input.ezcode
-map_move.ezcode|C:\Users\jlham\OneDrive\Desktop\Input.ezcode
-map_print_x.ezcode|C:\Users\jlham\OneDrive\Desktop\Input.ezcode
-map_print_y.ezcode|C:\Users\jlham\OneDrive\Desktop\Input.ezcode
-map_updatelist.ezcode|C:\Users\jlham\OneDrive\Desktop\Input.ezcode
-root--map.ezcode|C:\Users\jlham\OneDrive\Desktop\Input.ezcode
-sound.ezcode|C:\Users\jlham\OneDrive\Desktop\Input.ezcode
-test.ezcode|C:\Users\jlham\OneDrive\Desktop\Input.ezcode

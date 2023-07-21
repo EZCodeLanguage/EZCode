@@ -4584,7 +4584,7 @@ namespace ezcode_Viewer
         }
         private void SetFont(Control label, string name, int size, FontStyle style)
         {
-            
+
             Font replacementFont = new Font(name, size, style);
             label.Font = replacementFont;
         }
@@ -4624,7 +4624,7 @@ namespace ezcode_Viewer
                 txt = streamReader.ReadToEnd();
                 streamReader.Close();
                 _File = openFileDialog.FileName;
-                
+
                 Space.BackColor = Color.Gray;
             }
             catch
@@ -4736,7 +4736,7 @@ namespace ezcode_Viewer
                 stopToolStripMenuItem.Enabled = false;
                 splitContainer2.BackColor = Color.RoyalBlue;
             }
-            if(_File != "NOTHING")
+            if (_File != "NOTHING")
             {
                 toolStripLabel1.Text = _File;
             }
@@ -4763,19 +4763,19 @@ namespace ezcode_Viewer
         }
         private void Space_MouseClick(object sender, MouseEventArgs e)
         {
-            if(e.Button == MouseButtons.None)
+            if (e.Button == MouseButtons.None)
             {
                 mc = 0;
             }
-            else if(e.Button == MouseButtons.Left)
+            else if (e.Button == MouseButtons.Left)
             {
                 mc = 1;
             }
-            else if(e.Button == MouseButtons.Right)
+            else if (e.Button == MouseButtons.Right)
             {
                 mc = 2;
             }
-            else if(e.Button == MouseButtons.Middle)
+            else if (e.Button == MouseButtons.Middle)
             {
                 mc = 3;
             }

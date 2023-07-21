@@ -48,7 +48,7 @@ namespace ezcode_Project_Player
         {
             InitializeComponent();
             toolStripComboBox1.SelectedIndex = 0;
-            
+
             _File = file;
 
             if (_File != "NOTHING")
@@ -4587,7 +4587,7 @@ namespace ezcode_Project_Player
         }
         private void SetFont(Control label, string name, int size, FontStyle style)
         {
-            
+
             Font replacementFont = new Font(name, size, style);
             label.Font = replacementFont;
         }
@@ -4620,14 +4620,14 @@ namespace ezcode_Project_Player
             {
                 // The current document is saved, so open a new document
                 OpenFileDialog openFileDialog = new OpenFileDialog();
-                openFileDialog.Filter = "EzCode Project (*.ezproj)|*.ezproj";
+                openFileDialog.Filter = "EzCode Project (*.ezproj)|*.ezproj| EzCode File (*.ezcode)|*.ezcode";
                 openFileDialog.ShowDialog();
 
                 StreamReader streamReader = new StreamReader(openFileDialog.FileName);
                 txt = streamReader.ReadToEnd();
                 streamReader.Close();
                 _File = openFileDialog.FileName;
-                
+
                 Space.BackColor = Color.Gray;
             }
             catch
@@ -4647,7 +4647,7 @@ namespace ezcode_Project_Player
                 string[] a = _File.Split("\\");
                 string f = a.Last();
                 string d = "C:\\Users\\Public\\Temp\\ezcode\\" + f + "\\";
-                if (_File != "NOTHING")
+                if (_File != "NOTHING" && !_File.EndsWith(".ezcode"))
                 {
                     try
                     {
@@ -4661,6 +4661,22 @@ namespace ezcode_Project_Player
                         StreamReader streamReader = new StreamReader(d + "root_.ezcode");
                         txt = streamReader.ReadToEnd();
                         streamReader.Close();
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Could not open the document");
+                    }
+                }
+                else if (_File != "NOTHING" && _File.EndsWith(".ezcode"))
+                {
+                    try
+                    {
+                        toolStripTextBox1.Text = "Unknown";
+                        toolStripTextBox2.Text = "Unknown";
+                        StreamReader streamReader = new StreamReader(_File);
+                        txt = streamReader.ReadToEnd();
+                        streamReader.Close();
+                        d = Directory.GetParent(_File).ToString();
                     }
                     catch
                     {
@@ -4759,11 +4775,11 @@ namespace ezcode_Project_Player
                 stopToolStripMenuItem.Enabled = false;
                 splitContainer1.BackColor = Color.Maroon;
             }
-            if(_File != "NOTHING")
+            if (_File != "NOTHING")
             {
                 toolStripLabel1.Text = _File;
             }
-        } 
+        }
         private void Form1_KeyDown(object sender, KeyEventArgs e) //keydown
         {
             keyPreview = e.KeyCode.ToString();
@@ -4786,19 +4802,19 @@ namespace ezcode_Project_Player
         }
         private void Space_MouseClick(object sender, MouseEventArgs e)
         {
-            if(e.Button == MouseButtons.None)
+            if (e.Button == MouseButtons.None)
             {
                 mc = 0;
             }
-            else if(e.Button == MouseButtons.Left)
+            else if (e.Button == MouseButtons.Left)
             {
                 mc = 1;
             }
-            else if(e.Button == MouseButtons.Right)
+            else if (e.Button == MouseButtons.Right)
             {
                 mc = 2;
             }
-            else if(e.Button == MouseButtons.Middle)
+            else if (e.Button == MouseButtons.Middle)
             {
                 mc = 3;
             }
