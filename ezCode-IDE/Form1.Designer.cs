@@ -70,6 +70,7 @@
             toolStripTextBox2 = new ToolStripTextBox();
             toolStripTextBox1 = new ToolStripTextBox();
             splitContainer2 = new SplitContainer();
+            progressBar1 = new ProgressBar();
             tabControl1 = new TabControl();
             tabPage1 = new TabPage();
             console = new RichTextBox();
@@ -80,6 +81,7 @@
             splitContainer4 = new SplitContainer();
             label1 = new Label();
             listBox2 = new ListBox();
+            Console2 = new RichTextBox();
             CurrentLineTxt = new TextBox();
             button2 = new Button();
             tableLayoutPanel1 = new TableLayoutPanel();
@@ -99,7 +101,6 @@
             label3 = new Label();
             xpos1 = new TextBox();
             label2 = new Label();
-            progressBar1 = new ProgressBar();
             timer1 = new System.Windows.Forms.Timer(components);
             splitContainer3 = new SplitContainer();
             button3 = new Button();
@@ -131,9 +132,9 @@
             // 
             // splitContainer1
             // 
-            splitContainer1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             splitContainer1.BackColor = Color.Indigo;
-            splitContainer1.Location = new Point(3, 0);
+            splitContainer1.Dock = DockStyle.Fill;
+            splitContainer1.Location = new Point(0, 0);
             splitContainer1.Name = "splitContainer1";
             // 
             // splitContainer1.Panel1
@@ -144,8 +145,8 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(Space);
-            splitContainer1.Size = new Size(759, 348);
-            splitContainer1.SplitterDistance = 335;
+            splitContainer1.Size = new Size(738, 342);
+            splitContainer1.SplitterDistance = 325;
             splitContainer1.TabIndex = 0;
             // 
             // txt
@@ -154,7 +155,7 @@
             txt.AutoCompleteBrackets = true;
             txt.AutoCompleteBracketsList = new char[] { '(', ')', '{', '}', '[', ']', '"', '"', '\'', '\'' };
             txt.AutoIndentCharsPatterns = "\r\n^\\s*[\\w\\.]+(\\s\\w+)?\\s*(?<range>=)\\s*(?<range>[^;]+);\r\n^\\s*(case|default)\\s*[^:]*(?<range>:)\\s*(?<range>[^;]+);\r\n";
-            txt.AutoScrollMinSize = new Size(29, 18);
+            txt.AutoScrollMinSize = new Size(2, 18);
             txt.BackBrush = null;
             txt.BackColor = Color.FromArgb(40, 40, 40);
             txt.BracketsHighlightStrategy = FastColoredTextBoxNS.BracketsHighlightStrategy.Strategy2;
@@ -181,7 +182,7 @@
             txt.RightBracket2 = '}';
             txt.SelectionColor = Color.FromArgb(210, 100, 120, 255);
             txt.ServiceColors = (FastColoredTextBoxNS.ServiceColors)resources.GetObject("txt.ServiceColors");
-            txt.Size = new Size(335, 348);
+            txt.Size = new Size(325, 342);
             txt.TabIndex = 0;
             txt.Zoom = 100;
             txt.KeyPressed += txt_KeyPress;
@@ -193,7 +194,7 @@
             Space.BackColor = Color.DarkGray;
             Space.Location = new Point(-1, 3);
             Space.Name = "Space";
-            Space.Size = new Size(415, 342);
+            Space.Size = new Size(403, 336);
             Space.TabIndex = 0;
             Space.MouseClick += Space_MouseClick;
             // 
@@ -206,7 +207,7 @@
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Name = "toolStrip1";
             toolStrip1.Padding = new Padding(0, 0, 2, 0);
-            toolStrip1.Size = new Size(974, 25);
+            toolStrip1.Size = new Size(980, 25);
             toolStrip1.TabIndex = 1;
             toolStrip1.Text = "toolStrip1";
             // 
@@ -273,7 +274,7 @@
             // 
             toolStripMenuItem1.Name = "toolStripMenuItem1";
             toolStripMenuItem1.ShortcutKeyDisplayString = "Ctrl + Z";
-            toolStripMenuItem1.Size = new Size(180, 22);
+            toolStripMenuItem1.Size = new Size(150, 22);
             toolStripMenuItem1.Text = "Undo";
             toolStripMenuItem1.Click += toolStripMenuItem1_Click;
             // 
@@ -281,7 +282,7 @@
             // 
             toolStripMenuItem2.Name = "toolStripMenuItem2";
             toolStripMenuItem2.ShortcutKeyDisplayString = "Ctrl + Y";
-            toolStripMenuItem2.Size = new Size(180, 22);
+            toolStripMenuItem2.Size = new Size(150, 22);
             toolStripMenuItem2.Text = "Redo";
             toolStripMenuItem2.Click += toolStripMenuItem2_Click;
             // 
@@ -375,7 +376,7 @@
             // 
             debuggerEnabledToolStripMenuItem.Name = "debuggerEnabledToolStripMenuItem";
             debuggerEnabledToolStripMenuItem.ShortcutKeyDisplayString = "F10";
-            debuggerEnabledToolStripMenuItem.Size = new Size(180, 22);
+            debuggerEnabledToolStripMenuItem.Size = new Size(177, 22);
             debuggerEnabledToolStripMenuItem.Text = "Debug";
             debuggerEnabledToolStripMenuItem.Click += debuggerEnabledToolStripMenuItem_Click;
             // 
@@ -383,7 +384,7 @@
             // 
             quitDebuggerToolStripMenuItem.Name = "quitDebuggerToolStripMenuItem";
             quitDebuggerToolStripMenuItem.ShortcutKeyDisplayString = "F12";
-            quitDebuggerToolStripMenuItem.Size = new Size(180, 22);
+            quitDebuggerToolStripMenuItem.Size = new Size(177, 22);
             quitDebuggerToolStripMenuItem.Text = "Quit Debugger";
             quitDebuggerToolStripMenuItem.Click += quitDebuggerToolStripMenuItem_Click;
             // 
@@ -391,7 +392,7 @@
             // 
             nextLineToolStripMenuItem.Name = "nextLineToolStripMenuItem";
             nextLineToolStripMenuItem.ShortcutKeyDisplayString = "F11";
-            nextLineToolStripMenuItem.Size = new Size(180, 22);
+            nextLineToolStripMenuItem.Size = new Size(177, 22);
             nextLineToolStripMenuItem.Text = "Next Line";
             nextLineToolStripMenuItem.Click += nextLineToolStripMenuItem_Click;
             // 
@@ -409,7 +410,7 @@
             // 
             playToolStripMenuItem.Name = "playToolStripMenuItem";
             playToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl + P";
-            playToolStripMenuItem.Size = new Size(180, 22);
+            playToolStripMenuItem.Size = new Size(147, 22);
             playToolStripMenuItem.Text = "Play";
             playToolStripMenuItem.Click += toolStripButton1_Click;
             // 
@@ -417,14 +418,14 @@
             // 
             stopToolStripMenuItem.Name = "stopToolStripMenuItem";
             stopToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl + Q";
-            stopToolStripMenuItem.Size = new Size(180, 22);
+            stopToolStripMenuItem.Size = new Size(147, 22);
             stopToolStripMenuItem.Text = "Stop";
             stopToolStripMenuItem.Click += stopToolStripMenuItem_Click;
             // 
             // playInViewerToolStripMenuItem
             // 
             playInViewerToolStripMenuItem.Name = "playInViewerToolStripMenuItem";
-            playInViewerToolStripMenuItem.Size = new Size(180, 22);
+            playInViewerToolStripMenuItem.Size = new Size(147, 22);
             playInViewerToolStripMenuItem.Text = "Play in Viewer";
             playInViewerToolStripMenuItem.Click += playInViewerToolStripMenuItem_Click;
             // 
@@ -441,21 +442,21 @@
             // toolStripMenuItem10
             // 
             toolStripMenuItem10.Name = "toolStripMenuItem10";
-            toolStripMenuItem10.Size = new Size(180, 22);
+            toolStripMenuItem10.Size = new Size(160, 22);
             toolStripMenuItem10.Text = "View Docs";
             toolStripMenuItem10.Click += viewDocsToolStripMenuItem_Click;
             // 
             // viewDocsToolStripMenuItem
             // 
             viewDocsToolStripMenuItem.Name = "viewDocsToolStripMenuItem";
-            viewDocsToolStripMenuItem.Size = new Size(180, 22);
+            viewDocsToolStripMenuItem.Size = new Size(160, 22);
             viewDocsToolStripMenuItem.Text = "View Tutorials";
             viewDocsToolStripMenuItem.Click += viewDocsToolStripMenuItem_Click_1;
             // 
             // viewAllHotKeysToolStripMenuItem
             // 
             viewAllHotKeysToolStripMenuItem.Name = "viewAllHotKeysToolStripMenuItem";
-            viewAllHotKeysToolStripMenuItem.Size = new Size(180, 22);
+            viewAllHotKeysToolStripMenuItem.Size = new Size(160, 22);
             viewAllHotKeysToolStripMenuItem.Text = "View HotKeys";
             viewAllHotKeysToolStripMenuItem.Click += viewAllHotKeysToolStripMenuItem_Click;
             // 
@@ -483,9 +484,9 @@
             // 
             // splitContainer2
             // 
-            splitContainer2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             splitContainer2.BackColor = Color.Indigo;
-            splitContainer2.Location = new Point(3, 3);
+            splitContainer2.Dock = DockStyle.Fill;
+            splitContainer2.Location = new Point(0, 0);
             splitContainer2.Name = "splitContainer2";
             splitContainer2.Orientation = Orientation.Horizontal;
             // 
@@ -495,10 +496,20 @@
             // 
             // splitContainer2.Panel2
             // 
+            splitContainer2.Panel2.Controls.Add(progressBar1);
             splitContainer2.Panel2.Controls.Add(tabControl1);
-            splitContainer2.Size = new Size(766, 550);
-            splitContainer2.SplitterDistance = 352;
+            splitContainer2.Size = new Size(738, 536);
+            splitContainer2.SplitterDistance = 342;
             splitContainer2.TabIndex = 2;
+            // 
+            // progressBar1
+            // 
+            progressBar1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            progressBar1.Location = new Point(3, 175);
+            progressBar1.Name = "progressBar1";
+            progressBar1.Size = new Size(735, 13);
+            progressBar1.Step = 1;
+            progressBar1.TabIndex = 0;
             // 
             // tabControl1
             // 
@@ -508,7 +519,7 @@
             tabControl1.Location = new Point(3, -2);
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(763, 184);
+            tabControl1.Size = new Size(735, 175);
             tabControl1.TabIndex = 0;
             // 
             // tabPage1
@@ -521,7 +532,7 @@
             tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(755, 156);
+            tabPage1.Size = new Size(727, 147);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Console";
             // 
@@ -535,7 +546,7 @@
             console.Location = new Point(3, 0);
             console.Name = "console";
             console.ReadOnly = true;
-            console.Size = new Size(759, 129);
+            console.Size = new Size(735, 125);
             console.TabIndex = 3;
             console.Text = "";
             console.TextChanged += console_TextChanged;
@@ -543,7 +554,7 @@
             // clear
             // 
             clear.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            clear.Location = new Point(699, 133);
+            clear.Location = new Point(674, 129);
             clear.Name = "clear";
             clear.Size = new Size(60, 23);
             clear.TabIndex = 6;
@@ -558,16 +569,16 @@
             ConsoleSend.BorderStyle = BorderStyle.FixedSingle;
             ConsoleSend.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             ConsoleSend.ForeColor = Color.MediumOrchid;
-            ConsoleSend.Location = new Point(2, 130);
+            ConsoleSend.Location = new Point(2, 126);
             ConsoleSend.Name = "ConsoleSend";
-            ConsoleSend.Size = new Size(637, 23);
+            ConsoleSend.Size = new Size(612, 23);
             ConsoleSend.TabIndex = 4;
             ConsoleSend.KeyDown += ConsoleSend_KeyDown;
             // 
             // Send
             // 
             Send.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            Send.Location = new Point(639, 133);
+            Send.Location = new Point(615, 129);
             Send.Name = "Send";
             Send.Size = new Size(60, 23);
             Send.TabIndex = 5;
@@ -582,13 +593,13 @@
             tabPage2.Location = new Point(4, 24);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(755, 156);
+            tabPage2.Size = new Size(727, 147);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Debugger";
             // 
             // splitContainer4
             // 
-            splitContainer4.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            splitContainer4.Dock = DockStyle.Fill;
             splitContainer4.Location = new Point(3, 3);
             splitContainer4.Name = "splitContainer4";
             // 
@@ -599,12 +610,13 @@
             // 
             // splitContainer4.Panel2
             // 
+            splitContainer4.Panel2.Controls.Add(Console2);
             splitContainer4.Panel2.Controls.Add(CurrentLineTxt);
             splitContainer4.Panel2.Controls.Add(button2);
             splitContainer4.Panel2.Controls.Add(tableLayoutPanel1);
             splitContainer4.Panel2.Controls.Add(label2);
-            splitContainer4.Size = new Size(924, 170);
-            splitContainer4.SplitterDistance = 546;
+            splitContainer4.Size = new Size(721, 141);
+            splitContainer4.SplitterDistance = 426;
             splitContainer4.TabIndex = 0;
             // 
             // label1
@@ -613,7 +625,7 @@
             label1.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
             label1.Location = new Point(3, 2);
             label1.Name = "label1";
-            label1.Size = new Size(540, 23);
+            label1.Size = new Size(420, 23);
             label1.TabIndex = 1;
             label1.Text = "Variables";
             label1.TextAlign = ContentAlignment.MiddleLeft;
@@ -623,28 +635,44 @@
             listBox2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             listBox2.Font = new Font("Segoe UI Semibold", 9.75F, FontStyle.Bold, GraphicsUnit.Point);
             listBox2.FormattingEnabled = true;
+            listBox2.HorizontalScrollbar = true;
             listBox2.ItemHeight = 17;
             listBox2.Location = new Point(0, 35);
+            listBox2.MultiColumn = true;
             listBox2.Name = "listBox2";
-            listBox2.Size = new Size(546, 89);
+            listBox2.Size = new Size(423, 106);
             listBox2.TabIndex = 0;
+            // 
+            // Console2
+            // 
+            Console2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            Console2.BackColor = SystemColors.MenuText;
+            Console2.BorderStyle = BorderStyle.None;
+            Console2.Font = new Font("Cascadia Code", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
+            Console2.ForeColor = Color.DarkViolet;
+            Console2.Location = new Point(4, 57);
+            Console2.Name = "Console2";
+            Console2.ReadOnly = true;
+            Console2.Size = new Size(284, 52);
+            Console2.TabIndex = 7;
+            Console2.Text = "";
             // 
             // CurrentLineTxt
             // 
             CurrentLineTxt.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            CurrentLineTxt.Location = new Point(2, 23);
+            CurrentLineTxt.Location = new Point(4, 28);
             CurrentLineTxt.Multiline = true;
             CurrentLineTxt.Name = "CurrentLineTxt";
             CurrentLineTxt.ReadOnly = true;
-            CurrentLineTxt.Size = new Size(358, 23);
+            CurrentLineTxt.Size = new Size(284, 23);
             CurrentLineTxt.TabIndex = 0;
             // 
             // button2
             // 
             button2.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            button2.Location = new Point(2, 143);
+            button2.Location = new Point(3, 115);
             button2.Name = "button2";
-            button2.Size = new Size(359, 23);
+            button2.Size = new Size(285, 23);
             button2.TabIndex = 6;
             button2.Text = "Next Line (F11)";
             button2.UseVisualStyleBackColor = true;
@@ -677,85 +705,86 @@
             tableLayoutPanel1.Controls.Add(comboBox2, 0, 2);
             tableLayoutPanel1.Controls.Add(label3, 0, 0);
             tableLayoutPanel1.Controls.Add(xpos1, 1, 1);
-            tableLayoutPanel1.Location = new Point(3, 49);
+            tableLayoutPanel1.Location = new Point(5000, 5000);
             tableLayoutPanel1.Name = "tableLayoutPanel1";
             tableLayoutPanel1.RowCount = 3;
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 27.36842F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 37.89474F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Percent, 33F));
             tableLayoutPanel1.RowStyles.Add(new RowStyle(SizeType.Absolute, 20F));
-            tableLayoutPanel1.Size = new Size(358, 92);
+            tableLayoutPanel1.Size = new Size(272, 63);
             tableLayoutPanel1.TabIndex = 3;
+            tableLayoutPanel1.Visible = false;
             // 
             // yscale2
             // 
             yscale2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            yscale2.Location = new Point(268, 64);
+            yscale2.Location = new Point(205, 45);
             yscale2.Name = "yscale2";
             yscale2.ReadOnly = true;
-            yscale2.Size = new Size(84, 23);
+            yscale2.Size = new Size(61, 23);
             yscale2.TabIndex = 14;
             // 
             // xscale2
             // 
             xscale2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            xscale2.Location = new Point(180, 64);
+            xscale2.Location = new Point(139, 45);
             xscale2.Name = "xscale2";
             xscale2.ReadOnly = true;
-            xscale2.Size = new Size(79, 23);
+            xscale2.Size = new Size(57, 23);
             xscale2.TabIndex = 13;
             // 
             // ypos2
             // 
             ypos2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            ypos2.Location = new Point(129, 64);
+            ypos2.Location = new Point(100, 45);
             ypos2.Name = "ypos2";
             ypos2.ReadOnly = true;
-            ypos2.Size = new Size(42, 23);
+            ypos2.Size = new Size(30, 23);
             ypos2.TabIndex = 12;
             // 
             // xpos2
             // 
             xpos2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            xpos2.Location = new Point(77, 64);
+            xpos2.Location = new Point(60, 45);
             xpos2.Name = "xpos2";
             xpos2.ReadOnly = true;
-            xpos2.Size = new Size(43, 23);
+            xpos2.Size = new Size(31, 23);
             xpos2.TabIndex = 11;
             // 
             // yscale1
             // 
             yscale1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            yscale1.Location = new Point(268, 31);
+            yscale1.Location = new Point(205, 23);
             yscale1.Name = "yscale1";
             yscale1.ReadOnly = true;
-            yscale1.Size = new Size(84, 23);
+            yscale1.Size = new Size(61, 23);
             yscale1.TabIndex = 10;
             // 
             // xscale1
             // 
             xscale1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            xscale1.Location = new Point(180, 31);
+            xscale1.Location = new Point(139, 23);
             xscale1.Name = "xscale1";
             xscale1.ReadOnly = true;
-            xscale1.Size = new Size(79, 23);
+            xscale1.Size = new Size(57, 23);
             xscale1.TabIndex = 9;
             // 
             // ypos1
             // 
             ypos1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            ypos1.Location = new Point(129, 31);
+            ypos1.Location = new Point(100, 23);
             ypos1.Name = "ypos1";
             ypos1.ReadOnly = true;
-            ypos1.Size = new Size(42, 23);
+            ypos1.Size = new Size(30, 23);
             ypos1.TabIndex = 8;
             // 
             // label7
             // 
             label7.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            label7.Location = new Point(268, 3);
+            label7.Location = new Point(205, 3);
             label7.Name = "label7";
-            label7.Size = new Size(84, 22);
+            label7.Size = new Size(61, 14);
             label7.TabIndex = 6;
             label7.Text = "Y Scale / Font";
             label7.TextAlign = ContentAlignment.MiddleCenter;
@@ -763,9 +792,9 @@
             // label6
             // 
             label6.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            label6.Location = new Point(180, 3);
+            label6.Location = new Point(139, 3);
             label6.Name = "label6";
-            label6.Size = new Size(79, 22);
+            label6.Size = new Size(57, 14);
             label6.TabIndex = 5;
             label6.Text = "X Scale / Text";
             label6.TextAlign = ContentAlignment.MiddleCenter;
@@ -773,9 +802,9 @@
             // label5
             // 
             label5.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            label5.Location = new Point(129, 3);
+            label5.Location = new Point(100, 3);
             label5.Name = "label5";
-            label5.Size = new Size(42, 22);
+            label5.Size = new Size(30, 14);
             label5.TabIndex = 4;
             label5.Text = "Y Pos";
             label5.TextAlign = ContentAlignment.MiddleCenter;
@@ -783,9 +812,9 @@
             // label4
             // 
             label4.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            label4.Location = new Point(77, 3);
+            label4.Location = new Point(60, 3);
             label4.Name = "label4";
-            label4.Size = new Size(43, 22);
+            label4.Size = new Size(31, 14);
             label4.TabIndex = 3;
             label4.Text = "X Pos";
             label4.TextAlign = ContentAlignment.MiddleCenter;
@@ -794,9 +823,9 @@
             // 
             comboBox1.Dock = DockStyle.Fill;
             comboBox1.FormattingEnabled = true;
-            comboBox1.Location = new Point(6, 31);
+            comboBox1.Location = new Point(6, 23);
             comboBox1.Name = "comboBox1";
-            comboBox1.Size = new Size(62, 23);
+            comboBox1.Size = new Size(45, 23);
             comboBox1.TabIndex = 0;
             comboBox1.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
             // 
@@ -804,9 +833,9 @@
             // 
             comboBox2.Dock = DockStyle.Fill;
             comboBox2.FormattingEnabled = true;
-            comboBox2.Location = new Point(6, 64);
+            comboBox2.Location = new Point(6, 45);
             comboBox2.Name = "comboBox2";
-            comboBox2.Size = new Size(62, 23);
+            comboBox2.Size = new Size(45, 23);
             comboBox2.TabIndex = 1;
             comboBox2.SelectedIndexChanged += comboBox1_SelectedIndexChanged;
             // 
@@ -815,7 +844,7 @@
             label3.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             label3.Location = new Point(6, 3);
             label3.Name = "label3";
-            label3.Size = new Size(62, 22);
+            label3.Size = new Size(45, 14);
             label3.TabIndex = 2;
             label3.Text = "Name";
             label3.TextAlign = ContentAlignment.MiddleCenter;
@@ -823,10 +852,10 @@
             // xpos1
             // 
             xpos1.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            xpos1.Location = new Point(77, 31);
+            xpos1.Location = new Point(60, 23);
             xpos1.Name = "xpos1";
             xpos1.ReadOnly = true;
-            xpos1.Size = new Size(43, 23);
+            xpos1.Size = new Size(31, 23);
             xpos1.TabIndex = 7;
             // 
             // label2
@@ -835,19 +864,10 @@
             label2.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
             label2.Location = new Point(3, 2);
             label2.Name = "label2";
-            label2.Size = new Size(361, 23);
+            label2.Size = new Size(275, 23);
             label2.TabIndex = 2;
             label2.Text = "Other Values";
             label2.TextAlign = ContentAlignment.MiddleCenter;
-            // 
-            // progressBar1
-            // 
-            progressBar1.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            progressBar1.Location = new Point(0, 737);
-            progressBar1.Name = "progressBar1";
-            progressBar1.Size = new Size(1310, 13);
-            progressBar1.Step = 1;
-            progressBar1.TabIndex = 0;
             // 
             // timer1
             // 
@@ -857,9 +877,9 @@
             // 
             // splitContainer3
             // 
-            splitContainer3.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
             splitContainer3.BackColor = SystemColors.ControlDarkDark;
-            splitContainer3.Location = new Point(3, 26);
+            splitContainer3.Dock = DockStyle.Fill;
+            splitContainer3.Location = new Point(0, 25);
             splitContainer3.Name = "splitContainer3";
             // 
             // splitContainer3.Panel1
@@ -873,9 +893,9 @@
             // splitContainer3.Panel2
             // 
             splitContainer3.Panel2.Controls.Add(splitContainer2);
-            splitContainer3.Panel2MinSize = 735;
-            splitContainer3.Size = new Size(980, 553);
-            splitContainer3.SplitterDistance = 199;
+            splitContainer3.Panel2MinSize = 500;
+            splitContainer3.Size = new Size(980, 536);
+            splitContainer3.SplitterDistance = 238;
             splitContainer3.TabIndex = 1;
             // 
             // button3
@@ -884,7 +904,7 @@
             button3.BackColor = SystemColors.Info;
             button3.Location = new Point(4, 34);
             button3.Name = "button3";
-            button3.Size = new Size(192, 23);
+            button3.Size = new Size(231, 23);
             button3.TabIndex = 2;
             button3.Text = "New File";
             button3.UseVisualStyleBackColor = false;
@@ -901,7 +921,7 @@
             listBox1.ItemHeight = 21;
             listBox1.Location = new Point(3, 62);
             listBox1.Name = "listBox1";
-            listBox1.Size = new Size(193, 483);
+            listBox1.Size = new Size(231, 462);
             listBox1.TabIndex = 1;
             listBox1.SelectedIndexChanged += listBox1_SelectedIndexChanged;
             // 
@@ -911,7 +931,7 @@
             button1.BackColor = SystemColors.Info;
             button1.Location = new Point(4, 5);
             button1.Name = "button1";
-            button1.Size = new Size(192, 23);
+            button1.Size = new Size(231, 23);
             button1.TabIndex = 0;
             button1.Text = "Add Files";
             button1.UseVisualStyleBackColor = false;
@@ -922,13 +942,12 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = SystemColors.ControlDark;
-            ClientSize = new Size(974, 574);
+            ClientSize = new Size(980, 561);
             Controls.Add(splitContainer3);
-            Controls.Add(progressBar1);
             Controls.Add(toolStrip1);
             Icon = (Icon)resources.GetObject("$this.Icon");
             KeyPreview = true;
-            MinimumSize = new Size(645, 466);
+            MinimumSize = new Size(641, 449);
             Name = "Form1";
             Text = "ezCode";
             WindowState = FormWindowState.Maximized;
@@ -1042,5 +1061,6 @@
         private ToolStripMenuItem addFolderToListToolStripMenuItem;
         private ToolStripMenuItem clearListToolStripMenuItem;
         private Button button3;
+        private RichTextBox Console2;
     }
 }

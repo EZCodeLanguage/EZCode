@@ -4642,6 +4642,7 @@ namespace ezcode_Project_Player
         }
         private async void toolStripButton1_Click(object sender, EventArgs e) //play
         {
+            bool isez = false;
             if (!playing)
             {
                 string[] a = _File.Split("\\");
@@ -4671,6 +4672,7 @@ namespace ezcode_Project_Player
                 {
                     try
                     {
+                        isez = true;
                         toolStripTextBox1.Text = "Unknown";
                         toolStripTextBox2.Text = "Unknown";
                         StreamReader streamReader = new StreamReader(_File);
@@ -4730,7 +4732,8 @@ namespace ezcode_Project_Player
                 {
                     Space.Controls.Remove(buttons[i]);
                 }
-                Directory.Delete(d, true);
+                if(!isez)
+                    Directory.Delete(d, true);
 
             }
             playing = false;

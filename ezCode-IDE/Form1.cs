@@ -5677,6 +5677,7 @@ namespace ezCode
             {
                 toolStripTextBox1.Text = _File;
             }
+            Console2.Text = Console2.Text;
         }
         private void Form1_KeyDown(object sender, KeyEventArgs e) //keydown
         {
