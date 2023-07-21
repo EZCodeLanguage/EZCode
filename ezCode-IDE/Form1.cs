@@ -59,7 +59,8 @@ namespace ezCode
             if (File.Exists(filePath))
             {
                 string on = File.ReadAllText(filePath);
-                if (on == "On") {
+                if (on == "On")
+                {
                     autosave = true;
                     console.AddText("Autosave On \n", false);
                 }
@@ -205,7 +206,7 @@ namespace ezCode
                     // Get the number of times to loop
                     int loopTimes = 0;
                     bool iss = false;
-                    try 
+                    try
                     {
                         foreach (Var v in vars)
                         {
@@ -305,7 +306,8 @@ namespace ezCode
                     await ExecuteLine(lines[w]);
                 }
                 // using filePath list name : values,from,that,script |or| using filePath var name ValueFromScript
-                async Task ExecuteLine(string line) { 
+                async Task ExecuteLine(string line)
+                {
                     List<string> parts = line.Trim().Split(' ').ToList();
                     int i = 0;
                     if (parts[0] == "endIf")
@@ -420,7 +422,7 @@ namespace ezCode
                     {
                         try
                         {
-                            string text = ""; 
+                            string text = "";
                             for (int j = 1; j < parts.Count; j++)
                             {
                                 text += parts[j];
@@ -934,7 +936,7 @@ namespace ezCode
                                 console.AddText("Could not find a label or txtbox named " + labelName + "\n", true);
                                 return;
                             }
-                            else if(label.AccessibleName != "error" && textBox.AccessibleName == "error")
+                            else if (label.AccessibleName != "error" && textBox.AccessibleName == "error")
                             {
                                 if (!isvar)
                                 {
@@ -949,7 +951,7 @@ namespace ezCode
                                     label.Text = labelText;
                                 }
                             }
-                            else if(label.AccessibleName == "error" && textBox.AccessibleName != "error")
+                            else if (label.AccessibleName == "error" && textBox.AccessibleName != "error")
                             {
                                 if (!isvar)
                                 {
@@ -1196,7 +1198,7 @@ namespace ezCode
                                 }
                             }
 
-                            if(textBox.AccessibleName == "error")
+                            if (textBox.AccessibleName == "error")
                             {
                                 if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find a txtbox named " + tb + "\n", true);
@@ -1355,7 +1357,7 @@ namespace ezCode
                                 }
                             }
 
-                            if(go.AccessibleName == "ERROR")
+                            if (go.AccessibleName == "ERROR")
                             {
                                 if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("Could not find an object named '" + name + "' in line " + codeLine + " \n", true);
@@ -1747,7 +1749,7 @@ namespace ezCode
                             catch
                             {
                                 if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Their was an error with 'move' the vector was not formatted correctly in line " + codeLine + "\n", true); 
+                                console.AddText("Their was an error with 'move' the vector was not formatted correctly in line " + codeLine + "\n", true);
                             }
 
                             GObject go = new GObject(GObject.Type.Square);
@@ -2424,73 +2426,73 @@ namespace ezCode
                                 }
                                 try
                                 {
-                                     try
-                                     {
+                                    try
+                                    {
                                         min = int.Parse(mi);
-                                     }
-                                     catch
-                                     {
-                                         if (parts[3].StartsWith(@"("))
-                                         {
-                                             ended = 1;
-                                             for (int l = 0; l < textsA.Count; l++)
-                                             {
-                                                 if (ended == 1)
-                                                 {
-                                                     brackets += textsA[l];
-                                                     if (l < textsA.Count - 1) brackets += " ";
-                                                 }
-                                                 if (textsA[l].EndsWith(@")"))
-                                                 {
-                                                     if (endindex == 0) endindex = l;
-                                                     ended = 2;
-                                                 }
-                                             }
-                                         }
-                                         if (ended != 0)
-                                         {
-                                             string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
-                                             string result = SolveEquation(equation);
-                                             min = (int)float.Parse(result);
-                                         }
-                                     }
-                                     try
-                                     {
+                                    }
+                                    catch
+                                    {
+                                        if (parts[3].StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsA.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsA[l];
+                                                    if (l < textsA.Count - 1) brackets += " ";
+                                                }
+                                                if (textsA[l].EndsWith(@")"))
+                                                {
+                                                    if (endindex == 0) endindex = l;
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            min = (int)float.Parse(result);
+                                        }
+                                    }
+                                    try
+                                    {
                                         max = int.Parse(ma);
-                                     }
-                                     catch
-                                     {
-                                         string newended = textsA[endindex + 1];
-                                         List<string> textsB = new List<string>();
-                                         for (int l = endindex + 1; l < textsA.Count; l++)
-                                         {
-                                             textsB.Add(textsA[l]);
-                                         }
-                                         ended = 0;
-                                         brackets = "";
-                                         if (newended.StartsWith(@"("))
-                                         {
-                                             ended = 1;
-                                             for (int l = 0; l < textsB.Count; l++)
-                                             {
-                                                 if (ended == 1)
-                                                 {
-                                                     brackets += textsB[l];
-                                                     if (l < textsB.Count - 1) brackets += " ";
-                                                 }
-                                                 if (textsB[l].EndsWith(@")"))
-                                                 {
-                                                     ended = 2;
-                                                 }
-                                             }
-                                         }
-                                         if (ended != 0)
-                                         {
-                                             string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
-                                             string result = SolveEquation(equation);
-                                             max = (int)float.Parse(result);
-                                         }
-                                     }
+                                    }
+                                    catch
+                                    {
+                                        string newended = textsA[endindex + 1];
+                                        List<string> textsB = new List<string>();
+                                        for (int l = endindex + 1; l < textsA.Count; l++)
+                                        {
+                                            textsB.Add(textsA[l]);
+                                        }
+                                        ended = 0;
+                                        brackets = "";
+                                        if (newended.StartsWith(@"("))
+                                        {
+                                            ended = 1;
+                                            for (int l = 0; l < textsB.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    brackets += textsB[l];
+                                                    if (l < textsB.Count - 1) brackets += " ";
+                                                }
+                                                if (textsB[l].EndsWith(@")"))
+                                                {
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                        if (ended != 0)
+                                        {
+                                            string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                            string result = SolveEquation(equation);
+                                            max = (int)float.Parse(result);
+                                        }
+                                    }
                                 }
                                 catch
                                 {
@@ -3080,7 +3082,7 @@ namespace ezCode
 
                             for (int j = 0; j < vars.Count; j++)
                             {
-                                if(var.Name == vars[j].Name)
+                                if (var.Name == vars[j].Name)
                                 {
                                     var = vars[j];
                                     var.isSet = true;
@@ -3719,7 +3721,7 @@ namespace ezCode
                                         values[j] = values[j].Replace(@"\_", " ");
                                         values[j] = values[j].Replace(@"\!", string.Empty);
                                     }
-                                    
+
                                     bool allNumbers = true;
                                     bool allText = true;
                                     List<Var> varList = new List<Var>();
@@ -4170,7 +4172,7 @@ namespace ezCode
                                 string directory = "";
                                 for (int j = 0; j < dp.Length; j++)
                                 {
-                                    if(j < dp.Length - 1)
+                                    if (j < dp.Length - 1)
                                     {
                                         directory += dp[j] + @"\\";
                                     }
@@ -4193,7 +4195,7 @@ namespace ezCode
                                 if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                 console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true);
                             }
-                            if (awaits == "now") 
+                            if (awaits == "now")
                             {
                                 try { PlayAsync(play); }
                                 catch
@@ -4201,8 +4203,8 @@ namespace ezCode
                                     if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
                                     console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true);
                                 }
-                            } 
-                            else if (awaits == "await") 
+                            }
+                            else if (awaits == "await")
                             {
                                 try { await PlayAsync(play); }
                                 catch
@@ -4300,7 +4302,7 @@ namespace ezCode
                                 }
                                 else return;
 
-                                if (is_true) 
+                                if (is_true)
                                 {
                                     string upcode = string.Empty;
                                     for (int j = 5; j < parts.Count; j++)
@@ -4308,7 +4310,7 @@ namespace ezCode
                                         upcode += parts[j] + " ";
                                     }
                                     await PlayAsync(upcode);
-                                } 
+                                }
                             }
                             else if (mid == "<" && parts[4] == ":") // greater than
                             {
@@ -4544,7 +4546,7 @@ namespace ezCode
                             catch
                             {
                                 if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                console.AddText("Their was an error with 'if' the values were not formatted correctly in line " + codeLine + "\n", true); 
+                                console.AddText("Their was an error with 'if' the values were not formatted correctly in line " + codeLine + "\n", true);
                             }
 
                             bool is_true = ifcheck(Mid, a, c);
@@ -5443,77 +5445,7 @@ namespace ezCode
         }
         private void openToolStripMenuItem_Click(object sender, EventArgs e) //open
         {
-            try
-            {
-                if (saved)
-                {
-                    // The current document is saved, so open a new document
-                    OpenFileDialog openFileDialog = new OpenFileDialog();
-                    openFileDialog.Filter = "ezCode Files (*.ezcode)|*.ezcode";
-                    openFileDialog.ShowDialog();
-
-                    StreamReader streamReader = new StreamReader(openFileDialog.FileName);
-                    txt.Text = streamReader.ReadToEnd();
-                    streamReader.Close();
-
-                    _File = openFileDialog.FileName;
-
-                    openfiles.Add(new Open_File(openFileDialog.SafeFileName, openFileDialog.FileName));
-                    listBox1.Items.Add(openFileDialog.SafeFileName);
-
-                    saved = true;
-                }
-                else
-                {
-                    // The current document is not saved, so prompt the user to save their work
-                    DialogResult dr = MessageBox.Show("Your work has not been saved, do you want to save?", "Not Saved", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
-                    if (dr == DialogResult.Yes)
-                    {
-                        // Save the user's work
-                        Save(false);
-
-                        // Open the new document
-                        OpenFileDialog openFileDialog = new OpenFileDialog();
-                        openFileDialog.Filter = "ezCode Files (*.ezcode)|*.ezcode";
-                        openFileDialog.ShowDialog();
-
-                        StreamReader streamReader = new StreamReader(openFileDialog.FileName);
-                        txt.Text = streamReader.ReadToEnd();
-                        streamReader.Close();
-
-                        openfiles.Add(new Open_File(openFileDialog.SafeFileName, openFileDialog.FileName));
-                        listBox1.Items.Add(openFileDialog.SafeFileName);
-
-                        _File = openFileDialog.FileName;
-                        saved = true;
-                    }
-                    else if (dr == DialogResult.No)
-                    {
-                        // Discard the user's changes and open the new document
-                        OpenFileDialog openFileDialog = new OpenFileDialog();
-                        openFileDialog.Filter = "ezCode Files (*.ezcode)|*.ezcode";
-                        openFileDialog.ShowDialog();
-
-                        StreamReader streamReader = new StreamReader(openFileDialog.FileName);
-                        txt.Text = streamReader.ReadToEnd();
-                        streamReader.Close();
-
-                        openfiles.Add(new Open_File(openFileDialog.SafeFileName, openFileDialog.FileName));
-                        listBox1.Items.Add(openFileDialog.SafeFileName);
-
-                        _File = openFileDialog.FileName;
-                        saved = true;
-                    }
-                    else //cancel
-                    {
-                        // Cancel the action, so the document is not opened
-                    }
-                }
-            }
-            catch
-            {
-                MessageBox.Show("Did not open a document");
-            }
+            Open("NOTHING");
         }
         private void exitToolStripMenuItem_Click(object sender, EventArgs e) //exit
         {
@@ -5746,6 +5678,7 @@ namespace ezCode
             {
                 toolStripTextBox1.Text = _File;
             }
+            Console2.Text = Console2.Text;
         }
         private void Form1_KeyDown(object sender, KeyEventArgs e) //keydown
         {
@@ -5776,19 +5709,19 @@ namespace ezCode
         }
         private void Space_MouseClick(object sender, MouseEventArgs e)
         {
-            if(e.Button == MouseButtons.None)
+            if (e.Button == MouseButtons.None)
             {
                 mc = 0;
             }
-            else if(e.Button == MouseButtons.Left)
+            else if (e.Button == MouseButtons.Left)
             {
                 mc = 1;
             }
-            else if(e.Button == MouseButtons.Right)
+            else if (e.Button == MouseButtons.Right)
             {
                 mc = 2;
             }
-            else if(e.Button == MouseButtons.Middle)
+            else if (e.Button == MouseButtons.Middle)
             {
                 mc = 3;
             }
@@ -5804,11 +5737,11 @@ namespace ezCode
                 List<Open_File> open_Files = new List<Open_File>();
                 List<string> directories = new List<string>();
                 List<string> names = new List<string>();
-                foreach(string name in openFileDialog.FileNames)
+                foreach (string name in openFileDialog.FileNames)
                 {
                     directories.Add(name);
                 }
-                foreach(string name in openFileDialog.SafeFileNames)
+                foreach (string name in openFileDialog.SafeFileNames)
                 {
                     names.Add(name);
                 }
@@ -5916,7 +5849,7 @@ namespace ezCode
                 {
                     string file = string.Empty;
 
-                    foreach(Open_File of in openfiles)
+                    foreach (Open_File of in openfiles)
                     {
                         file += of.Name + "|" + of.Directory + Environment.NewLine;
                     }
@@ -6180,7 +6113,7 @@ namespace ezCode
 
             string file = b.AccessibleDescription;
 
-            if(file != string.Empty && File.Exists(file))
+            if (file != string.Empty && File.Exists(file))
             {
                 if (file.Contains("~/"))
                 {
@@ -6378,6 +6311,98 @@ Ctrl + Shift + C - Comment Selected";
         {
             listBox1.Items.Clear();
             openfiles.Clear();
+        }
+
+        private void button3_Click(object sender, EventArgs e)
+        {
+            //New File
+            NewFile filedi = new NewFile();
+            filedi.ShowDialog();
+            Open(filedi.file, filedi.safefile);
+        }
+        void Open(string file, string? safefile = "null")
+        {
+            try
+            {
+                if (saved)
+                {
+                    // The current document is saved, so open a new document
+                    if (file == "" || file == "NOTHING")
+                    {
+                        OpenFileDialog openFileDialog = new OpenFileDialog();
+                        openFileDialog.Filter = "ezCode Files (*.ezcode)|*.ezcode";
+                        openFileDialog.ShowDialog();
+                        file = openFileDialog.FileName;
+                        safefile = openFileDialog.SafeFileName;
+                    }
+
+                    StreamReader streamReader = new StreamReader(file);
+                    txt.Text = streamReader.ReadToEnd();
+                    streamReader.Close();
+
+                    _File = file;
+
+                    openfiles.Add(new Open_File(file, safefile));
+                    listBox1.Items.Add(safefile);
+
+                    saved = true;
+                }
+                else
+                {
+                    // The current document is not saved, so prompt the user to save their work
+                    DialogResult dr = MessageBox.Show("Your work has not been saved, do you want to save?", "Not Saved", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+                    if (dr == DialogResult.Yes)
+                    {
+                        // Save the user's work
+                        Save(false);
+
+                        // Open the new document
+                        if (file == "" || file == "NOTHING")
+                        {
+                            OpenFileDialog openFileDialog = new OpenFileDialog();
+                            openFileDialog.Filter = "ezCode Files (*.ezcode)|*.ezcode";
+                            openFileDialog.ShowDialog();
+                            file = openFileDialog.FileName;
+                            safefile = openFileDialog.SafeFileName;
+                        }
+
+                        StreamReader streamReader = new StreamReader(file);
+                        txt.Text = streamReader.ReadToEnd();
+                        streamReader.Close();
+
+                        openfiles.Add(new Open_File(file, safefile));
+                        listBox1.Items.Add(safefile);
+
+                        _File = file;
+                        saved = true;
+                    }
+                    else if (dr == DialogResult.No)
+                    {
+                        // Discard the user's changes and open the new document
+                        OpenFileDialog openFileDialog = new OpenFileDialog();
+                        openFileDialog.Filter = "ezCode Files (*.ezcode)|*.ezcode";
+                        openFileDialog.ShowDialog();
+
+                        StreamReader streamReader = new StreamReader(openFileDialog.FileName);
+                        txt.Text = streamReader.ReadToEnd();
+                        streamReader.Close();
+
+                        openfiles.Add(new Open_File(openFileDialog.SafeFileName, openFileDialog.FileName));
+                        listBox1.Items.Add(openFileDialog.SafeFileName);
+
+                        _File = openFileDialog.FileName;
+                        saved = true;
+                    }
+                    else //cancel
+                    {
+                        // Cancel the action, so the document is not opened
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Did not open a document");
+            }
         }
     }
     class Open_File

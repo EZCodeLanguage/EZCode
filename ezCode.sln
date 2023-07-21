@@ -17,6 +17,8 @@ Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "EzCode-All_Programs", "EzCo
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ezcode-Application", "ezcode-Application\ezcode-Application.csproj", "{3DFE8866-594F-47B4-8CC4-65378F6C58AD}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Playground", "Playground\Playground.csproj", "{997282C7-8AD9-4B0F-8A72-685911FE5C29}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -49,6 +51,10 @@ Global
 		{3DFE8866-594F-47B4-8CC4-65378F6C58AD}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{3DFE8866-594F-47B4-8CC4-65378F6C58AD}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{3DFE8866-594F-47B4-8CC4-65378F6C58AD}.Release|Any CPU.Build.0 = Release|Any CPU
+		{997282C7-8AD9-4B0F-8A72-685911FE5C29}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{997282C7-8AD9-4B0F-8A72-685911FE5C29}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{997282C7-8AD9-4B0F-8A72-685911FE5C29}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{997282C7-8AD9-4B0F-8A72-685911FE5C29}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

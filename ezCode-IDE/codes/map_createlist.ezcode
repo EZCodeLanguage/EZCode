@@ -1,9 +1,0 @@
-list clear map
-
-loop map_total
-
-list add map 0_
-
-end
-
-list equals map player 1_
