@@ -329,10 +329,12 @@ namespace ezCode
                         try
                         {
                             string text = "";
+                            bool done = false;
                             for (int j = 1; j < parts.Count; j++)
                             {
-                                text += parts[j];
-                                if (j < parts.Count - 1) text += " ";
+                                if (parts[j].Contains("//")) done = true;
+                                text += !done ? parts[j] : string.Empty;
+                                if (j < parts.Count - 1 && !done) text += " ";
                             }
 
                             bool isVar = false;
@@ -569,17 +571,19 @@ namespace ezCode
                                 }
                                 if (parts[4] == "move")
                                 {
+                                    int[] x = find_value(parts, 5, 0);
+                                    int[] y = find_value(parts, x[1], 0);
                                     for (int j = 0; j < g.Buttons.Count; j++)
                                     {
                                         if (abs)
                                         {
-                                            g.Buttons[j].Left = (int)float.Parse(parts[5]);
-                                            g.Buttons[j].Top = (int)float.Parse(parts[6]);
+                                            g.Buttons[j].Left = x[0];
+                                            g.Buttons[j].Top = y[0];
                                         }
                                         else if (rel)
                                         {
-                                            g.Buttons[j].Left += (int)float.Parse(parts[5]);
-                                            g.Buttons[j].Top += (int)float.Parse(parts[6]);
+                                            g.Buttons[j].Left += x[0];
+                                            g.Buttons[j].Top += y[0];
                                         }
                                         else
                                         {
@@ -590,13 +594,13 @@ namespace ezCode
                                     {
                                         if (abs)
                                         {
-                                            g.Objects[j].Left = (int)float.Parse(parts[5]);
-                                            g.Objects[j].Top = (int)float.Parse(parts[6]);
+                                            g.Objects[j].Left = x[0];
+                                            g.Objects[j].Top = y[0];
                                         }
                                         else if (rel)
                                         {
-                                            g.Objects[j].Left = (int)float.Parse(parts[5]);
-                                            g.Objects[j].Top = (int)float.Parse(parts[6]);
+                                            g.Objects[j].Left += x[0];
+                                            g.Objects[j].Top += y[0];
                                         }
                                         else
                                         {
@@ -607,13 +611,13 @@ namespace ezCode
                                     {
                                         if (abs)
                                         {
-                                            g.Labels[j].Left = (int)float.Parse(parts[5]);
-                                            g.Labels[j].Top = (int)float.Parse(parts[6]);
+                                            g.Labels[j].Left = x[0];
+                                            g.Labels[j].Top = y[0];
                                         }
                                         else if (rel)
                                         {
-                                            g.Labels[j].Left += (int)float.Parse(parts[5]);
-                                            g.Labels[j].Top += (int)float.Parse(parts[6]);
+                                            g.Labels[j].Left += x[0];
+                                            g.Labels[j].Top += y[0];
                                         }
                                         else
                                         {
@@ -624,13 +628,13 @@ namespace ezCode
                                     {
                                         if (abs)
                                         {
-                                            g.Textboxes[j].Left = (int)float.Parse(parts[5]);
-                                            g.Textboxes[j].Top = (int)float.Parse(parts[6]);
+                                            g.Textboxes[j].Left = x[0];
+                                            g.Textboxes[j].Top = y[0];
                                         }
                                         else if (rel)
                                         {
-                                            g.Textboxes[j].Left += (int)float.Parse(parts[5]);
-                                            g.Textboxes[j].Top += (int)float.Parse(parts[6]);
+                                            g.Textboxes[j].Left += x[0];
+                                            g.Textboxes[j].Top += y[0];
                                         }
                                         else
                                         {
@@ -640,17 +644,19 @@ namespace ezCode
                                 }
                                 else if (parts[4] == "scale")
                                 {
+                                    int[] x = find_value(parts, 5, 0);
+                                    int[] y = find_value(parts, x[1], 0);
                                     for (int j = 0; j < g.Buttons.Count; j++)
                                     {
                                         if (abs)
                                         {
-                                            g.Buttons[j].Width = (int)float.Parse(parts[5]);
-                                            g.Buttons[j].Height = (int)float.Parse(parts[6]);
+                                            g.Buttons[j].Width = x[0];
+                                            g.Buttons[j].Height = y[0];
                                         }
                                         else if (rel)
                                         {
-                                            g.Buttons[j].Width += (int)float.Parse(parts[5]);
-                                            g.Buttons[j].Height += (int)float.Parse(parts[6]);
+                                            g.Buttons[j].Width += x[0];
+                                            g.Buttons[j].Height += y[0];
                                         }
                                         else
                                         {
@@ -661,13 +667,13 @@ namespace ezCode
                                     {
                                         if (abs)
                                         {
-                                            g.Objects[j].Width = (int)float.Parse(parts[5]);
-                                            g.Objects[j].Height = (int)float.Parse(parts[6]);
+                                            g.Objects[j].Width = x[0];
+                                            g.Objects[j].Height = y[0];
                                         }
                                         else if (rel)
                                         {
-                                            g.Objects[j].Width = (int)float.Parse(parts[5]);
-                                            g.Objects[j].Height = (int)float.Parse(parts[6]);
+                                            g.Objects[j].Width += x[0];
+                                            g.Objects[j].Height += y[0];
                                         }
                                         else
                                         {
@@ -678,13 +684,13 @@ namespace ezCode
                                     {
                                         if (abs)
                                         {
-                                            g.Labels[j].Width = (int)float.Parse(parts[5]);
-                                            g.Labels[j].Height = (int)float.Parse(parts[6]);
+                                            g.Labels[j].Width = x[0];
+                                            g.Labels[j].Height = y[0];
                                         }
                                         else if (rel)
                                         {
-                                            g.Labels[j].Width += (int)float.Parse(parts[5]);
-                                            g.Labels[j].Height += (int)float.Parse(parts[6]);
+                                            g.Labels[j].Width += x[0];
+                                            g.Labels[j].Height += y[0];
                                         }
                                         else
                                         {
@@ -695,13 +701,13 @@ namespace ezCode
                                     {
                                         if (abs)
                                         {
-                                            g.Textboxes[j].Width = (int)float.Parse(parts[5]);
-                                            g.Textboxes[j].Height = (int)float.Parse(parts[6]);
+                                            g.Textboxes[j].Width = x[0];
+                                            g.Textboxes[j].Height = y[0];
                                         }
                                         else if (rel)
                                         {
-                                            g.Textboxes[j].Width += (int)float.Parse(parts[5]);
-                                            g.Textboxes[j].Height += (int)float.Parse(parts[6]);
+                                            g.Textboxes[j].Width += x[0];
+                                            g.Textboxes[j].Height += y[0];
                                         }
                                         else
                                         {
@@ -714,19 +720,22 @@ namespace ezCode
                                     int r = 0;
                                     int g_ = 0;
                                     int b = 0;
+                                    int[] __r = find_value(parts, 5, 0);
+                                    int[] __g = find_value(parts, __r[1], 0);
+                                    int[] __b = find_value(parts, __g[1], 0);
                                     for (int j = 0; j < g.Buttons.Count; j++)
                                     {
                                         if (abs)
                                         {
-                                            r = (int)float.Parse(parts[5]);
-                                            g_ = (int)float.Parse(parts[6]);
-                                            b = (int)float.Parse(parts[7]);
+                                            r = __r[0];
+                                            g_ = __g[0];
+                                            b = __b[0];
                                         }
                                         else if (rel)
                                         {
-                                            r = (int)float.Parse(parts[5]) + g.Buttons[j].BackColor.R;
-                                            g_ = (int)float.Parse(parts[6]) + g.Buttons[j].BackColor.G;
-                                            b = (int)float.Parse(parts[7]) + g.Buttons[j].BackColor.B;
+                                            r = __r[0] + g.Buttons[j].BackColor.R;
+                                            g_ = __g[0] + g.Buttons[j].BackColor.G;
+                                            b = __b[0] + g.Buttons[j].BackColor.B;
                                             if (r > 255) r = 255;
                                             if (g_ > 255) g_ = 255;
                                             if (b > 255) b = 255;
@@ -741,15 +750,15 @@ namespace ezCode
                                     {
                                         if (abs)
                                         {
-                                            r = (int)float.Parse(parts[5]);
-                                            g_ = (int)float.Parse(parts[6]);
-                                            b = (int)float.Parse(parts[7]);
+                                            r = __r[0];
+                                            g_ = __g[0];
+                                            b = __b[0];
                                         }
                                         else if (rel)
                                         {
-                                            r = (int)float.Parse(parts[5]) + g.Objects[j].BackColor.R;
-                                            g_ = (int)float.Parse(parts[6]) + g.Objects[j].BackColor.G;
-                                            b = (int)float.Parse(parts[7]) + g.Objects[j].BackColor.B;
+                                            r = __r[0] + g.Objects[j].BackColor.R;
+                                            g_ = __g[0] + g.Objects[j].BackColor.G;
+                                            b = __b[0] + g.Objects[j].BackColor.B;
                                             if (r > 255) r = 255;
                                             if (g_ > 255) g_ = 255;
                                             if (b > 255) b = 255;
@@ -764,15 +773,15 @@ namespace ezCode
                                     {
                                         if (abs)
                                         {
-                                            r = (int)float.Parse(parts[5]);
-                                            g_ = (int)float.Parse(parts[6]);
-                                            b = (int)float.Parse(parts[7]);
+                                            r = __r[0];
+                                            g_ = __g[0];
+                                            b = __b[0];
                                         }
                                         else if (rel)
                                         {
-                                            r = (int)float.Parse(parts[5]) + g.Labels[j].ForeColor.R;
-                                            g_ = (int)float.Parse(parts[6]) + g.Labels[j].ForeColor.G;
-                                            b = (int)float.Parse(parts[7]) + g.Labels[j].ForeColor.B;
+                                            r = __r[0] + g.Labels[j].ForeColor.R;
+                                            g_ = __g[0] + g.Labels[j].ForeColor.G;
+                                            b = __b[0] + g.Labels[j].ForeColor.B;
                                             if (r > 255) r = 255;
                                             if (g_ > 255) g_ = 255;
                                             if (b > 255) b = 255;
@@ -787,15 +796,15 @@ namespace ezCode
                                     {
                                         if (abs)
                                         {
-                                            r = (int)float.Parse(parts[5]);
-                                            g_ = (int)float.Parse(parts[6]);
-                                            b = (int)float.Parse(parts[7]);
+                                            r = __r[0];
+                                            g_ = __g[0];
+                                            b = __b[0];
                                         }
                                         else if (rel)
                                         {
-                                            r = (int)float.Parse(parts[5]) + g.Textboxes[j].ForeColor.R;
-                                            g_ = (int)float.Parse(parts[6]) + g.Textboxes[j].ForeColor.G;
-                                            b = (int)float.Parse(parts[7]) + g.Textboxes[j].ForeColor.B;
+                                            r = __r[0] + g.Textboxes[j].ForeColor.R;
+                                            g_ = __g[0] + g.Textboxes[j].ForeColor.G;
+                                            b = __b[0] + g.Textboxes[j].ForeColor.B;
                                             if (r > 255) r = 255;
                                             if (g_ > 255) g_ = 255;
                                             if (b > 255) b = 255;
@@ -1032,27 +1041,57 @@ namespace ezCode
                         try
                         {
                             string name = parts[i + 1];
-                            string text = parts[i + 2];
-
-                            text = text.Replace(@"\n", Environment.NewLine);
-                            text = text.Replace(@"\_", " ");
-                            text = text.Replace(@"\!", string.Empty);
-
-                            for (int j = 0; j < vars.Count; j++)
-                            {
-                                if (vars[j].Name == text)
-                                {
-                                    text = vars[j].value();
-                                }
-                            }
 
                             Button b = new Button();
                             b.Left = 0;
                             b.Top = 0;
                             b.Name = name;
-                            b.Text = text;
                             b.FlatStyle = FlatStyle.Flat;
                             b.FlatAppearance.BorderSize = 1;
+
+                            try
+                            {
+                                if(parts.Count > 2)
+                                {
+                                    string text = parts[2];
+
+                                    text = text.Replace(@"\n", Environment.NewLine);
+                                    text = text.Replace(@"\_", " ");
+                                    text = text.Replace(@"\!", string.Empty);
+
+                                    for (int j = 0; j < vars.Count; j++)
+                                    {
+                                        if (vars[j].Name == text)
+                                        {
+                                            text = vars[j].value();
+                                        }
+                                    }
+                                    b.Text = text;
+                                }
+                                int[] v = find_value(parts, 3, 0);
+                                int x = v[0];
+                                int[] v1 = find_value(parts, v[1], 0);
+                                int y = v1[0];
+                                int[] v2 = find_value(parts, v1[1], 100);
+                                int scaleX = v2[0];
+                                int[] v3 = find_value(parts, v2[1], 25);
+                                int scaleY = v3[0];
+                                int[] v4 = find_value(parts, v3[1], 211);
+                                int r = v4[0];
+                                int[] v5 = find_value(parts, v4[1], 211);
+                                int g = v5[0];
+                                int[] v6 = find_value(parts, v5[1], 211);
+                                int _b = v6[0];
+                                b.Left = x;
+                                b.Top = y;
+                                b.Width = scaleX;
+                                b.Height = scaleY;
+                                b.BackColor = Color.FromArgb(r, g, _b);
+                            }
+                            catch
+                            {
+                                int.Parse("error");
+                            }
 
                             Space.Controls.Add(b);
                             buttons.Add(b);
@@ -1144,25 +1183,75 @@ namespace ezCode
                         try
                         {
                             string name = parts[i + 1];
-                            string text = parts[i + 2];
-
-                            text = text.Replace(@"\n", Environment.NewLine);
-                            text = text.Replace(@"\_", " ");
-                            text = text.Replace(@"\!", string.Empty);
-
-                            for (int j = 0; j < vars.Count; j++)
-                            {
-                                if (vars[j].Name == text)
-                                {
-                                    text = vars[j].value();
-                                }
-                            }
 
                             TextBox tb = new TextBox();
                             tb.Left = 0;
                             tb.Top = 0;
                             tb.Name = name;
-                            tb.Text = text;
+
+                            try
+                            {
+                                if (parts.Count > 2)
+                                {
+                                    string text = parts[2];
+
+                                    text = text.Replace(@"\n", Environment.NewLine);
+                                    text = text.Replace(@"\_", " ");
+                                    text = text.Replace(@"\!", string.Empty);
+
+                                    for (int j = 0; j < vars.Count; j++)
+                                    {
+                                        if (vars[j].Name == text)
+                                        {
+                                            text = vars[j].value();
+                                        }
+                                    }
+                                    tb.Text = text;
+                                }
+                                int[] v = find_value(parts, 3, 0);
+                                int x = v[0];
+                                int[] v1 = find_value(parts, v[1], 0);
+                                int y = v1[0];
+                                int[] v2 = find_value(parts, v1[1], 100);
+                                int scaleX = v2[0];
+                                int[] v3 = find_value(parts, v2[1], 25);
+                                int scaleY = v3[0];
+                                int[] v4 = find_value(parts, v3[1], 0);
+                                int r = v4[0];
+                                int[] v5 = find_value(parts, v4[1], 0);
+                                int g = v5[0];
+                                int[] v6 = find_value(parts, v5[1], 0);
+                                int _b = v6[0];
+                                if (parts.Count - 1 >= v6[1])
+                                {
+                                    string t = parts[v6[1]];
+
+                                    for (int j = 0; j < vars.Count; j++)
+                                    {
+                                        if (vars[j].Name == t)
+                                        {
+                                            t = vars[j].value();
+                                        }
+                                    }
+                                    if (t == "yes" || t == "Yes" || t == "1" || t == "true" || t == "True")
+                                    {
+                                        tb.Multiline = true;
+                                    }
+                                    if (t == "no" || t == "No" || t == "0" || t == "false" || t == "False")
+                                    {
+                                        tb.Multiline = false;
+                                    }
+                                }
+                                tb.Left = x;
+                                tb.Top = y;
+                                tb.Width = scaleX;
+                                tb.Height = scaleY;
+                                tb.ForeColor = Color.FromArgb(r, g, _b);
+                            }
+                            catch
+                            {
+                                int.Parse("error");
+                            }
 
                             Space.Controls.Add(tb);
                             textboxes.Add(tb);
@@ -1284,12 +1373,34 @@ namespace ezCode
                             else if (points == 4) go = new GObject(GObject.Type.Square);
                             else go = new GObject(GObject.Type.Polygon, points);
 
-                            go.Left = 0;
-                            go.Top = 0;
-                            go.Width = 50;
-                            go.Height = 50;
+                            try
+                            {
+                                int[] v = find_value(parts, 3, 0);
+                                int x = v[0];
+                                int[] v1 = find_value(parts, v[1], 0);
+                                int y = v1[0];
+                                int[] v2 = find_value(parts, v1[1], 50);
+                                int scaleX = v2[0];
+                                int[] v3 = find_value(parts, v2[1], 50);
+                                int scaleY = v3[0];
+                                int[] v4 = find_value(parts, v3[1], 0);
+                                int r = v4[0];
+                                int[] v5 = find_value(parts, v4[1], 0);
+                                int g = v5[0];
+                                int[] v6 = find_value(parts, v5[1], 0);
+                                int _b = v6[0];
+                                go.Left = x;
+                                go.Top = y;
+                                go.Width = scaleX;
+                                go.Height = scaleY;
+                                go.BackColor = Color.FromArgb(r, g, _b);
+                            }
+                            catch
+                            {
+                                int.Parse("error");
+                            }
+
                             go.Name = name;
-                            go.BackColor = Color.Black;
 
                             Space.Controls.Add(go);
                             gameObjects.Add(go);
@@ -1300,7 +1411,7 @@ namespace ezCode
                             console.AddText("Their was an error with 'object' in line " + codeLine + " \n", true);
                             return;
                         }
-                    } // object name x
+                    } // object name sides
                     else if (parts[i] == "image")
                     {
                         try
@@ -1400,6 +1511,44 @@ namespace ezCode
                             label.Top = 0;
                             label.Name = name;
                             label.Text = name;
+
+                            try
+                            {
+                                if (parts.Count > 2)
+                                {
+                                    string text = parts[2];
+
+                                    text = text.Replace(@"\n", Environment.NewLine);
+                                    text = text.Replace(@"\_", " ");
+                                    text = text.Replace(@"\!", string.Empty);
+
+                                    for (int j = 0; j < vars.Count; j++)
+                                    {
+                                        if (vars[j].Name == text)
+                                        {
+                                            text = vars[j].value();
+                                        }
+                                    }
+                                    label.Text = text;
+                                }
+                                int[] v = find_value(parts, 3, 0);
+                                int x = v[0];
+                                int[] v1 = find_value(parts, v[1], 0);
+                                int y = v1[0];
+                                int[] v2 = find_value(parts, v1[1], 0);
+                                int r = v2[0];
+                                int[] v3 = find_value(parts, v2[1], 0);
+                                int g = v3[0];
+                                int[] v4 = find_value(parts, v3[1], 0);
+                                int b = v4[0];
+                                label.Left = x;
+                                label.Top = y;
+                                label.ForeColor = Color.FromArgb(r, g, b);
+                            }
+                            catch
+                            {
+                                int.Parse("error");
+                            }
 
                             Space.Controls.Add(label);
                             labels.Add(label);
@@ -5074,6 +5223,91 @@ namespace ezCode
 
                                 if (!var.isNumber())
                                 {
+                                    string text = "";
+                                    bool done = false;
+                                    for (int j = 2; j < parts.Count; j++)
+                                    {
+                                        if (parts[j].Contains("//")) done = true;
+                                        text += !done ? parts[j] : string.Empty;
+                                        if (j < parts.Count - 1 && !done) text += " ";
+                                    }
+
+                                    bool isVar = false;
+                                    string val = text;
+                                    List<string> texts = text.Split(" ").ToList();
+                                    int ended = 0;
+                                    string brackets = "";
+                                    int started = 0;
+                                    int count = 0;
+
+                                    for (int j = 0; j < texts.Count; j++)
+                                    {
+                                        for (int k = 0; k < vars.Count; k++)
+                                        {
+                                            if (vars[k].Name == texts[j])
+                                            {
+                                                isVar = true;
+                                                texts[j] = vars[k].value();
+                                            }
+                                        }
+                                        if (texts[j].StartsWith(@"\("))
+                                        {
+                                            ended = 1;
+                                            count = 1;
+                                            started = j;
+                                            for (int l = j; l < texts.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    count++;
+                                                    brackets += texts[l];
+                                                    if (l < texts.Count - 1) brackets += " ";
+                                                }
+                                                if (texts[l].EndsWith(@")\"))
+                                                {
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (ended != 0)
+                                    {
+                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                        string result = SolveEquation(equation);
+                                        texts[started] = result;
+
+                                        int endIndex = started + count;
+                                        if (endIndex < texts.Count)
+                                        {
+                                            texts.RemoveRange(started + 1, count - 2);
+                                        }
+                                        else
+                                        {
+                                            texts.RemoveRange(started + 1, texts.Count - (started + 1));
+                                        }
+                                    }
+                                    text = "";
+                                    for (int j = 0; j < texts.Count; j++)
+                                    {
+                                        text += texts[j];
+                                        if (j < texts.Count - 1) text += " ";
+                                    }
+                                    val = text;
+
+                                    if (!isVar)
+                                    {
+                                        val = val.Replace(@"\n", Environment.NewLine);
+                                        val = val.Replace(@"\_", " ");
+                                        val = val.Replace(@"\!", string.Empty);
+
+                                        value = val;
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        value = text;
+                                    }
+
                                     var.stringChange(value, mid);
 
                                     if (!var.isSet)
@@ -5251,6 +5485,65 @@ namespace ezCode
 
             return value;
         }
+        private int[] getEquationWithNext(string value, int a, List<string> parts)
+        {
+            string brackets = "";
+            int ended = 0;
+            int next = 0;
+            List<string> texts = new List<string>();
+            for (int l = a; l < parts.Count; l++)
+            {
+                texts.Add(parts[l]);
+            }
+            if (value.StartsWith(@"("))
+            {
+                ended = 1;
+                for (int l = 0; l < texts.Count; l++)
+                {
+                    if (ended == 1)
+                    {
+                        brackets += texts[l];
+                        if (l < texts.Count - 1) brackets += " ";
+                    }
+                    if (texts[l].EndsWith(@")"))
+                    {
+                        ended = 2;
+                        if (next == 0) next = l;
+                    }
+                }
+            }
+            if (ended != 0)
+            {
+                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                string result = SolveEquation(equation);
+                value = result;
+            }
+            else if (ended == 1)
+            {
+                console.AddText("Syntax error in line " + codeLine + ". Expected ')' to end equation \n", true);
+            }
+
+            return new int[] { int.Parse(value), next };
+        }
+        private int[] find_value(List<string> parts, int next, int def)
+        {
+            int v = def;
+            if (parts.Count - 1 >= next)
+            {
+                try
+                {
+                    v = int.Parse(parts[next]);
+                    next++;
+                }
+                catch
+                {
+                    int[] result = getEquationWithNext(parts[next], next, parts);
+                    v = result[0];
+                    next += result[1] + 1;
+                }
+            }
+            return new int[] { v, next };
+        }
         private string SolveEquation(string equation)
         {
             try
@@ -5367,6 +5660,95 @@ namespace ezCode
                 listBox1.Items.Add(b[b.Length - 1]);
             }
         }
+        private void Open(string file, string? safefile = "null")
+        {
+            try
+            {
+                if (saved)
+                {
+                    // The current document is saved, so open a new document
+                    if (file == "" || file == "NOTHING")
+                    {
+                        OpenFileDialog openFileDialog = new OpenFileDialog();
+                        openFileDialog.Filter = "ezCode Files (*.ezcode)|*.ezcode";
+                        openFileDialog.ShowDialog();
+                        file = openFileDialog.FileName;
+                        safefile = openFileDialog.SafeFileName;
+                    }
+
+                    StreamReader streamReader = new StreamReader(file);
+                    txt.Text = streamReader.ReadToEnd();
+                    streamReader.Close();
+
+                    _File = file;
+
+                    openfiles.Add(new Open_File(safefile, file));
+                    listBox1.Items.Add(safefile);
+
+                    saved = true;
+                }
+                else
+                {
+                    // The current document is not saved, so prompt the user to save their work
+                    DialogResult dr = MessageBox.Show("Your work has not been saved, do you want to save?", "Not Saved", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
+                    if (dr == DialogResult.Yes)
+                    {
+                        // Save the user's work
+                        Save(false);
+
+                        // Open the new document
+                        if (file == "" || file == "NOTHING")
+                        {
+                            OpenFileDialog openFileDialog = new OpenFileDialog();
+                            openFileDialog.Filter = "ezCode Files (*.ezcode)|*.ezcode";
+                            openFileDialog.ShowDialog();
+                            file = openFileDialog.FileName;
+                            safefile = openFileDialog.SafeFileName;
+                        }
+
+                        StreamReader streamReader = new StreamReader(file);
+                        txt.Text = streamReader.ReadToEnd();
+                        streamReader.Close();
+
+                        openfiles.Add(new Open_File(file, safefile));
+                        listBox1.Items.Add(safefile);
+
+                        _File = file;
+                        saved = true;
+                    }
+                    else if (dr == DialogResult.No)
+                    {
+                        // Discard the user's changes and open the new document
+                        if (file == "" || file == "NOTHING")
+                        {
+                            OpenFileDialog openFileDialog = new OpenFileDialog();
+                            openFileDialog.Filter = "ezCode Files (*.ezcode)|*.ezcode";
+                            openFileDialog.ShowDialog();
+                            file = openFileDialog.FileName;
+                            safefile = openFileDialog.SafeFileName;
+                        }
+
+                        StreamReader streamReader = new StreamReader(file);
+                        txt.Text = streamReader.ReadToEnd();
+                        streamReader.Close();
+
+                        openfiles.Add(new Open_File(file, safefile));
+                        listBox1.Items.Add(safefile);
+
+                        _File = file;
+                        saved = true;
+                    }
+                    else //cancel
+                    {
+                        // Cancel the action, so the document is not opened
+                    }
+                }
+            }
+            catch
+            {
+                MessageBox.Show("Did not open a document");
+            }
+        }
         private void Undo()
         {
             if (undoStack.Count > 1)
@@ -5390,6 +5772,47 @@ namespace ezCode
 
                 // Display the next text in the txt control
                 txt.Text = nextText;
+            }
+        }
+        private async void InGameButtonClicked(object sender, EventArgs e)
+        {
+            Button b = (Button)sender;
+
+            string file = b.AccessibleDescription;
+
+            if (file != string.Empty && File.Exists(file))
+            {
+                if (file.Contains("~/"))
+                {
+                    string[] dp = _File.Split(@"\");
+                    string directory = "";
+                    for (int j = 0; j < dp.Length; j++)
+                    {
+                        if (j < dp.Length - 1)
+                        {
+                            directory += dp[j] + @"\\";
+                        }
+                    }
+                    directory += file.Remove(0, 2);
+                    file = directory;
+                }
+                for (int j = 0; j < vars.Count; j++)
+                {
+                    if (vars[j].Name == file)
+                    {
+                        file = vars[j].value();
+                    }
+                }
+                string play = string.Empty;
+
+                try { play = File.ReadAllText(file); }
+                catch { console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true); }
+                try { await PlayAsync(play); }
+                catch { console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true); }
+            }
+            else
+            {
+                console.AddText("Could not find the file: " + file + " \n", true);
             }
         }
         private void SetFont(Control label, string name, int size, FontStyle style)
@@ -5512,6 +5935,7 @@ namespace ezCode
                 textboxes.Clear();
                 vars.Clear();
                 VarList.Clear();
+                Group.Clear();
                 console.AddText("Build Started" + Environment.NewLine, false);
                 await PlayAsync(txt.Text);
             }
@@ -5641,6 +6065,8 @@ namespace ezCode
         {
             console.SelectionStart = console.TextLength;
             console.ScrollToCaret();
+            Console2.SelectionStart = Console2.TextLength;
+            Console2.ScrollToCaret();
         }
         private void timer1_Tick(object sender, EventArgs e) //playing and stopping buttons
         {
@@ -5653,6 +6079,7 @@ namespace ezCode
                 stopToolStripMenuItem.Enabled = true;
                 txt.Enabled = false;
                 button2.Enabled = false;
+                Console2.Enabled = false;
             }
             else if (!playing && !debugging)
             {
@@ -5663,6 +6090,7 @@ namespace ezCode
                 playToolStripMenuItem.Enabled = true;
                 stopToolStripMenuItem.Enabled = false;
                 txt.Enabled = true;
+                Console2.Enabled = false;
             }
             else if (playing && debugging)
             {
@@ -5672,12 +6100,13 @@ namespace ezCode
                 debuggerEnabledToolStripMenuItem.Enabled = false;
                 playToolStripMenuItem.Enabled = false;
                 stopToolStripMenuItem.Enabled = false;
+                Console2.Enabled = true;
             }
             if (_File != "NOTHING")
             {
                 toolStripTextBox1.Text = _File;
             }
-            Console2.Text = Console2.Text;
+            Console2.Text = console.Text;
         }
         private void Form1_KeyDown(object sender, KeyEventArgs e) //keydown
         {
@@ -6106,47 +6535,6 @@ namespace ezCode
                 }
             }
         }
-        private async void InGameButtonClicked(object sender, EventArgs e)
-        {
-            Button b = (Button)sender;
-
-            string file = b.AccessibleDescription;
-
-            if (file != string.Empty && File.Exists(file))
-            {
-                if (file.Contains("~/"))
-                {
-                    string[] dp = _File.Split(@"\");
-                    string directory = "";
-                    for (int j = 0; j < dp.Length; j++)
-                    {
-                        if (j < dp.Length - 1)
-                        {
-                            directory += dp[j] + @"\\";
-                        }
-                    }
-                    directory += file.Remove(0, 2);
-                    file = directory;
-                }
-                for (int j = 0; j < vars.Count; j++)
-                {
-                    if (vars[j].Name == file)
-                    {
-                        file = vars[j].value();
-                    }
-                }
-                string play = string.Empty;
-
-                try { play = File.ReadAllText(file); }
-                catch { console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true); }
-                try { await PlayAsync(play); }
-                catch { console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true); }
-            }
-            else
-            {
-                console.AddText("Could not find the file: " + file + " \n", true);
-            }
-        }
         private void toolStripMenuItem3_Click(object sender, EventArgs e)
         {
             string filePath = "C:\\Users\\Public\\Temp\\ezcode\\autosave.txt";
@@ -6311,97 +6699,12 @@ Ctrl + Shift + C - Comment Selected";
             listBox1.Items.Clear();
             openfiles.Clear();
         }
-
         private void button3_Click(object sender, EventArgs e)
         {
             //New File
             NewFile filedi = new NewFile();
             filedi.ShowDialog();
             Open(filedi.file, filedi.safefile);
-        }
-        void Open(string file, string? safefile = "null")
-        {
-            try
-            {
-                if (saved)
-                {
-                    // The current document is saved, so open a new document
-                    if (file == "" || file == "NOTHING")
-                    {
-                        OpenFileDialog openFileDialog = new OpenFileDialog();
-                        openFileDialog.Filter = "ezCode Files (*.ezcode)|*.ezcode";
-                        openFileDialog.ShowDialog();
-                        file = openFileDialog.FileName;
-                        safefile = openFileDialog.SafeFileName;
-                    }
-
-                    StreamReader streamReader = new StreamReader(file);
-                    txt.Text = streamReader.ReadToEnd();
-                    streamReader.Close();
-
-                    _File = file;
-
-                    openfiles.Add(new Open_File(file, safefile));
-                    listBox1.Items.Add(safefile);
-
-                    saved = true;
-                }
-                else
-                {
-                    // The current document is not saved, so prompt the user to save their work
-                    DialogResult dr = MessageBox.Show("Your work has not been saved, do you want to save?", "Not Saved", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Information);
-                    if (dr == DialogResult.Yes)
-                    {
-                        // Save the user's work
-                        Save(false);
-
-                        // Open the new document
-                        if (file == "" || file == "NOTHING")
-                        {
-                            OpenFileDialog openFileDialog = new OpenFileDialog();
-                            openFileDialog.Filter = "ezCode Files (*.ezcode)|*.ezcode";
-                            openFileDialog.ShowDialog();
-                            file = openFileDialog.FileName;
-                            safefile = openFileDialog.SafeFileName;
-                        }
-
-                        StreamReader streamReader = new StreamReader(file);
-                        txt.Text = streamReader.ReadToEnd();
-                        streamReader.Close();
-
-                        openfiles.Add(new Open_File(file, safefile));
-                        listBox1.Items.Add(safefile);
-
-                        _File = file;
-                        saved = true;
-                    }
-                    else if (dr == DialogResult.No)
-                    {
-                        // Discard the user's changes and open the new document
-                        OpenFileDialog openFileDialog = new OpenFileDialog();
-                        openFileDialog.Filter = "ezCode Files (*.ezcode)|*.ezcode";
-                        openFileDialog.ShowDialog();
-
-                        StreamReader streamReader = new StreamReader(openFileDialog.FileName);
-                        txt.Text = streamReader.ReadToEnd();
-                        streamReader.Close();
-
-                        openfiles.Add(new Open_File(openFileDialog.SafeFileName, openFileDialog.FileName));
-                        listBox1.Items.Add(openFileDialog.SafeFileName);
-
-                        _File = openFileDialog.FileName;
-                        saved = true;
-                    }
-                    else //cancel
-                    {
-                        // Cancel the action, so the document is not opened
-                    }
-                }
-            }
-            catch
-            {
-                MessageBox.Show("Did not open a document");
-            }
         }
     }
     class Open_File

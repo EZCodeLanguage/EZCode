@@ -7,7 +7,7 @@ namespace EzCode_API
     using System.Data;
     using Variables;
     /// <summary>
-    /// API for Ezcode programming language
+    /// API for Ezcode programming language. Language version 1.9.12
     /// </summary>
     public static class API
     {
@@ -80,6 +80,10 @@ namespace EzCode_API
         /// List variable lists
         /// </summary>
         public static List<List<Var>> VarList = new List<List<Var>>();
+        /// <summary>
+        /// List of Groups
+        /// </summary>
+        public static List<Group> Group = new List<Group>();
 
         /// <summary>
         /// Current line that is being executed
@@ -137,6 +141,7 @@ namespace EzCode_API
                 textboxes.Clear();
                 vars.Clear();
                 VarList.Clear();
+                Group.Clear();
                 console.AddText("Build Started" + Environment.NewLine, false);
                 await PlayAsync(text);
             }
@@ -153,7 +158,7 @@ namespace EzCode_API
             bool hasEnded = false;
             int endl = 0;
             int stackNow = 0;
-            int stackBefore = 0;
+            bool iftrue = true;
 
             for (int w = 0; w < lines.Length; w++)
             {
@@ -162,7 +167,6 @@ namespace EzCode_API
                 string[] part = lines[w].Trim().Split(' ').ToArray();
                 if (part[0] == "loop")
                 {
-                    int stackTotal = 1;
                     hasEnded = false;
                     breaked = false;
                     // Get the number of times to loop
@@ -272,15 +276,31 @@ namespace EzCode_API
                 {
                     List<string> parts = line.Trim().Split(' ').ToList();
                     int i = 0;
+                    if (parts[0] == "endIf")
+                    {
+                        try
+                        {
+                            iftrue = true;
+                        }
+                        catch
+                        {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                            console.AddText("Their was an error in line " + codeLine + " \n", true);
+                            return;
+                        }
+                    }
+                    if (!iftrue) return;
                     if (parts[i] == "print")
                     {
                         try
                         {
                             string text = "";
+                            bool done = false;
                             for (int j = 1; j < parts.Count; j++)
                             {
-                                text += parts[j];
-                                if (j < parts.Count - 1) text += " ";
+                                if (parts[j].Contains("//")) done = true;
+                                text += !done ? parts[j] : string.Empty;
+                                if (j < parts.Count - 1 && !done) text += " ";
                             }
 
                             bool isVar = false;
@@ -398,6 +418,402 @@ namespace EzCode_API
                             return;
                         }
                     } // consoleClear
+                    else if (parts[i] == "group")
+                    {
+                        try
+                        {
+                            if (parts[2] == "add")
+                            {
+                                Group g = new Group("");
+                                bool found = false;
+                                for (int j = 0; j < Group.Count; j++)
+                                {
+                                    if (Group[j].Name == parts[1])
+                                    {
+                                        found = true;
+                                        g = Group[j];
+                                    }
+                                }
+                                if (!found)
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Could not find a group named '" + parts[1] + "' in 'Group' in line " + codeLine + " \n", true);
+                                    return;
+                                }
+                                string name = parts[4];
+                                bool er = true;
+                                if (parts[3] == "button")
+                                {
+                                    Button b = new Button();
+                                    for (int j = 0; j < buttons.Count; j++)
+                                    {
+                                        if (buttons[j].Name == name)
+                                        {
+                                            b = buttons[j];
+                                            b.AccessibleName = name;
+                                            er = false;
+                                        }
+                                    }
+                                    if (er)
+                                    {
+                                        int.Parse("error");
+                                    }
+                                    g.Buttons.Add(b);
+                                }
+                                else if (parts[3] == "label")
+                                {
+                                    Label b = new Label();
+                                    for (int j = 0; j < labels.Count; j++)
+                                    {
+                                        if (labels[j].Name == name)
+                                        {
+                                            b = labels[j];
+                                            b.AccessibleName = name;
+                                            er = false;
+                                        }
+                                    }
+                                    if (er)
+                                    {
+                                        int.Parse("error");
+                                    }
+                                    g.Labels.Add(b);
+                                }
+                                else if (parts[3] == "object")
+                                {
+                                    GObject b = new GObject(GObject.Type.Square);
+                                    for (int j = 0; j < gameObjects.Count; j++)
+                                    {
+                                        if (gameObjects[j].Name == name)
+                                        {
+                                            b = gameObjects[j];
+                                            b.AccessibleName = name;
+                                            er = false;
+                                        }
+                                    }
+                                    if (er)
+                                    {
+                                        int.Parse("error");
+                                    }
+                                    g.Objects.Add(b);
+                                }
+                                else if (parts[3] == "textbox")
+                                {
+                                    TextBox b = new TextBox();
+                                    for (int j = 0; j < textboxes.Count; j++)
+                                    {
+                                        if (textboxes[j].Name == name)
+                                        {
+                                            b = textboxes[j];
+                                            er = false;
+                                        }
+                                    }
+                                    if (er)
+                                    {
+                                        int.Parse("error");
+                                    }
+                                    g.Textboxes.Add(b);
+                                }
+                                else
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Expected the modifier 'button', 'label', 'textbox, or 'button' in 'Group' in line " + codeLine + " \n", true);
+                                    return;
+                                }
+                            }
+                            else if (parts[2] == "change")
+                            {
+                                Group g = new Group("");
+                                bool found = false;
+                                for (int j = 0; j < Group.Count; j++)
+                                {
+                                    if (Group[j].Name == parts[1])
+                                    {
+                                        found = true;
+                                        g = Group[j];
+                                    }
+                                }
+                                if (!found)
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Could not find a group named '" + parts[1] + "' in 'Group' in line " + codeLine + " \n", true);
+                                    return;
+                                }
+                                bool abs = false;
+                                bool rel = false;
+                                if (parts[3] == "relative" || parts[3] == "rel") rel = true;
+                                if (parts[3] == "absolute" || parts[3] == "abs") abs = true;
+                                if (!abs && !rel)
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Expected 'absoulute' or 'relative' in 'Group' in line " + codeLine + " \n", true);
+                                    return;
+                                }
+                                if (parts[4] == "move")
+                                {
+                                    int[] x = find_value(parts, 5, 0);
+                                    int[] y = find_value(parts, x[1], 0);
+                                    for (int j = 0; j < g.Buttons.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Buttons[j].Left = x[0];
+                                            g.Buttons[j].Top = y[0];
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Buttons[j].Left += x[0];
+                                            g.Buttons[j].Top += y[0];
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                    for (int j = 0; j < g.Objects.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Objects[j].Left = x[0];
+                                            g.Objects[j].Top = y[0];
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Objects[j].Left += x[0];
+                                            g.Objects[j].Top += y[0];
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                    for (int j = 0; j < g.Labels.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Labels[j].Left = x[0];
+                                            g.Labels[j].Top = y[0];
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Labels[j].Left += x[0];
+                                            g.Labels[j].Top += y[0];
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                    for (int j = 0; j < g.Textboxes.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Textboxes[j].Left = x[0];
+                                            g.Textboxes[j].Top = y[0];
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Textboxes[j].Left += x[0];
+                                            g.Textboxes[j].Top += y[0];
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                }
+                                else if (parts[4] == "scale")
+                                {
+                                    int[] x = find_value(parts, 5, 0);
+                                    int[] y = find_value(parts, x[1], 0);
+                                    for (int j = 0; j < g.Buttons.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Buttons[j].Width = x[0];
+                                            g.Buttons[j].Height = y[0];
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Buttons[j].Width += x[0];
+                                            g.Buttons[j].Height += y[0];
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                    for (int j = 0; j < g.Objects.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Objects[j].Width = x[0];
+                                            g.Objects[j].Height = y[0];
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Objects[j].Width += x[0];
+                                            g.Objects[j].Height += y[0];
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                    for (int j = 0; j < g.Labels.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Labels[j].Width = x[0];
+                                            g.Labels[j].Height = y[0];
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Labels[j].Width += x[0];
+                                            g.Labels[j].Height += y[0];
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                    for (int j = 0; j < g.Textboxes.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            g.Textboxes[j].Width = x[0];
+                                            g.Textboxes[j].Height = y[0];
+                                        }
+                                        else if (rel)
+                                        {
+                                            g.Textboxes[j].Width += x[0];
+                                            g.Textboxes[j].Height += y[0];
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                    }
+                                }
+                                else if (parts[4] == "color")
+                                {
+                                    int r = 0;
+                                    int g_ = 0;
+                                    int b = 0;
+                                    int[] __r = find_value(parts, 5, 0);
+                                    int[] __g = find_value(parts, __r[1], 0);
+                                    int[] __b = find_value(parts, __g[1], 0);
+                                    for (int j = 0; j < g.Buttons.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            r = __r[0];
+                                            g_ = __g[0];
+                                            b = __b[0];
+                                        }
+                                        else if (rel)
+                                        {
+                                            r = __r[0] + g.Buttons[j].BackColor.R;
+                                            g_ = __g[0] + g.Buttons[j].BackColor.G;
+                                            b = __b[0] + g.Buttons[j].BackColor.B;
+                                            if (r > 255) r = 255;
+                                            if (g_ > 255) g_ = 255;
+                                            if (b > 255) b = 255;
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                        g.Buttons[j].BackColor = Color.FromArgb(r, g_, b);
+                                    }
+                                    for (int j = 0; j < g.Objects.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            r = __r[0];
+                                            g_ = __g[0];
+                                            b = __b[0];
+                                        }
+                                        else if (rel)
+                                        {
+                                            r = __r[0] + g.Objects[j].BackColor.R;
+                                            g_ = __g[0] + g.Objects[j].BackColor.G;
+                                            b = __b[0] + g.Objects[j].BackColor.B;
+                                            if (r > 255) r = 255;
+                                            if (g_ > 255) g_ = 255;
+                                            if (b > 255) b = 255;
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                        g.Objects[j].BackColor = Color.FromArgb(r, g_, b);
+                                    }
+                                    for (int j = 0; j < g.Labels.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            r = __r[0];
+                                            g_ = __g[0];
+                                            b = __b[0];
+                                        }
+                                        else if (rel)
+                                        {
+                                            r = __r[0] + g.Labels[j].ForeColor.R;
+                                            g_ = __g[0] + g.Labels[j].ForeColor.G;
+                                            b = __b[0] + g.Labels[j].ForeColor.B;
+                                            if (r > 255) r = 255;
+                                            if (g_ > 255) g_ = 255;
+                                            if (b > 255) b = 255;
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                        g.Labels[j].ForeColor = Color.FromArgb(r, g_, b);
+                                    }
+                                    for (int j = 0; j < g.Textboxes.Count; j++)
+                                    {
+                                        if (abs)
+                                        {
+                                            r = __r[0];
+                                            g_ = __g[0];
+                                            b = __b[0];
+                                        }
+                                        else if (rel)
+                                        {
+                                            r = __r[0] + g.Textboxes[j].ForeColor.R;
+                                            g_ = __g[0] + g.Textboxes[j].ForeColor.G;
+                                            b = __b[0] + g.Textboxes[j].ForeColor.B;
+                                            if (r > 255) r = 255;
+                                            if (g_ > 255) g_ = 255;
+                                            if (b > 255) b = 255;
+                                        }
+                                        else
+                                        {
+                                            int thisisanerror = int.Parse("error");
+                                        }
+                                        g.Textboxes[j].ForeColor = Color.FromArgb(r, g_, b);
+                                    }
+                                }
+                            }
+                            else if (parts[1] == "new")
+                            {
+                                Group.Add(new Group(parts[2]));
+                            }
+                            else
+                            {
+                                if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                console.AddText("Expected 'new', 'change', or 'add' in 'Group' in line " + codeLine + " \n", true);
+                                return;
+                            }
+                        }
+                        catch
+                        {
+                            if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                            console.AddText("Their was an error with 'Group' in line " + codeLine + " \n", true);
+                            return;
+                        }
+                    } // group groupName add mid name |or| group new name |or| group groupName change abs/rel mid v1 v2 v3
                     else if (parts[i] == "write")
                     {
                         try
@@ -591,27 +1007,57 @@ namespace EzCode_API
                         try
                         {
                             string name = parts[i + 1];
-                            string text = parts[i + 2];
-
-                            text = text.Replace(@"\n", Environment.NewLine);
-                            text = text.Replace(@"\_", " ");
-                            text = text.Replace(@"\!", string.Empty);
-
-                            for (int j = 0; j < vars.Count; j++)
-                            {
-                                if (vars[j].Name == text)
-                                {
-                                    text = vars[j].value();
-                                }
-                            }
 
                             Button b = new Button();
                             b.Left = 0;
                             b.Top = 0;
                             b.Name = name;
-                            b.Text = text;
                             b.FlatStyle = FlatStyle.Flat;
                             b.FlatAppearance.BorderSize = 1;
+
+                            try
+                            {
+                                if (parts.Count > 2)
+                                {
+                                    string text = parts[2];
+
+                                    text = text.Replace(@"\n", Environment.NewLine);
+                                    text = text.Replace(@"\_", " ");
+                                    text = text.Replace(@"\!", string.Empty);
+
+                                    for (int j = 0; j < vars.Count; j++)
+                                    {
+                                        if (vars[j].Name == text)
+                                        {
+                                            text = vars[j].value();
+                                        }
+                                    }
+                                    b.Text = text;
+                                }
+                                int[] v = find_value(parts, 3, 0);
+                                int x = v[0];
+                                int[] v1 = find_value(parts, v[1], 0);
+                                int y = v1[0];
+                                int[] v2 = find_value(parts, v1[1], 100);
+                                int scaleX = v2[0];
+                                int[] v3 = find_value(parts, v2[1], 25);
+                                int scaleY = v3[0];
+                                int[] v4 = find_value(parts, v3[1], 211);
+                                int r = v4[0];
+                                int[] v5 = find_value(parts, v4[1], 211);
+                                int g = v5[0];
+                                int[] v6 = find_value(parts, v5[1], 211);
+                                int _b = v6[0];
+                                b.Left = x;
+                                b.Top = y;
+                                b.Width = scaleX;
+                                b.Height = scaleY;
+                                b.BackColor = Color.FromArgb(r, g, _b);
+                            }
+                            catch
+                            {
+                                int.Parse("error");
+                            }
 
                             Space.Controls.Add(b);
                             buttons.Add(b);
@@ -703,25 +1149,75 @@ namespace EzCode_API
                         try
                         {
                             string name = parts[i + 1];
-                            string text = parts[i + 2];
-
-                            text = text.Replace(@"\n", Environment.NewLine);
-                            text = text.Replace(@"\_", " ");
-                            text = text.Replace(@"\!", string.Empty);
-
-                            for (int j = 0; j < vars.Count; j++)
-                            {
-                                if (vars[j].Name == text)
-                                {
-                                    text = vars[j].value();
-                                }
-                            }
 
                             TextBox tb = new TextBox();
                             tb.Left = 0;
                             tb.Top = 0;
                             tb.Name = name;
-                            tb.Text = text;
+
+                            try
+                            {
+                                if (parts.Count > 2)
+                                {
+                                    string text = parts[2];
+
+                                    text = text.Replace(@"\n", Environment.NewLine);
+                                    text = text.Replace(@"\_", " ");
+                                    text = text.Replace(@"\!", string.Empty);
+
+                                    for (int j = 0; j < vars.Count; j++)
+                                    {
+                                        if (vars[j].Name == text)
+                                        {
+                                            text = vars[j].value();
+                                        }
+                                    }
+                                    tb.Text = text;
+                                }
+                                int[] v = find_value(parts, 3, 0);
+                                int x = v[0];
+                                int[] v1 = find_value(parts, v[1], 0);
+                                int y = v1[0];
+                                int[] v2 = find_value(parts, v1[1], 100);
+                                int scaleX = v2[0];
+                                int[] v3 = find_value(parts, v2[1], 25);
+                                int scaleY = v3[0];
+                                int[] v4 = find_value(parts, v3[1], 0);
+                                int r = v4[0];
+                                int[] v5 = find_value(parts, v4[1], 0);
+                                int g = v5[0];
+                                int[] v6 = find_value(parts, v5[1], 0);
+                                int _b = v6[0];
+                                if (parts.Count - 1 >= v6[1])
+                                {
+                                    string t = parts[v6[1]];
+
+                                    for (int j = 0; j < vars.Count; j++)
+                                    {
+                                        if (vars[j].Name == t)
+                                        {
+                                            t = vars[j].value();
+                                        }
+                                    }
+                                    if (t == "yes" || t == "Yes" || t == "1" || t == "true" || t == "True")
+                                    {
+                                        tb.Multiline = true;
+                                    }
+                                    if (t == "no" || t == "No" || t == "0" || t == "false" || t == "False")
+                                    {
+                                        tb.Multiline = false;
+                                    }
+                                }
+                                tb.Left = x;
+                                tb.Top = y;
+                                tb.Width = scaleX;
+                                tb.Height = scaleY;
+                                tb.ForeColor = Color.FromArgb(r, g, _b);
+                            }
+                            catch
+                            {
+                                int.Parse("error");
+                            }
 
                             Space.Controls.Add(tb);
                             textboxes.Add(tb);
@@ -843,12 +1339,34 @@ namespace EzCode_API
                             else if (points == 4) go = new GObject(GObject.Type.Square);
                             else go = new GObject(GObject.Type.Polygon, points);
 
-                            go.Left = 0;
-                            go.Top = 0;
-                            go.Width = 50;
-                            go.Height = 50;
+                            try
+                            {
+                                int[] v = find_value(parts, 3, 0);
+                                int x = v[0];
+                                int[] v1 = find_value(parts, v[1], 0);
+                                int y = v1[0];
+                                int[] v2 = find_value(parts, v1[1], 50);
+                                int scaleX = v2[0];
+                                int[] v3 = find_value(parts, v2[1], 50);
+                                int scaleY = v3[0];
+                                int[] v4 = find_value(parts, v3[1], 0);
+                                int r = v4[0];
+                                int[] v5 = find_value(parts, v4[1], 0);
+                                int g = v5[0];
+                                int[] v6 = find_value(parts, v5[1], 0);
+                                int _b = v6[0];
+                                go.Left = x;
+                                go.Top = y;
+                                go.Width = scaleX;
+                                go.Height = scaleY;
+                                go.BackColor = Color.FromArgb(r, g, _b);
+                            }
+                            catch
+                            {
+                                int.Parse("error");
+                            }
+
                             go.Name = name;
-                            go.BackColor = Color.Black;
 
                             Space.Controls.Add(go);
                             gameObjects.Add(go);
@@ -859,7 +1377,7 @@ namespace EzCode_API
                             console.AddText("Their was an error with 'object' in line " + codeLine + " \n", true);
                             return;
                         }
-                    } // object name x
+                    } // object name sides
                     else if (parts[i] == "image")
                     {
                         try
@@ -960,6 +1478,44 @@ namespace EzCode_API
                             label.Name = name;
                             label.Text = name;
 
+                            try
+                            {
+                                if (parts.Count > 2)
+                                {
+                                    string text = parts[2];
+
+                                    text = text.Replace(@"\n", Environment.NewLine);
+                                    text = text.Replace(@"\_", " ");
+                                    text = text.Replace(@"\!", string.Empty);
+
+                                    for (int j = 0; j < vars.Count; j++)
+                                    {
+                                        if (vars[j].Name == text)
+                                        {
+                                            text = vars[j].value();
+                                        }
+                                    }
+                                    label.Text = text;
+                                }
+                                int[] v = find_value(parts, 3, 0);
+                                int x = v[0];
+                                int[] v1 = find_value(parts, v[1], 0);
+                                int y = v1[0];
+                                int[] v2 = find_value(parts, v1[1], 0);
+                                int r = v2[0];
+                                int[] v3 = find_value(parts, v2[1], 0);
+                                int g = v3[0];
+                                int[] v4 = find_value(parts, v3[1], 0);
+                                int b = v4[0];
+                                label.Left = x;
+                                label.Top = y;
+                                label.ForeColor = Color.FromArgb(r, g, b);
+                            }
+                            catch
+                            {
+                                int.Parse("error");
+                            }
+
                             Space.Controls.Add(label);
                             labels.Add(label);
                         }
@@ -969,7 +1525,7 @@ namespace EzCode_API
                             console.AddText("Their was an error with 'label' in line " + codeLine + " \n", true);
                             return;
                         }
-                    } // label name
+                    } // label name 
                     else if (parts[i] == "font")
                     {
                         try
@@ -3985,7 +4541,52 @@ namespace EzCode_API
                                 {
                                     upcode += textsA[j] + " ";
                                 }
-                                await PlayAsync(upcode);
+                                if (upcode != string.Empty) await PlayAsync(upcode);
+                                else
+                                {
+                                    bool aa = false;
+                                    for (int z = lines.ToList().IndexOf(line) + 1; z < lines.Length; z++)
+                                    {
+                                        if (lines[z] == "endIf")
+                                        {
+                                            aa = true;
+                                        }
+                                    }
+                                    if (!aa)
+                                    {
+                                        iftrue = false;
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Their is no 'endIf' for the if statement in line " + codeLine + " \n", true);
+                                        return;
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                string upcode = string.Empty;
+                                for (int j = endindex + 2; j < textsA.Count; j++)
+                                {
+                                    upcode += textsA[j] + " ";
+                                }
+                                if (upcode == string.Empty)
+                                {
+                                    iftrue = false;
+                                }
+                                bool aa = false;
+                                for (int z = lines.ToList().IndexOf(line) + 1; z < lines.Length; z++)
+                                {
+                                    if (lines[z].Trim() == "endIf")
+                                    {
+                                        aa = true;
+                                    }
+                                }
+                                if (!aa)
+                                {
+                                    iftrue = false;
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Their is no 'endIf' for the if statement in line " + codeLine + " \n", true);
+                                    return;
+                                }
                             }
                         }
                         catch
@@ -4067,7 +4668,7 @@ namespace EzCode_API
                     }// # create error errorText
                     else
                     {
-                        if (parts[i] == "#" || parts[i] == "#create" || parts[i] == "#suppress")
+                        if (parts[i] == "#" || parts[i] == "#create" || parts[i] == "#suppress" || parts[i] == "endIf")
                         {
                             return;
                         }
@@ -4456,6 +5057,91 @@ namespace EzCode_API
 
                                 if (!var.isNumber())
                                 {
+                                    string text = "";
+                                    bool done = false;
+                                    for (int j = 2; j < parts.Count; j++)
+                                    {
+                                        if (parts[j].Contains("//")) done = true;
+                                        text += !done ? parts[j] : string.Empty;
+                                        if (j < parts.Count - 1 && !done) text += " ";
+                                    }
+
+                                    bool isVar = false;
+                                    string val = text;
+                                    List<string> texts = text.Split(" ").ToList();
+                                    int ended = 0;
+                                    string brackets = "";
+                                    int started = 0;
+                                    int count = 0;
+
+                                    for (int j = 0; j < texts.Count; j++)
+                                    {
+                                        for (int k = 0; k < vars.Count; k++)
+                                        {
+                                            if (vars[k].Name == texts[j])
+                                            {
+                                                isVar = true;
+                                                texts[j] = vars[k].value();
+                                            }
+                                        }
+                                        if (texts[j].StartsWith(@"\("))
+                                        {
+                                            ended = 1;
+                                            count = 1;
+                                            started = j;
+                                            for (int l = j; l < texts.Count; l++)
+                                            {
+                                                if (ended == 1)
+                                                {
+                                                    count++;
+                                                    brackets += texts[l];
+                                                    if (l < texts.Count - 1) brackets += " ";
+                                                }
+                                                if (texts[l].EndsWith(@")\"))
+                                                {
+                                                    ended = 2;
+                                                }
+                                            }
+                                        }
+                                    }
+                                    if (ended != 0)
+                                    {
+                                        string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                                        string result = SolveEquation(equation);
+                                        texts[started] = result;
+
+                                        int endIndex = started + count;
+                                        if (endIndex < texts.Count)
+                                        {
+                                            texts.RemoveRange(started + 1, count - 2);
+                                        }
+                                        else
+                                        {
+                                            texts.RemoveRange(started + 1, texts.Count - (started + 1));
+                                        }
+                                    }
+                                    text = "";
+                                    for (int j = 0; j < texts.Count; j++)
+                                    {
+                                        text += texts[j];
+                                        if (j < texts.Count - 1) text += " ";
+                                    }
+                                    val = text;
+
+                                    if (!isVar)
+                                    {
+                                        val = val.Replace(@"\n", Environment.NewLine);
+                                        val = val.Replace(@"\_", " ");
+                                        val = val.Replace(@"\!", string.Empty);
+
+                                        value = val;
+                                        return;
+                                    }
+                                    else
+                                    {
+                                        value = text;
+                                    }
+
                                     var.stringChange(value, mid);
 
                                     if (!var.isSet)
@@ -4635,7 +5321,66 @@ namespace EzCode_API
 
             return value;
         }
-        static  string SolveEquation(string equation)
+        static int[] getEquationWithNext(string value, int a, List<string> parts)
+        {
+            string brackets = "";
+            int ended = 0;
+            int next = 0;
+            List<string> texts = new List<string>();
+            for (int l = a; l < parts.Count; l++)
+            {
+                texts.Add(parts[l]);
+            }
+            if (value.StartsWith(@"("))
+            {
+                ended = 1;
+                for (int l = 0; l < texts.Count; l++)
+                {
+                    if (ended == 1)
+                    {
+                        brackets += texts[l];
+                        if (l < texts.Count - 1) brackets += " ";
+                    }
+                    if (texts[l].EndsWith(@")"))
+                    {
+                        ended = 2;
+                        if (next == 0) next = l;
+                    }
+                }
+            }
+            if (ended != 0)
+            {
+                string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
+                string result = SolveEquation(equation);
+                value = result;
+            }
+            else if (ended == 1)
+            {
+                console.AddText("Syntax error in line " + codeLine + ". Expected ')' to end equation \n", true);
+            }
+
+            return new int[] { int.Parse(value), next };
+        }
+        static int[] find_value(List<string> parts, int next, int def)
+        {
+            int v = def;
+            if (parts.Count - 1 >= next)
+            {
+                try
+                {
+                    v = int.Parse(parts[next]);
+                    next++;
+                }
+                catch
+                {
+                    int[] result = getEquationWithNext(parts[next], next, parts);
+                    v = result[0];
+                    next += result[1] + 1;
+                }
+            }
+            return new int[] { v, next };
+        }
+        static string SolveEquation(string equation)
         {
             try
             {
@@ -4655,6 +5400,52 @@ namespace EzCode_API
             catch
             {
                 return "Error: Unable to solve the equation.";
+            }
+        }
+        private static void SetFont(Control label, string name, int size, FontStyle style)
+        {
+            Font replacementFont = new Font(name, size, style);
+            label.Font = replacementFont;
+        }
+        private static async void InGameButtonClicked(object sender, EventArgs e)
+        {
+            Button b = (Button)sender;
+
+            string file = b.AccessibleDescription;
+
+            if (file != string.Empty && File.Exists(file))
+            {
+                if (file.Contains("~/"))
+                {
+                    string[] dp = ScriptDirectory.Split(@"\");
+                    string directory = "";
+                    for (int j = 0; j < dp.Length; j++)
+                    {
+                        if (j < dp.Length - 1)
+                        {
+                            directory += dp[j] + @"\\";
+                        }
+                    }
+                    directory += file.Remove(0, 2);
+                    file = directory;
+                }
+                for (int j = 0; j < vars.Count; j++)
+                {
+                    if (vars[j].Name == file)
+                    {
+                        file = vars[j].value();
+                    }
+                }
+                string play = string.Empty;
+
+                try { play = File.ReadAllText(file); }
+                catch { console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true); }
+                try { await PlayAsync(play); }
+                catch { console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true); }
+            }
+            else
+            {
+                console.AddText("Could not find the file: " + file + " \n", true);
             }
         }
         /// <summary>
@@ -4705,51 +5496,21 @@ namespace EzCode_API
             playing = false;
             console.AddText("Build Stopped" + Environment.NewLine, false);
         }
-        private static void SetFont(Control label, string name, int size, FontStyle style)
+    }
+    public class Group
+    {
+        public List<Button> Buttons = new List<Button>();
+        public List<Label> Labels = new List<Label>();
+        public List<GObject> Objects = new List<GObject>();
+        public List<TextBox> Textboxes = new List<TextBox>();
+        public string Name { get; set; }
+        public int X { get; set; }
+        public int Y { get; set; }
+        public int scaleX { get; set; }
+        public int scaleY { get; set; }
+        public Group(string name)
         {
-            Font replacementFont = new Font(name, size, style);
-            label.Font = replacementFont;
-        }
-        private static async void InGameButtonClicked(object sender, EventArgs e)
-        {
-            Button b = (Button)sender;
-
-            string file = b.AccessibleDescription;
-
-            if (file != string.Empty && File.Exists(file))
-            {
-                if (file.Contains("~/"))
-                {
-                    string[] dp = ScriptDirectory.Split(@"\");
-                    string directory = "";
-                    for (int j = 0; j < dp.Length; j++)
-                    {
-                        if (j < dp.Length - 1)
-                        {
-                            directory += dp[j] + @"\\";
-                        }
-                    }
-                    directory += file.Remove(0, 2);
-                    file = directory;
-                }
-                for (int j = 0; j < vars.Count; j++)
-                {
-                    if (vars[j].Name == file)
-                    {
-                        file = vars[j].value();
-                    }
-                }
-                string play = string.Empty;
-
-                try { play = File.ReadAllText(file); }
-                catch { console.AddText("could not find a file in the path " + file + " in line " + codeLine + Environment.NewLine, true); }
-                try { await PlayAsync(play); }
-                catch { console.AddText("Their was an error in reading the file " + file + " in line " + codeLine + Environment.NewLine, true); }
-            }
-            else
-            {
-                console.AddText("Could not find the file: " + file + " \n", true);
-            }
+            Name = name;
         }
     }
     public static class ControlExtensions
