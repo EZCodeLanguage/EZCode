@@ -168,7 +168,7 @@
         '\''};
             this.txt.AutoIndentCharsPatterns = "\r\n^\\s*[\\w\\.]+(\\s\\w+)?\\s*(?<range>=)\\s*(?<range>[^;]+);\r\n^\\s*(case|default)\\s*[^:]" +
     "*(?<range>:)\\s*(?<range>[^;]+);\r\n";
-            this.txt.AutoScrollMinSize = new System.Drawing.Size(2, 18);
+            this.txt.AutoScrollMinSize = new System.Drawing.Size(29, 18);
             this.txt.BackBrush = null;
             this.txt.BackColor = System.Drawing.Color.FromArgb(((int)(((byte)(40)))), ((int)(((byte)(40)))), ((int)(((byte)(40)))));
             this.txt.BracketsHighlightStrategy = FastColoredTextBoxNS.BracketsHighlightStrategy.Strategy2;
@@ -418,7 +418,7 @@
             // 
             this.debuggerEnabledToolStripMenuItem.Name = "debuggerEnabledToolStripMenuItem";
             this.debuggerEnabledToolStripMenuItem.ShortcutKeyDisplayString = "F10";
-            this.debuggerEnabledToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.debuggerEnabledToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.debuggerEnabledToolStripMenuItem.Text = "Debug";
             this.debuggerEnabledToolStripMenuItem.Click += new System.EventHandler(this.debuggerEnabledToolStripMenuItem_Click);
             // 
@@ -426,7 +426,7 @@
             // 
             this.quitDebuggerToolStripMenuItem.Name = "quitDebuggerToolStripMenuItem";
             this.quitDebuggerToolStripMenuItem.ShortcutKeyDisplayString = "F12";
-            this.quitDebuggerToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.quitDebuggerToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.quitDebuggerToolStripMenuItem.Text = "Quit Debugger";
             this.quitDebuggerToolStripMenuItem.Click += new System.EventHandler(this.quitDebuggerToolStripMenuItem_Click);
             // 
@@ -434,7 +434,7 @@
             // 
             this.nextLineToolStripMenuItem.Name = "nextLineToolStripMenuItem";
             this.nextLineToolStripMenuItem.ShortcutKeyDisplayString = "F11";
-            this.nextLineToolStripMenuItem.Size = new System.Drawing.Size(177, 22);
+            this.nextLineToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.nextLineToolStripMenuItem.Text = "Next Line";
             this.nextLineToolStripMenuItem.Click += new System.EventHandler(this.nextLineToolStripMenuItem_Click);
             // 
@@ -492,21 +492,21 @@
             // toolStripMenuItem10
             // 
             this.toolStripMenuItem10.Name = "toolStripMenuItem10";
-            this.toolStripMenuItem10.Size = new System.Drawing.Size(160, 22);
+            this.toolStripMenuItem10.Size = new System.Drawing.Size(180, 22);
             this.toolStripMenuItem10.Text = "View Docs";
             this.toolStripMenuItem10.Click += new System.EventHandler(this.viewDocsToolStripMenuItem_Click);
             // 
             // viewDocsToolStripMenuItem
             // 
             this.viewDocsToolStripMenuItem.Name = "viewDocsToolStripMenuItem";
-            this.viewDocsToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.viewDocsToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.viewDocsToolStripMenuItem.Text = "View Tutorials";
             this.viewDocsToolStripMenuItem.Click += new System.EventHandler(this.viewDocsToolStripMenuItem_Click_1);
             // 
             // viewAllHotKeysToolStripMenuItem
             // 
             this.viewAllHotKeysToolStripMenuItem.Name = "viewAllHotKeysToolStripMenuItem";
-            this.viewAllHotKeysToolStripMenuItem.Size = new System.Drawing.Size(160, 22);
+            this.viewAllHotKeysToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
             this.viewAllHotKeysToolStripMenuItem.Text = "View HotKeys";
             this.viewAllHotKeysToolStripMenuItem.Click += new System.EventHandler(this.viewAllHotKeysToolStripMenuItem_Click);
             // 
@@ -515,14 +515,14 @@
             this.toolStripTextBox3.Name = "toolStripTextBox3";
             this.toolStripTextBox3.ReadOnly = true;
             this.toolStripTextBox3.Size = new System.Drawing.Size(100, 23);
-            this.toolStripTextBox3.Text = "Editor 1.1.4";
+            this.toolStripTextBox3.Text = "Editor 1.2.1";
             // 
             // toolStripTextBox2
             // 
             this.toolStripTextBox2.Name = "toolStripTextBox2";
             this.toolStripTextBox2.ReadOnly = true;
             this.toolStripTextBox2.Size = new System.Drawing.Size(100, 23);
-            this.toolStripTextBox2.Text = "EzCode 1.9.12";
+            this.toolStripTextBox2.Text = "EzCode 1.11.5";
             // 
             // toolStripTextBox1
             // 
@@ -692,6 +692,7 @@
             this.listBox2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
+            this.listBox2.ColumnWidth = 225;
             this.listBox2.Font = new System.Drawing.Font("Segoe UI Semibold", 9.75F, System.Drawing.FontStyle.Bold, System.Drawing.GraphicsUnit.Point);
             this.listBox2.FormattingEnabled = true;
             this.listBox2.HorizontalScrollbar = true;

@@ -28,222 +28,239 @@
         /// </summary>
         private void InitializeComponent()
         {
-            components = new System.ComponentModel.Container();
+            this.components = new System.ComponentModel.Container();
             System.ComponentModel.ComponentResourceManager resources = new System.ComponentModel.ComponentResourceManager(typeof(Form1));
-            Space = new Panel();
-            toolStrip1 = new ToolStrip();
-            toolStripDropDownButton1 = new ToolStripDropDownButton();
-            openToolStripMenuItem = new ToolStripMenuItem();
-            exitToolStripMenuItem = new ToolStripMenuItem();
-            toolStripDropDownButton3 = new ToolStripDropDownButton();
-            playToolStripMenuItem = new ToolStripMenuItem();
-            stopToolStripMenuItem = new ToolStripMenuItem();
-            toolStripDropDownButton2 = new ToolStripDropDownButton();
-            toolStripTextBox4 = new ToolStripTextBox();
-            toolStripTextBox3 = new ToolStripTextBox();
-            toolStripLabel1 = new ToolStripLabel();
-            splitContainer2 = new SplitContainer();
-            Send = new Button();
-            ConsoleSend = new TextBox();
-            console = new RichTextBox();
-            timer1 = new System.Windows.Forms.Timer(components);
-            toolStrip1.SuspendLayout();
-            ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
-            splitContainer2.Panel1.SuspendLayout();
-            splitContainer2.Panel2.SuspendLayout();
-            splitContainer2.SuspendLayout();
-            SuspendLayout();
+            this.Space = new System.Windows.Forms.Panel();
+            this.toolStrip1 = new System.Windows.Forms.ToolStrip();
+            this.toolStripDropDownButton1 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.openToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.exitToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripDropDownButton3 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.playToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.stopToolStripMenuItem = new System.Windows.Forms.ToolStripMenuItem();
+            this.toolStripDropDownButton2 = new System.Windows.Forms.ToolStripDropDownButton();
+            this.toolStripTextBox4 = new System.Windows.Forms.ToolStripTextBox();
+            this.toolStripTextBox3 = new System.Windows.Forms.ToolStripTextBox();
+            this.toolStripLabel1 = new System.Windows.Forms.ToolStripLabel();
+            this.splitContainer2 = new System.Windows.Forms.SplitContainer();
+            this.Send = new System.Windows.Forms.Button();
+            this.ConsoleSend = new System.Windows.Forms.TextBox();
+            this.console = new System.Windows.Forms.RichTextBox();
+            this.timer1 = new System.Windows.Forms.Timer(this.components);
+            this.toolStrip1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).BeginInit();
+            this.splitContainer2.Panel1.SuspendLayout();
+            this.splitContainer2.Panel2.SuspendLayout();
+            this.splitContainer2.SuspendLayout();
+            this.SuspendLayout();
             // 
             // Space
             // 
-            Space.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            Space.BackColor = Color.DarkGray;
-            Space.Location = new Point(1, 2);
-            Space.Name = "Space";
-            Space.Size = new Size(1158, 515);
-            Space.TabIndex = 0;
-            Space.MouseClick += Space_MouseClick;
+            this.Space.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.Space.BackColor = System.Drawing.Color.DarkGray;
+            this.Space.Location = new System.Drawing.Point(1, 2);
+            this.Space.Name = "Space";
+            this.Space.Size = new System.Drawing.Size(1158, 515);
+            this.Space.TabIndex = 0;
+            this.Space.MouseDown += new System.Windows.Forms.MouseEventHandler(this.Space_MouseClick);
             // 
             // toolStrip1
             // 
-            toolStrip1.BackColor = Color.Gray;
-            toolStrip1.GripStyle = ToolStripGripStyle.Hidden;
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripDropDownButton1, toolStripDropDownButton3, toolStripDropDownButton2, toolStripLabel1 });
-            toolStrip1.Location = new Point(0, 0);
-            toolStrip1.Name = "toolStrip1";
-            toolStrip1.Size = new Size(1161, 25);
-            toolStrip1.TabIndex = 1;
-            toolStrip1.Text = "toolStrip1";
+            this.toolStrip1.BackColor = System.Drawing.Color.Gray;
+            this.toolStrip1.GripStyle = System.Windows.Forms.ToolStripGripStyle.Hidden;
+            this.toolStrip1.Items.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripDropDownButton1,
+            this.toolStripDropDownButton3,
+            this.toolStripDropDownButton2,
+            this.toolStripLabel1});
+            this.toolStrip1.Location = new System.Drawing.Point(0, 0);
+            this.toolStrip1.Name = "toolStrip1";
+            this.toolStrip1.Size = new System.Drawing.Size(1161, 25);
+            this.toolStrip1.TabIndex = 1;
+            this.toolStrip1.Text = "toolStrip1";
             // 
             // toolStripDropDownButton1
             // 
-            toolStripDropDownButton1.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton1.DropDownItems.AddRange(new ToolStripItem[] { openToolStripMenuItem, exitToolStripMenuItem });
-            toolStripDropDownButton1.Image = (Image)resources.GetObject("toolStripDropDownButton1.Image");
-            toolStripDropDownButton1.ImageTransparentColor = Color.Magenta;
-            toolStripDropDownButton1.Name = "toolStripDropDownButton1";
-            toolStripDropDownButton1.Size = new Size(38, 22);
-            toolStripDropDownButton1.Text = "File";
+            this.toolStripDropDownButton1.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton1.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.openToolStripMenuItem,
+            this.exitToolStripMenuItem});
+            this.toolStripDropDownButton1.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton1.Image")));
+            this.toolStripDropDownButton1.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton1.Name = "toolStripDropDownButton1";
+            this.toolStripDropDownButton1.Size = new System.Drawing.Size(38, 22);
+            this.toolStripDropDownButton1.Text = "File";
             // 
             // openToolStripMenuItem
             // 
-            openToolStripMenuItem.Name = "openToolStripMenuItem";
-            openToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl + O";
-            openToolStripMenuItem.Size = new Size(152, 22);
-            openToolStripMenuItem.Text = "Open";
-            openToolStripMenuItem.Click += openToolStripMenuItem_Click;
+            this.openToolStripMenuItem.Name = "openToolStripMenuItem";
+            this.openToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl + O";
+            this.openToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.openToolStripMenuItem.Text = "Open";
+            this.openToolStripMenuItem.Click += new System.EventHandler(this.openToolStripMenuItem_Click);
             // 
             // exitToolStripMenuItem
             // 
-            exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.Size = new Size(152, 22);
-            exitToolStripMenuItem.Text = "Exit";
-            exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
+            this.exitToolStripMenuItem.Name = "exitToolStripMenuItem";
+            this.exitToolStripMenuItem.Size = new System.Drawing.Size(152, 22);
+            this.exitToolStripMenuItem.Text = "Exit";
+            this.exitToolStripMenuItem.Click += new System.EventHandler(this.exitToolStripMenuItem_Click);
             // 
             // toolStripDropDownButton3
             // 
-            toolStripDropDownButton3.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton3.DropDownItems.AddRange(new ToolStripItem[] { playToolStripMenuItem, stopToolStripMenuItem });
-            toolStripDropDownButton3.Image = (Image)resources.GetObject("toolStripDropDownButton3.Image");
-            toolStripDropDownButton3.ImageTransparentColor = Color.Magenta;
-            toolStripDropDownButton3.Name = "toolStripDropDownButton3";
-            toolStripDropDownButton3.Size = new Size(47, 22);
-            toolStripDropDownButton3.Text = "Build";
+            this.toolStripDropDownButton3.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton3.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.playToolStripMenuItem,
+            this.stopToolStripMenuItem});
+            this.toolStripDropDownButton3.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton3.Image")));
+            this.toolStripDropDownButton3.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton3.Name = "toolStripDropDownButton3";
+            this.toolStripDropDownButton3.Size = new System.Drawing.Size(47, 22);
+            this.toolStripDropDownButton3.Text = "Build";
             // 
             // playToolStripMenuItem
             // 
-            playToolStripMenuItem.Name = "playToolStripMenuItem";
-            playToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl + P";
-            playToolStripMenuItem.Size = new Size(147, 22);
-            playToolStripMenuItem.Text = "Play";
-            playToolStripMenuItem.Click += toolStripButton1_Click;
+            this.playToolStripMenuItem.Name = "playToolStripMenuItem";
+            this.playToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl + P";
+            this.playToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.playToolStripMenuItem.Text = "Play";
+            this.playToolStripMenuItem.Click += new System.EventHandler(this.toolStripButton1_Click);
             // 
             // stopToolStripMenuItem
             // 
-            stopToolStripMenuItem.Name = "stopToolStripMenuItem";
-            stopToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl + Q";
-            stopToolStripMenuItem.Size = new Size(147, 22);
-            stopToolStripMenuItem.Text = "Stop";
-            stopToolStripMenuItem.Click += stopToolStripMenuItem_Click;
+            this.stopToolStripMenuItem.Name = "stopToolStripMenuItem";
+            this.stopToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl + Q";
+            this.stopToolStripMenuItem.Size = new System.Drawing.Size(180, 22);
+            this.stopToolStripMenuItem.Text = "Stop";
+            this.stopToolStripMenuItem.Click += new System.EventHandler(this.stopToolStripMenuItem_Click);
             // 
             // toolStripDropDownButton2
             // 
-            toolStripDropDownButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton2.DropDownItems.AddRange(new ToolStripItem[] { toolStripTextBox4, toolStripTextBox3 });
-            toolStripDropDownButton2.Image = (Image)resources.GetObject("toolStripDropDownButton2.Image");
-            toolStripDropDownButton2.ImageTransparentColor = Color.Magenta;
-            toolStripDropDownButton2.Name = "toolStripDropDownButton2";
-            toolStripDropDownButton2.Size = new Size(45, 22);
-            toolStripDropDownButton2.Text = "Help";
+            this.toolStripDropDownButton2.DisplayStyle = System.Windows.Forms.ToolStripItemDisplayStyle.Text;
+            this.toolStripDropDownButton2.DropDownItems.AddRange(new System.Windows.Forms.ToolStripItem[] {
+            this.toolStripTextBox4,
+            this.toolStripTextBox3});
+            this.toolStripDropDownButton2.Image = ((System.Drawing.Image)(resources.GetObject("toolStripDropDownButton2.Image")));
+            this.toolStripDropDownButton2.ImageTransparentColor = System.Drawing.Color.Magenta;
+            this.toolStripDropDownButton2.Name = "toolStripDropDownButton2";
+            this.toolStripDropDownButton2.Size = new System.Drawing.Size(45, 22);
+            this.toolStripDropDownButton2.Text = "Help";
             // 
             // toolStripTextBox4
             // 
-            toolStripTextBox4.Name = "toolStripTextBox4";
-            toolStripTextBox4.ReadOnly = true;
-            toolStripTextBox4.Size = new Size(100, 23);
-            toolStripTextBox4.Text = "Viewer 1.0.0";
+            this.toolStripTextBox4.Name = "toolStripTextBox4";
+            this.toolStripTextBox4.ReadOnly = true;
+            this.toolStripTextBox4.Size = new System.Drawing.Size(100, 23);
+            this.toolStripTextBox4.Text = "Viewer 1.0.0";
             // 
             // toolStripTextBox3
             // 
-            toolStripTextBox3.Name = "toolStripTextBox3";
-            toolStripTextBox3.ReadOnly = true;
-            toolStripTextBox3.Size = new Size(100, 23);
-            toolStripTextBox3.Text = "EzCode 1.9.12";
+            this.toolStripTextBox3.Name = "toolStripTextBox3";
+            this.toolStripTextBox3.ReadOnly = true;
+            this.toolStripTextBox3.Size = new System.Drawing.Size(100, 23);
+            this.toolStripTextBox3.Text = "EzCode 1.11.5";
             // 
             // toolStripLabel1
             // 
-            toolStripLabel1.Name = "toolStripLabel1";
-            toolStripLabel1.Size = new Size(0, 22);
+            this.toolStripLabel1.Name = "toolStripLabel1";
+            this.toolStripLabel1.Size = new System.Drawing.Size(0, 22);
             // 
             // splitContainer2
             // 
-            splitContainer2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            splitContainer2.BackColor = Color.RoyalBlue;
-            splitContainer2.Location = new Point(0, 23);
-            splitContainer2.Name = "splitContainer2";
-            splitContainer2.Orientation = Orientation.Horizontal;
+            this.splitContainer2.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.splitContainer2.BackColor = System.Drawing.Color.RoyalBlue;
+            this.splitContainer2.Location = new System.Drawing.Point(0, 23);
+            this.splitContainer2.Name = "splitContainer2";
+            this.splitContainer2.Orientation = System.Windows.Forms.Orientation.Horizontal;
             // 
             // splitContainer2.Panel1
             // 
-            splitContainer2.Panel1.Controls.Add(Space);
+            this.splitContainer2.Panel1.Controls.Add(this.Space);
             // 
             // splitContainer2.Panel2
             // 
-            splitContainer2.Panel2.Controls.Add(Send);
-            splitContainer2.Panel2.Controls.Add(ConsoleSend);
-            splitContainer2.Panel2.Controls.Add(console);
-            splitContainer2.Size = new Size(1161, 698);
-            splitContainer2.SplitterDistance = 515;
-            splitContainer2.TabIndex = 2;
+            this.splitContainer2.Panel2.Controls.Add(this.Send);
+            this.splitContainer2.Panel2.Controls.Add(this.ConsoleSend);
+            this.splitContainer2.Panel2.Controls.Add(this.console);
+            this.splitContainer2.Size = new System.Drawing.Size(1161, 698);
+            this.splitContainer2.SplitterDistance = 515;
+            this.splitContainer2.TabIndex = 2;
             // 
             // Send
             // 
-            Send.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            Send.Location = new Point(1102, 157);
-            Send.Name = "Send";
-            Send.Size = new Size(60, 23);
-            Send.TabIndex = 5;
-            Send.Text = "Send";
-            Send.UseVisualStyleBackColor = true;
-            Send.Click += Send_Click;
+            this.Send.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
+            this.Send.Location = new System.Drawing.Point(1102, 157);
+            this.Send.Name = "Send";
+            this.Send.Size = new System.Drawing.Size(60, 23);
+            this.Send.TabIndex = 5;
+            this.Send.Text = "Send";
+            this.Send.UseVisualStyleBackColor = true;
+            this.Send.Click += new System.EventHandler(this.Send_Click);
             // 
             // ConsoleSend
             // 
-            ConsoleSend.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            ConsoleSend.BackColor = Color.Black;
-            ConsoleSend.BorderStyle = BorderStyle.FixedSingle;
-            ConsoleSend.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
-            ConsoleSend.ForeColor = Color.CornflowerBlue;
-            ConsoleSend.Location = new Point(0, 158);
-            ConsoleSend.Name = "ConsoleSend";
-            ConsoleSend.Size = new Size(1102, 23);
-            ConsoleSend.TabIndex = 4;
-            ConsoleSend.KeyDown += ConsoleSend_KeyDown;
+            this.ConsoleSend.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.ConsoleSend.BackColor = System.Drawing.Color.Black;
+            this.ConsoleSend.BorderStyle = System.Windows.Forms.BorderStyle.FixedSingle;
+            this.ConsoleSend.Font = new System.Drawing.Font("Cascadia Code", 9.75F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.ConsoleSend.ForeColor = System.Drawing.Color.CornflowerBlue;
+            this.ConsoleSend.Location = new System.Drawing.Point(0, 158);
+            this.ConsoleSend.Name = "ConsoleSend";
+            this.ConsoleSend.Size = new System.Drawing.Size(1102, 23);
+            this.ConsoleSend.TabIndex = 4;
+            this.ConsoleSend.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ConsoleSend_KeyDown);
             // 
             // console
             // 
-            console.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            console.BackColor = Color.Black;
-            console.BorderStyle = BorderStyle.None;
-            console.Font = new Font("Cascadia Code", 11.25F, FontStyle.Regular, GraphicsUnit.Point);
-            console.ForeColor = Color.RoyalBlue;
-            console.Location = new Point(0, 1);
-            console.Name = "console";
-            console.ReadOnly = true;
-            console.Size = new Size(1161, 158);
-            console.TabIndex = 3;
-            console.Text = "";
-            console.TextChanged += console_TextChanged;
+            this.console.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
+            | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.console.BackColor = System.Drawing.Color.Black;
+            this.console.BorderStyle = System.Windows.Forms.BorderStyle.None;
+            this.console.Font = new System.Drawing.Font("Cascadia Code", 11.25F, System.Drawing.FontStyle.Regular, System.Drawing.GraphicsUnit.Point);
+            this.console.ForeColor = System.Drawing.Color.RoyalBlue;
+            this.console.Location = new System.Drawing.Point(0, 1);
+            this.console.Name = "console";
+            this.console.ReadOnly = true;
+            this.console.Size = new System.Drawing.Size(1161, 158);
+            this.console.TabIndex = 3;
+            this.console.Text = "";
+            this.console.TextChanged += new System.EventHandler(this.console_TextChanged);
             // 
             // timer1
             // 
-            timer1.Enabled = true;
-            timer1.Interval = 10;
-            timer1.Tick += timer1_Tick;
+            this.timer1.Enabled = true;
+            this.timer1.Interval = 10;
             // 
             // Form1
             // 
-            AutoScaleDimensions = new SizeF(7F, 15F);
-            AutoScaleMode = AutoScaleMode.Font;
-            ClientSize = new Size(1161, 721);
-            Controls.Add(splitContainer2);
-            Controls.Add(toolStrip1);
-            Icon = (Icon)resources.GetObject("$this.Icon");
-            KeyPreview = true;
-            MinimumSize = new Size(399, 202);
-            Name = "Form1";
-            Text = "ezCode";
-            KeyDown += Form1_KeyDown;
-            KeyUp += Form1_KeyUp;
-            toolStrip1.ResumeLayout(false);
-            toolStrip1.PerformLayout();
-            splitContainer2.Panel1.ResumeLayout(false);
-            splitContainer2.Panel2.ResumeLayout(false);
-            splitContainer2.Panel2.PerformLayout();
-            ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
-            splitContainer2.ResumeLayout(false);
-            ResumeLayout(false);
-            PerformLayout();
+            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
+            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
+            this.ClientSize = new System.Drawing.Size(1161, 721);
+            this.Controls.Add(this.splitContainer2);
+            this.Controls.Add(this.toolStrip1);
+            this.Icon = ((System.Drawing.Icon)(resources.GetObject("$this.Icon")));
+            this.KeyPreview = true;
+            this.MinimumSize = new System.Drawing.Size(399, 202);
+            this.Name = "Form1";
+            this.Text = "ezCode";
+            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
+            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyUp);
+            this.toolStrip1.ResumeLayout(false);
+            this.toolStrip1.PerformLayout();
+            this.splitContainer2.Panel1.ResumeLayout(false);
+            this.splitContainer2.Panel2.ResumeLayout(false);
+            this.splitContainer2.Panel2.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)(this.splitContainer2)).EndInit();
+            this.splitContainer2.ResumeLayout(false);
+            this.ResumeLayout(false);
+            this.PerformLayout();
+
         }
 
         #endregion

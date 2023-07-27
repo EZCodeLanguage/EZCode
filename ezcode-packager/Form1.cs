@@ -37,6 +37,13 @@ namespace ezcode_packager
                 string author = textBox5.Text;
                 string company = textBox6.Text;
 
+                if (outputFolder == input)
+                {
+                    string stri = "Input Folder can not be the same as the output folder";
+                    MessageBox.Show(stri, "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    throw new Exception(stri);
+                }
+
                 if (author == "Author") author = "Unknown";
                 if (company == "Company") company = "Unknown";
 

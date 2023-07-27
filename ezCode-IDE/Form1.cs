@@ -150,52 +150,18 @@ namespace ezCode
                 if (!playing) return;
                 if (debugging)
                 {
-                    int _1 = comboBox1.SelectedIndex;
-                    int _2 = comboBox2.SelectedIndex;
                     CurrentLineTxt.Text = lines[w];
                     listBox2.Items.Clear();
-                    comboBox1.Items.Clear();
-                    comboBox2.Items.Clear();
-                    for (int i = 0; i < gameObjects.Count; i++)
-                    {
-                        comboBox1.Items.Add(gameObjects[i].Name);
-                    }
-                    for (int i = 0; i < labels.Count; i++)
-                    {
-                        comboBox2.Items.Add(labels[i].Name);
-                    }
                     for (int i = 0; i < vars.Count; i++)
                     {
                         listBox2.Items.Add(vars[i].Name + "  =  " + vars[i].value());
-                    }
-                    comboBox1.SelectedIndex = _1;
-                    comboBox2.SelectedIndex = _2;
-                    for (int i = 0; i < gameObjects.Count; i++)
-                    {
-                        if (i == comboBox1.SelectedIndex)
-                        {
-                            xpos1.Text = gameObjects[i].Left.ToString();
-                            ypos1.Text = gameObjects[i].Top.ToString();
-                            xscale1.Text = gameObjects[i].Width.ToString();
-                            yscale1.Text = gameObjects[i].Height.ToString();
-                        }
-                    }
-                    for (int i = 0; i < labels.Count; i++)
-                    {
-                        if (i == comboBox2.SelectedIndex)
-                        {
-                            xpos2.Text = labels[i].Left.ToString();
-                            ypos2.Text = labels[i].Top.ToString();
-                            xscale2.Text = labels[i].Text.ToString();
-                            yscale2.Text = labels[i].Font.ToString();
-                        }
                     }
                     while (debugWait)
                     {
                         await Task.Delay(100);
                     }
+                    debugWait = true;
                 }
-                debugWait = true;
                 codeLine = w + 1;
                 string[] part = lines[w].Trim().Split(' ').ToArray();
                 if (part[0] == "loop")
@@ -296,6 +262,14 @@ namespace ezCode
                         // Execute the code in the loop code list
                         foreach (string loopLine in loopCode)
                         {
+                            if (debugging)
+                            {
+                                while (debugWait)
+                                {
+                                    await Task.Delay(100);
+                                }
+                                debugWait = true;
+                            }
                             if (!breaked && playing) await ExecuteLine(loopLine);
                         }
                     }
@@ -308,6 +282,15 @@ namespace ezCode
                 // using filePath list name : values,from,that,script |or| using filePath var name ValueFromScript
                 async Task ExecuteLine(string line)
                 {
+                    if (debugging)
+                    {
+                        CurrentLineTxt.Text = line;
+                        listBox2.Items.Clear();
+                        for (int j = 0; j < vars.Count; j++)
+                        {
+                            listBox2.Items.Add(vars[j].Name + "  =  " + vars[j].value());
+                        }
+                    }
                     List<string> parts = line.Trim().Split(' ').ToList();
                     int i = 0;
                     if (parts[0] == "endIf")
@@ -759,9 +742,9 @@ namespace ezCode
                                             r = __r[0] + g.Objects[j].BackColor.R;
                                             g_ = __g[0] + g.Objects[j].BackColor.G;
                                             b = __b[0] + g.Objects[j].BackColor.B;
-                                            if (r > 255) r = 255;
-                                            if (g_ > 255) g_ = 255;
-                                            if (b > 255) b = 255;
+                                            r = r >= 0 && r <= 255 ? r : r > 255 ? 255 : 0;
+                                            g_ = g_ >= 0 && g_ <= 255 ? g_ : g_ > 255 ? 255 : 0;
+                                            b = b >= 0 && b <= 255 ? b : b > 255 ? 255 : 0;
                                         }
                                         else
                                         {
@@ -782,9 +765,9 @@ namespace ezCode
                                             r = __r[0] + g.Labels[j].ForeColor.R;
                                             g_ = __g[0] + g.Labels[j].ForeColor.G;
                                             b = __b[0] + g.Labels[j].ForeColor.B;
-                                            if (r > 255) r = 255;
-                                            if (g_ > 255) g_ = 255;
-                                            if (b > 255) b = 255;
+                                            r = r >= 0 && r <= 255 ? r : r > 255 ? 255 : 0;
+                                            g_ = g_ >= 0 && g_ <= 255 ? g_ : g_ > 255 ? 255 : 0;
+                                            b = b >= 0 && b <= 255 ? b : b > 255 ? 255 : 0;
                                         }
                                         else
                                         {
@@ -805,9 +788,9 @@ namespace ezCode
                                             r = __r[0] + g.Textboxes[j].ForeColor.R;
                                             g_ = __g[0] + g.Textboxes[j].ForeColor.G;
                                             b = __b[0] + g.Textboxes[j].ForeColor.B;
-                                            if (r > 255) r = 255;
-                                            if (g_ > 255) g_ = 255;
-                                            if (b > 255) b = 255;
+                                            r = r >= 0 && r <= 255 ? r : r > 255 ? 255 : 0;
+                                            g_ = g_ >= 0 && g_ <= 255 ? g_ : g_ > 255 ? 255 : 0;
+                                            b = b >= 0 && b <= 255 ? b : b > 255 ? 255 : 0;
                                         }
                                         else
                                         {
@@ -815,6 +798,12 @@ namespace ezCode
                                         }
                                         g.Textboxes[j].ForeColor = Color.FromArgb(r, g_, b);
                                     }
+                                }
+                                else
+                                {
+                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                    console.AddText("Expected 'move', 'scale', or 'color' in 'Group' in line " + codeLine + " \n", true);
+                                    return;
                                 }
                             }
                             else if (parts[1] == "new")
@@ -1095,6 +1084,21 @@ namespace ezCode
 
                             Space.Controls.Add(b);
                             buttons.Add(b);
+
+                            string type = "button";
+                            Var[] ob_vars = new Var[] {
+                                new Var($"{type}:{name}:x"),
+                                new Var($"{type}:{name}:y"),
+                                new Var($"{type}:{name}:width"),
+                                new Var($"{type}:{name}:height"),
+                                new Var($"{type}:{name}:r"),
+                                new Var($"{type}:{name}:g"),
+                                new Var($"{type}:{name}:b")
+                            };
+                            for (int j = 0; j < ob_vars.Length; j++)
+                            {
+                                vars.Add(ob_vars[j]);
+                            }
                         }
                         catch
                         {
@@ -1255,6 +1259,21 @@ namespace ezCode
 
                             Space.Controls.Add(tb);
                             textboxes.Add(tb);
+
+                            string type = "textbox";
+                            Var[] ob_vars = new Var[] {
+                                new Var($"{type}:{name}:x"),
+                                new Var($"{type}:{name}:y"),
+                                new Var($"{type}:{name}:width"),
+                                new Var($"{type}:{name}:height"),
+                                new Var($"{type}:{name}:r"),
+                                new Var($"{type}:{name}:g"),
+                                new Var($"{type}:{name}:b")
+                            };
+                            for (int j = 0; j < ob_vars.Length; j++)
+                            {
+                                vars.Add(ob_vars[j]);
+                            }
                         }
                         catch
                         {
@@ -1404,6 +1423,21 @@ namespace ezCode
 
                             Space.Controls.Add(go);
                             gameObjects.Add(go);
+
+                            string type = "object";
+                            Var[] ob_vars = new Var[] { 
+                                new Var($"{type}:{name}:x"),
+                                new Var($"{type}:{name}:y"),
+                                new Var($"{type}:{name}:width"),
+                                new Var($"{type}:{name}:height"),
+                                new Var($"{type}:{name}:r"),
+                                new Var($"{type}:{name}:g"),
+                                new Var($"{type}:{name}:b")
+                            };
+                            for (int j = 0; j < ob_vars.Length; j++)
+                            {
+                                vars.Add(ob_vars[j]);
+                            }
                         }
                         catch
                         {
@@ -1552,6 +1586,19 @@ namespace ezCode
 
                             Space.Controls.Add(label);
                             labels.Add(label);
+
+                            string type = "label";
+                            Var[] ob_vars = new Var[] {
+                                new Var($"{type}:{name}:x"),
+                                new Var($"{type}:{name}:y"),
+                                new Var($"{type}:{name}:r"),
+                                new Var($"{type}:{name}:g"),
+                                new Var($"{type}:{name}:b")
+                            };
+                            for (int j = 0; j < ob_vars.Length; j++)
+                            {
+                                vars.Add(ob_vars[j]);
+                            }
                         }
                         catch
                         {
@@ -2147,7 +2194,7 @@ namespace ezCode
                                             bt.AccessibleName = name;
                                         }
                                     }
-                                    if (bt.AccessibleName == "error") console.AddText("Could not find an object or textbox named " + name + "\n", true);
+                                    if (bt.AccessibleName == "error") console.AddText("Could not find an object, button, or textbox named " + name + "\n", true);
                                     bt.Size = new Size(point.X, point.Y);
                                 }
                                 tb.Size = new Size(point.X, point.Y);
@@ -4729,29 +4776,29 @@ namespace ezCode
                             }
                             else
                             {
+                                iftrue = false;
                                 string upcode = string.Empty;
                                 for (int j = endindex + 2; j < textsA.Count; j++)
                                 {
                                     upcode += textsA[j] + " ";
                                 }
-                                if (upcode == string.Empty)
+                                if (upcode == string.Empty) 
                                 {
-                                    iftrue = false;
-                                }
-                                bool aa = false;
-                                for (int z = lines.ToList().IndexOf(line) + 1; z < lines.Length; z++)
-                                {
-                                    if (lines[z].Trim() == "endIf")
+                                    bool aa = false;
+                                    for (int z = lines.ToList().IndexOf(line) + 1; z < lines.Length; z++)
                                     {
-                                        aa = true;
+                                        if (lines[z] == "endIf")
+                                        {
+                                            aa = true;
+                                        }
                                     }
-                                }
-                                if (!aa)
-                                {
-                                    iftrue = false;
-                                    if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
-                                    console.AddText("Their is no 'endIf' for the if statement in line " + codeLine + " \n", true);
-                                    return;
+                                    if (!aa)
+                                    {
+                                        iftrue = false;
+                                        if (line.Contains("# suppress error") || line.Contains("#suppress error")) return;
+                                        console.AddText("Their is no 'endIf' for the if statement in line " + codeLine + " \n", true);
+                                        return;
+                                    }
                                 }
                             }
                         }
@@ -5345,6 +5392,61 @@ namespace ezCode
                             return;
                         }
                     }
+
+                    foreach(GObject control in gameObjects)
+                    {
+                        for(int j = 0; j < vars.Count; j++)
+                        {
+                            string type = "object";
+                            if (vars[j].Name == $"{type}:{control.Name}:x") vars[j].number = control.Left; 
+                            if (vars[j].Name == $"{type}:{control.Name}:y") vars[j].number = control.Top; 
+                            if (vars[j].Name == $"{type}:{control.Name}:width") vars[j].number = control.Width; 
+                            if (vars[j].Name == $"{type}:{control.Name}:height") vars[j].number = control.Height; 
+                            if (vars[j].Name == $"{type}:{control.Name}:r") vars[j].number = control.BackColor.R; 
+                            if (vars[j].Name == $"{type}:{control.Name}:g") vars[j].number = control.BackColor.G; 
+                            if (vars[j].Name == $"{type}:{control.Name}:b") vars[j].number = control.BackColor.B; 
+                        }
+                    }
+                    foreach(TextBox control in textboxes)
+                    {
+                        for(int j = 0; j < vars.Count; j++)
+                        {
+                            string type = "textbox";
+                            if (vars[j].Name == $"{type}:{control.Name}:x") vars[j].number = control.Left; 
+                            if (vars[j].Name == $"{type}:{control.Name}:y") vars[j].number = control.Top; 
+                            if (vars[j].Name == $"{type}:{control.Name}:width") vars[j].number = control.Width; 
+                            if (vars[j].Name == $"{type}:{control.Name}:height") vars[j].number = control.Height; 
+                            if (vars[j].Name == $"{type}:{control.Name}:r") vars[j].number = control.ForeColor.R; 
+                            if (vars[j].Name == $"{type}:{control.Name}:g") vars[j].number = control.ForeColor.G; 
+                            if (vars[j].Name == $"{type}:{control.Name}:b") vars[j].number = control.ForeColor.B; 
+                        }
+                    }
+                    foreach(Label control in labels)
+                    {
+                        for(int j = 0; j < vars.Count; j++)
+                        {
+                            string type = "label";
+                            if (vars[j].Name == $"{type}:{control.Name}:x") vars[j].number = control.Left;
+                            if (vars[j].Name == $"{type}:{control.Name}:y") vars[j].number = control.Top;
+                            if (vars[j].Name == $"{type}:{control.Name}:r") vars[j].number = control.ForeColor.R; 
+                            if (vars[j].Name == $"{type}:{control.Name}:g") vars[j].number = control.ForeColor.G; 
+                            if (vars[j].Name == $"{type}:{control.Name}:b") vars[j].number = control.ForeColor.B; 
+                        }
+                    }
+                    foreach(Button control in buttons)
+                    {
+                        for(int j = 0; j < vars.Count; j++)
+                        {
+                            string type = "button";
+                            if (vars[j].Name == $"{type}:{control.Name}:x") vars[j].number = control.Left; 
+                            if (vars[j].Name == $"{type}:{control.Name}:y") vars[j].number = control.Top; 
+                            if (vars[j].Name == $"{type}:{control.Name}:width") vars[j].number = control.Width; 
+                            if (vars[j].Name == $"{type}:{control.Name}:height") vars[j].number = control.Height; 
+                            if (vars[j].Name == $"{type}:{control.Name}:r") vars[j].number = control.BackColor.R; 
+                            if (vars[j].Name == $"{type}:{control.Name}:g") vars[j].number = control.BackColor.G; 
+                            if (vars[j].Name == $"{type}:{control.Name}:b") vars[j].number = control.BackColor.B; 
+                        }
+                    }
                 }
             }
         }
@@ -5525,14 +5627,25 @@ namespace ezCode
 
             return new int[] { int.Parse(value), next };
         }
-        private int[] find_value(List<string> parts, int next, int def)
+        private int[] find_value(List<string> parts, int next, int def, bool? var = true)
         {
             int v = def;
             if (parts.Count - 1 >= next)
             {
                 try
                 {
-                    v = int.Parse(parts[next]);
+                    string s = parts[next];
+                    if (var == true)
+                    {
+                        for (int j = 0; j < vars.Count; j++)
+                        {
+                            if (vars[j].Name == parts[next] && vars[j].isNumber())
+                            {
+                                s = vars[j].value();
+                            }
+                        }
+                    }
+                    v = int.Parse(s);
                     next++;
                 }
                 catch
