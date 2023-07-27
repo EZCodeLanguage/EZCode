@@ -1,0 +1,11 @@
+printRaw hello
+var hi 3
+var hippy
+object a 4
+loop 10
+hi + 1
+hippy = yep
+end
+move a 30 30
+print hippy
+print hi
