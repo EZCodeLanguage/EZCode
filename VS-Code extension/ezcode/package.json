@@ -1,7 +1,7 @@
 {
   "name": "ezcode",
   "displayName": "EZCode Syntax Highlighting",
-  "description": "This extension will enhance your coding experience by providing custom word highlighting and syntax support, making the code more visually distinct and easier to read.",
+  "description": "This extension will enhance your coding experience by providing custom word highlighting and syntax support, making the code more visually distinct and easier to read",
   "version": "0.0.1",
   "engines": {
     "vscode": "^1.80.0"
@@ -9,7 +9,6 @@
   "categories": [
     "Programming Languages"
   ],
-  "iconPath": "images/ezcode-icon.png", 
   "contributes": {
     "languages": [
       {
@@ -33,7 +32,7 @@
     ]
   },
   "dependencies": {
-    "vscode": "^1.1.37",
     "vscode-languageserver": "^8.1.0"
-  }
+  },
+  "iconPath": "images/ezcode-icon.png"
 }
