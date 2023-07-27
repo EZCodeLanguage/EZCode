@@ -14,6 +14,9 @@
 			"include": "#variables"
 		},
 		{
+			"include": "#strings"
+		},
+		{
 			"include": "#constants"
 		}
 	],
@@ -31,10 +34,6 @@
 				{
 					"name": "keyword.control.oneword.ezcode",
 					"match": "\\b(consoleClear|await|endBuild)\\b"
-				},
-				{
-					"name": "keyword.control.after.ezcode",
-					"match": "\\b(~\\/|\\/|\\*|\\-|\\+|!|\\\\_|\\\\n|\\\\!|&gt;|&lt;|ReadFile|change|abs|rel|new|relative|absolute|AwaitKeyInput|KeyDown|KeyInput|ConsoleInput|Random|MousePosition|MouseClick|FromList|Key|Console|StickKey|await|AwaitKey|IntersectsWith|bold|italic|strikeout|underline|regular|FromTextBox|input|now)\\b"
 				}
 			]
 		},
@@ -43,14 +42,6 @@
 				{
 					"name": "comment.line.ezcode",
 					"match": "(\\/\\/.*$)"
-				},
-				{
-					"name": "comment.block.documentation.ezcode",
-					"match": "(\\/\\/\\/.*$)"
-				},
-				{
-					"name": "comment.line.hashtag.ezcode",
-					"match": "(#.*$)"
 				}
 			]
 		},
@@ -59,6 +50,14 @@
 				{
 					"name": "variable.language.ezcode",
 					"match": "\\b(\\w+)\\b"
+				}
+			]
+		},
+		"strings": {
+			"patterns": [
+				{
+					"name": "keyword.control.after.ezcode",
+					"match": "\\b(~\\/|\\/|\\*|\\-|\\+|!|\\\\_|\\\\n|\\\\!|&gt;|&lt;|ReadFile|change|abs|rel|new|relative|absolute|AwaitKeyInput|KeyDown|KeyInput|ConsoleInput|Random|MousePosition|MouseClick|FromList|Key|Console|StickKey|await|AwaitKey|IntersectsWith|bold|italic|strikeout|underline|regular|FromTextBox|input|now)\\b"
 				}
 			]
 		},
@@ -71,6 +70,10 @@
 				{
 					"name": "constant.numeric.ezcode",
 					"match": "\\b(\\d+)\\b"
+				},
+				{
+					"name": "comment.line.hashtag.ezcode",
+					"match": "(#.*$)"
 				}
 			]
 		}

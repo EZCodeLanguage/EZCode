@@ -10,5 +10,6 @@ move a 30 30
 print hippy
 print hi
 group new g
-group g add button a
-group g change rel move 50 50 
+group g add button a 
+group g change rel move 50 50 \_ 
+#create error
