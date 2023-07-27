@@ -1,0 +1,25 @@
+{
+  "name": "ezcode",
+  "displayName": "EZCode Syntax Highlighting",
+  "description": "This extension will enhance your coding experience by providing custom word highlighting and syntax support, making the code more visually distinct and esier to read",
+  "version": "0.0.1",
+  "engines": {
+    "vscode": "^1.80.0"
+  },
+  "categories": [
+    "Programming Languages"
+  ],
+  "contributes": {
+    "languages": [{
+      "id": "ezcode",
+      "aliases": ["EZCode", "ezcode"],
+      "extensions": [".ezcode"],
+      "configuration": "./language-configuration.json"
+    }],
+    "grammars": [{
+      "language": "ezcode",
+      "scopeName": "source.ezcode",
+      "path": "./syntaxes/ezcode.tmLanguage.json"
+    }]
+  }
+}
