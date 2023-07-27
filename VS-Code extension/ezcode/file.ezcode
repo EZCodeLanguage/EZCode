@@ -1,0 +1,15 @@
+printRaw hello
+var hi 3
+var hippy
+object a 4
+loop 10
+hi + 1
+hippy = yep
+end
+move a 30 30
+print hippy
+print hi
+group new g
+group g add button a 
+group g change rel move 50 50 \_ 
+#create error
