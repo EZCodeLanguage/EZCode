@@ -1,65 +1,21 @@
-# ezcode README
+# EZCode Syntax Highlighting Extension
 
-This is the README for your extension "ezcode". After writing up a brief description, we recommend including the following sections.
+## Overview
+
+The EZCode Syntax Highlighting Extension enhances your coding experience by providing custom word highlighting and syntax support for the EZCode programming language. With this extension, your EZCode files will be visually distinct and easier to read, making your coding tasks more enjoyable and efficient.
 
 ## Features
 
-Describe specific features of your extension including screenshots of your extension in action. Image paths are relative to this README file.
+- Custom word highlighting for keywords, loops, functions, and modifiers.
 
-For example if there is an image subfolder under your extension project workspace:
+## Usage
 
-\!\[feature X\]\(images/feature-x.png\)
+After installing the extension, it will automatically highlight EZCode syntax in any `.ezcode` file you open in Visual Studio Code. The syntax highlighting includes keywords, comments, and variables, making your code more readable and easier to understand.
 
-> Tip: Many popular extensions utilize animations. This is an excellent way to show off your extension! We recommend short, focused animations that are easy to follow.
+## Feedback and Issues
 
-## Requirements
+If you encounter any issues or have feedback regarding the EZCode Syntax Highlighting Extension, feel free to visit the extension's GitHub repository at [https://github.com/JBrosDevelopment](https://github.com/JBrosDevelopment) to report issues or suggest improvements.
 
-If you have any requirements or dependencies, add a section describing those and how to install and configure them.
+## Enjoy Your Enhanced Coding Experience!
 
-## Extension Settings
-
-Include if your extension adds any VS Code settings through the `contributes.configuration` extension point.
-
-For example:
-
-This extension contributes the following settings:
-
-* `myExtension.enable`: Enable/disable this extension.
-* `myExtension.thing`: Set to `blah` to do something.
-
-## Known Issues
-
-Calling out known issues can help limit users opening duplicate issues against your extension.
-
-## Release Notes
-
-Users appreciate release notes as you update your extension.
-
-### 1.0.0
-
-Initial release of ...
-
-### 1.0.1
-
-Fixed issue #.
-
-### 1.1.0
-
-Added features X, Y, and Z.
-
----
-
-## Working with Markdown
-
-You can author your README using Visual Studio Code. Here are some useful editor keyboard shortcuts:
-
-* Split the editor (`Cmd+\` on macOS or `Ctrl+\` on Windows and Linux).
-* Toggle preview (`Shift+Cmd+V` on macOS or `Shift+Ctrl+V` on Windows and Linux).
-* Press `Ctrl+Space` (Windows, Linux, macOS) to see a list of Markdown snippets.
-
-## For more information
-
-* [Visual Studio Code's Markdown Support](http://code.visualstudio.com/docs/languages/markdown)
-* [Markdown Syntax Reference](https://help.github.com/articles/markdown-basics/)
-
-**Enjoy!**
+We hope you enjoy using the EZCode Syntax Highlighting Extension to improve your coding experience with the EZCode programming language. Happy coding!

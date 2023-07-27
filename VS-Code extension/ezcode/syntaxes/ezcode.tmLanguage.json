@@ -22,7 +22,7 @@
 			"patterns": [
 				{
 					"name": "keyword.control.ezcode",
-					"match": "\\b(print|printRaw|write|writeRaw|group|object|image|label|font|move|scale|color|var|varRaw|textbox|multiLine|varInput|varSet|varEquals|varAddText|list|listRaw|writeToFile|sound|playFile|button|buttonClick)\\b"
+					"match": "\\b(print|printRaw|write|writeRaw|group|object|image|label|font|move|scale|color|var|varRaw|textbox|multiLine|varInput|varSet|varEquals|add|list|listRaw|writeToFile|sound|playFile|button|buttonClick)\\b"
 				},
 				{
 					"name": "keyword.control.loop.ezcode",
