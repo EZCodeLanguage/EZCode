@@ -4,56 +4,75 @@
 	"scopeName": "source.ezcode",
 	"fileTypes": [".ezcode"],
 	"patterns": [
-	  {
-		"match": "(print|printRaw|write|writeRaw|group|object|image|label|font|move|scale|color|var|varRaw|textbox|multiLine|varInput|varSet|varEquals|varAddText|list|listRaw|writeToFile|sound|playFile|button|buttonClick)\\b",
-		"name": "keyword.control.ezcode",
-		"colors": {
-		  "foreground": "#FFFF00" 
+		{
+			"include": "#keywords"
+		},
+		{
+			"include": "#comments"
+		},
+		{
+			"include": "#variables"
+		},
+		{
+			"include": "#constants"
 		}
-	  },
-	  {
-		"match": "(loop|end|:|if|endIf)\\b",
-		"name": "keyword.control.loop.ezcode",
-		"colors": {
-		  "foreground": "#00BFFF" 
+	],
+	"repository": {
+		"keywords": {
+			"patterns": [
+				{
+					"name": "keyword.control.ezcode",
+					"match": "\\b(print|printRaw|write|writeRaw|group|object|image|label|font|move|scale|color|var|varRaw|textbox|multiLine|varInput|varSet|varEquals|varAddText|list|listRaw|writeToFile|sound|playFile|button|buttonClick)\\b"
+				},
+				{
+					"name": "keyword.control.loop.ezcode",
+					"match": "\\b(loop|end|:|if|endIf)\\b"
+				},
+				{
+					"name": "keyword.control.oneword.ezcode",
+					"match": "\\b(consoleClear|await|endBuild)\\b"
+				},
+				{
+					"name": "keyword.control.after.ezcode",
+					"match": "\\b(~\\/|\\/|\\*|\\-|\\+|!|\\\\_|\\\\n|\\\\!|&gt;|&lt;|ReadFile|change|abs|rel|new|relative|absolute|AwaitKeyInput|KeyDown|KeyInput|ConsoleInput|Random|MousePosition|MouseClick|FromList|Key|Console|StickKey|await|AwaitKey|IntersectsWith|bold|italic|strikeout|underline|regular|FromTextBox|input|now)\\b"
+				}
+			]
+		},
+		"comments": {
+			"patterns": [
+				{
+					"name": "comment.line.ezcode",
+					"match": "(\\/\\/.*$)"
+				},
+				{
+					"name": "comment.block.documentation.ezcode",
+					"match": "(\\/\\/\\/.*$)"
+				},
+				{
+					"name": "comment.line.hashtag.ezcode",
+					"match": "(#.*$)"
+				}
+			]
+		},
+		"variables": {
+			"patterns": [
+				{
+					"name": "variable.language.ezcode",
+					"match": "\\b(\\w+)\\b"
+				}
+			]
+		},
+		"constants": {
+			"patterns": [
+				{
+					"name": "constant.character.ezcode",
+					"match": "(<|>|=|!)"
+				},
+				{
+					"name": "constant.numeric.ezcode",
+					"match": "\\b(\\d+)\\b"
+				}
+			]
 		}
-	  },
-	  {
-		"match": "(consoleClear|await|endBuild)\\b",
-		"name": "keyword.control.oneword.ezcode",
-		"colors": {
-		  "foreground": "#FF7F50"
-		}
-	  },
-	  {
-		"match": "(~\\/|\\/|\\*|\\-|\\+|!|\\\\_|\\\\n|\\\\!|&gt;|&lt;|ReadFile|change|abs|rel|new|relative|absolute|AwaitKeyInput|KeyDown|KeyInput|ConsoleInput|Random|MousePosition|MouseClick|FromList|Key|Console|StickKey|await|AwaitKey|IntersectsWith|bold|italic|strikeout|underline|regular|FromTextBox|input|now)\\b",
-		"name": "keyword.control.after.ezcode",
-		"colors": {
-		  "foreground": "#00CED1"
-		}
-	  },
-	  {
-		"match": "(\\/\\/.*$)",
-		"name": "comment.line.ezcode",
-		"colors": {
-		  "foreground": "#008000" 
-		}
-	  },
-	  {
-		"match": "(\\/\\/\\/.*$)",
-		"name": "comment.block.documentation.ezcode",
-		"colors": {
-		  "foreground": "#ADFF2F",
-		  "fontStyle": "italic"
-		}
-	  },
-	  {
-		"match": "(#.*$)",
-		"name": "comment.line.hashtag.ezcode",
-		"colors": {
-		  "foreground": "#8B0000"
-		}
-	  }
-	]
-  }
-  
+	}
+}

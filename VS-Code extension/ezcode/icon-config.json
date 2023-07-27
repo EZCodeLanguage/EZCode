@@ -1,0 +1,13 @@
+{
+    "contributes": {
+        "languages": [
+            {
+                "id": "ezcode",
+                "icon": {
+                    "light": "./images/ezcode-icon.png",
+                    "dark": "./images/ezcode-icon.png"
+                }
+            }
+        ]
+    }
+}
