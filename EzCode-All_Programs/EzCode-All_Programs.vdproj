@@ -16,31 +16,115 @@
         "Entry"
         {
         "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
-        "OwnerKey" = "8:_2923A3E2D9934FDF89243D470C914787"
+        "OwnerKey" = "8:_161C9573446E4E4D8921EE78DD3FAB79"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
-        "OwnerKey" = "8:_194FB0C33FAA5B0898885DEC8C006F09"
+        "OwnerKey" = "8:_38B0A5B0F4B74D5483BDBD80FAA169ED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
-        "OwnerKey" = "8:_DFD29565D7A34D02BFE47AE7A774BC01"
+        "OwnerKey" = "8:_E26625E2EEBE478F9C581CCEE383E870"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
-        "OwnerKey" = "8:_BAD9B60C45154D1EBC629FF82CB2033D"
+        "OwnerKey" = "8:_497A0801682C48A89C0FEC5A5BE3D846"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
-        "OwnerKey" = "8:_7AC577025E1144C99E2F48319E9F5487"
+        "OwnerKey" = "8:_B50ED63DD6DF4AE49BAAF6EC3FBBCE35"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_9BFD5E0B3AB14B20A5A54689B0871EAB"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_43BEBA261F214DEB851D8D51CA3A4B53"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_52BA8A4F893D46A5A9560709D07D8D62"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_5CD05C38129C422B93845D688AB44F58"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_3F753352669F434EA49F11B68F2FE9AD"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_DB2C0A2684D54BE5AE3AC671F46F0F28"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_1756B5AE555844A59C16B9602691CBEF"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_AA0363E8E0144D6BA87E0738A597B217"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_B0C7C573EE9A484BB6DB1DF3776DC1BA"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_46CC3ABBB1034592856408994E85A277"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_05DBE31BD17C439D9CE4CBAE64E30753"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_DA764BDF8DE448D88CFF51ECB0666EB9"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_B0FE04CB568C4F6BBAB2E140A7BDEF2E"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_89BC353A12764B3E93B14344B29D59FF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -57,7 +141,13 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_02825C82674C4AEA9A27F8DF76F74E94"
+        "MsmKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
+        "OwnerKey" = "8:_194FB0C33FAA5B0898885DEC8C006F09"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_05DBE31BD17C439D9CE4CBAE64E30753"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -75,8 +165,32 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_161C9573446E4E4D8921EE78DD3FAB79"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_1756B5AE555844A59C16B9602691CBEF"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_194FB0C33FAA5B0898885DEC8C006F09"
-        "OwnerKey" = "8:_DFD29565D7A34D02BFE47AE7A774BC01"
+        "OwnerKey" = "8:_161C9573446E4E4D8921EE78DD3FAB79"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_194FB0C33FAA5B0898885DEC8C006F09"
+        "OwnerKey" = "8:_52BA8A4F893D46A5A9560709D07D8D62"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_194FB0C33FAA5B0898885DEC8C006F09"
+        "OwnerKey" = "8:_46CC3ABBB1034592856408994E85A277"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -99,18 +213,6 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_2923A3E2D9934FDF89243D470C914787"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_2CEBA81A12E54F33B79A0876AEA32DE3"
-        "OwnerKey" = "8:_UNDEFINED"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
         "MsmKey" = "8:_3308E1E9AA9CEB81A47E8C2169A495E0"
         "OwnerKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
         "MsmSig" = "8:_UNDEFINED"
@@ -123,7 +225,19 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_3CD68435AC034E648182AD4BD1E3BBA4"
+        "MsmKey" = "8:_38B0A5B0F4B74D5483BDBD80FAA169ED"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_3B3E2D4452BE45BFBCABA5ACD579F82E"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_3F753352669F434EA49F11B68F2FE9AD"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -135,7 +249,19 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_40C4B9B429284260B029C976378374ED"
+        "MsmKey" = "8:_43BEBA261F214DEB851D8D51CA3A4B53"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_45F8A640F4D640448FE9B87FEE6735A5"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_46CC3ABBB1034592856408994E85A277"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -147,7 +273,25 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_505097F361B64701AB1A889B41E8E33B"
+        "MsmKey" = "8:_48EC6A423C6442D7B66B1B4A40548A34"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_497A0801682C48A89C0FEC5A5BE3D846"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_52BA8A4F893D46A5A9560709D07D8D62"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_58926492A02148B59EDE817E062D8138"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -159,6 +303,12 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_5CD05C38129C422B93845D688AB44F58"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
         "OwnerKey" = "8:_013690B21DD78F84B7E61C6942E22DB5"
         "MsmSig" = "8:_UNDEFINED"
@@ -166,7 +316,73 @@
         "Entry"
         {
         "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
-        "OwnerKey" = "8:_7AC577025E1144C99E2F48319E9F5487"
+        "OwnerKey" = "8:_38B0A5B0F4B74D5483BDBD80FAA169ED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
+        "OwnerKey" = "8:_497A0801682C48A89C0FEC5A5BE3D846"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
+        "OwnerKey" = "8:_B50ED63DD6DF4AE49BAAF6EC3FBBCE35"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
+        "OwnerKey" = "8:_7304D6ECFDD64435A39A6610DC6046DF"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
+        "OwnerKey" = "8:_43BEBA261F214DEB851D8D51CA3A4B53"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
+        "OwnerKey" = "8:_5CD05C38129C422B93845D688AB44F58"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
+        "OwnerKey" = "8:_DB2C0A2684D54BE5AE3AC671F46F0F28"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
+        "OwnerKey" = "8:_1756B5AE555844A59C16B9602691CBEF"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
+        "OwnerKey" = "8:_6408ED5E4F444F878AAFDA5E91FDA5C9"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
+        "OwnerKey" = "8:_B0C7C573EE9A484BB6DB1DF3776DC1BA"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
+        "OwnerKey" = "8:_DA764BDF8DE448D88CFF51ECB0666EB9"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
+        "OwnerKey" = "8:_89BC353A12764B3E93B14344B29D59FF"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -183,31 +399,31 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
-        "OwnerKey" = "8:_2923A3E2D9934FDF89243D470C914787"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_6D9E967FAD27400EB50CEB6F716C5BDD"
+        "MsmKey" = "8:_6408ED5E4F444F878AAFDA5E91FDA5C9"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_78E3430D5C444335B5ADFCB19421B617"
+        "MsmKey" = "8:_6F642520653B4C3C9E654DC38CCFDC99"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_7AC577025E1144C99E2F48319E9F5487"
+        "MsmKey" = "8:_7304D6ECFDD64435A39A6610DC6046DF"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_7FF1750BD49E4ED1A5E1CFB9ACC5B821"
+        "MsmKey" = "8:_7C72BCE199F64BD493259327524EA813"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_8143FA96A3384AEE8E68BB8BF2061046"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -219,7 +435,31 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_8581A936D47743FB914FFC1C75DE8F98"
+        "MsmKey" = "8:_865EDB44143D4D0297AE4ED7389CC1B8"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_89BC353A12764B3E93B14344B29D59FF"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_8BD9E76BAD884BA99D5F018220285D2B"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_9151774AC6964CED9B9756C008E0105C"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_9261BD4ADCB149F0A9CA291AB3B1F142"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -231,13 +471,19 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_98417F8E85624A4583C7A5B61AF328DF"
+        "MsmKey" = "8:_9BFD5E0B3AB14B20A5A54689B0871EAB"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_A9E1FC1254B44CC4AB23063DE8F2B8E1"
+        "MsmKey" = "8:_A9403736FE18400284A6DD11F932D631"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_AA0363E8E0144D6BA87E0738A597B217"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -249,7 +495,13 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_ABC8906A30E245CF9E751EF5F42021CE"
+        "MsmKey" = "8:_B0C7C573EE9A484BB6DB1DF3776DC1BA"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_B0FE04CB568C4F6BBAB2E140A7BDEF2E"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -261,7 +513,31 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_BAD9B60C45154D1EBC629FF82CB2033D"
+        "MsmKey" = "8:_B29790C4B7A13E3C8E3F03A2F2E80BF9"
+        "OwnerKey" = "8:_9BFD5E0B3AB14B20A5A54689B0871EAB"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_B29790C4B7A13E3C8E3F03A2F2E80BF9"
+        "OwnerKey" = "8:_AA0363E8E0144D6BA87E0738A597B217"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_B29790C4B7A13E3C8E3F03A2F2E80BF9"
+        "OwnerKey" = "8:_B0FE04CB568C4F6BBAB2E140A7BDEF2E"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_B50ED63DD6DF4AE49BAAF6EC3FBBCE35"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_B97399F77B7B451B944843026B9CFF37"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -279,6 +555,18 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_C118BF4B2C9846D8BB6C1E3CD08C3098"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_C4B35A698FD94B6DBC72883D446ACE22"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_C570F3339944D9F89F080F6B36E1B33B"
         "OwnerKey" = "8:_6283ECEABA17ECFA71A0BA988C9F2D90"
         "MsmSig" = "8:_UNDEFINED"
@@ -291,19 +579,25 @@
         }
         "Entry"
         {
-        "MsmKey" = "8:_D643E3215E584B98BBF905C71E2839E0"
+        "MsmKey" = "8:_CD5447B301B944FEAFC18E1923E9091E"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_DF077938D50B48829D86C7632DA371EB"
+        "MsmKey" = "8:_DA764BDF8DE448D88CFF51ECB0666EB9"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_DFD29565D7A34D02BFE47AE7A774BC01"
+        "MsmKey" = "8:_DB2C0A2684D54BE5AE3AC671F46F0F28"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_E26625E2EEBE478F9C581CCEE383E870"
         "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
@@ -315,8 +609,20 @@
         }
         "Entry"
         {
+        "MsmKey" = "8:_EC34687E99AF4A9782D0613A15827345"
+        "OwnerKey" = "8:_UNDEFINED"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
         "MsmKey" = "8:_F1CB386651D67BF430A9FDFD2DAFF355"
-        "OwnerKey" = "8:_DFD29565D7A34D02BFE47AE7A774BC01"
+        "OwnerKey" = "8:_161C9573446E4E4D8921EE78DD3FAB79"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_F72B2D0ACF234819BFD49939B3C6C5A1"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -334,25 +640,67 @@
         "Entry"
         {
         "MsmKey" = "8:_FCC3A173FFCD99D15CC38A33AA8A1EE7"
-        "OwnerKey" = "8:_DFD29565D7A34D02BFE47AE7A774BC01"
-        "MsmSig" = "8:_UNDEFINED"
-        }
-        "Entry"
-        {
-        "MsmKey" = "8:_FCC3A173FFCD99D15CC38A33AA8A1EE7"
         "OwnerKey" = "8:_194FB0C33FAA5B0898885DEC8C006F09"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
         "MsmKey" = "8:_FCC3A173FFCD99D15CC38A33AA8A1EE7"
-        "OwnerKey" = "8:_BAD9B60C45154D1EBC629FF82CB2033D"
+        "OwnerKey" = "8:_E26625E2EEBE478F9C581CCEE383E870"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
         {
-        "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_DFD29565D7A34D02BFE47AE7A774BC01"
+        "MsmKey" = "8:_FCC3A173FFCD99D15CC38A33AA8A1EE7"
+        "OwnerKey" = "8:_9BFD5E0B3AB14B20A5A54689B0871EAB"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_FCC3A173FFCD99D15CC38A33AA8A1EE7"
+        "OwnerKey" = "8:_52BA8A4F893D46A5A9560709D07D8D62"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_FCC3A173FFCD99D15CC38A33AA8A1EE7"
+        "OwnerKey" = "8:_3F753352669F434EA49F11B68F2FE9AD"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_FCC3A173FFCD99D15CC38A33AA8A1EE7"
+        "OwnerKey" = "8:_AA0363E8E0144D6BA87E0738A597B217"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_FCC3A173FFCD99D15CC38A33AA8A1EE7"
+        "OwnerKey" = "8:_46CC3ABBB1034592856408994E85A277"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_FCC3A173FFCD99D15CC38A33AA8A1EE7"
+        "OwnerKey" = "8:_05DBE31BD17C439D9CE4CBAE64E30753"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_FCC3A173FFCD99D15CC38A33AA8A1EE7"
+        "OwnerKey" = "8:_B0FE04CB568C4F6BBAB2E140A7BDEF2E"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_FCC3A173FFCD99D15CC38A33AA8A1EE7"
+        "OwnerKey" = "8:_161C9573446E4E4D8921EE78DD3FAB79"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_FF02E33E708C49789523219AB9B3836D"
+        "OwnerKey" = "8:_UNDEFINED"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -364,7 +712,43 @@
         "Entry"
         {
         "MsmKey" = "8:_UNDEFINED"
-        "OwnerKey" = "8:_BAD9B60C45154D1EBC629FF82CB2033D"
+        "OwnerKey" = "8:_E26625E2EEBE478F9C581CCEE383E870"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_52BA8A4F893D46A5A9560709D07D8D62"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_3F753352669F434EA49F11B68F2FE9AD"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_46CC3ABBB1034592856408994E85A277"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_45F8A640F4D640448FE9B87FEE6735A5"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_05DBE31BD17C439D9CE4CBAE64E30753"
+        "MsmSig" = "8:_UNDEFINED"
+        }
+        "Entry"
+        {
+        "MsmKey" = "8:_UNDEFINED"
+        "OwnerKey" = "8:_161C9573446E4E4D8921EE78DD3FAB79"
         "MsmSig" = "8:_UNDEFINED"
         }
         "Entry"
@@ -509,7 +893,7 @@
         "DisplayName" = "8:Release"
         "IsDebugOnly" = "11:FALSE"
         "IsReleaseOnly" = "11:TRUE"
-        "OutputFilename" = "8:Release\\EzCode(All-Programs)-V1.11.5.msi"
+        "OutputFilename" = "8:Release\\EzCode(All-Programs)-V{Version}.msi"
         "PackageFilesAs" = "3:2"
         "PackageFileSize" = "3:-2147483648"
         "CabType" = "3:1"
@@ -605,10 +989,21 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_02825C82674C4AEA9A27F8DF76F74E94"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_05DBE31BD17C439D9CE4CBAE64E30753"
             {
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\startup_project.txt"
-            "TargetName" = "8:startup_project.txt"
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio.WinForms, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_05DBE31BD17C439D9CE4CBAE64E30753"
+                    {
+                    "Name" = "8:NAudio.WinForms.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\NAudio.WinForms.dll"
+            "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
             "Condition" = "8:"
@@ -654,6 +1049,68 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_161C9573446E4E4D8921EE78DD3FAB79"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:ezCode, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_161C9573446E4E4D8921EE78DD3FAB79"
+                    {
+                    "Name" = "8:ezCode.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezCode.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_1756B5AE555844A59C16B9602691CBEF"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio.Midi, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_1756B5AE555844A59C16B9602691CBEF"
+                    {
+                    "Name" = "8:NAudio.Midi.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode-Project Player\\bin\\Release\\net7.0-windows\\NAudio.Midi.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_194FB0C33FAA5B0898885DEC8C006F09"
@@ -780,57 +1237,6 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_2923A3E2D9934FDF89243D470C914787"
-            {
-            "AssemblyRegister" = "3:1"
-            "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:NAudio.Asio, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
-                "ScatterAssemblies"
-                {
-                    "_2923A3E2D9934FDF89243D470C914787"
-                    {
-                    "Name" = "8:NAudio.Asio.dll"
-                    "Attributes" = "3:512"
-                    }
-                }
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\NAudio.Asio.dll"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_2CEBA81A12E54F33B79A0876AEA32DE3"
-            {
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\autosave.txt"
-            "TargetName" = "8:autosave.txt"
-            "Tag" = "8:"
-            "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_3308E1E9AA9CEB81A47E8C2169A495E0"
             {
             "AssemblyRegister" = "3:1"
@@ -893,12 +1299,74 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3CD68435AC034E648182AD4BD1E3BBA4"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_38B0A5B0F4B74D5483BDBD80FAA169ED"
             {
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezCode.exe"
-            "TargetName" = "8:ezCode.exe"
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio.WinMM, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_38B0A5B0F4B74D5483BDBD80FAA169ED"
+                    {
+                    "Name" = "8:NAudio.WinMM.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode_Viewer\\bin\\Release\\net7.0-windows\\NAudio.WinMM.dll"
+            "TargetName" = "8:"
             "Tag" = "8:"
-            "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
+            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_3B3E2D4452BE45BFBCABA5ACD579F82E"
+            {
+            "SourcePath" = "8:..\\ezcode-packager\\bin\\Release\\net7.0-windows\\ezcode-packager.deps.json"
+            "TargetName" = "8:ezcode-packager.deps.json"
+            "Tag" = "8:"
+            "Folder" = "8:_1F81C67AD1A44BCC8400EB75D7454C40"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_3F753352669F434EA49F11B68F2FE9AD"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio.WinForms, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_3F753352669F434EA49F11B68F2FE9AD"
+                    {
+                    "Name" = "8:NAudio.WinForms.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode-Project Player\\bin\\Release\\net7.0-windows\\NAudio.WinForms.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -944,12 +1412,85 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_40C4B9B429284260B029C976378374ED"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_43BEBA261F214DEB851D8D51CA3A4B53"
             {
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\temp.cache"
-            "TargetName" = "8:temp.cache"
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio.Asio, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_43BEBA261F214DEB851D8D51CA3A4B53"
+                    {
+                    "Name" = "8:NAudio.Asio.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode_Viewer\\bin\\Release\\net7.0-windows\\NAudio.Asio.dll"
+            "TargetName" = "8:"
             "Tag" = "8:"
-            "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
+            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_45F8A640F4D640448FE9B87FEE6735A5"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:ezcode-packager, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_45F8A640F4D640448FE9B87FEE6735A5"
+                    {
+                    "Name" = "8:ezcode-packager.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode-packager\\bin\\Release\\net7.0-windows\\ezcode-packager.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_1F81C67AD1A44BCC8400EB75D7454C40"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_46CC3ABBB1034592856408994E85A277"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:ezcode-Project Player, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_46CC3ABBB1034592856408994E85A277"
+                    {
+                    "Name" = "8:ezcode-Project Player.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode-Project Player\\bin\\Release\\net7.0-windows\\ezcode-Project Player.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -995,10 +1536,92 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_505097F361B64701AB1A889B41E8E33B"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_48EC6A423C6442D7B66B1B4A40548A34"
             {
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\programs2.txt"
-            "TargetName" = "8:programs2.txt"
+            "SourcePath" = "8:..\\ezcode-Project Player\\bin\\Release\\net7.0-windows\\ezcode-Project Player.exe"
+            "TargetName" = "8:ezcode-Project Player.exe"
+            "Tag" = "8:"
+            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_497A0801682C48A89C0FEC5A5BE3D846"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio.Wasapi, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_497A0801682C48A89C0FEC5A5BE3D846"
+                    {
+                    "Name" = "8:NAudio.Wasapi.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode_Viewer\\bin\\Release\\net7.0-windows\\NAudio.Wasapi.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_52BA8A4F893D46A5A9560709D07D8D62"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:ezcode_Viewer, Version=1.0.0.0, Culture=neutral, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_52BA8A4F893D46A5A9560709D07D8D62"
+                    {
+                    "Name" = "8:ezcode_Viewer.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode_Viewer\\bin\\Release\\net7.0-windows\\ezcode_Viewer.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_58926492A02148B59EDE817E062D8138"
+            {
+            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezCode.runtimeconfig.json"
+            "TargetName" = "8:ezCode.runtimeconfig.json"
             "Tag" = "8:"
             "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
             "Condition" = "8:"
@@ -1046,6 +1669,37 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_5CD05C38129C422B93845D688AB44F58"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio.WinMM, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_5CD05C38129C422B93845D688AB44F58"
+                    {
+                    "Name" = "8:NAudio.WinMM.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode-Project Player\\bin\\Release\\net7.0-windows\\NAudio.WinMM.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_6283ECEABA17ECFA71A0BA988C9F2D90"
             {
             "AssemblyRegister" = "3:1"
@@ -1077,21 +1731,92 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_7AC577025E1144C99E2F48319E9F5487"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_6408ED5E4F444F878AAFDA5E91FDA5C9"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:NAudio.Midi, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:NAudio.Core, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_7AC577025E1144C99E2F48319E9F5487"
+                    "_6408ED5E4F444F878AAFDA5E91FDA5C9"
                     {
-                    "Name" = "8:NAudio.Midi.dll"
+                    "Name" = "8:NAudio.Core.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\NAudio.Midi.dll"
+            "SourcePath" = "8:..\\ezcode-Project Player\\bin\\Release\\net7.0-windows\\NAudio.Core.dll"
             "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_6F642520653B4C3C9E654DC38CCFDC99"
+            {
+            "SourcePath" = "8:..\\ezcode-Project Player\\bin\\Release\\net7.0-windows\\ezcode-Project Player.pdb"
+            "TargetName" = "8:ezcode-Project Player.pdb"
+            "Tag" = "8:"
+            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_7304D6ECFDD64435A39A6610DC6046DF"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio.Core, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_7304D6ECFDD64435A39A6610DC6046DF"
+                    {
+                    "Name" = "8:NAudio.Core.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode_Viewer\\bin\\Release\\net7.0-windows\\NAudio.Core.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7C72BCE199F64BD493259327524EA813"
+            {
+            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezcode.xml"
+            "TargetName" = "8:ezcode.xml"
             "Tag" = "8:"
             "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
             "Condition" = "8:"
@@ -1108,10 +1833,10 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_7FF1750BD49E4ED1A5E1CFB9ACC5B821"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_8143FA96A3384AEE8E68BB8BF2061046"
             {
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezCode.runtimeconfig.json"
-            "TargetName" = "8:ezCode.runtimeconfig.json"
+            "SourcePath" = "8:..\\ezCode-IDE\\ezCode.ico"
+            "TargetName" = "8:ezCode.ico"
             "Tag" = "8:"
             "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
             "Condition" = "8:"
@@ -1148,6 +1873,117 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_865EDB44143D4D0297AE4ED7389CC1B8"
+            {
+            "SourcePath" = "8:..\\ezcode_Viewer\\bin\\Release\\net7.0-windows\\ezcode_Viewer.runtimeconfig.json"
+            "TargetName" = "8:ezcode_Viewer.runtimeconfig.json"
+            "Tag" = "8:"
+            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_89BC353A12764B3E93B14344B29D59FF"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio.Asio, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_89BC353A12764B3E93B14344B29D59FF"
+                    {
+                    "Name" = "8:NAudio.Asio.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\NAudio.Asio.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_8BD9E76BAD884BA99D5F018220285D2B"
+            {
+            "SourcePath" = "8:..\\ezcode-packager\\bin\\Release\\net7.0-windows\\ezcode-packager.runtimeconfig.json"
+            "TargetName" = "8:ezcode-packager.runtimeconfig.json"
+            "Tag" = "8:"
+            "Folder" = "8:_1F81C67AD1A44BCC8400EB75D7454C40"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9151774AC6964CED9B9756C008E0105C"
+            {
+            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezCode.deps.json"
+            "TargetName" = "8:ezCode.deps.json"
+            "Tag" = "8:"
+            "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_9261BD4ADCB149F0A9CA291AB3B1F142"
+            {
+            "SourcePath" = "8:..\\ezcode-packager\\bin\\Release\\net7.0-windows\\ezcode-packager.exe"
+            "TargetName" = "8:ezcode-packager.exe"
+            "Tag" = "8:"
+            "Folder" = "8:_1F81C67AD1A44BCC8400EB75D7454C40"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_97EDA76991B74F4793F2D22267B0DEB5"
             {
             "SourcePath" = "8:..\\ezcode_Viewer\\ezcode_viewer.ico"
@@ -1168,12 +2004,23 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_98417F8E85624A4583C7A5B61AF328DF"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_9BFD5E0B3AB14B20A5A54689B0871EAB"
             {
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezCode.ico"
-            "TargetName" = "8:ezCode.ico"
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_9BFD5E0B3AB14B20A5A54689B0871EAB"
+                    {
+                    "Name" = "8:NAudio.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode_Viewer\\bin\\Release\\net7.0-windows\\NAudio.dll"
+            "TargetName" = "8:"
             "Tag" = "8:"
-            "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
+            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1188,12 +2035,43 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A9E1FC1254B44CC4AB23063DE8F2B8E1"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_A9403736FE18400284A6DD11F932D631"
             {
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezCode.pdb"
-            "TargetName" = "8:ezCode.pdb"
+            "SourcePath" = "8:..\\ezcode-Project Player\\bin\\Release\\net7.0-windows\\ezcode-Project Player.runtimeconfig.json"
+            "TargetName" = "8:ezcode-Project Player.runtimeconfig.json"
             "Tag" = "8:"
-            "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
+            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_AA0363E8E0144D6BA87E0738A597B217"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_AA0363E8E0144D6BA87E0738A597B217"
+                    {
+                    "Name" = "8:NAudio.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode-Project Player\\bin\\Release\\net7.0-windows\\NAudio.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1239,10 +2117,52 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_ABC8906A30E245CF9E751EF5F42021CE"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_B0C7C573EE9A484BB6DB1DF3776DC1BA"
             {
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezcode.xml"
-            "TargetName" = "8:ezcode.xml"
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio.Asio, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_B0C7C573EE9A484BB6DB1DF3776DC1BA"
+                    {
+                    "Name" = "8:NAudio.Asio.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode-Project Player\\bin\\Release\\net7.0-windows\\NAudio.Asio.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_B0FE04CB568C4F6BBAB2E140A7BDEF2E"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_B0FE04CB568C4F6BBAB2E140A7BDEF2E"
+                    {
+                    "Name" = "8:NAudio.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\NAudio.dll"
+            "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
             "Condition" = "8:"
@@ -1290,21 +2210,41 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_BAD9B60C45154D1EBC629FF82CB2033D"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_B50ED63DD6DF4AE49BAAF6EC3FBBCE35"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:NAudio.WinForms, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:NAudio.Midi, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_BAD9B60C45154D1EBC629FF82CB2033D"
+                    "_B50ED63DD6DF4AE49BAAF6EC3FBBCE35"
                     {
-                    "Name" = "8:NAudio.WinForms.dll"
+                    "Name" = "8:NAudio.Midi.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\NAudio.WinForms.dll"
+            "SourcePath" = "8:..\\ezcode_Viewer\\bin\\Release\\net7.0-windows\\NAudio.Midi.dll"
             "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_B97399F77B7B451B944843026B9CFF37"
+            {
+            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezCode.pdb"
+            "TargetName" = "8:ezCode.pdb"
             "Tag" = "8:"
             "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
             "Condition" = "8:"
@@ -1383,6 +2323,46 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C118BF4B2C9846D8BB6C1E3CD08C3098"
+            {
+            "SourcePath" = "8:..\\ezcode-packager\\bin\\Release\\net7.0-windows\\ezcode-packager.pdb"
+            "TargetName" = "8:ezcode-packager.pdb"
+            "Tag" = "8:"
+            "Folder" = "8:_1F81C67AD1A44BCC8400EB75D7454C40"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_C4B35A698FD94B6DBC72883D446ACE22"
+            {
+            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezCode.exe"
+            "TargetName" = "8:ezCode.exe"
+            "Tag" = "8:"
+            "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_C570F3339944D9F89F080F6B36E1B33B"
             {
             "AssemblyRegister" = "3:1"
@@ -1434,12 +2414,12 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_D643E3215E584B98BBF905C71E2839E0"
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_CD5447B301B944FEAFC18E1923E9091E"
             {
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\programs1.txt"
-            "TargetName" = "8:programs1.txt"
+            "SourcePath" = "8:..\\ezcode-Project Player\\bin\\Release\\net7.0-windows\\ezcode-Project Player.deps.json"
+            "TargetName" = "8:ezcode-Project Player.deps.json"
             "Tag" = "8:"
-            "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
+            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1454,43 +2434,85 @@
             "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
-            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_DF077938D50B48829D86C7632DA371EB"
-            {
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezCode.deps.json"
-            "TargetName" = "8:ezCode.deps.json"
-            "Tag" = "8:"
-            "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            }
-            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_DFD29565D7A34D02BFE47AE7A774BC01"
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_DA764BDF8DE448D88CFF51ECB0666EB9"
             {
             "AssemblyRegister" = "3:1"
             "AssemblyIsInGAC" = "11:FALSE"
-            "AssemblyAsmDisplayName" = "8:ezCode, Version=1.4.1.0, Culture=neutral, processorArchitecture=MSIL"
+            "AssemblyAsmDisplayName" = "8:NAudio.Midi, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
                 "ScatterAssemblies"
                 {
-                    "_DFD29565D7A34D02BFE47AE7A774BC01"
+                    "_DA764BDF8DE448D88CFF51ECB0666EB9"
                     {
-                    "Name" = "8:ezCode.dll"
+                    "Name" = "8:NAudio.Midi.dll"
                     "Attributes" = "3:512"
                     }
                 }
-            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\ezCode.dll"
+            "SourcePath" = "8:..\\ezCode-IDE\\bin\\Release\\net7.0-windows\\NAudio.Midi.dll"
             "TargetName" = "8:"
             "Tag" = "8:"
             "Folder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_DB2C0A2684D54BE5AE3AC671F46F0F28"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio.Wasapi, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_DB2C0A2684D54BE5AE3AC671F46F0F28"
+                    {
+                    "Name" = "8:NAudio.Wasapi.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode-Project Player\\bin\\Release\\net7.0-windows\\NAudio.Wasapi.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
+            "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_E26625E2EEBE478F9C581CCEE383E870"
+            {
+            "AssemblyRegister" = "3:1"
+            "AssemblyIsInGAC" = "11:FALSE"
+            "AssemblyAsmDisplayName" = "8:NAudio.WinForms, Version=2.1.0.0, Culture=neutral, PublicKeyToken=e279aa5131008a41, processorArchitecture=MSIL"
+                "ScatterAssemblies"
+                {
+                    "_E26625E2EEBE478F9C581CCEE383E870"
+                    {
+                    "Name" = "8:NAudio.WinForms.dll"
+                    "Attributes" = "3:512"
+                    }
+                }
+            "SourcePath" = "8:..\\ezcode_Viewer\\bin\\Release\\net7.0-windows\\NAudio.WinForms.dll"
+            "TargetName" = "8:"
+            "Tag" = "8:"
+            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
             "Condition" = "8:"
             "Transitive" = "11:FALSE"
             "Vital" = "11:TRUE"
@@ -1536,6 +2558,26 @@
             "IsDependency" = "11:TRUE"
             "IsolateTo" = "8:"
             }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_EC34687E99AF4A9782D0613A15827345"
+            {
+            "SourcePath" = "8:..\\ezcode_Viewer\\bin\\Release\\net7.0-windows\\ezcode_Viewer.deps.json"
+            "TargetName" = "8:ezcode_Viewer.deps.json"
+            "Tag" = "8:"
+            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
+            "IsolateTo" = "8:"
+            }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F1CB386651D67BF430A9FDFD2DAFF355"
             {
             "AssemblyRegister" = "3:1"
@@ -1565,6 +2607,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_F72B2D0ACF234819BFD49939B3C6C5A1"
+            {
+            "SourcePath" = "8:..\\ezcode_Viewer\\bin\\Release\\net7.0-windows\\ezcode_Viewer.exe"
+            "TargetName" = "8:ezcode_Viewer.exe"
+            "Tag" = "8:"
+            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
             "{9F6F8455-1EF1-4B85-886A-4223BCC8E7F7}:_F9792370FF28B7BFDFC00E47BC71CFD1"
@@ -1658,6 +2720,26 @@
             "Register" = "3:1"
             "Exclude" = "11:FALSE"
             "IsDependency" = "11:TRUE"
+            "IsolateTo" = "8:"
+            }
+            "{1FB2D0AE-D3B9-43D4-B9DD-F88EC61E35DE}:_FF02E33E708C49789523219AB9B3836D"
+            {
+            "SourcePath" = "8:..\\ezcode_Viewer\\bin\\Release\\net7.0-windows\\ezcode_Viewer.pdb"
+            "TargetName" = "8:ezcode_Viewer.pdb"
+            "Tag" = "8:"
+            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
+            "Condition" = "8:"
+            "Transitive" = "11:FALSE"
+            "Vital" = "11:TRUE"
+            "ReadOnly" = "11:FALSE"
+            "Hidden" = "11:FALSE"
+            "System" = "11:FALSE"
+            "Permanent" = "11:FALSE"
+            "SharedLegacy" = "11:FALSE"
+            "PackageAs" = "3:1"
+            "Register" = "3:1"
+            "Exclude" = "11:FALSE"
+            "IsDependency" = "11:FALSE"
             "IsolateTo" = "8:"
             }
         }
@@ -1770,9 +2852,9 @@
         "Product"
         {
         "Name" = "8:Microsoft Visual Studio"
-        "ProductName" = "8:EzCode-All_Programs"
+        "ProductName" = "8:EzCode(All-Programs)"
         "ProductCode" = "8:{981941F3-8948-4311-BDD7-EA4E310DC5A0}"
-        "PackageCode" = "8:{EDFB7542-C8F3-4E1E-8063-FD938C7AE521}"
+        "PackageCode" = "8:{7159523B-D887-43BE-AE01-E448E33142AB}"
         "UpgradeCode" = "8:{1641EF72-6FE3-4D22-9D19-67612C7BB140}"
         "AspNetVersion" = "8:4.0.30319.0"
         "RestartWWWService" = "11:FALSE"
@@ -1783,13 +2865,13 @@
         "Manufacturer" = "8:JBros Development"
         "ARPHELPTELEPHONE" = "8:"
         "ARPHELPLINK" = "8:https://ez-code.web.app"
-        "Title" = "8:EzCode-All_Programs"
+        "Title" = "8:EzCode(All-Programs)-V{Version}"
         "Subject" = "8:Contains Editor (IDE), Viewer, Packager, and Player"
         "ARPCONTACT" = "8:JBros Development"
         "Keywords" = "8:EzCode, Programming, Packager, Player, Editor, IDE, Viewer"
         "ARPCOMMENTS" = "8:EzCode Programming language. This Includes Editor, Viewer, Packager, and Player."
         "ARPURLINFOABOUT" = "8:https://jbros-development.web.app"
-        "ARPPRODUCTICON" = "8:_98417F8E85624A4583C7A5B61AF328DF"
+        "ARPPRODUCTICON" = "8:"
         "ARPIconIndex" = "3:0"
         "SearchPath" = "8:"
         "UseSystemSearchPath" = "11:TRUE"
@@ -1892,21 +2974,21 @@
         }
         "Shortcut"
         {
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_007F935B3DCD4F309A16A3A84EDB7458"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_0049395AF9154EA2870DC6A99326D0C6"
             {
-            "Name" = "8:Viewer"
+            "Name" = "8:EZCode-IDE"
             "Arguments" = "8:"
             "Description" = "8:"
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_78E3430D5C444335B5ADFCB19421B617"
-            "Folder" = "8:_FD0275E8F30F461C9E04099254F794CE"
-            "WorkingFolder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
-            "Icon" = "8:_97EDA76991B74F4793F2D22267B0DEB5"
+            "Target" = "8:_C4B35A698FD94B6DBC72883D446ACE22"
+            "Folder" = "8:_A27EC411EEA6464CA3E117C46E56801A"
+            "WorkingFolder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
+            "Icon" = "8:_8143FA96A3384AEE8E68BB8BF2061046"
             "Feature" = "8:"
             }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_226BB7D0D88748F4A6A0D5D90ACDDE73"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_25000C0D25FF4B7385B24D627F6F91A4"
             {
             "Name" = "8:Player"
             "Arguments" = "8:"
@@ -1914,27 +2996,13 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_8581A936D47743FB914FFC1C75DE8F98"
+            "Target" = "8:_48EC6A423C6442D7B66B1B4A40548A34"
             "Folder" = "8:_FD0275E8F30F461C9E04099254F794CE"
             "WorkingFolder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
             "Icon" = "8:_821F827DA24245709D3F6A06F2A3C193"
             "Feature" = "8:"
             }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_ACEFE2F3D1CA4BCE87C09D068934BC5C"
-            {
-            "Name" = "8:Packager"
-            "Arguments" = "8:"
-            "Description" = "8:"
-            "ShowCmd" = "3:1"
-            "IconIndex" = "3:0"
-            "Transitive" = "11:FALSE"
-            "Target" = "8:_6D9E967FAD27400EB50CEB6F716C5BDD"
-            "Folder" = "8:_FD0275E8F30F461C9E04099254F794CE"
-            "WorkingFolder" = "8:_1F81C67AD1A44BCC8400EB75D7454C40"
-            "Icon" = "8:_C895237CF94445968CC3EA23929DC261"
-            "Feature" = "8:"
-            }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_C4A95B53AB8A4C21B78004E3B36B817B"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_3043B54377AA4D8DABB6086ABC378163"
             {
             "Name" = "8:Editor"
             "Arguments" = "8:"
@@ -1942,24 +3010,38 @@
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_3CD68435AC034E648182AD4BD1E3BBA4"
+            "Target" = "8:_C4B35A698FD94B6DBC72883D446ACE22"
             "Folder" = "8:_FD0275E8F30F461C9E04099254F794CE"
             "WorkingFolder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
-            "Icon" = "8:_98417F8E85624A4583C7A5B61AF328DF"
+            "Icon" = "8:_8143FA96A3384AEE8E68BB8BF2061046"
             "Feature" = "8:"
             }
-            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_E7125B51ADAC44AB9912D8544C7C1EB7"
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_D5DDD1FB1DF64E1E9116B5CD325A57F2"
             {
-            "Name" = "8:EZCode IDE"
+            "Name" = "8:Viewer"
             "Arguments" = "8:"
             "Description" = "8:"
             "ShowCmd" = "3:1"
             "IconIndex" = "3:0"
             "Transitive" = "11:FALSE"
-            "Target" = "8:_3CD68435AC034E648182AD4BD1E3BBA4"
-            "Folder" = "8:_A27EC411EEA6464CA3E117C46E56801A"
-            "WorkingFolder" = "8:_F3EAF1CF324C405080E8571973B87C8C"
-            "Icon" = "8:_98417F8E85624A4583C7A5B61AF328DF"
+            "Target" = "8:_F72B2D0ACF234819BFD49939B3C6C5A1"
+            "Folder" = "8:_FD0275E8F30F461C9E04099254F794CE"
+            "WorkingFolder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
+            "Icon" = "8:_97EDA76991B74F4793F2D22267B0DEB5"
+            "Feature" = "8:"
+            }
+            "{970C0BB2-C7D0-45D7-ABFA-7EC378858BC0}:_DAE56A53132E40E79A1D3840634A37CD"
+            {
+            "Name" = "8:Packager"
+            "Arguments" = "8:"
+            "Description" = "8:"
+            "ShowCmd" = "3:1"
+            "IconIndex" = "3:0"
+            "Transitive" = "11:FALSE"
+            "Target" = "8:_9261BD4ADCB149F0A9CA291AB3B1F142"
+            "Folder" = "8:_FD0275E8F30F461C9E04099254F794CE"
+            "WorkingFolder" = "8:_1F81C67AD1A44BCC8400EB75D7454C40"
+            "Icon" = "8:_C895237CF94445968CC3EA23929DC261"
             "Feature" = "8:"
             }
         }
@@ -2361,90 +3443,6 @@
         }
         "ProjectOutput"
         {
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_6D9E967FAD27400EB50CEB6F716C5BDD"
-            {
-            "SourcePath" = "8:..\\ezcode-packager\\obj\\Release\\net7.0-windows\\apphost.exe"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_1F81C67AD1A44BCC8400EB75D7454C40"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:PublishItems"
-            "OutputProjectGuid" = "8:{FF48D062-A12A-44C0-8CAA-AD2A2F1186C0}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_78E3430D5C444335B5ADFCB19421B617"
-            {
-            "SourcePath" = "8:..\\ezcode_Viewer\\obj\\Release\\net7.0-windows\\apphost.exe"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_C647B2547D9F4BB9B8C8F7990A9456D5"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:PublishItems"
-            "OutputProjectGuid" = "8:{821D180D-C51E-4C1E-93A7-638F1E410127}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
-            "{5259A561-127C-4D43-A0A1-72F10C7B3BF8}:_8581A936D47743FB914FFC1C75DE8F98"
-            {
-            "SourcePath" = "8:..\\ezcode-Project Player\\obj\\Release\\net7.0-windows\\apphost.exe"
-            "TargetName" = "8:"
-            "Tag" = "8:"
-            "Folder" = "8:_A8A4FD6A45E546E19E7043A1D9B83ED4"
-            "Condition" = "8:"
-            "Transitive" = "11:FALSE"
-            "Vital" = "11:TRUE"
-            "ReadOnly" = "11:FALSE"
-            "Hidden" = "11:FALSE"
-            "System" = "11:FALSE"
-            "Permanent" = "11:FALSE"
-            "SharedLegacy" = "11:FALSE"
-            "PackageAs" = "3:1"
-            "Register" = "3:1"
-            "Exclude" = "11:FALSE"
-            "IsDependency" = "11:FALSE"
-            "IsolateTo" = "8:"
-            "ProjectOutputGroupRegister" = "3:1"
-            "OutputConfiguration" = "8:"
-            "OutputGroupCanonicalName" = "8:PublishItems"
-            "OutputProjectGuid" = "8:{8A9ABE1C-1324-4338-B4F5-C5387F8F3883}"
-            "ShowKeyOutput" = "11:TRUE"
-                "ExcludeFilters"
-                {
-                }
-            }
         }
     }
 }

@@ -5204,7 +5204,6 @@ namespace ezcode_Viewer
                     }
                 }
             }
-            console.AddText("Build Ended" + Environment.NewLine + Environment.NewLine, false);
         }
         private bool ifcheck(multimids Mid, string v1, string v2)
         {
@@ -5557,6 +5556,7 @@ namespace ezcode_Viewer
             }
             playing = false;
             await Task.Delay(100);
+            console.AddText("Build Ended" + Environment.NewLine + Environment.NewLine, false);
         }
         private void stopToolStripMenuItem_Click(object sender, EventArgs e) //stoped
         {
