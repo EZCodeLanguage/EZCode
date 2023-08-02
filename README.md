@@ -38,6 +38,6 @@ EzCode is released under the [MIT License](LICENSE).
 
 ## Contact
 
-If you have any questions or feedback, feel free to reach out to us at [contact@ezcode.com](mailto:jbrosdevelopment@gmail.com).
+If you have any questions or feedback, feel free to reach out to us at [jbrosdevelopment@gmail.com](mailto:jbrosdevelopment@gmail.com).
 
 Happy coding with EzCode!
