@@ -33,6 +33,10 @@
   </ItemGroup>
 
   <ItemGroup>
+    <ProjectReference Include="..\EZCode\EZCode.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
     <None Update="ezcode.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>

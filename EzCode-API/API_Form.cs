@@ -10,9 +10,9 @@ using System.Windows.Forms;
 
 namespace EzCode_API
 {
-    public partial class Form1 : Form
+    public partial class API_Form : Form
     {
-        public Form1()
+        public API_Form()
         {
             InitializeComponent();
         }

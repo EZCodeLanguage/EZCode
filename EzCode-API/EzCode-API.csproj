@@ -13,4 +13,14 @@
     <PackageReference Include="NAudio" Version="2.1.0" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\EZCode\EZCode.csproj" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <Compile Update="EZCode_Form.cs">
+      <SubType>Form</SubType>
+    </Compile>
+  </ItemGroup>
+
 </Project>

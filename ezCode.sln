@@ -11,13 +11,15 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezcode-packager", "ezcode-p
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ezcode-Project Player", "ezcode-Project Player\ezcode-Project Player.csproj", "{8A9ABE1C-1324-4338-B4F5-C5387F8F3883}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EzCode-API.UNSUPPORTED", "EzCode-API\EzCode-API.UNSUPPORTED.csproj", "{39BE6D7A-C9DF-49A0-9023-5E3548F998C7}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EzCode-API", "EzCode-API\EzCode-API.csproj", "{39BE6D7A-C9DF-49A0-9023-5E3548F998C7}"
 EndProject
 Project("{54435603-DBB4-11D2-8724-00A0C9A8B90C}") = "EzCode-All_Programs", "EzCode-All_Programs\EzCode-All_Programs.vdproj", "{F9472726-2E05-4332-BC54-0B74D716CE67}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ezcode-Application", "ezcode-Application\ezcode-Application.csproj", "{3DFE8866-594F-47B4-8CC4-65378F6C58AD}"
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Playground", "Playground\Playground.csproj", "{997282C7-8AD9-4B0F-8A72-685911FE5C29}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EZCode", "EZCode\EZCode.csproj", "{C8FB09DE-19EC-4F2A-89F9-C159B0956355}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -55,6 +57,10 @@ Global
 		{997282C7-8AD9-4B0F-8A72-685911FE5C29}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{997282C7-8AD9-4B0F-8A72-685911FE5C29}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{997282C7-8AD9-4B0F-8A72-685911FE5C29}.Release|Any CPU.Build.0 = Release|Any CPU
+		{C8FB09DE-19EC-4F2A-89F9-C159B0956355}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{C8FB09DE-19EC-4F2A-89F9-C159B0956355}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{C8FB09DE-19EC-4F2A-89F9-C159B0956355}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{C8FB09DE-19EC-4F2A-89F9-C159B0956355}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

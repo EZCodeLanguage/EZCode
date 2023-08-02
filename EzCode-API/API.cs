@@ -7,7 +7,7 @@ namespace EzCode_API
     using System.Data;
     using Variables;
     /// <summary>
-    /// API for Ezcode programming language. Language version 1.9.12
+    /// API for Ezcode programming language. Language version 1.11.5
     /// </summary>
     public static class API
     {

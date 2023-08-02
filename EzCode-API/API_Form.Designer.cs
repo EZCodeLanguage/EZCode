@@ -1,6 +1,6 @@
 ﻿namespace EzCode_API
 {
-    partial class Form1
+    partial class API_Form
     {
         /// <summary>
         /// Required designer variable.
@@ -112,6 +112,7 @@
             this.Controls.Add(this.richTextBox1);
             this.Controls.Add(this.pictureBox1);
             this.Controls.Add(this.textBox1);
+            this.KeyPreview = true;
             this.Name = "Form1";
             this.Text = "Form1";
             this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.Form1_KeyDown);
