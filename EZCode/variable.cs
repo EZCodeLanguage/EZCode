@@ -1,75 +1,116 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Configuration;
-using System.Globalization;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
+﻿using System.Globalization;
+using System.Text.RegularExpressions;
 
 namespace Variables
 {
-    internal interface Ivar
+    public interface Ivar
     {
+        public enum Types
+        {
+            None,
+            File,
+            Bool,
+            Array,
+            Float,
+            String
+        }
         string Name { get; set; }
-        float number { get; set; }
-        string text { get; set; }
+        float? number { get; set; }
+        string? text { get; set; }
+        object? accessible { get; set; }
+        string[] array { get; set; }
         bool isSet { get; set; }
-        int stack { get; set; }
-        void set(string value);
-        void change(string middle, string multiplier);
-        void stringChange(string adds, string mid);
+        Types Description { get; set; }
+        void set(string? value = null, string[]? array = null);
+        bool Multiply(string middle, string multiplier);
+        bool Change(string adds, string mid);
         bool isNumber();
+        bool isArray();
+        bool isBool();
+        bool isFile();
+        bool isFile(string value);
+        bool isString();
         string value();
+        bool? returnBool(string value);
     }
     public class Var : Ivar
     {
         public string Name { get; set; }
-        public float number { get; set; }
-        public string text { get; set; }
-        public int stack { get; set; }
+        public float? number { get; set; }
+        public string? text { get; set; }
+        public object? accessible { get; set; }
+        public string[] array { get; set; }
         public bool isSet { get; set; }
+        public Ivar.Types Description { get; set; }
 
-        string StringStandered = "IF YOU GET THIS. IT IS AN ERROR MESSAGE - (23dsffdsf86dg45b64ytu7578566434654fg4g4fhjd) = just some random text";
-        float FloatStatendered = 1111.111100015684465464864f;
-
-        public Var(string name) 
+        public Var(string name, string value = "", Ivar.Types type = Ivar.Types.None) 
         {
             Name = name;
-            number = FloatStatendered;
-            text = StringStandered;
+            number = null;
+            text = null;
+            Description = type;
+            set(value);
         }
-        public void set(string value)
+        public void set(string? value = null, string[]? array = null)
+        {
+            if (value != null)
+            {
+                try
+                {
+                    number = float.Parse(value, CultureInfo.InvariantCulture.NumberFormat);
+                    text = value;
+                    Description = Description == Ivar.Types.None ? Ivar.Types.Float : Description;
+                }
+                catch
+                {
+                    if (isFile(value))
+                    {
+                        Description = Description == Ivar.Types.None ? Ivar.Types.File : Description;
+                    }
+                    else if (returnBool(value) != null)
+                    {
+                        Description = Description == Ivar.Types.None ? Ivar.Types.Bool : Description;
+                    }
+                    else
+                    {
+                        Description = Description == Ivar.Types.None ? Ivar.Types.String : Description;
+                    }
+                    number = null;
+                    text = value;
+                }
+            }
+            else if (array != null)
+            {
+                Description = Description == Ivar.Types.None ? Ivar.Types.Array : Description;
+                this.array = array;
+            }
+            else
+            {
+                this.text = value;
+            }
+        }
+        public bool Multiply(string middle, string multiplier)
         {
             try
             {
-                number = float.Parse(value, CultureInfo.InvariantCulture.NumberFormat);
-            }
-            catch
-            {
-                text = value;
-            }
-        }
-        public void change(string middle, string multiplier)
-        {
-            try
-            {
+                if (!isNumber()) return false;
                 float value = float.Parse(multiplier, CultureInfo.InvariantCulture.NumberFormat);
                 float final;
                 if(middle == "+")
                 {
-                    final = number + value;
+                    final = (float)number + value;
                 }
                 else if(middle == "*")
                 {
-                    final = number * value;
+                    final = (float)number * value;
                 }
                 else if(middle == "-")
                 {
-                    final = number - value;
+                    final = (float)number - value;
                 }
                 else if(middle == "/")
                 {
-                    final = number / value;
+                    final = (float)number / value;
                 }
                 else if(middle == "=")
                 {
@@ -77,16 +118,18 @@ namespace Variables
                 }
                 else
                 {
-                    final = number;
+                    final = (float)number;
                 }
                 number = final;
+                return true;
             }
             catch
             {
                 isSet = false;
+                return false;
             }
         }
-        public void stringChange(string value, string mid)
+        public bool Change(string mid, string value)
         {
             try
             {
@@ -112,7 +155,7 @@ namespace Variables
                             catch
                             {
                                 isSet = false;
-                                return;
+                                return false;
                             }
                             for (int i = 0; i < text.Length; i++)
                             {
@@ -121,27 +164,32 @@ namespace Variables
                                     text = text.Remove(i);
                                 }
                             }
+                            Description = returnBool(text) == true ? Ivar.Types.Bool : Description;
                             setted = true;
                             break;
                     }
                     if(!setted)
                     {
                         isSet = false;
+                        return false;
                     }
+                    return true;
                 }
                 else
                 {
                     isSet = false;
+                    return false;
                 }
             }
             catch
             {
                 isSet = false;
+                return false;
             }
         }
-        public bool isNumber()
+        public bool isString()
         {
-            if(number != FloatStatendered)
+            if (Description == Ivar.Types.String)
             {
                 return true;
             }
@@ -150,17 +198,124 @@ namespace Variables
                 return false;
             }
         }
+        public bool isNumber()
+        {
+            if (Description == Ivar.Types.Float)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public bool isArray()
+        {
+            if (Description == Ivar.Types.Array)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public bool isBool()
+        {
+            if (Description == Ivar.Types.Bool)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public bool isFile()
+        {
+            if (Description == Ivar.Types.File)
+            {
+                return true;
+            }
+            else
+            {
+                return false;
+            }
+        }
+        public bool isFile(string path)
+        {
+            Regex driveCheck = new Regex(@"^[a-zA-Z]:\\$");
+            if (string.IsNullOrWhiteSpace(path) || path.Length < 3)
+            {
+                return false;
+            }
+
+            if (!driveCheck.IsMatch(path.Substring(0, 3)))
+            {
+                return false;
+            }
+            string strTheseAreInvalidFileNameChars = new string(Path.GetInvalidPathChars());
+            strTheseAreInvalidFileNameChars += @":/?*" + "\"";
+            Regex containsABadCharacter = new Regex("[" + Regex.Escape(strTheseAreInvalidFileNameChars) + "]");
+            if (containsABadCharacter.IsMatch(path.Substring(3, path.Length - 3)))
+            {
+                return false;
+            }
+
+            return true;
+        }
         public string value()
         {
             if (isNumber())
             {
                 return number.ToString();
             }
+            else if (isArray())
+            {
+                return string.Join(",", array);
+            }
             else
             {
                 return text.ToString();
             }
         }
-
+        public bool? returnBool(string value)
+        {
+            if (value == "yes" || value == "Yes" || value == "Y" || value == "y" || value == "true" || value == "True" || value == "1")
+            {
+                return true;
+            }
+            else if (value == "no" || value == "No" || value == "N" || value == "n" || value == "false" || value == "False" || value == "0")
+            {
+                return false;
+            }
+            else
+            {
+                return null;
+            }
+        }
+        public bool returnBool()
+        {
+            string value = text != null ? text : "";
+            if(Description == Ivar.Types.Bool || Description == Ivar.Types.Float)
+            {
+                if (value == "yes" || value == "Yes" || value == "Y" || value == "y" || value == "true" || value == "True" || value == "1")
+                {
+                    return true;
+                }
+                else if (value == "no" || value == "No" || value == "N" || value == "n" || value == "false" || value == "False" || value == "0")
+                {
+                    return false;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            else
+            {
+                return false;
+            }
+        }
     }
 }

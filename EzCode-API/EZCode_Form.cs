@@ -19,12 +19,20 @@ namespace EzCode_API
         {
             InitializeComponent();
             ezcode.Initialize(_space: OutputPanel, _console: Console);
-            if(File.Exists("cache"))InputText.Text = File.ReadAllText("cache");
+            if(File.Exists("cache")) InputText.Text = File.ReadAllText("cache");
             else File.Create("cache").Close();
+            if(File.Exists("dircache")) directory.Text = File.ReadAllText("dircache");
+            else File.Create("dircache").Close();
+            AppDomain.CurrentDomain.UnhandledException += ezcode.CurrentDomain_UnhandledException;
+            OutputPanel.MouseMove += ezcode.MouseInput_Move;
+            OutputPanel.MouseDown += ezcode.MouseInput_Down;
+            OutputPanel.MouseUp += ezcode.MouseInput_Up;
         }
 
         private async void Start_Click(object sender, EventArgs e) // START
         {
+            bool str = directory.Text == "" ? true : ezcode.SetScriptDirectory(directory.Text);
+            if (!str) MessageBox.Show("Invalid path", "Directory", MessageBoxButtons.OK, MessageBoxIcon.Warning);
             await ezcode.Play(InputText.Text);
         }
 
@@ -87,6 +95,7 @@ namespace EzCode_API
         private void EZCode_Form_FormClosing(object sender, FormClosingEventArgs e)
         {
             File.WriteAllText("cache", InputText.Text);
+            File.WriteAllText("dircache", directory.Text);
         }
     }
 }

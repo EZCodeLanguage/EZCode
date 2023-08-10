@@ -36,26 +36,32 @@
             this.Quit = new System.Windows.Forms.Button();
             this.Clear = new System.Windows.Forms.Button();
             this.OutputPanel = new System.Windows.Forms.Panel();
+            this.directory = new System.Windows.Forms.TextBox();
             this.SuspendLayout();
             // 
             // InputText
             // 
+            this.InputText.AcceptsReturn = true;
+            this.InputText.AcceptsTab = true;
+            this.InputText.AllowDrop = true;
             this.InputText.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.InputText.BackColor = System.Drawing.Color.WhiteSmoke;
             this.InputText.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.InputText.Location = new System.Drawing.Point(12, 12);
+            this.InputText.Location = new System.Drawing.Point(11, 38);
             this.InputText.Multiline = true;
             this.InputText.Name = "InputText";
-            this.InputText.Size = new System.Drawing.Size(350, 250);
+            this.InputText.ScrollBars = System.Windows.Forms.ScrollBars.Both;
+            this.InputText.Size = new System.Drawing.Size(357, 224);
             this.InputText.TabIndex = 0;
+            this.InputText.WordWrap = false;
             // 
             // Console
             // 
             this.Console.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Console.Location = new System.Drawing.Point(12, 294);
+            this.Console.Location = new System.Drawing.Point(11, 294);
             this.Console.Name = "Console";
             this.Console.ReadOnly = true;
             this.Console.Size = new System.Drawing.Size(765, 146);
@@ -67,7 +73,7 @@
             // 
             this.Start.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Start.Location = new System.Drawing.Point(12, 268);
+            this.Start.Location = new System.Drawing.Point(11, 268);
             this.Start.Name = "Start";
             this.Start.Size = new System.Drawing.Size(662, 23);
             this.Start.TabIndex = 3;
@@ -79,7 +85,7 @@
             // 
             this.ConsoleInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ConsoleInput.Location = new System.Drawing.Point(12, 446);
+            this.ConsoleInput.Location = new System.Drawing.Point(11, 446);
             this.ConsoleInput.Name = "ConsoleInput";
             this.ConsoleInput.Size = new System.Drawing.Size(563, 23);
             this.ConsoleInput.TabIndex = 4;
@@ -88,7 +94,7 @@
             // Send
             // 
             this.Send.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Send.Location = new System.Drawing.Point(581, 445);
+            this.Send.Location = new System.Drawing.Point(580, 445);
             this.Send.Name = "Send";
             this.Send.Size = new System.Drawing.Size(95, 23);
             this.Send.TabIndex = 5;
@@ -99,7 +105,7 @@
             // Quit
             // 
             this.Quit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Quit.Location = new System.Drawing.Point(680, 268);
+            this.Quit.Location = new System.Drawing.Point(679, 268);
             this.Quit.Name = "Quit";
             this.Quit.Size = new System.Drawing.Size(95, 23);
             this.Quit.TabIndex = 6;
@@ -110,7 +116,7 @@
             // Clear
             // 
             this.Clear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Clear.Location = new System.Drawing.Point(682, 445);
+            this.Clear.Location = new System.Drawing.Point(681, 445);
             this.Clear.Name = "Clear";
             this.Clear.Size = new System.Drawing.Size(95, 23);
             this.Clear.TabIndex = 7;
@@ -123,10 +129,19 @@
             this.OutputPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.OutputPanel.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.OutputPanel.Location = new System.Drawing.Point(375, 12);
+            this.OutputPanel.Location = new System.Drawing.Point(374, 38);
             this.OutputPanel.Name = "OutputPanel";
-            this.OutputPanel.Size = new System.Drawing.Size(400, 250);
+            this.OutputPanel.Size = new System.Drawing.Size(400, 224);
             this.OutputPanel.TabIndex = 8;
+            // 
+            // directory
+            // 
+            this.directory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
+            | System.Windows.Forms.AnchorStyles.Right)));
+            this.directory.Location = new System.Drawing.Point(11, 9);
+            this.directory.Name = "directory";
+            this.directory.Size = new System.Drawing.Size(765, 23);
+            this.directory.TabIndex = 9;
             // 
             // EZCode_Form
             // 
@@ -134,6 +149,7 @@
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.DimGray;
             this.ClientSize = new System.Drawing.Size(783, 477);
+            this.Controls.Add(this.directory);
             this.Controls.Add(this.OutputPanel);
             this.Controls.Add(this.Clear);
             this.Controls.Add(this.Quit);
@@ -164,5 +180,6 @@
         private Button Quit;
         private Button Clear;
         private Panel OutputPanel;
+        private TextBox directory;
     }
 }
