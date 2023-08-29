@@ -1,5 +1,5 @@
 using NAudio.Wave;
-using Objects;
+using GControls;
 using System.Diagnostics;
 using Microsoft.VisualBasic;
 using System.Runtime.InteropServices;

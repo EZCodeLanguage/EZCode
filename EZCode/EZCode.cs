@@ -1,18 +1,21 @@
 ﻿using Groups;
 using NCalc;
-using Objects;
+using GControls;
 using Sound;
 using System.Data;
 using System.Drawing;
-using System.Numerics;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using System.Xml.Linq;
 using Variables;
 using Group = Groups.Group;
 using Player = Sound.Player;
 using Types = Variables.Ivar.Types;
+using System.Net.Http.Headers;
+using System.Xml.Linq;
+using System.Runtime;
+using NAudio.Dmo.Effect;
+//using Control = GControls.Control;
 
 namespace EZCode
 {
@@ -21,6 +24,7 @@ namespace EZCode
     /// </summary>
     public class EZCode
     {
+        #region Variables_and_Initializers
         /// <summary>
         /// Directory of the script playing
         /// </summary>
@@ -60,19 +64,19 @@ namespace EZCode
         /// <summary>
         /// List for Labels
         /// </summary>
-        private List<Label> labels = new List<Label>();
+        private List<GLabel> labels = new List<GLabel>();
         /// <summary>
         /// List for textboxes
         /// </summary>
-        private List<TextBox> textboxes = new List<TextBox>();
+        private List<GTextBox> textboxes = new List<GTextBox>();
         /// <summary>
         /// List for buttons
         /// </summary>
-        private List<Button> buttons = new List<Button>();
+        private List<GButton> buttons = new List<GButton>();
         /// <summary>
         /// List for gameobjects
         /// </summary>
-        private List<GObject> gameObjects = new List<GObject>();
+        private List<GShape> shapes = new List<GShape>();
         /// <summary>
         /// List for variables
         /// </summary>
@@ -80,7 +84,7 @@ namespace EZCode
         /// <summary>
         /// List of Groups
         /// </summary>
-        private List<Group> Group = new List<Group>();
+        private List<Group> groups = new List<Group>();
         /// <summary>
         /// List of all controls
         /// </summary>
@@ -152,7 +156,7 @@ namespace EZCode
         /// string array for naming violations
         /// </summary>
         public string[] UnusableNames = new string[] { "await", "button", "print", "group", "clear", "write", "stop",
-            "event", "textbox", "multiLine", "object", "image", "label", "font", "move", "scale", "color", "intersects",
+            "event", "textbox", "multiLine", "shape", "image", "label", "font", "move", "scale", "color", "intersects",
             "var", "input", "list", "file", "sound", "if", "//", "#create", "#suppress", "#", "system:", "?", "=", "!",
             ">", "<", "+", "-", "|", "\\", ",", "@", "#", "$", "%", "^", "&", "*", "(", ")", "/", "~", "`", ".", ":", ";" };
         /// <summary>
@@ -175,7 +179,7 @@ namespace EZCode
         /// <param name="_space">The Control used as the output space. Only needed if the code includes visual output, like 'object' or 'button'</param>
         /// <param name="_directory">The directory path where the file is located. Only needed if the code referenses another file locally using the '~/' character.</param>
         /// <param name="_Console">The RichTextbox that has the error color is wanted.</param>
-        public void Initialize(string _directory = "NOTHING", Control _space = null, RichTextBox _console = null, bool _showFileWithErrors = true, bool _showStartAndEnd = true, bool _clearConsole = true)
+        public void Initialize(string _directory = "NOTHING", System.Windows.Forms.Control _space = null, RichTextBox _console = null, bool _showFileWithErrors = true, bool _showStartAndEnd = true, bool _clearConsole = true)
         {
             Space = _space;
             RichConsole = _console;
@@ -190,10 +194,10 @@ namespace EZCode
         enum controlType
         {
             None,
-            Object,
+            Shape,
             Textbox,
-            Label,
-            Button
+            GLabel,
+            GButton
         }
         /// <summary>
         /// Plays EZCode code. Make sure you have initialized first.
@@ -206,13 +210,13 @@ namespace EZCode
             AllControls.Clear();
             Space.Controls.Clear();
             vars.Clear();
-            Group.Clear();
-            gameObjects.Clear();
+            groups.Clear();
+            shapes.Clear();
             labels.Clear();
             textboxes.Clear();
             buttons.Clear();
             if (ClearConsole) RichConsole.Clear();
-            if (showStartAndEnd) AddText("Build Start");
+            if (showStartAndEnd) AddText("Build Started");
             Code = code;
             string output = string.Empty;
             string[] lines = code.Split(seperatorChars);
@@ -231,6 +235,10 @@ namespace EZCode
             if (showStartAndEnd) AddText("Build Ended");
             return output;
         }
+
+        #endregion
+
+        #region EZCode_Script_Player
         string returnOutput;
         async Task<string[]> PlaySwitch(string[]? _parts = null, string jumpsto = "")
         {
@@ -261,31 +269,13 @@ namespace EZCode
                             returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
                         } // PRINT
                         break;
-                    case "object":
+                    case "shape":
                     case "label":
                     case "textbox":
                     case "button":
                         try
                         {
-                            GObject? obj = new GObject();
-                            Label? lab = new Label();
-                            TextBox? txb = new TextBox();
-                            Button? btn = new Button();
-                            controlType controltype =
-                                keyword == "object" ? controlType.Object :
-                                keyword == "label" ? controlType.Label :
-                                keyword == "textbox" ? controlType.Textbox :
-                                keyword == "button" ? controlType.Button :
-                                controlType.None;
-                            Control control = createControl(parts, controltype);
-                            obj = control is GObject ? control as GObject : null;
-                            lab = control is Label ? control as Label : null;
-                            txb = control is TextBox ? control as TextBox : null;
-                            btn = control is Button ? control as Button : null;
-                            if (obj == null && lab == null && txb == null && btn == null)
-                            {
-                                throw new Exception("ERROR");
-                            }
+                            DoControl(parts, keyword, 1);
                         }
                         catch
                         {
@@ -327,17 +317,17 @@ namespace EZCode
                             Space.Controls.Remove(control);
                             switch (control.AccessibleName)
                             {
-                                case "object":
-                                    gameObjects.Remove(control as GObject);
+                                case "shape":
+                                    shapes.Remove(control as GShape);
                                     break;
                                 case "button":
-                                    buttons.Remove(control as Button);
+                                    buttons.Remove(control as GButton);
                                     break;
                                 case "label":
-                                    labels.Remove(control as Label);
+                                    labels.Remove(control as GLabel);
                                     break;
                                 case "textbox":
-                                    textboxes.Remove(control as TextBox);
+                                    textboxes.Remove(control as GTextBox);
                                     break;
                                 default:
                                     returnOutput += returnOutput += ErrorText(parts, ErrorTypes.missingControl, keyword, name);
@@ -375,7 +365,7 @@ namespace EZCode
                     case "var":
                         try
                         {
-                            Var var = CreateVar(parts, allowJump: true).Result;
+                            Var var = await CreateVar(parts, allowJump: true);
                             vars.Add(var);
                         }
                         catch
@@ -403,7 +393,7 @@ namespace EZCode
 
                             switch (get_1.AccessibleName)
                             {
-                                case "object":
+                                case "shape":
                                     rect1 = get_1.Bounds;
                                     break;
                                 case "button":
@@ -421,7 +411,7 @@ namespace EZCode
                             }
                             switch (get_2.AccessibleName)
                             {
-                                case "object":
+                                case "shape":
                                     rect2 = get_2.Bounds;
                                     break;
                                 case "button":
@@ -459,6 +449,7 @@ namespace EZCode
                             {
                                 case "read":
                                     string[] file_r = await getFile(parts, 2);
+                                    if (!File.Exists(file_r[0])) throw new Exception($"File not found in line {codeLine}");
                                     output = File.ReadAllText(file_r[0]);
                                     endindex = int.Parse(file_r[1]);
                                     break;
@@ -491,6 +482,7 @@ namespace EZCode
                                     break;
                                 case "play":
                                     string[] file_p = await getFile(parts, 2);
+                                    if (!File.Exists(file_p[0])) throw new Exception($"File not found in line {codeLine}");
                                     string code = File.ReadAllText(file_p[0]);
                                     endindex = int.Parse(file_p[1]);
                                     string[] lines = code.Split(seperatorChars);
@@ -511,9 +503,10 @@ namespace EZCode
                             if (jumpTo) return new string[] { output, stillInFile.ToString() };
                             returnOutput += SetVKeyword(parts, endindex, keyword, output, Types.File);
                         }
-                        catch
+                        catch (Exception ex)
                         {
-                            returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            if(ex.Message == $"File not found in line {codeLine}") returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: ex.Message);
+                            else returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
                         } // FILE
                         break;
                     case "stop":
@@ -718,8 +711,23 @@ namespace EZCode
                                         returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
                                     }
                                     break;
+                                case "destroy":
+                                    Var var_d = getVar(name);
+                                    if (var_d.isSet && var_d.isArray())
+                                    {
+                                        vars.Remove(var_d);
+                                    }
+                                    else if (!var_d.isArray())
+                                    {
+                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in line {codeLine}");
+                                    }
+                                    else
+                                    {
+                                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
+                                    }
+                                    break;
                                 default:
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' or 'clear' in line {codeLine}");
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' 'destroy' or 'clear' in line {codeLine}");
                                     break;
                             }
                         }
@@ -727,6 +735,197 @@ namespace EZCode
                         {
                             returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
                         } // LIST
+                        break;
+                    case "group":
+                        try
+                        {
+                            string name = parts[1];
+                            string type = parts[2];
+                            List<Control> varray = new List<Control>();
+                            switch (type)
+                            {
+                                case "new":
+                                    string[] colon = getString_value(parts, 3, true);
+                                    string values = colon[0];
+                                    Group group = new Group(name);
+                                    if (!values.StartsWith(":") && values != "")
+                                    {
+                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' to set values to the Group in line {codeLine}");
+                                    }
+                                    else if (values == "")
+                                    {
+
+                                    }
+                                    else if (values.StartsWith(":"))
+                                    {
+                                        string[] allv = values.Remove(0, 1).Split(",").Select(x => x.Trim()).ToArray();
+                                        for (int i = 0; i < allv.Length; i++)
+                                        {
+                                            varray.Add(getControl(allv[i]));
+                                        }
+                                    }
+                                    group.set(varray);
+                                    groups.Add(group);
+                                    break;
+                                case "add":
+                                    Group group_a = getGroup(name);
+                                    if (group_a.isSet)
+                                    {
+                                        varray = group_a.Controls;
+                                        string[] colon_ = getString_value(parts, 3, true);
+                                        string values_ = colon_[0];
+                                        if (!values_.StartsWith(":") && values_ == "")
+                                        {
+                                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected values add to the Group in line {codeLine}");
+                                        }
+                                        else if (!values_.Contains(":"))
+                                        {
+                                            varray.Add(getControl(values_.Trim()));
+                                        }
+                                        else if (values_.StartsWith(":"))
+                                        {
+                                            string[] allv = values_.Remove(0, 1).Split(",").Select(x => x.Trim()).ToArray();
+                                            for (int i = 0; i < allv.Length; i++)
+                                            {
+                                                varray.Add(getControl(allv[i]));
+                                            };
+                                        }
+                                        group_a.set(varray);
+                                    }
+                                    else
+                                    {
+                                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                                    }
+                                    break;
+                                case "equals":
+                                    Group group_e = getGroup(name);
+                                    if (group_e.isSet)
+                                    {
+                                        varray = group_e.Controls;
+                                        float[] indexes = find_value(parts, 3, -1);
+                                        int index = (int)indexes[0];
+                                        string[] colon__ = getString_value(parts, (int)indexes[1], true);
+                                        string values__ = colon__[0];
+                                        if (values__ == "")
+                                        {
+                                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group in line {codeLine}");
+                                        }
+                                        else
+                                        {
+                                            varray[index] = getControl(values__.Trim());
+                                        }
+                                        group_e.Controls = varray;
+                                    }
+                                    else
+                                    {
+                                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                                    }
+                                    break;
+                                case "remove":
+                                    Group group_r = getGroup(name);
+                                    if (group_r.isSet)
+                                    {
+                                        varray = group_r.Controls;
+                                        float[]? indexes = null;
+                                        int? index = null;
+                                        Control?  rem = null;
+                                        try { 
+                                            indexes = find_value(parts, 3, -1); 
+                                            index = (int)indexes[0]; 
+                                        }
+                                        catch {
+                                            rem = getControl(parts[3]);
+                                        }
+                                        if (index == null && rem == null)
+                                        {
+                                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group in line {codeLine}");
+                                        }
+                                        else
+                                        {
+                                            if(index != null)
+                                            {
+                                                varray.RemoveAt((int)index);
+                                            }
+                                            else if(rem != null)
+                                            {
+                                                varray.Remove(rem);
+                                            }
+                                        }
+                                        group_r.set(varray);
+                                    }
+                                    else
+                                    {
+                                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                                    }
+                                    break;
+                                case "clear":
+                                    Group group_c = getGroup(name);
+                                    if (group_c.isSet)
+                                    {
+                                        group_c.clear();
+                                    }
+                                    else
+                                    {
+                                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                                    }
+                                    break;
+                                case "destroy":
+                                    Group group_d = getGroup(name);
+                                    if (group_d.isSet)
+                                    {
+                                        groups.Remove(group_d);
+                                    }
+                                    else
+                                    {
+                                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                                    }
+                                    break;
+                                case "change":
+                                    try
+                                    {
+                                        bool abs = BoolCheck(parts, 3);
+                                        Group group1 = getGroup(name);
+                                        if (group1.isSet)
+                                        {
+                                            group1.Absolute = abs;
+                                            Control control = new Control();
+                                            control.Text = group1.Text;
+                                            control.Top = group1.Y;
+                                            control.Width = group1.Width;
+                                            control.Height = group1.Height;
+                                            control.BackColor = Color.FromArgb(group1.bgR, group1.bgG, group1.bgB);
+                                            control.ForeColor = Color.FromArgb(group1.fcR, group1.fcG, group1.fcB);
+                                            control.Text = group1.Text;
+
+                                            control = Change(control, parts, 4, true, false, false, true);
+
+                                            group1.X = control.Left;
+                                            group1.Y = control.Top;
+                                            group1.Width = control.Width;
+                                            group1.Height = control.Height;
+                                            group1.bgR = control.BackColor.R;
+                                            group1.bgG = control.BackColor.G;
+                                            group1.bgB = control.BackColor.B;
+                                            group1.fcR = control.ForeColor.R;
+                                            group1.fcG = control.ForeColor.G;
+                                            group1.fcB = control.ForeColor.B;
+                                            group1.Text = control.Text;
+                                        }
+                                    }
+                                    catch
+                                    {
+                                        returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                                    }
+                                    break;
+                                default:
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' 'remove' 'change' or 'clear' in line {codeLine}");
+                                    break;
+                            }
+                        }
+                        catch
+                        {
+                            returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                        } // GROUP
                         break;
                     case "sound":
                         try
@@ -812,14 +1011,128 @@ namespace EZCode
                             returnOutput += ErrorText(parts,ErrorTypes.normal, keyword);
                         } // SOUND
                         break;
+                    case "event":
+                        try
+                        {
+                            string name = parts[1];
+                            Control? control = getControl(name);
+                            if (control == null)
+                            {
+                                returnOutput += returnOutput += ErrorText(parts, ErrorTypes.missingControl, keyword, name);
+                            }
+                            GShape gShape = new GShape();
+                            GLabel gLabel = new GLabel();
+                            GButton gButton = new GButton();
+                            GTextBox gTextBox = new GTextBox();
+                            switch (control.AccessibleName)
+                            {
+                                case "shape":
+                                    gShape = (control as GShape);
+                                    break;
+                                case "button":
+                                    gButton = (control as GButton);
+                                    break;
+                                case "label":
+                                    gLabel = (control as GLabel);
+                                    break;
+                                case "textbox":
+                                    gTextBox = (control as GTextBox);
+                                    break;
+                                default:
+                                    returnOutput += returnOutput += ErrorText(parts, ErrorTypes.missingControl, keyword, name);
+                                    break;
+                            }
+                            string type = parts[2];
+                            string[] file_r = await getFile(parts, 3);
+                            string file = file_r[0];
+                            switch (type)
+                            {
+                                case "click":
+                                    gShape.click = file;
+                                    gButton.click = file;
+                                    gLabel.click = file;
+                                    gTextBox.click = file;
+                                    gShape.Click += G_click;
+                                    gLabel.Click += G_click;
+                                    gTextBox.Click += G_click;
+                                    break;
+                                case "hover":
+                                    gShape.mousehover = file;
+                                    gButton.mousehover = file;
+                                    gLabel.mousehover = file;
+                                    gTextBox.mousehover = file;
+                                    control.MouseHover += G_mousehover;
+                                    break;
+                                case "move":
+                                    gShape.move = file;
+                                    gButton.move = file;
+                                    gLabel.move = file;
+                                    gTextBox.move = file;
+                                    control.LocationChanged += G_move;
+                                    break;
+                                case "scale":
+                                    gShape.scale = file;
+                                    gButton.scale = file;
+                                    gLabel.scale = file;
+                                    gTextBox.scale = file;
+                                    control.SizeChanged += G_scale;
+                                    break;
+                                case "backcolor":
+                                    gShape.backcolor = file;
+                                    gButton.backcolor = file;
+                                    gLabel.backcolor = file;
+                                    gTextBox.backcolor = file;
+                                    control.BackColorChanged += G_backcolor;
+                                    break;
+                                case "forecolor":
+                                    gShape.forecolor = file;
+                                    gButton.forecolor = file;
+                                    gLabel.forecolor = file;
+                                    gTextBox.forecolor = file;
+                                    control.ForeColorChanged += G_forecolor;
+                                    break;
+                                case "image":
+                                    gShape.image = file;
+                                    gButton.image = file;
+                                    gLabel.image = file;
+                                    gTextBox.image += file;
+                                    control.BackgroundImageChanged += G_image;
+                                    break;
+                                case "imagelayout":
+                                    gShape.imagelayout = file;
+                                    gButton.imagelayout = file;
+                                    gLabel.imagelayout = file;
+                                    gTextBox.imagelayout = file;
+                                    control.BackgroundImageLayoutChanged += G_imagetype;
+                                    break;
+                                case "font":
+                                    gShape.font = file;
+                                    gButton.font = file;
+                                    gLabel.font = file;
+                                    gTextBox.font = file;
+                                    control.FontChanged += G_font;
+                                    break;
+                                case "text":
+                                    gShape.text = file;
+                                    gButton.text = file;
+                                    gLabel.text = file;
+                                    gTextBox.text = file;
+                                    control.TextChanged += G_text;
+                                    break;
+                                default:
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'click' 'hover' 'move' 'scale' 'backcolor' 'forecolor' 'image' 'imagetype' 'font' or 'text' for 'event' in line {codeLine}");
+                                    break;
+                            }
+                        } 
+                        catch 
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                        }
+                        break; // EVENT
                     default:
                         try
                         {
-                            if (!keyword.StartsWith("//") && !getVar(keyword).isSet && keyword != "" && !keyword.StartsWith("#"))
-                            {
-                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a keyword or variable named '{keyword}' in line {codeLine}");
-                            }
-                            else if(keyword == "#" || keyword == "#create".ToLower() || keyword == "#suppress".ToLower())
+                            if(keyword == "#" || keyword == "#create".ToLower() || keyword == "#suppress".ToLower())
                             {
                                 int index = keyword == "#create".ToLower() ? 1 :
                                     keyword == "#" && parts[1] == "create".ToLower() ? 2 :
@@ -856,9 +1169,18 @@ namespace EZCode
                                         break;
                                 }
                             }
-                            else if (getVar(keyword).isSet)
+                            else if (vars.Select(x => x.Name).Contains(keyword))
                             {
                                 Var var = getVar(keyword);
+                            }
+                            else if (AllControls.Select(x => x.Name).Contains(keyword))
+                            {
+                                Control control = getControl(keyword);
+                                control = DoControl(parts, control.AccessibleName, 0);
+                            }
+                            else if (!keyword.StartsWith("//") && keyword != "")
+                            {
+                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a keyword or variable named '{keyword}' in line {codeLine}");
                             }
                         }
                         catch
@@ -877,6 +1199,43 @@ namespace EZCode
                 return new string[] { returnOutput, "true" };
             }
         }
+        Control DoControl(string[] parts, string contype, int index)
+        {
+            GShape? obj = new GShape();
+            GLabel? lab = new GLabel();
+            GTextBox? txb = new GTextBox();
+            GButton? btn = new GButton();
+            controlType controltype =
+                contype == "shape" ? controlType.Shape :
+                contype == "label" ? controlType.GLabel :
+                contype == "textbox" ? controlType.Textbox :
+                contype == "button" ? controlType.GButton :
+                controlType.None;
+            Control control = createControl(parts, controltype, index);
+            obj = control is GShape ? control as GShape : null;
+            lab = control is GLabel ? control as GLabel : null;
+            txb = control is GTextBox ? control as GTextBox : null;
+            btn = control is GButton ? control as GButton : null;
+            if (obj == null && lab == null && txb == null && btn == null)
+            {
+                throw new Exception();
+            }
+            return control;
+        }
+        Group getGroup(string name)
+        {
+            Group group = new Group(name);
+            group.isSet = false;
+            for (int i = 0; i < groups.Count; i++)
+            {
+                if (groups[i].Name == name)
+                {
+                    group = groups[i];
+                    group.isSet = true;
+                }
+            }
+            return group;
+        } 
         void StopAllSounds()
         {
             for (int i = 0; i < sounds.Count; i++)
@@ -907,14 +1266,14 @@ namespace EZCode
             }
             else
             {
-                Var var = getVar(parts[index]);
+                Var var = getVar(parts[index].Trim());
                 if (var.isBool() || var.isNumber())
                 {
                     check = var.returnBool();
                 }
-                else if (!var.isSet && var.returnBool(parts[index]) != null)
+                else if (!var.isSet && var.returnBool(parts[index].Trim()) != null)
                 {
-                    check = var.returnBool(parts[index]) == true;
+                    check = var.returnBool(parts[index].Trim()) == true;
                 }
                 else
                 {
@@ -1317,7 +1676,7 @@ namespace EZCode
                     default: break;
                 }
             }
-            else if (AllControls.Select(x => x.Name).Contains(ind[0]))
+            else if (AllControls.Select(x => x.Name).Contains(ind[0]) && ind.Length > 1)
             {
                 Control control = AllControls.FirstOrDefault(x => x.Name == ind[0]);
                 switch (ind[1])
@@ -1334,48 +1693,48 @@ namespace EZCode
                     case "height":
                         value = control.Height.ToString();
                         break;
-                    case "r":
+                    case "br":
                         value = control.BackColor.R.ToString();
                         break;
-                    case "g":
+                    case "bg":
                         value = control.BackColor.G.ToString();
                         break;
-                    case "b":
+                    case "bb":
                         value = control.BackColor.B.ToString();
                         break;
                     case "text":
-                        if (control is not GObject)
+                        if (control is not GShape)
                             value = control.Text.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Objects can don't have a 'text' property in line " + codeLine);
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text' property in line " + codeLine);
                         break;
-                    case "text-r":
-                        if (control is not GObject)
+                    case "fr":
+                        if (control is not GShape)
                             value = control.ForeColor.R.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Objects can don't have a 'text-r' property in line " + codeLine);
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-r' property in line " + codeLine);
                         break;
-                    case "text-g":
-                        if (control is not GObject)
+                    case "fg":
+                        if (control is not GShape)
                             value = control.ForeColor.G.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Objects can don't have a 'text-g' property in line " + codeLine);
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-g' property in line " + codeLine);
                         break;
-                    case "text-b":
-                        if (control is not GObject)
+                    case "fb":
+                        if (control is not GShape)
                             value = control.ForeColor.B.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Objects can don't have a 'text-b' property in line " + codeLine);
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-b' property in line " + codeLine);
                         break;
                     case "click":
-                        if (control is Button)
+                        if (control is GButton)
                             value = control.AccessibleDescription.Split("\n")[0];
                         else
                             returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Only Buttons have a 'click' property in line " + codeLine);
                         break;
                 }
             }
-            else if (vars.Select(x => x.Name).Contains(ind[0])) 
+            else if (vars.Select(x => x.Name).Contains(ind[0]) && ind.Length > 1) 
             {
                 Var var = getVar(ind[0]);
                 switch (ind[1])
@@ -1417,7 +1776,7 @@ namespace EZCode
         }
         void UpdateControlVariables()
         {
-            AllControls.AddRange(gameObjects); AllControls.AddRange(buttons);
+            AllControls.AddRange(shapes); AllControls.AddRange(buttons);
             AllControls.AddRange(labels); AllControls.AddRange(textboxes);
             /*foreach(Control control in AllControls)
             {
@@ -1455,31 +1814,31 @@ namespace EZCode
                 case controlType.None:
                     control = AllControls.FirstOrDefault(x => x.Name == name);
                     break;
-                case controlType.Object:
-                    control = gameObjects.FirstOrDefault(x => x.Name == name);
+                case controlType.Shape:
+                    control = shapes.FirstOrDefault(x => x.Name == name);
                     break;
-                case controlType.Label:
+                case controlType.GLabel:
                     control = labels.FirstOrDefault(x => x.Name == name);
                     break;
                 case controlType.Textbox:
                     control = textboxes.FirstOrDefault(x => x.Name == name);
                     break;
-                case controlType.Button:
+                case controlType.GButton:
                     control = buttons.FirstOrDefault(x => x.Name == name);
                     break;
             }
 
             return control;
         }
-        Control createControl(string[] parts, controlType controltype, int index = 1)
+        Control createControl(string[] parts, controlType controltype, int index = 1, bool overwrite = true)
         {
             string name = parts[index];
 
-            int violation = AllControls.Select(x => x.Name).Contains(name) == true ? 1 : UnusableNames.Contains(name) ? 2 : UnusableContains.Any(unusable => name.Contains(unusable)) ? 2 : 0;
+            int violation = overwrite ? 0 : AllControls.Select(x => x.Name).Contains(name) == true ? 1 : UnusableNames.Contains(name) ? 2 : UnusableContains.Any(unusable => name.Contains(unusable)) ? 2 : 0;
 
-            string type = controltype == controlType.Button ? "button" :
-                controltype == controlType.Object ? "object" : 
-                controltype == controlType.Label ? "label" : 
+            string type = controltype == controlType.GButton ? "button" :
+                controltype == controlType.Shape ? "shape" : 
+                controltype == controlType.GLabel ? "label" : 
                 controltype == controlType.Textbox ? "textbox" : 
                 "AN_INTERNAL_ERROR";
 
@@ -1493,40 +1852,16 @@ namespace EZCode
                     break;
             }
 
-            if (controltype == controlType.Object)
+            if (controltype == controlType.Shape)
             {
-                GObject control = new GObject();
-                float[] getpoints = find_value(parts, index + 1, 4);
-                int points = (int)getpoints[0];
-                index = (int)getpoints[1];
-                if (points < 3)
-                {
-                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the object {name} in line {codeLine}");
-                }
-                else if (points == 3) control = new GObject(GObject.Type.Triangle);
-                else if (points == 4) control = new GObject(GObject.Type.Square);
-                else control = new GObject(GObject.Type.Polygon, points);
+                GShape control = new GShape();
+                if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GShape;
+                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in line {codeLine}");
                 try
                 {
-                    float[] v = find_value(parts, index, 0);
-                    int x = (int)v[0];
-                    float[] v1 = find_value(parts, (int)v[1], 0);
-                    int y = (int)v1[0];
-                    float[] v2 = find_value(parts, (int)v1[1], 50);
-                    int scaleX = (int)v2[0];
-                    float[] v3 = find_value(parts, (int)v2[1], 50);
-                    int scaleY = (int)v3[0];
-                    float[] v4 = find_value(parts, (int)v3[1], 0);
-                    int r = (int)v4[0];
-                    float[] v5 = find_value(parts, (int)v4[1], 0);
-                    int g = (int)v5[0];
-                    float[] v6 = find_value(parts, (int)v5[1], 0);
-                    int b = (int)v6[0];
-                    control.Left = x;
-                    control.Top = y;
-                    control.Width = scaleX;
-                    control.Height = scaleY;
-                    control.BackColor = Color.FromArgb(r, g, b);
+                    control.Name = name;
+                    control.BackColor = Color.Black;
+                    control = Change(control, parts, index + 1, false, false, false, false, true) as GShape;
                     control.Name = name;
                     control.AccessibleName = type;
                 }
@@ -1535,157 +1870,494 @@ namespace EZCode
                     returnOutput += ErrorText(parts, ErrorTypes.normal, type);
                 }
 
-                Space.Controls.Add(control);
-                gameObjects.Add(control);
+                if (getControl(name) == null && overwrite)
+                {
+                    Space.Controls.Add(control);
+                    shapes.Add(control);
+                }
 
                 return control;
             }
-            else if (controltype == controlType.Label)
+            else if (controltype == controlType.GLabel)
             {
-                Label control = new Label();
+                GLabel control = new GLabel();
+                if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GLabel;
+                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in line {codeLine}");
                 control.Name = name;
                 control.AccessibleName = type;
-                control.AutoSize = true;
 
                 try
                 {
-                    string[] t = getString_value(parts, index + 1);
-                    control.Text = t[0];
-                    float[] v = find_value(parts, int.Parse(t[1]), 0);
-                    int x = (int)v[0];
-                    float[] v1 = find_value(parts, (int)v[1], 0);
-                    int y = (int)v1[0];
-                    float[] v4 = find_value(parts, (int)v1[1], 0);
-                    int r = (int)v4[0];
-                    float[] v5 = find_value(parts, (int)v4[1], 0);
-                    int g = (int)v5[0];
-                    float[] v6 = find_value(parts, (int)v5[1], 0);
-                    int b = (int)v6[0];
-                    control.Left = x;
-                    control.Top = y;
-                    control.ForeColor = Color.FromArgb(r, g, b);
+                    control = Change(control, parts, index + 1) as GLabel;
                 }
                 catch
                 {
                     returnOutput += ErrorText(parts, ErrorTypes.normal, type);
                 }
-
-                Space.Controls.Add(control);
-                labels.Add(control);
-
+                if (getControl(name) == null && overwrite)
+                {
+                    Space.Controls.Add(control);
+                    labels.Add(control);
+                }
                 return control;
             }
             else if (controltype == controlType.Textbox)
             {
-                TextBox control = new TextBox();
+                GTextBox control = new GTextBox();
+                if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GTextBox;
+                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in line {codeLine}");
                 control.Name = name;
                 control.AccessibleName = type;
 
                 try
                 {
-                    string[] txt = getString_value(parts, index + 1);
-                    control.Text = txt[0];
-                    float[] v = find_value(parts, int.Parse(txt[1]), 0);
-                    int x = (int)v[0];
-                    float[] v1 = find_value(parts, (int)v[1], 0);
-                    int y = (int)v1[0];
-                    float[] v2 = find_value(parts, (int)v1[1], 100);
-                    int scaleX = (int)v2[0];
-                    float[] v3 = find_value(parts, (int)v2[1], 25);
-                    int scaleY = (int)v3[0];
-                    float[] v4 = find_value(parts, (int)v3[1], 0);
-                    int r = (int)v4[0];
-                    float[] v5 = find_value(parts, (int)v4[1], 0);
-                    int g = (int)v5[0];
-                    float[] v6 = find_value(parts, (int)v5[1], 0);
-                    int b = (int)v6[0];
-                    if (parts.Length - 1 >= v6[1])
-                    {
-                        string t = parts[(int)v6[1]];
-
-                        for (int j = 0; j < vars.Count; j++)
-                        {
-                            if (vars[j].Name == t)
-                            {
-                                t = vars[j].value();
-                            }
-                        }
-                        if (t == "yes" || t == "Yes" || t == "1" || t == "true" || t == "True")
-                        {
-                            control.Multiline = true;
-                        }
-                        if (t == "no" || t == "No" || t == "0" || t == "false" || t == "False")
-                        {
-                            control.Multiline = false;
-                        }
-                    }
-                    control.Left = x;
-                    control.Top = y;
-                    control.Width = scaleX;
-                    control.Height = scaleY;
-                    control.ForeColor = Color.FromArgb(r, g, b);
+                    control = Change(control, parts, index + 1) as GTextBox;
                 }
                 catch
                 {
                     returnOutput += ErrorText(parts, ErrorTypes.normal, type);
                 }
 
-                Space.Controls.Add(control);
-                textboxes.Add(control);
+                if (getControl(name) == null && overwrite)
+                {
+                    Space.Controls.Add(control);
+                    textboxes.Add(control);
+                }
 
                 return control;
             }
-            else if (controltype == controlType.Button)
+            else if (controltype == controlType.GButton)
             {
-                Button control = new Button();
+                GButton control = new GButton();
+                if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GButton;
+                else if(getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in line {codeLine}");
                 control.Name = name;
                 control.AccessibleName = type;
-                control.Click += InGameButton_Click;
+                control.Click += GButtonClick;
 
                 try
                 {
-                    string[] txt = getString_value(parts, index + 1);
-                    control.Text = txt[0];
-                    float[] v = find_value(parts, int.Parse(txt[1]), 0);
-                    int x = (int)v[0];
-                    float[] v1 = find_value(parts, (int)v[1], 0);
-                    int y = (int)v1[0];
-                    float[] v2 = find_value(parts, (int)v1[1], 100);
-                    int scaleX = (int)v2[0];
-                    float[] v3 = find_value(parts, (int)v2[1], 25);
-                    int scaleY = (int)v3[0];
-                    float[] v4 = find_value(parts, (int)v3[1], 255);
-                    int r = (int)v4[0];
-                    float[] v5 = find_value(parts, (int)v4[1], 255);
-                    int g = (int)v5[0];
-                    float[] v6 = find_value(parts, (int)v5[1], 255);
-                    int b = (int)v6[0];
-                    control.Left = x;
-                    control.Top = y;
-                    control.Width = scaleX;
-                    control.Height = scaleY;
-                    control.BackColor = Color.FromArgb(r, g, b);
+                    control = Change(control, parts, index + 1) as GButton;
                 }
                 catch
                 {
                     returnOutput += ErrorText(parts, ErrorTypes.normal, type);
                 }
 
-                Space.Controls.Add(control);
-                buttons.Add(control);
+                if (getControl(name) == null && overwrite)
+                {
+                    Space.Controls.Add(control);
+                    buttons.Add(control);
+                }
                 return control;
             }
             return null;
         }
-        private void InGameButton_Click(object sender, EventArgs e)
+        Control Change(Control _control, string[] _parts, int index, bool text = true, bool white = true, bool nfifty = true, bool allzero = false, bool sides = false)
         {
-            Button button = (Button)sender;
-            button.AccessibleDescription = "1\nnull";
-            if (button.AccessibleDescription.Split(Environment.NewLine).Length < 2) return;
-            if (button.AccessibleDescription.Split(Environment.NewLine)[1] != "null")
+            string[] parts = string.Join(" ", _parts.Skip(index)).Split(",");
+            Control control = _control;
+            string[]? txt = null;
+            float[]? getpoints = null;
+            int points = 0;
+            if (text)
             {
-
+                txt = getString_value(parts, 0);
+                txt[0] = txt[0].StartsWith() ? "" : txt[0];
+                control.Text = txt[0];
             }
+            else if (sides)
+            { 
+                try
+                {
+                    if (control is GShape gs)
+                    {
+                        float[] floats = find_value(parts, 0, 4);
+                        int poly = (int)floats[0];
+                        getpoints = floats;
+                        points = poly;
+                        if (poly < 3)
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}' in line {codeLine}");
+                        }
+                        else if (poly == 3) gs.type = GShape.Type.Triangle;
+                        else if (poly == 4) gs.type = GShape.Type.Square;
+                        else
+                        {
+                            gs.type = GShape.Type.Polygon;
+                            gs.Poly = poly;
+                        }
+                        gs.Refresh();
+                    }
+                    else
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in line {codeLine}");
+                    }
+                }
+                catch
+                {
+                    control = control is GShape gss ? gss : new GShape(GShape.Type.Square);
+                }
+            }
+            try
+            {
+                parts = parts.Length == 0 || (parts.Length == 1 && parts[0] == "") ? new string[] { "0" } : parts;
+                float[] v = find_value(parts, points != 0 ? (int)getpoints[1] : txt != null ? int.Parse(txt[1]) : 0, 0);
+                int x = (int)v[0];
+                float[] v1 = find_value(parts, (int)v[1], 0);
+                int y = (int)v1[0];
+                float[] v2 = find_value(parts, (int)v1[1], allzero ? 0 : nfifty ? 75 : 50);
+                int width = (int)v2[0];
+                float[] v3 = find_value(parts, (int)v2[1], allzero ? 0 : nfifty ? 25 : 50);
+                int height = (int)v3[0];
+                Color bc = control.BackColor;
+                if(parts.Length - 1 >= (int)v3[1]) bc = returncolor(_parts, parts, (int)v3[1], control.BackColor, allzero ? 0 : sides ? 0 : 255);
+                Color fc = control.ForeColor;
+                if(parts.Length - 1 >= (int)v3[1] + 1) fc = returncolor(_parts, parts, (int)v3[1] + 1, control.ForeColor, allzero ? 0 : sides ? 255 : 0);
+                int v9 = (int)v3[1] + 2;
+                if (control is GTextBox con)
+                {
+                    if (parts.Length - 1 >= v9)
+                    {
+                        con.Multiline = BoolCheck(parts, v9);
+                    }
+                    if (parts.Length - 1 >= v9 + 1)
+                    {
+                        bool tr = BoolCheck(parts, v9 + 1);
+                        con.WordWrap = tr;
+                        con.AcceptsReturn = !tr;
+                        con.AcceptsTab = !tr;
+                        con.AllowDrop = !tr;
+                    }
+                    if (parts.Length - 1 >= v9 + 2)
+                    {
+                        ScrollBars scroll = con.ScrollBars;
+                        bool tr = BoolCheck(parts, v9 + 2);
+                        con.ScrollBars = 
+                            scroll == ScrollBars.None && tr ? ScrollBars.Vertical :
+                            scroll == ScrollBars.Horizontal && tr ? ScrollBars.Both :
+                            scroll == ScrollBars.Both && !tr ? ScrollBars.Horizontal:
+                            scroll;
+                    }
+                    if (parts.Length - 1 >= v9 + 3)
+                    {
+                        ScrollBars scroll = con.ScrollBars;
+                        bool tr = BoolCheck(parts, v9 + 3);
+                        con.ScrollBars =
+                            scroll == ScrollBars.None && tr ? ScrollBars.Horizontal :
+                            scroll == ScrollBars.Vertical && tr ? ScrollBars.Both :
+                            scroll == ScrollBars.Both && !tr ? ScrollBars.Horizontal :
+                            scroll;
+                    }
+                    if (parts.Length - 1 >= v9 + 4)
+                    {
+                        con.PasswordChar = (parts[(int)(v9 + 4)]).Trim().ToCharArray()[0];
+                    }
+                }
+                if (control is GShape gs)
+                {
+                    if (parts.Length - 1 >= v9)
+                    {
+                        gs = custompoints(parts, v9, gs);
+                    }
+                }
+                if (control is GLabel lb)
+                {
+                    if (parts.Length - 1 >= v9)
+                    {
+                        control.AutoSize = BoolCheck(parts, v9);
+                    }
+                }
+                control.Left = x;
+                control.Top = y;
+                control.Width = width;
+                control.Height = height;
+                control.BackColor = bc;
+                control.ForeColor = fc;
+            }
+            catch
+            {
+                int x = 0,
+                    y = 0,
+                    w = allzero ? 0 : nfifty ? 75 : 50,
+                    h = allzero ? 0 : nfifty ? 25 : 50;
+                foreach(string p in parts)
+                {
+                    string[] values = p.Split(':');
+                    string[] before = getString_value(values, 0);
+                    string[] after = getString_value(values, int.Parse(before[1]));
+                    switch(before[0].Trim().ToLower())
+                    {
+                        case "point":
+                        case "points":
+                            {
+                                if (control is GShape gs)
+                                {
+                                    gs = custompoints(after, 0, gs);
+                                }
+                                else
+                                {
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in line {codeLine}");
+                                }
+                            }
+                            break;
+                        case "auto":
+                        case "autosize":
+                            {
+                                if (control is GLabel lb)
+                                {
+                                    lb.AutoSize = BoolCheck(after, 0);
+                                }
+                                else
+                                {
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'label' for '{control.Name}' in line {codeLine}");
+                                }
+                            }
+                            break;
+                        case "multi":
+                        case "multiline":
+                            {
+                                if (control is GTextBox tb)
+                                {
+                                    tb.Multiline = BoolCheck(after, 0);
+                                }
+                                else
+                                {
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in line {codeLine}");
+                                }
+                            }
+                            break;
+                        case "wrap":
+                        case "wordwrap":
+                            {
+                                if (control is GTextBox tb)
+                                {
+                                    bool tr = BoolCheck(after, 0);
+                                    tb.WordWrap = tr;
+                                    tb.AcceptsReturn = !tr;
+                                    tb.AcceptsTab = !tr;
+                                    tb.AllowDrop = !tr;
+                                }
+                                else
+                                {
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in line {codeLine}");
+                                }
+                            }
+                            break;
+                        case "vertical":
+                        case "verticalscrollbar":
+                            {
+                                if (control is GTextBox tb)
+                                {
+                                    ScrollBars scroll = tb.ScrollBars;
+                                    bool tr = BoolCheck(after, 0);
+                                    tb.ScrollBars =
+                                        scroll == ScrollBars.None && tr ? ScrollBars.Vertical :
+                                        scroll == ScrollBars.Horizontal && tr ? ScrollBars.Both :
+                                        scroll == ScrollBars.Both && !tr ? ScrollBars.Horizontal :
+                                        scroll;
+                                }
+                                else
+                                {
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in line {codeLine}");
+                                }
+                            }
+                            break;
+                        case "horizantal":
+                        case "horizantalscrollbar":
+                            {
+                                if (control is GTextBox tb)
+                                {
+                                    ScrollBars scroll = tb.ScrollBars;
+                                    bool tr = BoolCheck(after, 0);
+                                    tb.ScrollBars =
+                                        scroll == ScrollBars.None && tr ? ScrollBars.Horizontal :
+                                        scroll == ScrollBars.Vertical && tr ? ScrollBars.Both :
+                                        scroll == ScrollBars.Both && !tr ? ScrollBars.Vertical :
+                                        scroll;
+                                }
+                                else
+                                {
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in line {codeLine}");
+                                }
+                            }
+                            break;
+                        case "t":
+                        case "text":
+                            {
+                                control.Text = after[0];
+                            }
+                            break;
+                        case "x":
+                            {
+                                float[] floats = find_value(after, 0, 0);
+                                x = (int)floats[0];
+                            }
+                            break;
+                        case "y":
+                            {
+                                float[] floats = find_value(after, 0, 0);
+                                y = (int)floats[0];
+                            }
+                            break;
+                        case "h":
+                        case "height":
+                            {
+                                float[] floats = find_value(after, 0, 50);
+                                h = (int)floats[0];
+                            }
+                            break;
+                        case "w":
+                        case "width":
+                            {
+                                float[] floats = find_value(after, 0, 50);
+                                w = (int)floats[0];
+                            }
+                            break;
+                        case "bc":
+                        case "backcolor":
+                            {
+                                control.BackColor = returncolor(_parts, after, 0, control.BackColor, allzero ? 0 : sides ? 0 : 255);
+                            }
+                            break;
+                        case "fc":
+                        case "forecolor":
+                            {
+                                control.ForeColor = returncolor(_parts, after, 0, control.ForeColor, allzero ? 0 : sides ? 255 : 0);
+                            }
+                            break;
+                        case "poly":
+                        case "p":
+                            {
+                                if(control is GShape gs)
+                                {
+                                    float[] floats = find_value(after, 0, 4);
+                                    int poly = (int)floats[0];
+                                    if (poly < 3)
+                                    {
+                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}' in line {codeLine}");
+                                    }
+                                    else if (poly == 3) gs.type = GShape.Type.Triangle;
+                                    else if (poly == 4) gs.type = GShape.Type.Square;
+                                    else
+                                    {
+                                        gs.type = GShape.Type.Polygon;
+                                        gs.Poly = poly;
+                                    }
+                                    gs.Refresh();
+                                }
+                                else
+                                {
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in line {codeLine}");
+                                }
+                            }
+                            break;
+                        default:
+                            returnOutput += ErrorText(_parts, ErrorTypes.custom, custom: $"Expected one of the following values 'x', 'y', 'w', 'h', 'bc', or 'fc' for '{control.Name}' in line {codeLine}");
+                            break;
+                    }
+                }
+                control.Left = x;
+                control.Top = y;
+                control.Width = w;
+                control.Height = h;
+            }
+            return control; 
+        }
+        Color returncolor(string[] allparts, string[] parts, int index, Color c, int def = -1)
+        {
+            int r = def == -1 ? c.R : def,
+                g = def == -1 ? c.G : def,
+                b = def == -1 ? c.B : def;
+            try
+            {
+                string[] strings = getString_value(parts, index);
+                string all = string.Join("", strings[0].Split(" ")).Trim();
+                bool thing2 = all.StartsWith("[") && all.EndsWith("]#suppresserror".ToLower());
+                if ((all.StartsWith("[") && all.EndsWith("]")) || thing2)
+                {
+                    if(!thing2) all = all.Substring(1, all.Length - 2);
+                    else all = all.Substring(1, all.Length - 1).Replace("]#suppresserror", "");
+                    List<PointF> ppoints = new List<PointF>();
+                    string[] seperator = all.Split(";");
+                    if (seperator.Length == 3)
+                    {
+                        float[] v1 = find_value(seperator, 0, r);
+                        r = (int)v1[0];
+                        float[] v2 = find_value(seperator, (int)v1[1], g);
+                        g = (int)v2[0];
+                        float[] v3 = find_value(seperator, (int)v2[1], b);
+                        b = (int)v3[0];
+                    }
+                    else
+                    {
+                        returnOutput += ErrorText(allparts, ErrorTypes.custom, custom: $"Requires 3 values for color in line {codeLine}");
+                    }
+                }
+                else if(parts.Length != 1)
+                {
+                    returnOutput += ErrorText(allparts, ErrorTypes.custom, custom: $"Expected '[' and ']' for points value in line {codeLine}");
+                }
+                c = Color.FromArgb(r, g, b);
+            }
+            catch
+            {
+                c = Color.FromArgb(0, 0, 0);
+            }
+            return c;
+        }
+        GShape custompoints(string[] parts, int index, GShape gs)
+        {
+            string[] strings = getString_value(parts, index);
+            string all = string.Join("", strings[0].Split(" ")).Trim();
+            if (all.StartsWith("[") && all.EndsWith("]"))
+            {
+                try
+                {
+                    all = all.Substring(1, all.Length - 2);
+                    List<PointF> ppoints = new List<PointF>();
+                    string[] seperator = all.Split(";");
+                    if (seperator.Length > 2)
+                    {
+                        foreach (string _point in seperator)
+                        {
+                            if (_point.StartsWith("(") && _point.EndsWith(")"))
+                            {
+                                string point = _point.Substring(1, _point.Length - 2);
+                                string[] polysides = point.Split("*");
+                                if (polysides.Length == 2)
+                                {
+                                    ppoints.Add(new PointF(float.Parse(polysides[0]), float.Parse(polysides[1])));
+                                }
+                                else
+                                {
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 2 values for a single point in points value in line {codeLine}");
+                                }
+                            }
+                            else
+                            {
+                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '(' and ')' for points value in line {codeLine}");
+                            }
+                        }
+                    }
+                    else
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{gs.Name}' in line {codeLine}");
+                    }
+                    gs.Points = ppoints.ToArray();
+                }
+                catch
+                {
+                    gs.Points = new PointF[] { };
+                }
+            }
+            else
+            {
+                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for points value in line {codeLine}");
+            }
+            gs.type = GShape.Type.Custom;
+            gs.Refresh();
+            return gs;
         }
         string[] getString_value(string[] parts, int next, bool all = false, bool useVar = true, bool useEquation = true, bool useRaw = true, string def = "")
         {
@@ -1757,21 +2429,14 @@ namespace EZCode
                     if (useRaw)
                     {
                         texts[i] = texts[i].Contains(@"\n") && !texts[i].Contains(@"\\n") ? texts[i].Replace(@"\n", Environment.NewLine) : texts[i].Contains(@"\\n") ? texts[i].Replace(@"\\n", @"\n") : texts[i];
-                        switched = sw_t == texts[i] ? switched : true;
                         texts[i] = texts[i].Contains(@"\!") && !texts[i].Contains(@"\\!") ? texts[i].Replace(@"\!", string.Empty) : texts[i].Contains(@"\\!") ? texts[i].Replace(@"\\!", @"\!") : texts[i];
-                        switched = sw_t == texts[i] ? switched : true;
                         texts[i] = texts[i].Contains(@"\_") && !texts[i].Contains(@"\\_") ? texts[i].Replace(@"\_", " ") : texts[i].Contains(@"\\_") ? texts[i].Replace(@"\\_", @"\_") : texts[i];
-                        switched = sw_t == texts[i] ? switched : true;
                         texts[i] = texts[i].Contains(@"\;") && !texts[i].Contains(@"\\;") ? texts[i].Replace(@"\;", "|") : texts[i].Contains(@"\\;") ? texts[i].Replace(@"\\;", @"\;") : texts[i];
-                        switched = sw_t == texts[i] ? switched : true;
                         texts[i] = texts[i].Contains(@"\=") && !texts[i].Contains(@"\\=") ? texts[i].Replace(@"\=", "=") : texts[i].Contains(@"\\=") ? texts[i].Replace(@"\\=", @"\=") : texts[i];
-                        switched = sw_t == texts[i] ? switched : true;
                         texts[i] = texts[i].Contains(@"\c") && !texts[i].Contains(@"\\c") ? texts[i].Replace(@"\c", ",") : texts[i].Contains(@"\\c") ? texts[i].Replace(@"\\c", @"\c") : texts[i];
-                        switched = sw_t == texts[i] ? switched : true;
-                        texts[i] = texts[i].Contains(@"\e!") && !texts[i].Contains(@"\\e!") ? texts[i].Replace(@"\e!", "!") : texts[i].Contains(@"\\!") ? texts[i].Replace(@"\\e!", @"\e!") : texts[i];
-                        switched = sw_t == texts[i] ? switched : true;
+                        texts[i] = texts[i].Contains(@"\e") && !texts[i].Contains(@"\\e") ? texts[i].Replace(@"\e", "!") : texts[i].Contains(@"\\e") ? texts[i].Replace(@"\\e", @"\e") : texts[i];
+                        texts[i] = texts[i].Contains(@"\$") && !texts[i].Contains(@"\\$") ? texts[i].Replace(@"\$", ":") : texts[i].Contains(@"\\$") ? texts[i].Replace(@"\\$", @"\$") : texts[i];
                         texts[i] = texts[i].Replace(@"\\(", @"\(");
-                        switched = sw_t == texts[i] ? switched : true;
                         texts[i] = texts[i].Replace(@")\\", @")\");
                         switched = sw_t == texts[i] ? switched : true;
                     }
@@ -1895,6 +2560,97 @@ namespace EZCode
                 return "Error: Unable to solve the equation.";
             }
         }
+        #endregion
+
+        #region Control_Events
+        private void GButtonClick(object sender, EventArgs e)
+        {
+            GButton button = (GButton)sender;
+            button.AccessibleDescription = "1\nnull";
+            if (button.click != "")
+            {
+                G_click(sender, e);
+            }
+        }
+        enum eventType
+        {
+            click,
+            mousehover,
+            move,
+            scale,
+            backcolor,
+            forecolor,
+            text,
+            image,
+            imagelayout,
+            font
+        }
+        private void G_click(object sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.click);
+        }
+        private void G_mousehover(object sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.mousehover);
+        }
+        private void G_move(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.move);
+        }
+        private void G_scale(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.scale);
+        }
+        private void G_backcolor(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.backcolor);
+        }
+        private void G_forecolor(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.forecolor);
+        }
+        private void G_text(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.text);
+        }
+        private void G_font(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.font);
+        }
+        private void G_image(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.image);
+        }
+        private void G_imagetype(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.imagelayout);
+        }
+        private async void PlayScriptFromEvent(object sender, eventType eventtype)
+        {
+            if (!playing) return;
+            GShape? s = sender.ToString().Contains(nameof(s)) ? sender as GShape : sender is GShape ? sender as GShape : null;
+            GLabel? l = sender.ToString().Contains(nameof(l)) ? sender as GLabel : sender is GLabel ? sender as GLabel : null;
+            GButton? b = sender.ToString().Contains(nameof(b)) ? sender as GButton : sender is GButton ? sender as GButton : null;
+            GTextBox? t = sender.ToString().Contains(nameof(t)) ? sender as GTextBox : sender is GTextBox ? sender as GTextBox : null;
+            string file = "";
+            switch (eventtype)
+            {
+                case eventType.click: file = s != null ? s.click : l != null ? l.click : b != null ? b.click : t != null ? t.click : "null"; break;
+                case eventType.mousehover: file = s != null ? s.mousehover : l != null ? l.mousehover : b != null ? b.mousehover : t != null ? t.mousehover : "null"; break;
+                case eventType.text: file = s != null ? s.text : l != null ? l.text : b != null ? b.text : t != null ? t.text : "null"; break;
+                case eventType.move: file = s != null ? s.move : l != null ? l.move : b != null ? b.move : t != null ? t.move : "null"; break;
+                case eventType.scale: file = s != null ? s.scale : l != null ? l.scale : b != null ? b.scale : t != null ? t.scale : "null"; break;
+                case eventType.backcolor: file = s != null ? s.backcolor : l != null ? l.backcolor : b != null ? b.backcolor : t != null ? t.backcolor : "null"; break;
+                case eventType.forecolor: file = s != null ? s.forecolor : l != null ? l.forecolor : b != null ? b.forecolor : t != null ? t.forecolor : "null"; break;
+                case eventType.font: file = s != null ? s.font : l != null ? l.font : b != null ? b.font : t != null ? t.font : "null"; break;
+                case eventType.image: file = s != null ? s.image : l != null ? l.image : b != null ? b.image : t != null ? t.image : "null"; break;
+                case eventType.imagelayout: file = s != null ? s.imagelayout : l != null ? l.imagelayout : b != null ? b.imagelayout : t != null ? t.imagelayout : "null"; break;
+            }
+            await PlaySwitch(jumpsto: $"file play {file}");
+        }
+        #endregion
+
+        #region Public_Helpers
 
         /// <summary>
         /// Stops the code currently being played
@@ -1940,14 +2696,14 @@ namespace EZCode
         }
         public void MouseInput_Move(object sender, MouseEventArgs e) { MouseInput_Move(e); }
         /// <summary>
-        /// Sets the Mouse Input to the inputted Button for the MouseDown
+        /// Sets the Mouse Input to the inputted GButton for the MouseDown
         /// </summary>
         public void MouseInput_Down(MouseEventArgs e) {
             mouseButtons.Add(e.Button);
         }
         public void MouseInput_Down(object sender, MouseEventArgs e) { MouseInput_Down(e); }
         /// <summary>
-        /// Sets the Mouse Input to the inputted Button for the MouseUp
+        /// Sets the Mouse Input to the inputted GButton for the MouseUp
         /// </summary>
         public void MouseInput_Up(MouseEventArgs e) { 
             mouseButtons.Remove(e.Button); 
@@ -2009,6 +2765,7 @@ namespace EZCode
             alreadyMember,
             missingVar,
             missingSound,
+            missingGroup,
             unkown,
             custom
         }
@@ -2029,6 +2786,7 @@ namespace EZCode
                 error == ErrorTypes.missingControl ? $"Could not find a Control named '{name}' in line {codeLine}" :
                 error == ErrorTypes.missingVar ? $"Could not find a Variable named '{name}' in line {codeLine}" :
                 error == ErrorTypes.missingSound ? $"Could not find a Sound Player named '{name}' in line {codeLine}" :
+                error == ErrorTypes.missingGroup ? $"Could not find a Group named '{name}' in line {codeLine}" :
                 error == ErrorTypes.alreadyMember ? $"Naming violation in line {codeLine}. There is already a '{keyword}' named '{name}'" :
                 error == ErrorTypes.custom ? custom : "An Error Occured, We don't know why. If it helps, it was on line " + codeLine;
 
@@ -2070,5 +2828,6 @@ namespace EZCode
 
             returnOutput += ErrorText(new string[] { }, ErrorTypes.unkown);
         }
+        #endregion
     }
 }

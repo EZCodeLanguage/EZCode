@@ -20,7 +20,7 @@
   </ItemGroup>
 
   <ItemGroup>
-    <Compile Update="IGameObject.cs" />
+    <Compile Update="Controls.cs" />
   </ItemGroup>
 
 </Project>

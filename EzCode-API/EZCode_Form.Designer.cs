@@ -53,7 +53,7 @@
             this.InputText.Multiline = true;
             this.InputText.Name = "InputText";
             this.InputText.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.InputText.Size = new System.Drawing.Size(357, 224);
+            this.InputText.Size = new System.Drawing.Size(422, 264);
             this.InputText.TabIndex = 0;
             this.InputText.WordWrap = false;
             // 
@@ -61,10 +61,10 @@
             // 
             this.Console.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Console.Location = new System.Drawing.Point(11, 294);
+            this.Console.Location = new System.Drawing.Point(11, 334);
             this.Console.Name = "Console";
             this.Console.ReadOnly = true;
-            this.Console.Size = new System.Drawing.Size(765, 146);
+            this.Console.Size = new System.Drawing.Size(866, 146);
             this.Console.TabIndex = 2;
             this.Console.Text = "";
             this.Console.TextChanged += new System.EventHandler(this.Console_TextChanged);
@@ -73,9 +73,9 @@
             // 
             this.Start.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.Start.Location = new System.Drawing.Point(11, 268);
+            this.Start.Location = new System.Drawing.Point(11, 308);
             this.Start.Name = "Start";
-            this.Start.Size = new System.Drawing.Size(662, 23);
+            this.Start.Size = new System.Drawing.Size(763, 23);
             this.Start.TabIndex = 3;
             this.Start.Text = "Start";
             this.Start.UseVisualStyleBackColor = true;
@@ -85,16 +85,16 @@
             // 
             this.ConsoleInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
             | System.Windows.Forms.AnchorStyles.Right)));
-            this.ConsoleInput.Location = new System.Drawing.Point(11, 446);
+            this.ConsoleInput.Location = new System.Drawing.Point(11, 486);
             this.ConsoleInput.Name = "ConsoleInput";
-            this.ConsoleInput.Size = new System.Drawing.Size(563, 23);
+            this.ConsoleInput.Size = new System.Drawing.Size(664, 23);
             this.ConsoleInput.TabIndex = 4;
             this.ConsoleInput.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ConsoleInput_KeyDown);
             // 
             // Send
             // 
             this.Send.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Send.Location = new System.Drawing.Point(580, 445);
+            this.Send.Location = new System.Drawing.Point(681, 485);
             this.Send.Name = "Send";
             this.Send.Size = new System.Drawing.Size(95, 23);
             this.Send.TabIndex = 5;
@@ -105,7 +105,7 @@
             // Quit
             // 
             this.Quit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Quit.Location = new System.Drawing.Point(679, 268);
+            this.Quit.Location = new System.Drawing.Point(780, 308);
             this.Quit.Name = "Quit";
             this.Quit.Size = new System.Drawing.Size(95, 23);
             this.Quit.TabIndex = 6;
@@ -116,7 +116,7 @@
             // Clear
             // 
             this.Clear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Clear.Location = new System.Drawing.Point(681, 445);
+            this.Clear.Location = new System.Drawing.Point(782, 485);
             this.Clear.Name = "Clear";
             this.Clear.Size = new System.Drawing.Size(95, 23);
             this.Clear.TabIndex = 7;
@@ -129,9 +129,9 @@
             this.OutputPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
             | System.Windows.Forms.AnchorStyles.Right)));
             this.OutputPanel.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.OutputPanel.Location = new System.Drawing.Point(374, 38);
+            this.OutputPanel.Location = new System.Drawing.Point(439, 38);
             this.OutputPanel.Name = "OutputPanel";
-            this.OutputPanel.Size = new System.Drawing.Size(400, 224);
+            this.OutputPanel.Size = new System.Drawing.Size(436, 264);
             this.OutputPanel.TabIndex = 8;
             // 
             // directory
@@ -140,7 +140,7 @@
             | System.Windows.Forms.AnchorStyles.Right)));
             this.directory.Location = new System.Drawing.Point(11, 9);
             this.directory.Name = "directory";
-            this.directory.Size = new System.Drawing.Size(765, 23);
+            this.directory.Size = new System.Drawing.Size(866, 23);
             this.directory.TabIndex = 9;
             // 
             // EZCode_Form
@@ -148,7 +148,7 @@
             this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
             this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
             this.BackColor = System.Drawing.Color.DimGray;
-            this.ClientSize = new System.Drawing.Size(783, 477);
+            this.ClientSize = new System.Drawing.Size(884, 517);
             this.Controls.Add(this.directory);
             this.Controls.Add(this.OutputPanel);
             this.Controls.Add(this.Clear);

@@ -6,7 +6,7 @@ using System.IO.Compression;
 using System.Collections.Generic;
 using System.Data;
 using Variables;
-using Objects;
+using GControls;
 //using NAudio.Wave;
 using System.Linq;
 using System.Threading.Tasks;
@@ -4730,7 +4730,7 @@ namespace ezcode_Application
     }
 }
 
-namespace Objects
+namespace GControls
 {
     using System.Drawing.Drawing2D;
     using Point = System.Drawing.Point;

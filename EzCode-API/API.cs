@@ -3,7 +3,7 @@
 namespace EzCode_API
 {
     using NAudio.Wave;
-    using Objects;
+    using GControls;
     using System.Data;
     using Variables;
     /// <summary>
@@ -5659,7 +5659,7 @@ namespace EzCode_API
         }
     }
 }
-namespace Objects
+namespace GControls
 {
     using System.Drawing.Drawing2D;
     using Point = System.Drawing.Point;
