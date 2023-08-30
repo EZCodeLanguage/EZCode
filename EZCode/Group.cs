@@ -254,6 +254,7 @@ class Group
     }
     public void set(List<Control> controls)
     {
+        isSet = true;
         clear();
         foreach (Control control in controls)
         {

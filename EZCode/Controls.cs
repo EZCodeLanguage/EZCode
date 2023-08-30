@@ -81,6 +81,12 @@ namespace GControls // Controls
             if (poly != null) Poly = (int)poly;
             if (points != null) Points = points;
             this.type = type;
+
+            this.Left = 0;
+            this.Top = 0;
+            this.Width = 50;
+            this.Height = 50;
+            this.BackColor = Color.Black;
         }
         protected override void OnPaint(PaintEventArgs e)
         {
@@ -152,6 +158,15 @@ namespace GControls // Controls
         public string image { get; set; }
         public string imagelayout { get; set; }
         public string text { get; set; }
+        public GButton()
+        {
+            this.Left = 0;
+            this.Top = 0;
+            this.Width = 75;
+            this.Height = 25;
+            this.BackColor = Color.White;
+            this.ForeColor = Color.Black;
+        }
     }
     public partial class GTextBox : TextBox, IGControl
     {
@@ -165,6 +180,15 @@ namespace GControls // Controls
         public string image { get; set; }
         public string imagelayout { get; set; }
         public string text { get; set; }
+        public GTextBox()
+        {
+            this.Left = 0;
+            this.Top = 0;
+            this.Width = 75;
+            this.Height = 25;
+            this.BackColor = Color.White;
+            this.ForeColor = Color.Black;
+        }
     }
     public partial class GLabel : Label, IGControl
     {
@@ -178,5 +202,15 @@ namespace GControls // Controls
         public string image { get; set; }
         public string imagelayout { get; set; }
         public string text { get; set; }
+        public GLabel()
+        {
+            this.Left = 0;
+            this.Top = 0;
+            this.Width = 75;
+            this.Height = 25;
+            this.AutoSize = true;
+            this.BackColor = Color.Transparent;
+            this.ForeColor = Color.Black;
+        }
     }
 }

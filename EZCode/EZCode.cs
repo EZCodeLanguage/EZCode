@@ -155,10 +155,10 @@ namespace EZCode
         /// <summary>
         /// string array for naming violations
         /// </summary>
-        public string[] UnusableNames = new string[] { "await", "button", "print", "group", "clear", "write", "stop",
-            "event", "textbox", "multiLine", "shape", "image", "label", "font", "move", "scale", "color", "intersects",
-            "var", "input", "list", "file", "sound", "if", "//", "#create", "#suppress", "#", "system:", "?", "=", "!",
-            ">", "<", "+", "-", "|", "\\", ",", "@", "#", "$", "%", "^", "&", "*", "(", ")", "/", "~", "`", ".", ":", ";" };
+        public string[] UnusableNames = new string[] { "await", "button", "print", "group", "clear", "write", "stop", "DEV___PORTAL",
+            "event", "textbox", "multiLine", "shape", "image", "label", "font", "move", "scale", "color", "intersects", "var",
+            "input", "list", "file", "sound", "if", "//", "#create", "#suppress", "#", "system:", "?", "=", "!", ">", "<", "+",
+            "-", "|", "\\", ",", "@", "#", "$", "%", "^", "&", "*", "(", ")", "/", "~", "`", ".", ":", ";" };
         /// <summary>
         /// char array for unusable names that can't even be used once in the name
         /// </summary>
@@ -172,13 +172,14 @@ namespace EZCode
         /// Needs to have Key_Down and Key_Up event connected to KeyInput_Down and KeyInput_Up
         /// </summary>
         public HashSet<Keys> Keys = new HashSet<Keys>();
+        private string SegmentSeperator = "segment";
 
         /// <summary>
         /// Initializes the EZCode Player with the provided parameters.
         /// </summary>
         /// <param name="_space">The Control used as the output space. Only needed if the code includes visual output, like 'object' or 'button'</param>
         /// <param name="_directory">The directory path where the file is located. Only needed if the code referenses another file locally using the '~/' character.</param>
-        /// <param name="_Console">The RichTextbox that has the error color is wanted.</param>
+        /// <param name="_console">The RichTextbox that has the error color is wanted.</param>
         public void Initialize(string _directory = "NOTHING", System.Windows.Forms.Control _space = null, RichTextBox _console = null, bool _showFileWithErrors = true, bool _showStartAndEnd = true, bool _clearConsole = true)
         {
             Space = _space;
@@ -240,6 +241,7 @@ namespace EZCode
 
         #region EZCode_Script_Player
         string returnOutput;
+        bool devDisplay = true;
         async Task<string[]> PlaySwitch(string[]? _parts = null, string jumpsto = "")
         {
             try
@@ -268,6 +270,25 @@ namespace EZCode
                         {
                             returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
                         } // PRINT
+                        break;
+                    case "DEV___PORTAL":
+                        try
+                        {
+                            string next = parts[1];
+                            if (next == "!display")
+                            {
+                                devDisplay = false;
+                            }
+                            if (next == "display")
+                            {
+                                devDisplay = true;
+                            }
+                            if (devDisplay) AddText("Entered into Dev Portal");
+                        }
+                        catch
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                        }
                         break;
                     case "shape":
                     case "label":
@@ -359,7 +380,7 @@ namespace EZCode
                         }
                         catch
                         {
-                            AddText($"An error occured with '{keyword}' in line {codeLine}", true);
+                            AddText($"An error occured with '{keyword}' in {SegmentSeperator} {codeLine}", true);
                         } // AWAIT
                         break;
                     case "var":
@@ -449,7 +470,7 @@ namespace EZCode
                             {
                                 case "read":
                                     string[] file_r = await getFile(parts, 2);
-                                    if (!File.Exists(file_r[0])) throw new Exception($"File not found in line {codeLine}");
+                                    if (!File.Exists(file_r[0])) throw new Exception($"File not found in {SegmentSeperator} {codeLine}");
                                     output = File.ReadAllText(file_r[0]);
                                     endindex = int.Parse(file_r[1]);
                                     break;
@@ -477,12 +498,12 @@ namespace EZCode
                                     endindex = parts.ToList().IndexOf(_strings[0].Split(" ")[_strings[0].Split(" ").Length - 1]);
                                     if (!validpathcheck(output))
                                     {
-                                        returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"The path given is invalid for '{keyword}' in line {codeLine}");
+                                        returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"The path given is invalid for '{keyword}' in {SegmentSeperator} {codeLine}");
                                     }
                                     break;
                                 case "play":
                                     string[] file_p = await getFile(parts, 2);
-                                    if (!File.Exists(file_p[0])) throw new Exception($"File not found in line {codeLine}");
+                                    if (!File.Exists(file_p[0])) throw new Exception($"File not found in {SegmentSeperator} {codeLine}");
                                     string code = File.ReadAllText(file_p[0]);
                                     endindex = int.Parse(file_p[1]);
                                     string[] lines = code.Split(seperatorChars);
@@ -495,9 +516,31 @@ namespace EZCode
                                         if (bool.Parse(task[1]) == false) i = lines.Length - 1;
                                         output += task[0];
                                     }
+                                    if (jumpTo)
+                                    {
+                                        return new string[] { output, stillInFile.ToString() };
+                                    }
+                                    break;
+                                case "create":
+                                    {
+                                        string[] file_ = await getFile(parts, 2);
+                                        if (File.Exists(file_[0])) throw new Exception($"File already exists in {SegmentSeperator} {codeLine}");
+                                        File.Create(file_[0]).Close();
+                                        output = File.Exists(file_[0]) ? "1" : "0";
+                                        endindex = int.Parse(file_[1]);
+                                    }
+                                    break;
+                                case "delete":
+                                    {
+                                        string[] file_ = await getFile(parts, 2);
+                                        if (!File.Exists(file_[0])) throw new Exception($"File not found in {SegmentSeperator} {codeLine}");
+                                        File.Delete(file_[0]);
+                                        output = !File.Exists(file_[0]) ? "1" : "0";
+                                        endindex = int.Parse(file_[1]);
+                                    }
                                     break;
                                 default:
-                                    returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'read' 'write' 'path' or 'play' in line {codeLine}");
+                                    returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'read' 'write' 'path' or 'play' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                             if (jumpTo) return new string[] { output, stillInFile.ToString() };
@@ -505,7 +548,7 @@ namespace EZCode
                         }
                         catch (Exception ex)
                         {
-                            if(ex.Message == $"File not found in line {codeLine}") returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: ex.Message);
+                            if(ex.Message == $"File not found in {SegmentSeperator} {codeLine}") returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: ex.Message);
                             else returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
                         } // FILE
                         break;
@@ -513,17 +556,21 @@ namespace EZCode
                         try
                         {
                             string type = parts[1].Trim();
+                            if (parts.Length - 1 >= 2 && !BoolCheck(parts, 2))
+                            {
+                                return new string[] { returnOutput, "true" };
+                            }
                             switch (type)
                             {
                                 case "all":
                                     playing = false;
-                                    if (showStartAndEnd) AddText("Build Stopped");
+                                    if (showStartAndEnd) AddText("Build Ended");
                                     break;
                                 case "file":
                                     stillInFile = false;
                                     break;
                                 default:
-                                    returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'all' or 'file' in line {codeLine}");
+                                    returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'all' or 'file' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                         }
@@ -581,7 +628,7 @@ namespace EZCode
                                                     output = $"({MousePosition.X}, {MousePosition.Y})";
                                                     break;
                                                 default:
-                                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'X' or 'Y' for '{keyword}' in line {codeLine}");
+                                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'X' or 'Y' for '{keyword}' in {SegmentSeperator} {codeLine}");
                                                     break;
                                             }
                                             break;
@@ -599,7 +646,7 @@ namespace EZCode
                                     }
                                     break;
                                 default:
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'console' 'key' or 'mouse' for '{keyword}' in line {codeLine}");
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'console' 'key' or 'mouse' for '{keyword}' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                             if (jumpTo) return new string[] { output, stillInFile.ToString() };
@@ -613,123 +660,7 @@ namespace EZCode
                     case "list":
                         try
                         {
-                            string name = parts[1];
-                            string type = parts[2];
-                            List<string> varray = new List<string>();
-                            switch (type)
-                            {
-                                case "new":
-                                    string[] colon = getString_value(parts, 3, true);
-                                    string values = colon[0];
-                                    if (!values.StartsWith(":") && values != "")
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the list in line {codeLine}");
-                                    }
-                                    else if (values == "")
-                                    {
-
-                                    }
-                                    else if (values.StartsWith(":"))
-                                    {
-                                        string allv = values.Remove(0, 1);
-                                        varray = allv.Split(",").Select(x=>x.Trim()).ToList();
-                                    }
-                                    Var var = CreateVar(parts, 1, alreadyarray: varray.ToArray(), allowJump: true).Result;
-                                    vars.Add(var);
-                                    break;
-                                case "add":
-                                    Var var_a = getVar(name);
-                                    if (var_a.isSet && var_a.isArray())
-                                    {
-                                        varray = var_a.array.ToList();
-                                        string[] colon_ = getString_value(parts, 3, true);
-                                        string values_ = colon_[0];
-                                        if (!values_.StartsWith(":") && values_ == "")
-                                        {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected values set the list in line {codeLine}");
-                                        }
-                                        else if (!values_.Contains(":"))
-                                        {
-                                            varray.Add(values_.Trim());
-                                        }
-                                        else if (values_.StartsWith(":"))
-                                        {
-                                            string allv_ = values_.Remove(0, 1);
-                                            varray.AddRange(allv_.Split(",").Select(x => x.Trim()));
-                                        }
-                                        var_a.set(array: varray.ToArray());
-                                    }
-                                    else if (!var_a.isArray())
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in line {codeLine}");
-                                    }
-                                    else
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
-                                    }
-                                    break;
-                                case "equals":
-                                    Var var_c = getVar(name);
-                                    if (var_c.isSet && var_c.isArray())
-                                    {
-                                        varray = var_c.array.ToList();
-                                        float[] indexes = find_value(parts, 3, 0);
-                                        int index = (int)indexes[0];
-                                        string[] colon__ = getString_value(parts, (int)indexes[1], true);
-                                        string values__ = colon__[0];
-                                        if (values__ == "")
-                                        {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the list in line {codeLine}");
-                                        }
-                                        else
-                                        {
-                                            varray[index] = values__.Trim();
-                                        }
-                                        var_c.array = varray.ToArray();
-                                    }
-                                    else if (!var_c.isArray())
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in line {codeLine}");
-                                    }
-                                    else
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
-                                    }
-                                    break;
-                                case "clear":
-                                    Var var_ca = getVar(name);
-                                    if (var_ca.isSet && var_ca.isArray())
-                                    {
-                                        var_ca.array = new string[] { };
-                                    }
-                                    else if (!var_ca.isArray())
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in line {codeLine}");
-                                    }
-                                    else
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
-                                    }
-                                    break;
-                                case "destroy":
-                                    Var var_d = getVar(name);
-                                    if (var_d.isSet && var_d.isArray())
-                                    {
-                                        vars.Remove(var_d);
-                                    }
-                                    else if (!var_d.isArray())
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in line {codeLine}");
-                                    }
-                                    else
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
-                                    }
-                                    break;
-                                default:
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' 'destroy' or 'clear' in line {codeLine}");
-                                    break;
-                            }
+                            DoList(parts, 1, keyword);
                         }
                         catch
                         {
@@ -739,188 +670,7 @@ namespace EZCode
                     case "group":
                         try
                         {
-                            string name = parts[1];
-                            string type = parts[2];
-                            List<Control> varray = new List<Control>();
-                            switch (type)
-                            {
-                                case "new":
-                                    string[] colon = getString_value(parts, 3, true);
-                                    string values = colon[0];
-                                    Group group = new Group(name);
-                                    if (!values.StartsWith(":") && values != "")
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' to set values to the Group in line {codeLine}");
-                                    }
-                                    else if (values == "")
-                                    {
-
-                                    }
-                                    else if (values.StartsWith(":"))
-                                    {
-                                        string[] allv = values.Remove(0, 1).Split(",").Select(x => x.Trim()).ToArray();
-                                        for (int i = 0; i < allv.Length; i++)
-                                        {
-                                            varray.Add(getControl(allv[i]));
-                                        }
-                                    }
-                                    group.set(varray);
-                                    groups.Add(group);
-                                    break;
-                                case "add":
-                                    Group group_a = getGroup(name);
-                                    if (group_a.isSet)
-                                    {
-                                        varray = group_a.Controls;
-                                        string[] colon_ = getString_value(parts, 3, true);
-                                        string values_ = colon_[0];
-                                        if (!values_.StartsWith(":") && values_ == "")
-                                        {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected values add to the Group in line {codeLine}");
-                                        }
-                                        else if (!values_.Contains(":"))
-                                        {
-                                            varray.Add(getControl(values_.Trim()));
-                                        }
-                                        else if (values_.StartsWith(":"))
-                                        {
-                                            string[] allv = values_.Remove(0, 1).Split(",").Select(x => x.Trim()).ToArray();
-                                            for (int i = 0; i < allv.Length; i++)
-                                            {
-                                                varray.Add(getControl(allv[i]));
-                                            };
-                                        }
-                                        group_a.set(varray);
-                                    }
-                                    else
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
-                                    }
-                                    break;
-                                case "equals":
-                                    Group group_e = getGroup(name);
-                                    if (group_e.isSet)
-                                    {
-                                        varray = group_e.Controls;
-                                        float[] indexes = find_value(parts, 3, -1);
-                                        int index = (int)indexes[0];
-                                        string[] colon__ = getString_value(parts, (int)indexes[1], true);
-                                        string values__ = colon__[0];
-                                        if (values__ == "")
-                                        {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group in line {codeLine}");
-                                        }
-                                        else
-                                        {
-                                            varray[index] = getControl(values__.Trim());
-                                        }
-                                        group_e.Controls = varray;
-                                    }
-                                    else
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
-                                    }
-                                    break;
-                                case "remove":
-                                    Group group_r = getGroup(name);
-                                    if (group_r.isSet)
-                                    {
-                                        varray = group_r.Controls;
-                                        float[]? indexes = null;
-                                        int? index = null;
-                                        Control?  rem = null;
-                                        try { 
-                                            indexes = find_value(parts, 3, -1); 
-                                            index = (int)indexes[0]; 
-                                        }
-                                        catch {
-                                            rem = getControl(parts[3]);
-                                        }
-                                        if (index == null && rem == null)
-                                        {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group in line {codeLine}");
-                                        }
-                                        else
-                                        {
-                                            if(index != null)
-                                            {
-                                                varray.RemoveAt((int)index);
-                                            }
-                                            else if(rem != null)
-                                            {
-                                                varray.Remove(rem);
-                                            }
-                                        }
-                                        group_r.set(varray);
-                                    }
-                                    else
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
-                                    }
-                                    break;
-                                case "clear":
-                                    Group group_c = getGroup(name);
-                                    if (group_c.isSet)
-                                    {
-                                        group_c.clear();
-                                    }
-                                    else
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
-                                    }
-                                    break;
-                                case "destroy":
-                                    Group group_d = getGroup(name);
-                                    if (group_d.isSet)
-                                    {
-                                        groups.Remove(group_d);
-                                    }
-                                    else
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
-                                    }
-                                    break;
-                                case "change":
-                                    try
-                                    {
-                                        bool abs = BoolCheck(parts, 3);
-                                        Group group1 = getGroup(name);
-                                        if (group1.isSet)
-                                        {
-                                            group1.Absolute = abs;
-                                            Control control = new Control();
-                                            control.Text = group1.Text;
-                                            control.Top = group1.Y;
-                                            control.Width = group1.Width;
-                                            control.Height = group1.Height;
-                                            control.BackColor = Color.FromArgb(group1.bgR, group1.bgG, group1.bgB);
-                                            control.ForeColor = Color.FromArgb(group1.fcR, group1.fcG, group1.fcB);
-                                            control.Text = group1.Text;
-
-                                            control = Change(control, parts, 4, true, false, false, true);
-
-                                            group1.X = control.Left;
-                                            group1.Y = control.Top;
-                                            group1.Width = control.Width;
-                                            group1.Height = control.Height;
-                                            group1.bgR = control.BackColor.R;
-                                            group1.bgG = control.BackColor.G;
-                                            group1.bgB = control.BackColor.B;
-                                            group1.fcR = control.ForeColor.R;
-                                            group1.fcG = control.ForeColor.G;
-                                            group1.fcB = control.ForeColor.B;
-                                            group1.Text = control.Text;
-                                        }
-                                    }
-                                    catch
-                                    {
-                                        returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
-                                    }
-                                    break;
-                                default:
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' 'remove' 'change' or 'clear' in line {codeLine}");
-                                    break;
-                            }
+                            DoGroup(parts, 1, keyword);
                         }
                         catch
                         {
@@ -1002,7 +752,7 @@ namespace EZCode
                                     }
                                     break;
                                 default:
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'destroy' 'play' 'stop' or 'volume' in line {codeLine}");
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'destroy' 'play' 'stop' or 'volume' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                         }
@@ -1120,42 +870,42 @@ namespace EZCode
                                     control.TextChanged += G_text;
                                     break;
                                 default:
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'click' 'hover' 'move' 'scale' 'backcolor' 'forecolor' 'image' 'imagetype' 'font' or 'text' for 'event' in line {codeLine}");
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'click' 'hover' 'move' 'scale' 'backcolor' 'forecolor' 'image' 'imagetype' 'font' or 'text' for 'event' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                         } 
                         catch 
                         {
                             returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
-                        }
-                        break; // EVENT
+                        } // EVENT
+                        break;
                     default:
                         try
                         {
-                            if(keyword == "#" || keyword == "#create".ToLower() || keyword == "#suppress".ToLower())
+                            if (keyword == "#" || keyword == "#create".ToLower() || keyword == "#suppress".ToLower())
                             {
                                 int index = keyword == "#create".ToLower() ? 1 :
                                     keyword == "#" && parts[1] == "create".ToLower() ? 2 :
                                     keyword == "#" && parts[1] == "suppress".ToLower() ? 2 :
-                                    keyword == "#suppress".ToLower() ? 1 : 
+                                    keyword == "#suppress".ToLower() ? 1 :
                                     0;
-                                keyword = keyword == "#create".ToLower() ? keyword.ToLower() : 
+                                keyword = keyword == "#create".ToLower() ? keyword.ToLower() :
                                     keyword == "#" && parts[1] == "create".ToLower() ? "#create" :
-                                    keyword == "#" && parts[1] == "suppress".ToLower() ? "#suppress" : 
-                                    keyword == "#suppress".ToLower() ? keyword.ToLower() : 
+                                    keyword == "#" && parts[1] == "suppress".ToLower() ? "#suppress" :
+                                    keyword == "#suppress".ToLower() ? keyword.ToLower() :
                                     keyword;
                                 switch (keyword)
                                 {
                                     case "#suppress":
                                         if (parts[index] != "error")
                                         {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#suppress' in line {codeLine}");
+                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#suppress' in {SegmentSeperator} {codeLine}");
                                         }
                                         break;
                                     case "#create":
                                         if (parts[index] != "error")
                                         {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#create' in line {codeLine}");
+                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#create' in {SegmentSeperator} {codeLine}");
                                         }
                                         string[] strings = getString_value(parts, index + 1, true);
                                         if (strings[0] == "")
@@ -1172,15 +922,22 @@ namespace EZCode
                             else if (vars.Select(x => x.Name).Contains(keyword))
                             {
                                 Var var = getVar(keyword);
+                                if (!var.isArray()) var = await VarManipulation(var, parts, 1);
+                                else var = DoList(parts, 0, keyword);
                             }
                             else if (AllControls.Select(x => x.Name).Contains(keyword))
                             {
                                 Control control = getControl(keyword);
                                 control = DoControl(parts, control.AccessibleName, 0);
                             }
+                            else if (groups.Select(x => x.Name).Contains(keyword))
+                            {
+                                Group group = getGroup(keyword);
+                                group = DoGroup(parts, 0, keyword);
+                            }
                             else if (!keyword.StartsWith("//") && keyword != "")
                             {
-                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a keyword or variable named '{keyword}' in line {codeLine}");
+                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a keyword or variable named '{keyword}' in {SegmentSeperator} {codeLine}");
                             }
                         }
                         catch
@@ -1198,6 +955,387 @@ namespace EZCode
                 returnOutput += ErrorText(_parts, ErrorTypes.unkown) + "\n";
                 return new string[] { returnOutput, "true" };
             }
+        }
+        Var DoList(string[] parts, int _index, string keyword)
+        {
+            Var var = new Var("");
+            var.isSet = false;
+            string name = parts[_index];
+            string type = parts[_index + 1];
+            List<string> varray = new List<string>();
+            switch (type)
+            {
+                case "new":
+                    string[] colon = getString_value(parts, _index + 2, true);
+                    string values = colon[0];
+                    if (!values.StartsWith(":") && values != "")
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the list in {SegmentSeperator} {codeLine}");
+                    }
+                    else if (values == "")
+                    {
+
+                    }
+                    else if (values.StartsWith(":"))
+                    {
+                        string allv = values.Remove(0, 1);
+                        varray = allv.Split(",").Select(x => x.Trim()).ToList();
+                    }
+                    var = CreateVar(parts, _index, alreadyarray: varray.ToArray(), allowJump: true).Result;
+                    vars.Add(var);
+                    break;
+                case "add":
+                    var = getVar(name);
+                    if (var.isSet && var.isArray())
+                    {
+                        varray = var.array.ToList();
+                        string[] colon_ = getString_value(parts, _index + 2, true);
+                        string values_ = colon_[0];
+                        if (!values_.StartsWith(":") && values_ == "")
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected values set the list in {SegmentSeperator} {codeLine}");
+                        }
+                        else if (!values_.Contains(":"))
+                        {
+                            varray.Add(values_.Trim());
+                        }
+                        else if (values_.StartsWith(":"))
+                        {
+                            string allv_ = values_.Remove(0, 1);
+                            varray.AddRange(allv_.Split(",").Select(x => x.Trim()));
+                        }
+                        var.set(array: varray.ToArray());
+                    }
+                    else if (!var.isArray())
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
+                    }
+                    else
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
+                    }
+                    break;
+                case "equals":
+                    var = getVar(name);
+                    if (var.isSet && var.isArray())
+                    {
+                        varray = var.array.ToList();
+                        float[] indexes = find_value(parts, _index + 2, 0);
+                        int index = (int)indexes[0];
+                        string[] colon__ = getString_value(parts, (int)indexes[1], true);
+                        string values__ = colon__[0];
+                        if (values__ == "")
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the list in {SegmentSeperator} {codeLine}");
+                        }
+                        else
+                        {
+                            varray[index] = values__.Trim();
+                        }
+                        var.array = varray.ToArray();
+                    }
+                    else if (!var.isArray())
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
+                    }
+                    else
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
+                    }
+                    break;
+                case "clear":
+                    var = getVar(name);
+                    if (var.isSet && var.isArray())
+                    {
+                        var.array = new string[0];
+                    }
+                    else if (!var.isArray())
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
+                    }
+                    else
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
+                    }
+                    break;
+                case "destroy":
+                    var = getVar(name);
+                    if (var.isSet && var.isArray())
+                    {
+                        vars.Remove(var);
+                    }
+                    else if (!var.isArray())
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
+                    }
+                    else
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
+                    }
+                    break;
+                default:
+                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' 'destroy' or 'clear' in {SegmentSeperator} {codeLine}");
+                    break;
+            }
+            return var;
+        }
+        Group DoGroup(string[] parts, int _index, string keyword)
+        {
+            Group group = new Group("");
+            group.isSet = false;
+            string name = parts[_index];
+            string type = parts[_index + 1];
+            List<Control> varray = new List<Control>();
+            switch (type)
+            {
+                case "new":
+                    string[] colon = getString_value(parts, _index + 2, true);
+                    string values = colon[0];
+                    group = new Group(name);
+                    if (!values.StartsWith(":") && values != "")
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' to set values to the Group in {SegmentSeperator} {codeLine}");
+                    }
+                    else if (values == "")
+                    {
+
+                    }
+                    else if (values.StartsWith(":"))
+                    {
+                        string[] allv = values.Remove(0, 1).Split(",").Select(x => x.Trim()).ToArray();
+                        for (int i = 0; i < allv.Length; i++)
+                        {
+                            varray.Add(getControl(allv[i]));
+                        }
+                    }
+                    group.set(varray);
+                    groups.Add(group);
+                    break;
+                case "add":
+                    Group group_a = getGroup(name);
+                    if (group_a.isSet)
+                    {
+                        varray = group_a.Controls;
+                        string[] colon_ = getString_value(parts, _index + 2, true);
+                        string values_ = colon_[0];
+                        if (!values_.StartsWith(":") && values_ == "")
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected values add to the Group in {SegmentSeperator} {codeLine}");
+                        }
+                        else if (!values_.Contains(":"))
+                        {
+                            varray.Add(getControl(values_.Trim()));
+                        }
+                        else if (values_.StartsWith(":"))
+                        {
+                            string[] allv = values_.Remove(0, 1).Split(",").Select(x => x.Trim()).ToArray();
+                            for (int i = 0; i < allv.Length; i++)
+                            {
+                                varray.Add(getControl(allv[i]));
+                            };
+                        }
+                        group_a.set(varray);
+                    }
+                    else
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                    }
+                    break;
+                case "equals":
+                    Group group_e = getGroup(name);
+                    if (group_e.isSet)
+                    {
+                        varray = group_e.Controls;
+                        float[] indexes = find_value(parts, _index + 2, -1);
+                        int index = (int)indexes[0];
+                        string[] colon__ = getString_value(parts, (int)indexes[1], true);
+                        string values__ = colon__[0];
+                        if (values__ == "")
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group in {SegmentSeperator} {codeLine}");
+                        }
+                        else
+                        {
+                            varray[index] = getControl(values__.Trim());
+                        }
+                        group_e.Controls = varray;
+                    }
+                    else
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                    }
+                    break;
+                case "remove":
+                    Group group_r = getGroup(name);
+                    if (group_r.isSet)
+                    {
+                        varray = group_r.Controls;
+                        float[]? indexes = null;
+                        int? index = null;
+                        Control? rem = null;
+                        try
+                        {
+                            indexes = find_value(parts, _index, -1);
+                            index = (int)indexes[0];
+                        }
+                        catch
+                        {
+                            rem = getControl(parts[_index]);
+                        }
+                        if (index == null && rem == null)
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group in {SegmentSeperator} {codeLine}");
+                        }
+                        else
+                        {
+                            if (index != null)
+                            {
+                                varray.RemoveAt((int)index);
+                            }
+                            else if (rem != null)
+                            {
+                                varray.Remove(rem);
+                            }
+                        }
+                        group_r.set(varray);
+                    }
+                    else
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                    }
+                    break;
+                case "clear":
+                    Group group_c = getGroup(name);
+                    if (group_c.isSet)
+                    {
+                        group_c.clear();
+                    }
+                    else
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                    }
+                    break;
+                case "destroy":
+                    Group group_d = getGroup(name);
+                    if (group_d.isSet)
+                    {
+                        groups.Remove(group_d);
+                    }
+                    else
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                    }
+                    break;
+                case "change":
+                    try
+                    {
+                        bool abs = BoolCheck(parts, _index + 2);
+                        Group group1 = getGroup(name);
+                        if (group1.isSet)
+                        {
+                            group1.Absolute = abs;
+                            Control control = new Control();
+                            control.Text = group1.Text;
+                            control.Top = group1.Y;
+                            control.Width = group1.Width;
+                            control.Height = group1.Height;
+                            control.BackColor = Color.FromArgb(group1.bgR, group1.bgG, group1.bgB);
+                            control.ForeColor = Color.FromArgb(group1.fcR, group1.fcG, group1.fcB);
+                            control.Text = group1.Text;
+
+                            control = Change(control, parts, _index + 3, true, false, false, true);
+
+                            group1.X = control.Left;
+                            group1.Y = control.Top;
+                            group1.Width = control.Width;
+                            group1.Height = control.Height;
+                            group1.bgR = control.BackColor.R;
+                            group1.bgG = control.BackColor.G;
+                            group1.bgB = control.BackColor.B;
+                            group1.fcR = control.ForeColor.R;
+                            group1.fcG = control.ForeColor.G;
+                            group1.fcB = control.ForeColor.B;
+                            group1.Text = control.Text;
+                        }
+                    }
+                    catch
+                    {
+                        returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                    }
+                    break;
+                default:
+                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' 'remove' 'change' or 'clear' in {SegmentSeperator} {codeLine}");
+                    break;
+            }
+            return group;
+        }
+        async Task<Var> VarManipulation(Var var, string[] parts, int index)
+        {
+            try
+            {
+                string mid = parts[index];
+                switch (mid)
+                {
+                    case "=":
+                    case "+":
+                    case "-":
+                        {
+                            float[] floats = find_value(parts, index + 1, 0);
+                            string next = floats[0].ToString();
+                            if (var.isNumber())
+                            {
+                                var.Multiply(mid, next);
+                            }
+                            else if (var.isString())
+                            {
+                                string[] strings = getString_value(parts, index + 1);
+                                var.Change(mid, strings[0]);
+                            }
+                            else
+                            {
+                                new Exception("Expected Number or Text Variable");
+                            }
+                        }
+                        break;
+                    case "*":
+                    case "/":
+                        {
+                            float[] floats = find_value(parts, index + 1, 0);
+                            string next = floats[0].ToString();
+                            if (var.isNumber())
+                            {
+                                var.Multiply(mid, next);
+                            }
+                            else
+                            {
+                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a Number Variable in {SegmentSeperator} {codeLine}");
+                            }
+                        }
+                        break;
+                    case ":":
+                        {
+                            try
+                            {
+                                var = await CreateVar(parts, 0, true, allowJump:true);
+                            }
+                            catch
+                            {
+                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"There was an error setting the variable to the correct value in {SegmentSeperator} {codeLine}");
+                            }
+                        }
+                        break;
+                    default:
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"There was an Error with changing '{var.Name}'. Expected '+', '-', '*', '/', '=', or ':' in {SegmentSeperator} {codeLine}");
+                        }
+                        break;
+                }
+            }
+            catch
+            {
+                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"There was an Error with changing '{var.Name}' in {SegmentSeperator} {codeLine}");
+            }
+            return var;
         }
         Control DoControl(string[] parts, string contype, int index)
         {
@@ -1277,7 +1415,7 @@ namespace EZCode
                 }
                 else
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected a boolean variable in line {codeLine}");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected a boolean variable in {SegmentSeperator} {codeLine}");
                 }
             }
             return check;
@@ -1347,7 +1485,7 @@ namespace EZCode
             }
             catch
             {
-                ErrorText(parts, ErrorTypes.custom, custom: $"There was an error with the bool check in line {codeLine}");
+                ErrorText(parts, ErrorTypes.custom, custom: $"There was an error with the bool check in {SegmentSeperator} {codeLine}");
                 return new int[] { };
             }
         }
@@ -1460,7 +1598,7 @@ namespace EZCode
                     }
                     catch
                     {
-                        errorText = $"Expected new variable name after '=>' for '{keyword}' in line {codeLine}";
+                        errorText = $"Expected new variable name after '=>' for '{keyword}' in {SegmentSeperator} {codeLine}";
                         returnOutput += ErrorText(parts, ErrorTypes.custom, custom: errorText);
                     }
                     break;
@@ -1471,14 +1609,14 @@ namespace EZCode
                     }
                     catch
                     {
-                        errorText = $"Expected variable name after ':' for '{keyword}' in line {codeLine}";
+                        errorText = $"Expected variable name after ':' for '{keyword}' in {SegmentSeperator} {codeLine}";
                         returnOutput += ErrorText(parts, ErrorTypes.custom, custom: errorText);
                     }
                     break;
                 case "":
                     break;
                 default:
-                    errorText = $"Expected '=>' or ':' for '{keyword}' in line {codeLine}";
+                    errorText = $"Expected '=>' or ':' for '{keyword}' in {SegmentSeperator} {codeLine}";
                     returnOutput += ErrorText(parts, ErrorTypes.custom, custom: errorText);
                     break;
             }
@@ -1507,7 +1645,7 @@ namespace EZCode
                     var.set(alreadyVal);
                     break;
                 case false:
-                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Can not find a variable named '{name}' in line {codeLine}");
+                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Can not find a variable named '{name}' in {SegmentSeperator} {codeLine}");
                     break;
             }
 
@@ -1546,7 +1684,7 @@ namespace EZCode
                         string str = string.Join(' ', parts.Skip(index + 2));
                         if (str.Trim() == "")
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected an assigned value after ':' in line {codeLine}");
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected an assigned value after ':' in {SegmentSeperator} {codeLine}");
                         }
 
                         string[] strings = await PlaySwitch(jumpsto: str);
@@ -1554,7 +1692,7 @@ namespace EZCode
                     }
                     catch
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"There was an error setting the variable to the correct value in Line {codeLine}");
+                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"There was an error setting the variable to the correct value in {SegmentSeperator} {codeLine}");
                     }
                 }
                 else
@@ -1658,7 +1796,7 @@ namespace EZCode
                         }
                         else
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' after 'system:litteral' in line {codeLine}");
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' after 'system:litteral' in {SegmentSeperator} {codeLine}");
                         }
                         break;*/
                     case "space":
@@ -1706,31 +1844,31 @@ namespace EZCode
                         if (control is not GShape)
                             value = control.Text.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text' property in line " + codeLine);
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text' property in {SegmentSeperator} " + codeLine);
                         break;
                     case "fr":
                         if (control is not GShape)
                             value = control.ForeColor.R.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-r' property in line " + codeLine);
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-r' property in {SegmentSeperator} " + codeLine);
                         break;
                     case "fg":
                         if (control is not GShape)
                             value = control.ForeColor.G.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-g' property in line " + codeLine);
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-g' property in {SegmentSeperator} " + codeLine);
                         break;
                     case "fb":
                         if (control is not GShape)
                             value = control.ForeColor.B.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-b' property in line " + codeLine);
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-b' property in {SegmentSeperator} " + codeLine);
                         break;
                     case "click":
                         if (control is GButton)
                             value = control.AccessibleDescription.Split("\n")[0];
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Only Buttons have a 'click' property in line " + codeLine);
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Only Buttons have a 'click' property in {SegmentSeperator} " + codeLine);
                         break;
                 }
             }
@@ -1748,7 +1886,7 @@ namespace EZCode
                         }
                         else if (ind.Length > 2 && !var.isArray())
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected an array variable in line {codeLine}");
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected an array variable in {SegmentSeperator} {codeLine}");
                         }
                         break;
                     default:
@@ -1856,7 +1994,7 @@ namespace EZCode
             {
                 GShape control = new GShape();
                 if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GShape;
-                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in line {codeLine}");
+                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
                 try
                 {
                     control.Name = name;
@@ -1882,7 +2020,7 @@ namespace EZCode
             {
                 GLabel control = new GLabel();
                 if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GLabel;
-                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in line {codeLine}");
+                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
                 control.Name = name;
                 control.AccessibleName = type;
 
@@ -1905,7 +2043,7 @@ namespace EZCode
             {
                 GTextBox control = new GTextBox();
                 if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GTextBox;
-                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in line {codeLine}");
+                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
                 control.Name = name;
                 control.AccessibleName = type;
 
@@ -1930,7 +2068,7 @@ namespace EZCode
             {
                 GButton control = new GButton();
                 if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GButton;
-                else if(getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in line {codeLine}");
+                else if(getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
                 control.Name = name;
                 control.AccessibleName = type;
                 control.Click += GButtonClick;
@@ -1963,7 +2101,7 @@ namespace EZCode
             if (text)
             {
                 txt = getString_value(parts, 0);
-                txt[0] = txt[0].StartsWith() ? "" : txt[0];
+                txt[0] = !txt[0].StartsWith("text:") ? _control.Text : txt[0];
                 control.Text = txt[0];
             }
             else if (sides)
@@ -1978,7 +2116,7 @@ namespace EZCode
                         points = poly;
                         if (poly < 3)
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}' in line {codeLine}");
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}' in {SegmentSeperator} {codeLine}");
                         }
                         else if (poly == 3) gs.type = GShape.Type.Triangle;
                         else if (poly == 4) gs.type = GShape.Type.Square;
@@ -1991,7 +2129,7 @@ namespace EZCode
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in line {codeLine}");
+                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                     }
                 }
                 catch
@@ -2002,13 +2140,13 @@ namespace EZCode
             try
             {
                 parts = parts.Length == 0 || (parts.Length == 1 && parts[0] == "") ? new string[] { "0" } : parts;
-                float[] v = find_value(parts, points != 0 ? (int)getpoints[1] : txt != null ? int.Parse(txt[1]) : 0, 0);
+                float[] v = find_value(parts, points != 0 ? (int)getpoints[1] : txt != null ? int.Parse(txt[1]) : 0, 0, overide:0);
                 int x = (int)v[0];
-                float[] v1 = find_value(parts, (int)v[1], 0);
+                float[] v1 = find_value(parts, (int)v[1], 0, overide: 0);
                 int y = (int)v1[0];
-                float[] v2 = find_value(parts, (int)v1[1], allzero ? 0 : nfifty ? 75 : 50);
+                float[] v2 = find_value(parts, (int)v1[1], allzero ? 0 : nfifty ? 75 : 50, overide: 0);
                 int width = (int)v2[0];
-                float[] v3 = find_value(parts, (int)v2[1], allzero ? 0 : nfifty ? 25 : 50);
+                float[] v3 = find_value(parts, (int)v2[1], allzero ? 0 : nfifty ? 25 : 50, overide: 0);
                 int height = (int)v3[0];
                 Color bc = control.BackColor;
                 if(parts.Length - 1 >= (int)v3[1]) bc = returncolor(_parts, parts, (int)v3[1], control.BackColor, allzero ? 0 : sides ? 0 : 255);
@@ -2077,10 +2215,10 @@ namespace EZCode
             }
             catch
             {
-                int x = 0,
-                    y = 0,
-                    w = allzero ? 0 : nfifty ? 75 : 50,
-                    h = allzero ? 0 : nfifty ? 25 : 50;
+                int x = control.Left,
+                    y = control.Top,
+                    w = allzero ? 0 : nfifty ? 75 : control.Width,
+                    h = allzero ? 0 : nfifty ? 25 : control.Height;
                 foreach(string p in parts)
                 {
                     string[] values = p.Split(':');
@@ -2097,7 +2235,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in line {codeLine}");
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
@@ -2110,7 +2248,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'label' for '{control.Name}' in line {codeLine}");
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'label' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
@@ -2123,7 +2261,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in line {codeLine}");
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
@@ -2140,7 +2278,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in line {codeLine}");
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
@@ -2159,7 +2297,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in line {codeLine}");
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
@@ -2178,7 +2316,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in line {codeLine}");
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
@@ -2235,7 +2373,7 @@ namespace EZCode
                                     int poly = (int)floats[0];
                                     if (poly < 3)
                                     {
-                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}' in line {codeLine}");
+                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}' in {SegmentSeperator} {codeLine}");
                                     }
                                     else if (poly == 3) gs.type = GShape.Type.Triangle;
                                     else if (poly == 4) gs.type = GShape.Type.Square;
@@ -2248,12 +2386,12 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in line {codeLine}");
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
                         default:
-                            returnOutput += ErrorText(_parts, ErrorTypes.custom, custom: $"Expected one of the following values 'x', 'y', 'w', 'h', 'bc', or 'fc' for '{control.Name}' in line {codeLine}");
+                            returnOutput += ErrorText(_parts, ErrorTypes.custom, custom: $"Expected one of the following values 'x', 'y', 'w', 'h', 'bc', or 'fc' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                             break;
                     }
                 }
@@ -2291,12 +2429,12 @@ namespace EZCode
                     }
                     else
                     {
-                        returnOutput += ErrorText(allparts, ErrorTypes.custom, custom: $"Requires 3 values for color in line {codeLine}");
+                        returnOutput += ErrorText(allparts, ErrorTypes.custom, custom: $"Requires 3 values for color in {SegmentSeperator} {codeLine}");
                     }
                 }
                 else if(parts.Length != 1)
                 {
-                    returnOutput += ErrorText(allparts, ErrorTypes.custom, custom: $"Expected '[' and ']' for points value in line {codeLine}");
+                    returnOutput += ErrorText(allparts, ErrorTypes.custom, custom: $"Expected '[' and ']' for points value in {SegmentSeperator} {codeLine}");
                 }
                 c = Color.FromArgb(r, g, b);
             }
@@ -2331,18 +2469,18 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 2 values for a single point in points value in line {codeLine}");
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 2 values for a single point in points value in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             else
                             {
-                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '(' and ')' for points value in line {codeLine}");
+                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '(' and ')' for points value in {SegmentSeperator} {codeLine}");
                             }
                         }
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{gs.Name}' in line {codeLine}");
+                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{gs.Name}' in {SegmentSeperator} {codeLine}");
                     }
                     gs.Points = ppoints.ToArray();
                 }
@@ -2353,7 +2491,7 @@ namespace EZCode
             }
             else
             {
-                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for points value in line {codeLine}");
+                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for points value in {SegmentSeperator} {codeLine}");
             }
             gs.type = GShape.Type.Custom;
             gs.Refresh();
@@ -2502,18 +2640,19 @@ namespace EZCode
             }
             else if (ended == 1)
             {
-                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Syntax error in line {codeLine}. Expected ')' to end equation.");
+                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Syntax error in {SegmentSeperator} {codeLine}. Expected ')' to end equation.");
             }
 
             return new float[] { float.Parse(value), next };
         }
-        float[] find_value(string[] parts, int next, int def, bool? var = true, bool colon = true)
+        float[] find_value(string[] parts, int next, int def, bool? var = true, bool colon = true, int overide = -1)
         {
             float v = def;
-            if (parts.Length - 1 >= next)
+            if (parts.Length - 1 >= next || overide != -1)
             {
                 try
                 {
+                    next = parts.Length - 1 >= next ? next : overide;
                     string s = parts[next];
                     if (var == true)
                     {
@@ -2780,14 +2919,14 @@ namespace EZCode
         public string ErrorText(string[] parts, ErrorTypes error, string keyword = "keyword", string name = "name", string custom = "")
         {
             string text = 
-                error == ErrorTypes.unkown ? $"An error occured in line {codeLine}" :
-                error == ErrorTypes.normal ? $"An error occured with '{keyword}' in line {codeLine}" :
-                error == ErrorTypes.violation ? $"Naming violation in line {codeLine}. '{name}' can not be used as a name" : 
-                error == ErrorTypes.missingControl ? $"Could not find a Control named '{name}' in line {codeLine}" :
-                error == ErrorTypes.missingVar ? $"Could not find a Variable named '{name}' in line {codeLine}" :
-                error == ErrorTypes.missingSound ? $"Could not find a Sound Player named '{name}' in line {codeLine}" :
-                error == ErrorTypes.missingGroup ? $"Could not find a Group named '{name}' in line {codeLine}" :
-                error == ErrorTypes.alreadyMember ? $"Naming violation in line {codeLine}. There is already a '{keyword}' named '{name}'" :
+                error == ErrorTypes.unkown ? $"An error occured in {SegmentSeperator} {codeLine}" :
+                error == ErrorTypes.normal ? $"An error occured with '{keyword}' in {SegmentSeperator} {codeLine}" :
+                error == ErrorTypes.violation ? $"Naming violation in {SegmentSeperator} {codeLine}. '{name}' can not be used as a name" : 
+                error == ErrorTypes.missingControl ? $"Could not find a Control named '{name}' in {SegmentSeperator} {codeLine}" :
+                error == ErrorTypes.missingVar ? $"Could not find a Variable named '{name}' in {SegmentSeperator} {codeLine}" :
+                error == ErrorTypes.missingSound ? $"Could not find a Sound Player named '{name}' in {SegmentSeperator} {codeLine}" :
+                error == ErrorTypes.missingGroup ? $"Could not find a Group named '{name}' in {SegmentSeperator} {codeLine}" :
+                error == ErrorTypes.alreadyMember ? $"Naming violation in {SegmentSeperator} {codeLine}. There is already a '{keyword}' named '{name}'" :
                 error == ErrorTypes.custom ? custom : "An Error Occured, We don't know why. If it helps, it was on line " + codeLine;
 
             if ((parts.Contains("#suppress") && parts.Contains("error")) || (parts.Contains("#") && parts.Contains("suppress") && parts.Contains("error"))) return "";

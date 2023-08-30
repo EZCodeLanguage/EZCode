@@ -63,6 +63,7 @@ namespace Variables
                 }
                 catch
                 {
+                    Description = Description == Ivar.Types.Float ? Ivar.Types.None : Description;
                     if (isFile(value))
                     {
                         Description = Description == Ivar.Types.None ? Ivar.Types.File : Description;
@@ -78,11 +79,13 @@ namespace Variables
                     number = null;
                     text = value;
                 }
+                isSet = true;
             }
             else if (array != null)
             {
                 Description = Description == Ivar.Types.None ? Ivar.Types.Array : Description;
                 this.array = array;
+                isSet = true;
             }
             else
             {
