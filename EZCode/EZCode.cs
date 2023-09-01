@@ -151,7 +151,19 @@ namespace EZCode
         /// <summary>
         /// Bool to decide if the script is playing
         /// </summary>
-        bool playing { get; set; }
+        public bool playing
+        {
+            get
+            {
+                return _pplaying;
+            }
+            private set
+            {
+                _pplaying = value;
+                devportal = 0;
+            }
+        }
+        private bool _pplaying;
         /// <summary>
         /// string array for naming violations
         /// </summary>
@@ -172,7 +184,12 @@ namespace EZCode
         /// Needs to have Key_Down and Key_Up event connected to KeyInput_Down and KeyInput_Up
         /// </summary>
         public HashSet<Keys> Keys = new HashSet<Keys>();
+
         private string SegmentSeperator = "segment";
+        /// <summary>
+        /// Refreshes screen when a control is changed/created
+        /// </summary>
+        public bool RefreshOnControl = false;
 
         /// <summary>
         /// Initializes the EZCode Player with the provided parameters.
@@ -242,6 +259,7 @@ namespace EZCode
         #region EZCode_Script_Player
         string returnOutput;
         bool devDisplay = true;
+        int devportal = 0;
         async Task<string[]> PlaySwitch(string[]? _parts = null, string jumpsto = "")
         {
             try
@@ -271,19 +289,40 @@ namespace EZCode
                             returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
                         } // PRINT
                         break;
-                    case "DEV___PORTAL":
+                    case "DEVPORTAL":
                         try
                         {
+                            devportal = devportal == 0 ? 1 : 2;
+                            string output = "";
                             string next = parts[1];
-                            if (next == "!display")
+                            if (devportal == 1)
                             {
-                                devDisplay = false;
+                                output = "Entered into Devportal";
+                                if (next != "!display") output += "\n";
                             }
                             if (next == "display")
                             {
                                 devDisplay = true;
+                                output += "Set Dev Portal Display to true";
                             }
-                            if (devDisplay) AddText("Entered into Dev Portal");
+                            if (next == "!display")
+                            {
+                                devDisplay = false;
+                            }
+                            if (next == "refreshonchange")
+                            {
+                                RefreshOnControl = true;
+                                output += "Set Dev Portal Refresh on Update to true";
+                            }
+                            if (next == "!refreshonchange")
+                            {
+                                RefreshOnControl = false;
+                                output += "Set Dev Portal Refresh on Update to false";
+                            }
+                            if (devDisplay)
+                            {
+                                AddText(output);
+                            }
                         }
                         catch
                         {
@@ -879,6 +918,37 @@ namespace EZCode
                             returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
                         } // EVENT
                         break;
+                    case "bringto":
+                        try
+                        {
+                            string next = parts[1];
+                            Control? control = getControl(parts[2]);
+                            if (control == null)
+                            {
+                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Could not find Control named '{parts[2]}' in {SegmentSeperator} {codeLine}");
+                            }
+                            switch (next)
+                            {
+                                case "front":
+                                    {
+                                        control.BringToFront();
+                                    }
+                                    break;
+                                case "back":
+                                    {
+                                        control.SendToBack();
+                                    }
+                                    break;
+                                default:
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'front' or 'back' in {SegmentSeperator} {codeLine}");
+                                    break;
+                            }
+                        }
+                        catch
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                        }
+                        break;
                     default:
                         try
                         {
@@ -955,6 +1025,23 @@ namespace EZCode
                 returnOutput += ErrorText(_parts, ErrorTypes.unkown) + "\n";
                 return new string[] { returnOutput, "true" };
             }
+        }
+        int GetZIndex(Control control)
+        {
+            Control parent = control.Parent;
+
+            if (parent != null)
+            {
+                for (int i = 0; i < parent.Controls.Count; i++)
+                {
+                    if (parent.Controls[i] == control)
+                    {
+                        return i;
+                    }
+                }
+            }
+
+            return -1;
         }
         Var DoList(string[] parts, int _index, string keyword)
         {
@@ -1224,6 +1311,23 @@ namespace EZCode
                     else
                     {
                         returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                    }
+                    break;
+                case "destroyall":
+                    {
+                        Group g = getGroup(name);
+                        if (g.isSet)
+                        {
+                            groups.Remove(g);
+                            foreach(Control c in g.Controls)
+                            {
+                                Space.Controls.Remove(c);
+                            }
+                        }
+                        else
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                        }
                     }
                     break;
                 case "change":
@@ -1831,34 +1935,49 @@ namespace EZCode
                     case "height":
                         value = control.Height.ToString();
                         break;
-                    case "br":
+                    case "backcolor":
+                    case "bc":
+                        value = $"{control.BackColor.R}, {control.BackColor.G}, {control.BackColor.B}";
+                        break;
+                    case "backcolor-r":
+                    case "bcr":
                         value = control.BackColor.R.ToString();
                         break;
-                    case "bg":
+                    case "backcolor-g":
+                    case "bcg":
                         value = control.BackColor.G.ToString();
                         break;
-                    case "bb":
+                    case "backcolor-b":
+                    case "bcb":
                         value = control.BackColor.B.ToString();
                         break;
+                    case "t":
                     case "text":
                         if (control is not GShape)
                             value = control.Text.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text' property in {SegmentSeperator} " + codeLine);
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Shapes don't have a '{ind[1]}' property in {SegmentSeperator} " + codeLine);
                         break;
-                    case "fr":
+                    case "forecolor":
+                    case "fc":
+                        value = $"{control.ForeColor.R}, {control.ForeColor.G}, {control.ForeColor.B}";
+                        break;
+                    case "forecolor-r":
+                    case "fcr":
                         if (control is not GShape)
                             value = control.ForeColor.R.ToString();
                         else
                             returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-r' property in {SegmentSeperator} " + codeLine);
                         break;
-                    case "fg":
+                    case "forecolor-g":
+                    case "fcg":
                         if (control is not GShape)
                             value = control.ForeColor.G.ToString();
                         else
                             returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-g' property in {SegmentSeperator} " + codeLine);
                         break;
-                    case "fb":
+                    case "forecolor-b":
+                    case "fcb":
                         if (control is not GShape)
                             value = control.ForeColor.B.ToString();
                         else
@@ -1868,7 +1987,75 @@ namespace EZCode
                         if (control is GButton)
                             value = control.AccessibleDescription.Split("\n")[0];
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Only Buttons have a 'click' property in {SegmentSeperator} " + codeLine);
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Only Buttons have a 'click' value in {SegmentSeperator} " + codeLine);
+                        break;
+                    case "font":
+                        value = $"{control.Font.Name}, {control.Font.Size}, {control.Font.Style}";
+                        break;
+                    case "fontname":
+                        value = control.Font.Name;
+                        break;
+                    case "fontsize":
+                        value = control.Font.Size.ToString();
+                        break;
+                    case "fontstyle":
+                        value = control.Font.Style.ToString();
+                        break;
+                    case "point":
+                    case "points":
+                        if(control is GShape gs)
+                            value = string.Join(",", gs.Points);
+                        else
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Shapes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                        break;
+                    case "auto":
+                    case "autosize":
+                        if (control is GLabel l)
+                            value = l.AutoSize.ToString();
+                        else
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Labels have 'autosize' value in {SegmentSeperator} " + codeLine);
+                        break;
+                    case "multi":
+                    case "multiline":
+                        if (control is GTextBox t)
+                            value = t.Multiline == true ? "1" : "0";
+                        else
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                        break;
+                    case "wrap":
+                    case "wordwrap":
+                        if (control is GTextBox tt)
+                            value = tt.WordWrap == true ? "1" : "0";
+                        else
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                        break;
+                    case "vertical":
+                    case "verticalscrollbar":
+                        if (control is GTextBox ttt)
+                            value = ttt.ScrollBars == ScrollBars.Vertical || ttt.ScrollBars == ScrollBars.Both ? "1" : "0";
+                        else
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                        break;
+                    case "horizantal":
+                    case "horizantalscrollbar":
+                        if (control is GTextBox tttt)
+                            value = tttt.ScrollBars == ScrollBars.Vertical || tttt.ScrollBars == ScrollBars.Both ? "1" : "0";
+                        else
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                        break;
+                    case "p":
+                    case "poly":
+                        if (control is GShape g)
+                            value = g.Poly.ToString();
+                        else
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Shapes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                        break;
+                    case "z":
+                    case "zindex":
+                        value = GetZIndex(control).ToString();
+                        break;
+                    default:
+                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"'{ind[0]}' is not a valid value for '{control.Name}' in {SegmentSeperator} {codeLine}");
                         break;
                 }
             }
@@ -2098,6 +2285,8 @@ namespace EZCode
             string[]? txt = null;
             float[]? getpoints = null;
             int points = 0;
+            control.BringToFront();
+            if(RefreshOnControl) Space.Refresh();
             if (text)
             {
                 txt = getString_value(parts, 0);
@@ -2139,6 +2328,7 @@ namespace EZCode
             }
             try
             {
+                /* Old_Thing
                 parts = parts.Length == 0 || (parts.Length == 1 && parts[0] == "") ? new string[] { "0" } : parts;
                 float[] v = find_value(parts, points != 0 ? (int)getpoints[1] : txt != null ? int.Parse(txt[1]) : 0, 0, overide:0);
                 int x = (int)v[0];
@@ -2212,6 +2402,8 @@ namespace EZCode
                 control.Height = height;
                 control.BackColor = bc;
                 control.ForeColor = fc;
+                */
+                if (!(parts.Length == 0 || (parts.Length == 1 && parts[0] == ""))) throw new Exception();
             }
             catch
             {
@@ -2226,6 +2418,59 @@ namespace EZCode
                     string[] after = getString_value(values, int.Parse(before[1]));
                     switch(before[0].Trim().ToLower())
                     {
+                        case "font":
+                            {
+                                string all = string.Join("", after[0].Split(" ")).Trim();
+                                bool thing2 = all.StartsWith("[") && all.EndsWith("]#suppresserror".ToLower());
+                                string fontType = "Segoe UI";
+                                int fontSize = 9;
+                                FontStyle fontStyle = FontStyle.Regular;
+                                if ((all.StartsWith("[") && all.EndsWith("]")) || thing2)
+                                {
+                                    if (!thing2) all = all.Substring(1, all.Length - 2);
+                                    else all = all.Substring(1, all.Length - 1).Replace("]#suppresserror", "");
+                                    string[] seperator = all.Split(";");
+                                    if (seperator.Length == 3)
+                                    {
+                                        if (IsRealFont(seperator[0]))
+                                        {
+                                            fontType = seperator[0];
+                                        }
+                                        else
+                                        {
+                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"'{fontType}' is not a valid font. Try 'Arial' or go to https://learn.mcrosoft.com for more information about supported WinForms fonts. Exception for '{control.Name}' in line {SegmentSeperator} {codeLine}");
+                                        }
+                                        try
+                                        {
+                                            float[] floats = find_value(seperator, 1, -1);
+                                            fontSize = (int)floats[0];
+                                            if (fontSize < 0) new Exception("");
+                                        }
+                                        catch
+                                        {
+                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a number greater greater than zero for font size value in {SegmentSeperator} {codeLine}");
+                                        }
+                                        if (Enum.TryParse(seperator[2], out FontStyle parsedFontStyle))
+                                        {
+                                            fontStyle = parsedFontStyle;
+                                        }
+                                        else
+                                        {
+                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"'{seperator[2]}' is not a valid font style. Valid styles are: {string.Join(", ", Enum.GetNames(typeof(FontStyle)))}. Exception for '{control.Name}' in line {SegmentSeperator} {codeLine}");
+                                        }
+                                    }
+                                    else
+                                    {
+                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Requires 3 values for font in {SegmentSeperator} {codeLine}");
+                                    }
+                                }
+                                else if (parts.Length != 1)
+                                {
+                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for font value in {SegmentSeperator} {codeLine}");
+                                }
+                                control.Font = new Font(fontType, fontSize, fontStyle);
+                            }
+                            break;
                         case "point":
                         case "points":
                             {
@@ -2400,7 +2645,18 @@ namespace EZCode
                 control.Width = w;
                 control.Height = h;
             }
-            return control; 
+            return control;
+        }
+        bool IsRealFont(string fontName)
+        {
+            foreach (FontFamily fontFamily in FontFamily.Families)
+            {
+                if (fontFamily.Name.Equals(fontName, StringComparison.OrdinalIgnoreCase))
+                {
+                    return true;
+                }
+            }
+            return false;
         }
         Color returncolor(string[] allparts, string[] parts, int index, Color c, int def = -1)
         {
@@ -2416,7 +2672,6 @@ namespace EZCode
                 {
                     if(!thing2) all = all.Substring(1, all.Length - 2);
                     else all = all.Substring(1, all.Length - 1).Replace("]#suppresserror", "");
-                    List<PointF> ppoints = new List<PointF>();
                     string[] seperator = all.Split(";");
                     if (seperator.Length == 3)
                     {
@@ -2432,9 +2687,13 @@ namespace EZCode
                         returnOutput += ErrorText(allparts, ErrorTypes.custom, custom: $"Requires 3 values for color in {SegmentSeperator} {codeLine}");
                     }
                 }
+                else if (all.Equals("transparent"))
+                {
+                    c = Color.Transparent;
+                }
                 else if(parts.Length != 1)
                 {
-                    returnOutput += ErrorText(allparts, ErrorTypes.custom, custom: $"Expected '[' and ']' for points value in {SegmentSeperator} {codeLine}");
+                    returnOutput += ErrorText(allparts, ErrorTypes.custom, custom: $"Expected '[' and ']' for color value in {SegmentSeperator} {codeLine}");
                 }
                 c = Color.FromArgb(r, g, b);
             }
@@ -2574,6 +2833,7 @@ namespace EZCode
                         texts[i] = texts[i].Contains(@"\c") && !texts[i].Contains(@"\\c") ? texts[i].Replace(@"\c", ",") : texts[i].Contains(@"\\c") ? texts[i].Replace(@"\\c", @"\c") : texts[i];
                         texts[i] = texts[i].Contains(@"\e") && !texts[i].Contains(@"\\e") ? texts[i].Replace(@"\e", "!") : texts[i].Contains(@"\\e") ? texts[i].Replace(@"\\e", @"\e") : texts[i];
                         texts[i] = texts[i].Contains(@"\$") && !texts[i].Contains(@"\\$") ? texts[i].Replace(@"\$", ":") : texts[i].Contains(@"\\$") ? texts[i].Replace(@"\\$", @"\$") : texts[i];
+                        texts[i] = texts[i].Contains(@"\&") && !texts[i].Contains(@"\\&") ? texts[i].Replace(@"\&", ";") : texts[i].Contains(@"\\&") ? texts[i].Replace(@"\\&", @"\&") : texts[i];
                         texts[i] = texts[i].Replace(@"\\(", @"\(");
                         texts[i] = texts[i].Replace(@")\\", @")\");
                         switched = sw_t == texts[i] ? switched : true;

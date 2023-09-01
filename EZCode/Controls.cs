@@ -75,7 +75,7 @@ namespace GControls // Controls
         public string text { get; set; }
         public Type type;
 
-        public GShape(Type type = Type.Polygon, int? poly = null, PointF[] points = null)
+        public GShape(Type type = Type.Square, int? poly = null, PointF[] points = null)
         {
             //sets all values
             if (poly != null) Poly = (int)poly;
@@ -87,6 +87,8 @@ namespace GControls // Controls
             this.Width = 50;
             this.Height = 50;
             this.BackColor = Color.Black;
+
+            Poly = type == Type.Square ? 4 : Poly;
         }
         protected override void OnPaint(PaintEventArgs e)
         {
