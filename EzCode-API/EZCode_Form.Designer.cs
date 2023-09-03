@@ -28,146 +28,139 @@
         /// </summary>
         private void InitializeComponent()
         {
-            this.InputText = new System.Windows.Forms.TextBox();
-            this.Console = new System.Windows.Forms.RichTextBox();
-            this.Start = new System.Windows.Forms.Button();
-            this.ConsoleInput = new System.Windows.Forms.TextBox();
-            this.Send = new System.Windows.Forms.Button();
-            this.Quit = new System.Windows.Forms.Button();
-            this.Clear = new System.Windows.Forms.Button();
-            this.OutputPanel = new System.Windows.Forms.Panel();
-            this.directory = new System.Windows.Forms.TextBox();
-            this.SuspendLayout();
+            InputText = new TextBox();
+            Console = new RichTextBox();
+            Start = new Button();
+            ConsoleInput = new TextBox();
+            Send = new Button();
+            Quit = new Button();
+            Clear = new Button();
+            OutputPanel = new Panel();
+            directory = new TextBox();
+            SuspendLayout();
             // 
             // InputText
             // 
-            this.InputText.AcceptsReturn = true;
-            this.InputText.AcceptsTab = true;
-            this.InputText.AllowDrop = true;
-            this.InputText.Anchor = ((System.Windows.Forms.AnchorStyles)((((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.InputText.BackColor = System.Drawing.Color.WhiteSmoke;
-            this.InputText.ForeColor = System.Drawing.SystemColors.ControlDarkDark;
-            this.InputText.Location = new System.Drawing.Point(11, 38);
-            this.InputText.Multiline = true;
-            this.InputText.Name = "InputText";
-            this.InputText.ScrollBars = System.Windows.Forms.ScrollBars.Both;
-            this.InputText.Size = new System.Drawing.Size(422, 264);
-            this.InputText.TabIndex = 0;
-            this.InputText.WordWrap = false;
+            InputText.AcceptsReturn = true;
+            InputText.AcceptsTab = true;
+            InputText.AllowDrop = true;
+            InputText.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            InputText.BackColor = Color.WhiteSmoke;
+            InputText.ForeColor = SystemColors.ControlDarkDark;
+            InputText.Location = new Point(11, 38);
+            InputText.Multiline = true;
+            InputText.Name = "InputText";
+            InputText.ScrollBars = ScrollBars.Both;
+            InputText.Size = new Size(422, 264);
+            InputText.TabIndex = 0;
+            InputText.WordWrap = false;
+            InputText.KeyPress += InputText_KeyPress;
             // 
             // Console
             // 
-            this.Console.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.Console.Location = new System.Drawing.Point(11, 334);
-            this.Console.Name = "Console";
-            this.Console.ReadOnly = true;
-            this.Console.Size = new System.Drawing.Size(866, 146);
-            this.Console.TabIndex = 2;
-            this.Console.Text = "";
-            this.Console.TextChanged += new System.EventHandler(this.Console_TextChanged);
+            Console.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            Console.Location = new Point(11, 334);
+            Console.Name = "Console";
+            Console.ReadOnly = true;
+            Console.Size = new Size(866, 146);
+            Console.TabIndex = 2;
+            Console.Text = "";
+            Console.TextChanged += Console_TextChanged;
             // 
             // Start
             // 
-            this.Start.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.Start.Location = new System.Drawing.Point(11, 308);
-            this.Start.Name = "Start";
-            this.Start.Size = new System.Drawing.Size(763, 23);
-            this.Start.TabIndex = 3;
-            this.Start.Text = "Start";
-            this.Start.UseVisualStyleBackColor = true;
-            this.Start.Click += new System.EventHandler(this.Start_Click);
+            Start.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            Start.Location = new Point(11, 308);
+            Start.Name = "Start";
+            Start.Size = new Size(763, 23);
+            Start.TabIndex = 3;
+            Start.Text = "Start";
+            Start.UseVisualStyleBackColor = true;
+            Start.Click += Start_Click;
             // 
             // ConsoleInput
             // 
-            this.ConsoleInput.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.ConsoleInput.Location = new System.Drawing.Point(11, 486);
-            this.ConsoleInput.Name = "ConsoleInput";
-            this.ConsoleInput.Size = new System.Drawing.Size(664, 23);
-            this.ConsoleInput.TabIndex = 4;
-            this.ConsoleInput.KeyDown += new System.Windows.Forms.KeyEventHandler(this.ConsoleInput_KeyDown);
+            ConsoleInput.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            ConsoleInput.Location = new Point(11, 486);
+            ConsoleInput.Name = "ConsoleInput";
+            ConsoleInput.Size = new Size(664, 23);
+            ConsoleInput.TabIndex = 4;
+            ConsoleInput.KeyDown += ConsoleInput_KeyDown;
             // 
             // Send
             // 
-            this.Send.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Send.Location = new System.Drawing.Point(681, 485);
-            this.Send.Name = "Send";
-            this.Send.Size = new System.Drawing.Size(95, 23);
-            this.Send.TabIndex = 5;
-            this.Send.Text = "Send";
-            this.Send.UseVisualStyleBackColor = true;
-            this.Send.Click += new System.EventHandler(this.Send_Click);
+            Send.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            Send.Location = new Point(681, 485);
+            Send.Name = "Send";
+            Send.Size = new Size(95, 23);
+            Send.TabIndex = 5;
+            Send.Text = "Send";
+            Send.UseVisualStyleBackColor = true;
+            Send.Click += Send_Click;
             // 
             // Quit
             // 
-            this.Quit.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Quit.Location = new System.Drawing.Point(780, 308);
-            this.Quit.Name = "Quit";
-            this.Quit.Size = new System.Drawing.Size(95, 23);
-            this.Quit.TabIndex = 6;
-            this.Quit.Text = "Quit";
-            this.Quit.UseVisualStyleBackColor = true;
-            this.Quit.Click += new System.EventHandler(this.Quit_Click);
+            Quit.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            Quit.Location = new Point(780, 308);
+            Quit.Name = "Quit";
+            Quit.Size = new Size(95, 23);
+            Quit.TabIndex = 6;
+            Quit.Text = "Quit";
+            Quit.UseVisualStyleBackColor = true;
+            Quit.Click += Quit_Click;
             // 
             // Clear
             // 
-            this.Clear.Anchor = ((System.Windows.Forms.AnchorStyles)((System.Windows.Forms.AnchorStyles.Bottom | System.Windows.Forms.AnchorStyles.Right)));
-            this.Clear.Location = new System.Drawing.Point(782, 485);
-            this.Clear.Name = "Clear";
-            this.Clear.Size = new System.Drawing.Size(95, 23);
-            this.Clear.TabIndex = 7;
-            this.Clear.Text = "Clear";
-            this.Clear.UseVisualStyleBackColor = true;
-            this.Clear.Click += new System.EventHandler(this.Clear_Click);
+            Clear.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            Clear.Location = new Point(782, 485);
+            Clear.Name = "Clear";
+            Clear.Size = new Size(95, 23);
+            Clear.TabIndex = 7;
+            Clear.Text = "Clear";
+            Clear.UseVisualStyleBackColor = true;
+            Clear.Click += Clear_Click;
             // 
             // OutputPanel
             // 
-            this.OutputPanel.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Bottom) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.OutputPanel.BackColor = System.Drawing.SystemColors.ButtonFace;
-            this.OutputPanel.Location = new System.Drawing.Point(439, 38);
-            this.OutputPanel.Name = "OutputPanel";
-            this.OutputPanel.Size = new System.Drawing.Size(436, 264);
-            this.OutputPanel.TabIndex = 8;
+            OutputPanel.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Right;
+            OutputPanel.BackColor = SystemColors.ButtonFace;
+            OutputPanel.Location = new Point(439, 38);
+            OutputPanel.Name = "OutputPanel";
+            OutputPanel.Size = new Size(436, 264);
+            OutputPanel.TabIndex = 8;
             // 
             // directory
             // 
-            this.directory.Anchor = ((System.Windows.Forms.AnchorStyles)(((System.Windows.Forms.AnchorStyles.Top | System.Windows.Forms.AnchorStyles.Left) 
-            | System.Windows.Forms.AnchorStyles.Right)));
-            this.directory.Location = new System.Drawing.Point(11, 9);
-            this.directory.Name = "directory";
-            this.directory.Size = new System.Drawing.Size(866, 23);
-            this.directory.TabIndex = 9;
+            directory.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            directory.Location = new Point(11, 9);
+            directory.Name = "directory";
+            directory.Size = new Size(866, 23);
+            directory.TabIndex = 9;
             // 
             // EZCode_Form
             // 
-            this.AutoScaleDimensions = new System.Drawing.SizeF(7F, 15F);
-            this.AutoScaleMode = System.Windows.Forms.AutoScaleMode.Font;
-            this.BackColor = System.Drawing.Color.DimGray;
-            this.ClientSize = new System.Drawing.Size(884, 517);
-            this.Controls.Add(this.directory);
-            this.Controls.Add(this.OutputPanel);
-            this.Controls.Add(this.Clear);
-            this.Controls.Add(this.Quit);
-            this.Controls.Add(this.Send);
-            this.Controls.Add(this.ConsoleInput);
-            this.Controls.Add(this.Start);
-            this.Controls.Add(this.Console);
-            this.Controls.Add(this.InputText);
-            this.KeyPreview = true;
-            this.MinimumSize = new System.Drawing.Size(617, 405);
-            this.Name = "EZCode_Form";
-            this.Text = "EZCode-Form";
-            this.FormClosing += new System.Windows.Forms.FormClosingEventHandler(this.EZCode_Form_FormClosing);
-            this.KeyDown += new System.Windows.Forms.KeyEventHandler(this.EZCode_Form_KeyDown);
-            this.KeyUp += new System.Windows.Forms.KeyEventHandler(this.EZCode_Form_KeyUp);
-            this.ResumeLayout(false);
-            this.PerformLayout();
-
+            AutoScaleDimensions = new SizeF(7F, 15F);
+            AutoScaleMode = AutoScaleMode.Font;
+            BackColor = Color.DimGray;
+            ClientSize = new Size(884, 517);
+            Controls.Add(directory);
+            Controls.Add(OutputPanel);
+            Controls.Add(Clear);
+            Controls.Add(Quit);
+            Controls.Add(Send);
+            Controls.Add(ConsoleInput);
+            Controls.Add(Start);
+            Controls.Add(Console);
+            Controls.Add(InputText);
+            KeyPreview = true;
+            MinimumSize = new Size(617, 405);
+            Name = "EZCode_Form";
+            Text = "EZCode-Form";
+            FormClosing += EZCode_Form_FormClosing;
+            KeyDown += EZCode_Form_KeyDown;
+            KeyUp += EZCode_Form_KeyUp;
+            ResumeLayout(false);
+            PerformLayout();
         }
 
         #endregion

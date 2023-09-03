@@ -19,9 +19,9 @@ namespace EzCode_API
         {
             InitializeComponent();
             ezcode.Initialize(_space: OutputPanel, _console: Console);
-            if(File.Exists("cache")) InputText.Text = File.ReadAllText("cache");
+            if (File.Exists("cache")) InputText.Text = File.ReadAllText("cache");
             else File.Create("cache").Close();
-            if(File.Exists("dircache")) directory.Text = File.ReadAllText("dircache");
+            if (File.Exists("dircache")) directory.Text = File.ReadAllText("dircache");
             else File.Create("dircache").Close();
             AppDomain.CurrentDomain.UnhandledException += ezcode.CurrentDomain_UnhandledException;
             OutputPanel.MouseMove += ezcode.MouseInput_Move;
@@ -96,6 +96,15 @@ namespace EzCode_API
         {
             File.WriteAllText("cache", InputText.Text);
             File.WriteAllText("dircache", directory.Text);
+        }
+
+        private void InputText_KeyPress(object sender, KeyPressEventArgs e)
+        {
+            if (e.KeyChar == '\t')
+            {
+                e.Handled = true;
+                InputText.SelectedText = new string(' ', 4);
+            }
         }
     }
 }

@@ -1,7 +1,5 @@
-﻿using Groups;
+﻿using GControls;
 using NCalc;
-using GControls;
-using Sound;
 using System.Data;
 using System.Drawing;
 using System.Text;
@@ -11,11 +9,6 @@ using Variables;
 using Group = Groups.Group;
 using Player = Sound.Player;
 using Types = Variables.Ivar.Types;
-using System.Net.Http.Headers;
-using System.Xml.Linq;
-using System.Runtime;
-using NAudio.Dmo.Effect;
-//using Control = GControls.Control;
 
 namespace EZCode
 {
@@ -160,7 +153,11 @@ namespace EZCode
             private set
             {
                 _pplaying = value;
+                returnOutput = "";
+                devDisplay = true;
                 devportal = 0;
+                ifmany = 0;
+                loopmany = 0;
             }
         }
         private bool _pplaying;
@@ -174,7 +171,7 @@ namespace EZCode
         /// <summary>
         /// char array for unusable names that can't even be used once in the name
         /// </summary>
-        public char[] UnusableContains = new char[] { '?', '=', '!', ':', '>', '<', '|', '\\', '#', '(', ')' };
+        public char[] UnusableContains = new char[] { '?', '=', '!', ':', '>', '<', '|', '\\', '#', '(', ')', '&', '^', '*', '+', '-', '/', '{', '}' };
         /// <summary>
         /// The character tht seperates each line of code. Automatically { '\n', '|' } but this can be added to if needed 
         /// </summary>
@@ -243,7 +240,7 @@ namespace EZCode
                 if (!playing) return output;
                 UpdateControlVariables();
                 codeLine = i + 1;
-                string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }));
+                string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }), "", lines, i);
                 if (bool.Parse(task[1]) == false) i = lines.Length - 1;
                 output += task[0];
                 ConsoleText = output;
@@ -257,13 +254,19 @@ namespace EZCode
         #endregion
 
         #region EZCode_Script_Player
-        string returnOutput;
+        string returnOutput = "";
         bool devDisplay = true;
-        int devportal = 0;
-        async Task<string[]> PlaySwitch(string[]? _parts = null, string jumpsto = "")
+        int devportal = 0, ifmany = 0, loopmany = 0;
+        async Task<string[]> PlaySwitch(string[]? _parts = null, string jumpsto = "", string[]? splitcode = null, int currentindex = 0)
         {
             try
             {
+                if (ifmany > 0 || loopmany > 0)
+                {
+                    if (ifmany > 0) ifmany--;
+                    if (loopmany > 0) loopmany--;
+                    return new[] { returnOutput, "true" };
+                }
                 string[]? parts = _parts;
                 parts = parts == null ? parts : parts.Where(x => x != "").ToArray();
                 parts = parts != null ? parts : jumpsto.Split(new char[] { ' ' });
@@ -277,6 +280,139 @@ namespace EZCode
                 bool jumpTo = jumpsto == "" ? false : true;
                 switch (keyword)
                 {
+                    case "loop":
+                        try
+                        {
+                            int looptime = -1;
+                            bool loop = false;
+
+                            loop = BoolCheck(parts, 1);
+                            if (!loop)
+                            {
+                                looptime = (int)find_value(parts, 1, 0)[0];
+                            }
+
+                            List<string> everythingafter = new List<string>();
+                            everythingafter.AddRange(splitcode.Skip(currentindex));
+                            everythingafter = everythingafter.Select(x => x.Trim()).ToList();
+                            string[] returnned = ExtractContent(everythingafter.ToArray(), parts);
+
+                            int tr = 0;
+                            int oldcodeline = codeLine;
+                            while (looptime != -1 ? tr < looptime : loop && playing)
+                            {
+                                tr++;
+
+                                int changeable = oldcodeline;
+                                string[] lines = returnned;
+                                for (int i = 0; i < lines.Length; i++)
+                                {
+
+                                    if (!playing) { i = lines.Length; continue; };
+                                    changeable = oldcodeline + i;
+                                    codeLine = changeable;
+                                    UpdateControlVariables();
+                                    string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }), "", lines, 0);
+                                    if (bool.Parse(task[1]) == false) i = lines.Length - 1;
+                                }
+                            }
+
+                            codeLine = oldcodeline;
+                            loopmany = returnned.Length - 1;
+                        }
+                        catch
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.custom, keyword);
+                        }
+                        break;
+                    case "if":
+                        try
+                        {
+                            bool check = false;
+                            string[] QMarkValuesArray = getString_value(parts, 1, true, true, false, true);
+                            string[] wholearray = QMarkValuesArray[0].Split(" ");
+                            string[] arrayed = wholearray.TakeWhile(x => x != ":").ToArray();
+                            int number = 0;
+                            for (int i = 0; i < wholearray.Length; i++) number = wholearray[i].Equals(":") ? number + 1 : number;
+                            if (number == 1)
+                            {
+                                for (int i = 0; i < arrayed.Length; i++)
+                                {
+                                    try
+                                    {
+                                        // Try Convert to number
+                                        float[] floats = find_value(arrayed, i, 0);
+                                        arrayed[i] = floats[0].ToString();
+                                    }
+                                    catch
+                                    {
+                                        // Nothing
+                                    }
+                                }
+                                string values = string.Join(" ", arrayed).ToLower();
+                                check = IfCheck(values);
+                            }
+                            else if (number == 0)
+                            {
+                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' for '{keyword}' in {SegmentSeperator} {codeLine}");
+                            }
+                            else if (number > 1)
+                            {
+                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected only one ':' for '{keyword}' in {SegmentSeperator} {codeLine}");
+                            }
+                            wholearray = wholearray.Where(x => x != "").ToArray();
+                            string[] after = string.Join(" ", wholearray).Split(" : ");
+                            string code = after.Length == 2 ? after[1].Trim() : "";
+                            int indexof = Array.IndexOf(wholearray, ":");
+                            bool anythingafter = indexof != wholearray.Length - 1;
+                            bool startswithbracket = code.StartsWith("{");
+                            List<string> everythingafter = new List<string>();
+                            everythingafter.AddRange(splitcode.Skip(currentindex));
+                            everythingafter = everythingafter.Select(x => x.Trim()).ToList();
+                            string nextline = "";
+                            for (int i = 1; i < everythingafter.Count && nextline == ""; i++) if(everythingafter[i] != "") nextline = everythingafter[i];
+                            bool inline = anythingafter && !startswithbracket;
+                            bool onnextline = !inline && !startswithbracket && !nextline.Trim().StartsWith("{") && nextline != "";
+                            if (inline) // execute line after if
+                            {
+                                if (check) //TRUE
+                                {
+                                    string[] result = await PlaySwitch(code.Split(" "));
+                                }
+                                else //FALSE
+                                {
+                                    // Nothing
+                                }
+                            }
+                            else if (onnextline) // execute next line
+                            {
+                                if (check) //TRUE
+                                {
+                                    // Nothing
+                                }
+                                else //FALSE
+                                {
+                                    ifmany = 1;
+                                }
+                            }
+                            else // execute everything inside { }
+                            {
+                                string[] returnned = ExtractContent(everythingafter.ToArray(), parts);
+                                if (check) //TRUE
+                                {
+                                    // Nothing
+                                }
+                                else //FALSE
+                                {
+                                    ifmany = returnned.Length - (startswithbracket ? 2 : 1);
+                                }
+                            }
+                        }
+                        catch
+                        {
+                            returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                        }
+                        break;
                     case "print":
                         try
                         {
@@ -551,7 +687,7 @@ namespace EZCode
                                         if (!playing) return new string[] { output, stillInFile.ToString() };
                                         codeLine = i + 1;
                                         UpdateControlVariables();
-                                        string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }));
+                                        string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }), "", lines, 0);
                                         if (bool.Parse(task[1]) == false) i = lines.Length - 1;
                                         output += task[0];
                                     }
@@ -1005,7 +1141,7 @@ namespace EZCode
                                 Group group = getGroup(keyword);
                                 group = DoGroup(parts, 0, keyword);
                             }
-                            else if (!keyword.StartsWith("//") && keyword != "")
+                            else if (!keyword.StartsWith("//") && !keyword.StartsWith("{") && !keyword.StartsWith("}") && keyword != "")
                             {
                                 returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a keyword or variable named '{keyword}' in {SegmentSeperator} {codeLine}");
                             }
@@ -1025,6 +1161,40 @@ namespace EZCode
                 returnOutput += ErrorText(_parts, ErrorTypes.unkown) + "\n";
                 return new string[] { returnOutput, "true" };
             }
+        }
+        string[] ExtractContent(string[] _input, string[] parts)
+        {
+            string input = string.Join(Environment.NewLine, _input);
+            int depth = 0;
+            int startIndex = -1;
+            bool insideBrackets = false;
+
+            for (int i = 0; i < input.Length; i++)
+            {
+                char currentChar = input[i];
+
+                if (currentChar == '{')
+                {
+                    if (depth == 0)
+                    {
+                        startIndex = i;
+                    }
+                    depth++;
+                }
+                else if (currentChar == '}')
+                {
+                    depth--;
+                    if (depth == 0 && startIndex >= 0)
+                    {
+                        int endIndex = i + 1; // Include the closing bracket
+                        return input.Substring(startIndex, endIndex - startIndex).Trim().Split(Environment.NewLine);
+                    }
+                }
+            }
+
+            // If no closing bracket is found, throw an exception
+            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected closing bracket for '{parts[0]}' in {SegmentSeperator} {codeLine}");
+            return new string[0];
         }
         int GetZIndex(Control control)
         {
@@ -1465,19 +1635,19 @@ namespace EZCode
             return control;
         }
         Group getGroup(string name)
-        {
-            Group group = new Group(name);
-            group.isSet = false;
-            for (int i = 0; i < groups.Count; i++)
-            {
-                if (groups[i].Name == name)
-                {
-                    group = groups[i];
-                    group.isSet = true;
-                }
-            }
-            return group;
-        } 
+         {
+             Group group = new Group(name);
+             group.isSet = false;
+             for (int i = 0; i < groups.Count; i++)
+             {
+                 if (groups[i].Name == name)
+                 {
+                     group = groups[i];
+                     group.isSet = true;
+                 }
+             }
+             return group;
+         } 
         void StopAllSounds()
         {
             for (int i = 0; i < sounds.Count; i++)
@@ -1595,11 +1765,44 @@ namespace EZCode
         }
         bool IfCheck(string inners)
         {
-            string[] parts = inners.Split(new char[] { ' ' });
-            string[] innerparts = getString_value(parts.Prepend(" ").ToArray(), 0, true);
-            string expression = string.Join(" ", innerparts[0].Split(" "));
-            bool check = EvaluateExpression(expression);
-            return check;
+            // Use regular expressions to split based on "and", "&", and "or" with optional spaces around them
+            string[] parts = Regex.Split(inners, @"\s*(and|&|or)\s*", RegexOptions.IgnoreCase);
+
+            bool overallResult = true;  // Initialize to true; we'll use it as a default for "or" operations
+            string lastOperator = null; // Maintain the last operator
+
+            for (int i = 0; i < parts.Length; i++)
+            {
+                string expression = parts[i].Trim();
+                bool partResult = EvaluateExpression(expression);
+
+                if (i == 0)
+                {
+                    // First part doesn't have a preceding operator; use its result as the initial overall result
+                    overallResult = partResult;
+                }
+                else
+                {
+                    // Check the preceding operator to determine how to combine results
+                    string precedingOperator = lastOperator;
+
+                    if (precedingOperator.Equals("and", StringComparison.OrdinalIgnoreCase) || precedingOperator == "&")
+                    {
+                        if (parts[i] != "and" && parts[i] != "&")
+                            overallResult = overallResult && partResult;
+                    }
+                    else if (precedingOperator.Equals("or", StringComparison.OrdinalIgnoreCase))
+                    {
+                        if (parts[i] != "or")
+                            overallResult = overallResult || partResult;
+                    }
+                }
+
+                // Update the lastOperator variable
+                lastOperator = parts[i].Trim();
+            }
+
+            return overallResult;
         }
         bool EvaluateExpression(string expression)
         {
@@ -3145,6 +3348,10 @@ namespace EZCode
             RichConsole = control != null ? control : RichConsole;
             if (RichConsole != null)
             {
+                if(RichConsole.Text.Length + 100 > RichConsole.MaxLength)
+                {
+                    RichConsole.Text = "";
+                }
                 RichConsole.SelectionStart = RichConsole.TextLength;
                 RichConsole.SelectionLength = 0;
                 RichConsole.SelectionColor = error ? errorColor : normalColor;
