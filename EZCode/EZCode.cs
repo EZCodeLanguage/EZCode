@@ -1,21 +1,23 @@
-﻿using GControls;
+﻿using EZCode.GControls;
+using EZCode.Variables;
+using EZCode.Windows;
 using NCalc;
 using System.Data;
 using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using Variables;
-using Group = Groups.Group;
+using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
+using Group = EZCode.Groups.Group;
 using Player = Sound.Player;
-using Types = Variables.Ivar.Types;
+using Types = EZCode.Variables.Ivar.Types;
 
 namespace EZCode
 {
     /// <summary>
     /// This is the Official EZCode Source Code. See Version '<seealso cref="Version"/>'
     /// </summary>
-    public class EZCode
+    public class EzCode
     {
         #region Variables_and_Initializers
         /// <summary>
@@ -42,6 +44,23 @@ namespace EZCode
         /// Position of the mouse
         /// </summary>
         public Point MousePosition = new Point();
+        /// <summary>
+        /// Delta of the Mouse Wheel
+        /// </summary>
+        public int mouseWheel
+        {
+            get
+            {
+                int a = _mouseWheel;
+                _mouseWheel = 0;
+                return a;
+            }
+            set
+            {
+                _mouseWheel = value;
+            }
+        }
+        int _mouseWheel;
         /// <summary>
         /// The output color of an error
         /// </summary>
@@ -71,9 +90,17 @@ namespace EZCode
         /// </summary>
         private List<GShape> shapes = new List<GShape>();
         /// <summary>
+        /// List for windows
+        /// </summary>
+        private List<Window> windows = new List<Window>();
+        /// <summary>
         /// List for variables
         /// </summary>
         private List<Var> vars = new List<Var>();
+        /// <summary>
+        /// List of Objects
+        /// </summary>
+        private List<object> objects = new List<object>();
         /// <summary>
         /// List of Groups
         /// </summary>
@@ -81,7 +108,18 @@ namespace EZCode
         /// <summary>
         /// List of all controls
         /// </summary>
-        List<Control> AllControls = new List<Control>();
+        public List<Control> AllControls
+        {
+            get
+            {
+                List<Control> c = new List<Control>();
+                c.AddRange(shapes);
+                c.AddRange(buttons);
+                c.AddRange(labels);
+                c.AddRange(textboxes);
+                return c;
+            }
+        }
         /// <summary>
         /// Shows the file directory whenever an error occurs. Recommended for debugging.
         /// </summary>
@@ -157,17 +195,26 @@ namespace EZCode
                 devDisplay = true;
                 devportal = 0;
                 ifmany = 0;
+                lastif = true;
                 loopmany = 0;
+                foreach (Window Window in windows)
+                {
+                    Window.Close();
+                }
+                if (_pplaying && showStartAndEnd)
+                    AddText("Build Start");
+                else if(!_pplaying && showStartAndEnd)
+                    AddText("Build Ended");
             }
         }
         private bool _pplaying;
         /// <summary>
         /// string array for naming violations
         /// </summary>
-        public string[] UnusableNames = new string[] { "await", "button", "print", "group", "clear", "write", "stop", "DEV___PORTAL",
-            "event", "textbox", "multiLine", "shape", "image", "label", "font", "move", "scale", "color", "intersects", "var",
-            "input", "list", "file", "sound", "if", "//", "#create", "#suppress", "#", "system:", "?", "=", "!", ">", "<", "+",
-            "-", "|", "\\", ",", "@", "#", "$", "%", "^", "&", "*", "(", ")", "/", "~", "`", ".", ":", ";" };
+        public string[] UnusableNames = new string[] { "await", "button", "print", "group", "clear", "write", "stop", "DEVPORTAL",
+            "event", "textbox", "multiLine", "shape", "image", "label", "font", "move", "scale", "color", "intersects", "var", "if",
+            "input", "list", "file", "sound", "if", "//", "#create", "#suppress", "#", "system:", "?", "=", "!", ">", "<", "+", "loop",
+            "-", "|", "\\", ",", "@", "#", "$", "%", "^", "&", "*", "(", ")", "/", "~", "`", ".", ":", ";", "window", "system", "messagebox" };
         /// <summary>
         /// char array for unusable names that can't even be used once in the name
         /// </summary>
@@ -188,14 +235,17 @@ namespace EZCode
         /// </summary>
         public bool RefreshOnControl = false;
 
+        public bool InPanel { get; set; }
+
         /// <summary>
         /// Initializes the EZCode Player with the provided parameters.
         /// </summary>
         /// <param name="_space">The Control used as the output space. Only needed if the code includes visual output, like 'object' or 'button'</param>
         /// <param name="_directory">The directory path where the file is located. Only needed if the code referenses another file locally using the '~/' character.</param>
         /// <param name="_console">The RichTextbox that has the error color is wanted.</param>
-        public void Initialize(string _directory = "NOTHING", System.Windows.Forms.Control _space = null, RichTextBox _console = null, bool _showFileWithErrors = true, bool _showStartAndEnd = true, bool _clearConsole = true)
+        public void Initialize(bool inpanel = false, string _directory = "NOTHING", Control _space = null, RichTextBox _console = null, bool _showFileWithErrors = true, bool _showStartAndEnd = true, bool _clearConsole = true)
         {
+            InPanel = inpanel;
             Space = _space;
             RichConsole = _console;
             ScriptDirectory = _directory != "NOTHING" ? _directory : "";
@@ -230,24 +280,41 @@ namespace EZCode
             labels.Clear();
             textboxes.Clear();
             buttons.Clear();
+            windows.Clear();
+            objects.Clear();
             if (ClearConsole) RichConsole.Clear();
             if (showStartAndEnd) AddText("Build Started");
             Code = code;
             string output = string.Empty;
-            string[] lines = code.Split(seperatorChars);
-            for (int i = 0; i < lines.Length; i++)
+            List<string> lines = code.Split(seperatorChars).ToList();
+            for (int i = 0; i < lines.Count; i++)
             {
                 if (!playing) return output;
-                UpdateControlVariables();
                 codeLine = i + 1;
-                string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }), "", lines, i);
-                if (bool.Parse(task[1]) == false) i = lines.Length - 1;
+                List<string> parts = lines[i].Split(new char[] { ' ' }).ToList();
+                for (int j = 0; j < parts.Count; j++)
+                {
+                    if (parts[j].Trim() == "->")
+                    {
+                        try
+                        {
+                            parts.RemoveAt(j);
+                            parts.AddRange(lines[i + 1].Split(' '));
+                            lines.RemoveAt(i + 1);
+                        }
+                        catch
+                        {
+
+                        }
+                    }
+                }
+                string[] task = await PlaySwitch(parts.ToArray(), "", lines.ToArray(), i);
+                if (bool.Parse(task[1]) == false) i = lines.Count - 1;
                 output += task[0];
                 ConsoleText = output;
             }
             playing = false;
             StopAllSounds();
-            if (showStartAndEnd) AddText("Build Ended");
             return output;
         }
 
@@ -255,12 +322,13 @@ namespace EZCode
 
         #region EZCode_Script_Player
         string returnOutput = "";
-        bool devDisplay = true;
+        bool devDisplay = true, lastif = true;
         int devportal = 0, ifmany = 0, loopmany = 0;
         async Task<string[]> PlaySwitch(string[]? _parts = null, string jumpsto = "", string[]? splitcode = null, int currentindex = 0)
         {
             try
             {
+                foreach (GButton button in buttons) button.isclick = 0;
                 if (ifmany > 0 || loopmany > 0)
                 {
                     if (ifmany > 0) ifmany--;
@@ -280,14 +348,24 @@ namespace EZCode
                 bool jumpTo = jumpsto == "" ? false : true;
                 switch (keyword)
                 {
+                    case "window":
+                        try
+                        {
+                            DoWindow(parts, 1, keyword);
+                        }
+                        catch
+                        {
+                            ErrorText(parts, ErrorTypes.normal, keyword);
+                        }
+                        break;
                     case "loop":
                         try
                         {
                             int looptime = -1;
-                            bool loop = false;
+                            bool? loop = null;
 
-                            loop = BoolCheck(parts, 1);
-                            if (!loop)
+                            loop = BoolCheck(parts, 1, false);
+                            if (loop == null)
                             {
                                 looptime = (int)find_value(parts, 1, 0)[0];
                             }
@@ -296,10 +374,10 @@ namespace EZCode
                             everythingafter.AddRange(splitcode.Skip(currentindex));
                             everythingafter = everythingafter.Select(x => x.Trim()).ToList();
                             string[] returnned = ExtractContent(everythingafter.ToArray(), parts);
-
+                            
                             int tr = 0;
                             int oldcodeline = codeLine;
-                            while (looptime != -1 ? tr < looptime : loop && playing)
+                            while (looptime != -1 ? tr < looptime : loop == true && playing)
                             {
                                 tr++;
 
@@ -311,10 +389,11 @@ namespace EZCode
                                     if (!playing) { i = lines.Length; continue; };
                                     changeable = oldcodeline + i;
                                     codeLine = changeable;
-                                    UpdateControlVariables();
-                                    string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }), "", lines, 0);
+                                    string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }), "", lines, i);
                                     if (bool.Parse(task[1]) == false) i = lines.Length - 1;
                                 }
+
+                                loop = BoolCheck(parts, 1, false);
                             }
 
                             codeLine = oldcodeline;
@@ -322,7 +401,72 @@ namespace EZCode
                         }
                         catch
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
+                        }
+                        break;
+                    case "else":
+                        try
+                        {
+                            bool containscolon = parts[1] == ":";
+                            if(containscolon)
+                            {
+                                string[] wholearray = parts.ToArray();
+                                string[] after = string.Join(" ", wholearray).Split(" : ");
+                                string code = after.Length == 2 ? after[1].Trim() : "";
+                                int indexof = Array.IndexOf(wholearray, ":");
+                                bool anythingafter = indexof != wholearray.Length - 1;
+                                bool startswithbracket = code.StartsWith("{");
+                                List<string> everythingafter = new List<string>();
+                                everythingafter.AddRange(splitcode.Skip(currentindex));
+                                everythingafter = everythingafter.Select(x => x.Trim()).ToList();
+                                string nextline = "";
+                                for (int i = 1; i < everythingafter.Count && nextline == ""; i++) if (everythingafter[i] != "") nextline = everythingafter[i];
+                                bool inline = anythingafter && !startswithbracket;
+                                bool onnextline = !inline && !startswithbracket && !nextline.Trim().StartsWith("{") && nextline != "";
+                                if (inline) // execute line after if
+                                {
+                                    if (!lastif) //TRUE
+                                    {
+                                        string[] result = await PlaySwitch(code.Split(" "));
+                                    }
+                                    else //FALSE
+                                    {
+                                        // Nothing
+                                    }
+                                }
+                                else if (onnextline) // execute next line
+                                {
+                                    if (!lastif) //TRUE
+                                    {
+                                        // Nothing
+                                    }
+                                    else //FALSE
+                                    {
+                                        ifmany = 1;
+                                    }
+                                }
+                                else // execute everything inside { }
+                                {
+                                    string[] returnned = ExtractContent(everythingafter.ToArray(), parts);
+                                    if (!lastif) //TRUE
+                                    {
+                                        // Nothing
+                                    }
+                                    else //FALSE
+                                    {
+                                        ifmany = returnned.Length - (startswithbracket ? 2 : 1);
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' for '{keyword}' in {SegmentSeperator} {codeLine}");
+                            }
+                            lastif = true;
+                        }
+                        catch
+                        {
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         }
                         break;
                     case "if":
@@ -346,7 +490,20 @@ namespace EZCode
                                     }
                                     catch
                                     {
-                                        // Nothing
+                                        try
+                                        {
+                                            // Try Convert to string
+                                            string[] strings = getString_value(arrayed, i);
+                                            arrayed[i] = strings[0];
+                                        }
+                                        catch
+                                        {
+                                            // Nothing
+                                        }
+                                    }
+                                    if (Var.staticReturnBool(arrayed[i]) != null)
+                                    {
+                                        arrayed[i] = Var.staticReturnBool(arrayed[i]).ToString();
                                     }
                                 }
                                 string values = string.Join(" ", arrayed).ToLower();
@@ -354,11 +511,11 @@ namespace EZCode
                             }
                             else if (number == 0)
                             {
-                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' for '{keyword}' in {SegmentSeperator} {codeLine}");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' for '{keyword}' in {SegmentSeperator} {codeLine}");
                             }
                             else if (number > 1)
                             {
-                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected only one ':' for '{keyword}' in {SegmentSeperator} {codeLine}");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected only one ':' for '{keyword}' in {SegmentSeperator} {codeLine}");
                             }
                             wholearray = wholearray.Where(x => x != "").ToArray();
                             string[] after = string.Join(" ", wholearray).Split(" : ");
@@ -407,11 +564,24 @@ namespace EZCode
                                     ifmany = returnned.Length - (startswithbracket ? 2 : 1);
                                 }
                             }
+                            lastif = check;
                         }
                         catch
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         }
+                        break;
+                    case "messagebox":
+                        try
+                        {
+                            string[] title = getString_value(parts, 1);
+                            string text = getString_value(parts, int.Parse(title[1]))[0];
+                            MessageBox.Show(text, title[0]);                            
+                        }
+                        catch
+                        {
+                            ErrorText(parts, ErrorTypes.normal, keyword);
+                        } // MESSAGEBOX
                         break;
                     case "print":
                         try
@@ -422,7 +592,7 @@ namespace EZCode
                         }
                         catch
                         {
-                            returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // PRINT
                         break;
                     case "DEVPORTAL":
@@ -455,6 +625,20 @@ namespace EZCode
                                 RefreshOnControl = false;
                                 output += "Set Dev Portal Refresh on Update to false";
                             }
+                            if (next == "seperatingchars")
+                            {
+                                string addedchar = parts[2];
+                                List<char> each = seperatorChars.ToList();
+                                foreach (char c in addedchar)
+                                {
+                                    each.Add(c);
+                                }
+                                seperatorChars = each.ToArray();
+                            }
+                            if (next == "resetseperatingchars")
+                            {
+                                seperatorChars = new char[] { '\n', '|' };
+                            }
                             if (devDisplay)
                             {
                                 AddText(output);
@@ -462,7 +646,7 @@ namespace EZCode
                         }
                         catch
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         }
                         break;
                     case "shape":
@@ -471,11 +655,11 @@ namespace EZCode
                     case "button":
                         try
                         {
-                            DoControl(parts, keyword, 1);
+                            await DoControl(parts, keyword, 1);
                         }
                         catch
                         {
-                            returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // CONTROL
                         break;
                     case "clear":
@@ -486,7 +670,7 @@ namespace EZCode
                                 ConsoleText = string.Empty;
                                 RichConsole.Clear();
                             }
-                            else if (BoolCheck(parts, 1))
+                            else if ((bool)BoolCheck(parts, 1))
                             {
                                 ConsoleText = string.Empty;
                                 RichConsole.Clear();
@@ -494,7 +678,7 @@ namespace EZCode
                         }
                         catch
                         {
-                            returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // CLEAR
                         break;
                     case "destroy":
@@ -504,13 +688,13 @@ namespace EZCode
                             Control? control = getControl(name);
                             if (control == null)
                             {
-                                returnOutput += returnOutput += ErrorText(parts, ErrorTypes.missingControl, keyword, name);
+                                ErrorText(parts, ErrorTypes.missingControl, keyword, name);
                             }
-                            if (parts.Length - 1 >= 2 && !BoolCheck(parts, 2))
+                            if (parts.Length - 1 >= 2 && BoolCheck(parts, 2) == false)
                             {
                                 return new string[] { returnOutput, "true" };
                             }
-                            Space.Controls.Remove(control);
+                            control.Dispose();
                             switch (control.AccessibleName)
                             {
                                 case "shape":
@@ -526,30 +710,30 @@ namespace EZCode
                                     textboxes.Remove(control as GTextBox);
                                     break;
                                 default:
-                                    returnOutput += returnOutput += ErrorText(parts, ErrorTypes.missingControl, keyword, name);
+                                    ErrorText(parts, ErrorTypes.missingControl, keyword, name);
                                     break;
                             }
                         }
                         catch
                         {
-                            returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // DESTROY
                         break;
                     case "await":
                         try
                         {
-                            if (!parts[1].Trim().Contains("?"))
+                            if (IsNumericString(parts[1].Trim()))
                             {
                                 float[] values = find_value(parts, 1, 0);
                                 await Task.Delay((int)values[0]);
                             }
                             else
                             {
-                                bool check = QMarkCheck(parts, 1)[0] == 0 ? false : true;
+                                bool check = BoolCheck(parts, 1) == true;
                                 while (!check && playing)
                                 {
-                                    check = QMarkCheck(parts, 1)[0] == 0 ? false : true;
-                                    await Task.Delay(150);
+                                    check = BoolCheck(parts, 1) == true;
+                                    await Task.Delay(100);
                                 }
                             }
                         }
@@ -566,7 +750,7 @@ namespace EZCode
                         }
                         catch
                         {
-                            returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // VAR
                         break;
                     case "intersects":
@@ -577,11 +761,11 @@ namespace EZCode
 
                             if (get_1 == null)
                             {
-                                returnOutput += returnOutput += ErrorText(parts, ErrorTypes.missingControl, keyword, parts[1]);
+                                ErrorText(parts, ErrorTypes.missingControl, keyword, parts[1]);
                             }
                             if (get_2 == null)
                             {
-                                returnOutput += returnOutput += ErrorText(parts, ErrorTypes.missingControl, keyword, parts[2]);
+                                ErrorText(parts, ErrorTypes.missingControl, keyword, parts[2]);
                             }
 
                             Rectangle rect1 = new Rectangle();
@@ -602,7 +786,7 @@ namespace EZCode
                                     rect1 = get_1.Bounds;
                                     break;
                                 default:
-                                    returnOutput += returnOutput += ErrorText(parts, ErrorTypes.missingControl, keyword, parts[1]);
+                                    ErrorText(parts, ErrorTypes.missingControl, keyword, parts[1]);
                                     break;
                             }
                             switch (get_2.AccessibleName)
@@ -620,7 +804,7 @@ namespace EZCode
                                     rect2 = get_2.Bounds;
                                     break;
                                 default:
-                                    returnOutput += returnOutput += ErrorText(parts, ErrorTypes.missingControl, keyword, parts[2]);
+                                    ErrorText(parts, ErrorTypes.missingControl, keyword, parts[2]);
                                     break;
                             }
                             string intersects = (rect1.IntersectsWith(rect2) == false ? 0 : 1).ToString();
@@ -632,7 +816,7 @@ namespace EZCode
                         }
                         catch
                         {
-                            returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // INTERSECTS
                         break;
                     case "file":
@@ -673,7 +857,7 @@ namespace EZCode
                                     endindex = parts.ToList().IndexOf(_strings[0].Split(" ")[_strings[0].Split(" ").Length - 1]);
                                     if (!validpathcheck(output))
                                     {
-                                        returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"The path given is invalid for '{keyword}' in {SegmentSeperator} {codeLine}");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"The path given is invalid for '{keyword}' in {SegmentSeperator} {codeLine}");
                                     }
                                     break;
                                 case "play":
@@ -682,15 +866,19 @@ namespace EZCode
                                     string code = File.ReadAllText(file_p[0]);
                                     endindex = int.Parse(file_p[1]);
                                     string[] lines = code.Split(seperatorChars);
+                                    string tempscript = ScriptDirectory;
+                                    int templine = codeLine;
+                                    ScriptDirectory = file_p[0];
                                     for (int i = 0; i < lines.Length; i++)
                                     {
-                                        if (!playing) return new string[] { output, stillInFile.ToString() };
+                                        if (!playing) continue;
                                         codeLine = i + 1;
-                                        UpdateControlVariables();
                                         string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }), "", lines, 0);
                                         if (bool.Parse(task[1]) == false) i = lines.Length - 1;
                                         output += task[0];
                                     }
+                                    ScriptDirectory = tempscript;
+                                    codeLine = templine;
                                     if (jumpTo)
                                     {
                                         return new string[] { output, stillInFile.ToString() };
@@ -715,7 +903,7 @@ namespace EZCode
                                     }
                                     break;
                                 default:
-                                    returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'read' 'write' 'path' or 'play' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'read' 'write' 'path' or 'play' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                             if (jumpTo) return new string[] { output, stillInFile.ToString() };
@@ -723,15 +911,15 @@ namespace EZCode
                         }
                         catch (Exception ex)
                         {
-                            if(ex.Message == $"File not found in {SegmentSeperator} {codeLine}") returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: ex.Message);
-                            else returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            if(ex.Message == $"File not found in {SegmentSeperator} {codeLine}") ErrorText(parts, ErrorTypes.custom, custom: ex.Message);
+                            else ErrorText(parts, ErrorTypes.normal, keyword);
                         } // FILE
                         break;
                     case "stop":
                         try
                         {
                             string type = parts[1].Trim();
-                            if (parts.Length - 1 >= 2 && !BoolCheck(parts, 2))
+                            if (parts.Length - 1 >= 2 && !(bool)BoolCheck(parts, 2))
                             {
                                 return new string[] { returnOutput, "true" };
                             }
@@ -739,19 +927,18 @@ namespace EZCode
                             {
                                 case "all":
                                     playing = false;
-                                    if (showStartAndEnd) AddText("Build Ended");
                                     break;
                                 case "file":
                                     stillInFile = false;
                                     break;
                                 default:
-                                    returnOutput += returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'all' or 'file' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'all' or 'file' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                         }
                         catch
                         {
-                            returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // STOP
                         break;
                     case "input":
@@ -800,10 +987,24 @@ namespace EZCode
                                                     output = MousePosition.Y.ToString();
                                                     break;
                                                 case "":
-                                                    output = $"({MousePosition.X}, {MousePosition.Y})";
+                                                    output = $"{MousePosition.X}, {MousePosition.Y}";
                                                     break;
                                                 default:
-                                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'X' or 'Y' for '{keyword}' in {SegmentSeperator} {codeLine}");
+                                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'X' or 'Y' for '{keyword}' in {SegmentSeperator} {codeLine}");
+                                                    break;
+                                            }
+                                            break;
+                                        case "wheel":
+                                            switch (parts.Length - 1 < 3 ? "" : parts[3].Trim().ToLower())
+                                            {
+                                                case "":
+                                                    output = Math.Sign(mouseWheel).ToString();
+                                                    break;
+                                                case "raw":
+                                                    output = mouseWheel.ToString();
+                                                    break;
+                                                default:
+                                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'X' or 'Y' for '{keyword}' in {SegmentSeperator} {codeLine}");
                                                     break;
                                             }
                                             break;
@@ -821,7 +1022,7 @@ namespace EZCode
                                     }
                                     break;
                                 default:
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'console' 'key' or 'mouse' for '{keyword}' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'console' 'key' or 'mouse' for '{keyword}' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                             if (jumpTo) return new string[] { output, stillInFile.ToString() };
@@ -829,7 +1030,7 @@ namespace EZCode
                         }
                         catch
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // INPUT
                         break;
                     case "list":
@@ -839,7 +1040,7 @@ namespace EZCode
                         }
                         catch
                         {
-                            returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // LIST
                         break;
                     case "group":
@@ -849,7 +1050,7 @@ namespace EZCode
                         }
                         catch
                         {
-                            returnOutput += returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // GROUP
                         break;
                     case "sound":
@@ -878,7 +1079,7 @@ namespace EZCode
                                     }
                                     else
                                     {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingSound, keyword, name);
+                                        ErrorText(parts, ErrorTypes.missingSound, keyword, name);
                                     }
                                     break;
                                 case "playloop":
@@ -889,7 +1090,7 @@ namespace EZCode
                                     }
                                     else
                                     {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingSound, keyword, name);
+                                        ErrorText(parts, ErrorTypes.missingSound, keyword, name);
                                     }
                                     break;
                                 case "destroy":
@@ -901,7 +1102,7 @@ namespace EZCode
                                     }
                                     else
                                     {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingSound, keyword, name);
+                                        ErrorText(parts, ErrorTypes.missingSound, keyword, name);
                                     }
                                     break;
                                 case "stop":
@@ -912,7 +1113,7 @@ namespace EZCode
                                     }
                                     else
                                     {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingSound, keyword, name);
+                                        ErrorText(parts, ErrorTypes.missingSound, keyword, name);
                                     }
                                     break;
                                 case "volume":
@@ -923,135 +1124,244 @@ namespace EZCode
                                     }
                                     else
                                     {
-                                        returnOutput += ErrorText(parts, ErrorTypes.missingSound, keyword, name);
+                                        ErrorText(parts, ErrorTypes.missingSound, keyword, name);
                                     }
                                     break;
                                 default:
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'destroy' 'play' 'stop' or 'volume' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'destroy' 'play' 'stop' or 'volume' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                         }
                         catch
                         {
-                            returnOutput += ErrorText(parts,ErrorTypes.normal, keyword);
+                            ErrorText(parts,ErrorTypes.normal, keyword);
                         } // SOUND
                         break;
                     case "event":
                         try
                         {
                             string name = parts[1];
-                            Control? control = getControl(name);
-                            if (control == null)
+                            
+                            if (getControl(name) != null)
                             {
-                                returnOutput += returnOutput += ErrorText(parts, ErrorTypes.missingControl, keyword, name);
+                                Control? control = getControl(name);
+                                GShape gShape = new GShape();
+                                GLabel gLabel = new GLabel();
+                                GButton gButton = new GButton();
+                                GTextBox gTextBox = new GTextBox();
+                                switch (control.AccessibleName)
+                                {
+                                    case "shape":
+                                        gShape = (control as GShape);
+                                        break;
+                                    case "button":
+                                        gButton = (control as GButton);
+                                        break;
+                                    case "label":
+                                        gLabel = (control as GLabel);
+                                        break;
+                                    case "textbox":
+                                        gTextBox = (control as GTextBox);
+                                        break;
+                                    default:
+                                        ErrorText(parts, ErrorTypes.missingControl, keyword, name);
+                                        break;
+                                }
+                                string type = parts[2];
+                                string[] file_r = await getFile(parts, 3);
+                                string file = file_r[0];
+                                switch (type)
+                                {
+                                    case "click":
+                                        gShape.click = file;
+                                        gButton.click = file;
+                                        gLabel.click = file;
+                                        gTextBox.click = file;
+                                        gShape.Click += G_click;
+                                        gLabel.Click += G_click;
+                                        gTextBox.Click += G_click;
+                                        break;
+                                    case "hover":
+                                        gShape.mousehover = file;
+                                        gButton.mousehover = file;
+                                        gLabel.mousehover = file;
+                                        gTextBox.mousehover = file;
+                                        control.MouseHover += G_mousehover;
+                                        break;
+                                    case "move":
+                                        gShape.move = file;
+                                        gButton.move = file;
+                                        gLabel.move = file;
+                                        gTextBox.move = file;
+                                        control.LocationChanged += G_move;
+                                        break;
+                                    case "scale":
+                                        gShape.scale = file;
+                                        gButton.scale = file;
+                                        gLabel.scale = file;
+                                        gTextBox.scale = file;
+                                        control.SizeChanged += G_scale;
+                                        break;
+                                    case "backcolor":
+                                        gShape.backcolor = file;
+                                        gButton.backcolor = file;
+                                        gLabel.backcolor = file;
+                                        gTextBox.backcolor = file;
+                                        control.BackColorChanged += G_backcolor;
+                                        break;
+                                    case "forecolor":
+                                        gShape.forecolor = file;
+                                        gButton.forecolor = file;
+                                        gLabel.forecolor = file;
+                                        gTextBox.forecolor = file;
+                                        control.ForeColorChanged += G_forecolor;
+                                        break;
+                                    case "image":
+                                        gShape.image = file;
+                                        gButton.image = file;
+                                        gLabel.image = file;
+                                        gTextBox.image += file;
+                                        control.BackgroundImageChanged += G_image;
+                                        break;
+                                    case "imagelayout":
+                                        gShape.imagelayout = file;
+                                        gButton.imagelayout = file;
+                                        gLabel.imagelayout = file;
+                                        gTextBox.imagelayout = file;
+                                        control.BackgroundImageLayoutChanged += G_imagetype;
+                                        break;
+                                    case "font":
+                                        gShape.font = file;
+                                        gButton.font = file;
+                                        gLabel.font = file;
+                                        gTextBox.font = file;
+                                        control.FontChanged += G_font;
+                                        break;
+                                    case "text":
+                                        gShape.text = file;
+                                        gButton.text = file;
+                                        gLabel.text = file;
+                                        gTextBox.text = file;
+                                        control.TextChanged += G_text;
+                                        break;
+                                    default:
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'click' 'hover' 'move' 'scale' 'backcolor' 'forecolor' 'image' 'imagetype' 'font' or 'text' for 'event' in {SegmentSeperator} {codeLine}");
+                                        break;
+                                }
                             }
-                            GShape gShape = new GShape();
-                            GLabel gLabel = new GLabel();
-                            GButton gButton = new GButton();
-                            GTextBox gTextBox = new GTextBox();
-                            switch (control.AccessibleName)
+                            else if (getWindow(name) != null)
                             {
-                                case "shape":
-                                    gShape = (control as GShape);
-                                    break;
-                                case "button":
-                                    gButton = (control as GButton);
-                                    break;
-                                case "label":
-                                    gLabel = (control as GLabel);
-                                    break;
-                                case "textbox":
-                                    gTextBox = (control as GTextBox);
-                                    break;
-                                default:
-                                    returnOutput += returnOutput += ErrorText(parts, ErrorTypes.missingControl, keyword, name);
-                                    break;
+                                Window window = getWindow(name);
+                                string type = parts[2];
+                                string[] file_r = await getFile(parts, 3);
+                                string file = file_r[0];
+                                switch (type)
+                                {
+                                    case "click":
+                                        window.click = file;
+                                        window.MouseHover += G_click;
+                                        break;
+                                    case "hover":
+                                        window.mousehover = file;
+                                        window.MouseHover += G_mousehover;
+                                        break;
+                                    case "move":
+                                        window.move = file;
+                                        window.LocationChanged += G_move;
+                                        break;
+                                    case "backcolor":
+                                        window.backcolor = file;
+                                        window.BackColorChanged += G_backcolor;
+                                        break;
+                                    case "forecolor":
+                                        window.forecolor = file;
+                                        window.ForeColorChanged += G_forecolor;
+                                        break;
+                                    case "image":
+                                        window.image = file;
+                                        window.BackgroundImageChanged += G_image;
+                                        break;
+                                    case "imagelayout":
+                                        window.imagelayout = file;
+                                        window.BackgroundImageLayoutChanged += G_imagetype;
+                                        break;
+                                    case "font":
+                                        window.font = file;
+                                        window.FontChanged += G_font;
+                                        break;
+                                    case "text":
+                                        window.text = file;
+                                        window.TextChanged += G_text;
+                                        break;
+                                    case "scroll":
+                                        window.scroll = file;
+                                        window.Scroll += G_scroll;
+                                        break;
+                                    case "focus":
+                                        window.focused = file;
+                                        window.GotFocus += G_focused;
+                                        break;
+                                    case "controladded":
+                                        window.focused = file;
+                                        window.ControlAdded += G_ctroladded;
+                                        break;
+                                    case "controlremoved":
+                                        window.controlremoved = file;
+                                        window.ControlRemoved += G_controlremoved;
+                                        break;
+                                    case "defocused":
+                                        window.defocused = file;
+                                        window.defocused += G_defocused;
+                                        break;
+                                    case "close":
+                                        window.close = file;
+                                        window.FormClosed += G_close;
+                                        break;
+                                    case "open":
+                                        window.open = file;
+                                        window.Shown += G_open;
+                                        break;
+                                    case "enabledchanged":
+                                        window.enabledchanged = file;
+                                        window.EnabledChanged += G_enabledchanged;
+                                        break;
+                                    case "keydown":
+                                        window.keydown = file;
+                                        window.KeyDown += G_keydown;
+                                        break;
+                                    case "keyup":
+                                        window.keyup = file;
+                                        window.KeyUp += G_keyup;
+                                        break;
+                                    case "keypress":
+                                        window.keypress = file;
+                                        window.KeyPress += G_press;
+                                        break;
+                                    case "resize":
+                                        window.resized = file;
+                                        window.Resize += G_resize;
+                                        break;
+                                    case "resizestart":
+                                        window.resizedstart = file;
+                                        window.ResizeBegin += G_resizedstart;
+                                        break;
+                                    case "resizeend":
+                                        window.resizedend = file;
+                                        window.ResizeEnd += G_resizedend;
+                                        break;
+                                    default:
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'click' 'hover' 'move' 'scale' 'backcolor' 'forecolor' 'image' 'imagetype' 'font' or 'text' for 'event' in {SegmentSeperator} {codeLine}");
+                                        break;
+                                }
                             }
-                            string type = parts[2];
-                            string[] file_r = await getFile(parts, 3);
-                            string file = file_r[0];
-                            switch (type)
+                            else
                             {
-                                case "click":
-                                    gShape.click = file;
-                                    gButton.click = file;
-                                    gLabel.click = file;
-                                    gTextBox.click = file;
-                                    gShape.Click += G_click;
-                                    gLabel.Click += G_click;
-                                    gTextBox.Click += G_click;
-                                    break;
-                                case "hover":
-                                    gShape.mousehover = file;
-                                    gButton.mousehover = file;
-                                    gLabel.mousehover = file;
-                                    gTextBox.mousehover = file;
-                                    control.MouseHover += G_mousehover;
-                                    break;
-                                case "move":
-                                    gShape.move = file;
-                                    gButton.move = file;
-                                    gLabel.move = file;
-                                    gTextBox.move = file;
-                                    control.LocationChanged += G_move;
-                                    break;
-                                case "scale":
-                                    gShape.scale = file;
-                                    gButton.scale = file;
-                                    gLabel.scale = file;
-                                    gTextBox.scale = file;
-                                    control.SizeChanged += G_scale;
-                                    break;
-                                case "backcolor":
-                                    gShape.backcolor = file;
-                                    gButton.backcolor = file;
-                                    gLabel.backcolor = file;
-                                    gTextBox.backcolor = file;
-                                    control.BackColorChanged += G_backcolor;
-                                    break;
-                                case "forecolor":
-                                    gShape.forecolor = file;
-                                    gButton.forecolor = file;
-                                    gLabel.forecolor = file;
-                                    gTextBox.forecolor = file;
-                                    control.ForeColorChanged += G_forecolor;
-                                    break;
-                                case "image":
-                                    gShape.image = file;
-                                    gButton.image = file;
-                                    gLabel.image = file;
-                                    gTextBox.image += file;
-                                    control.BackgroundImageChanged += G_image;
-                                    break;
-                                case "imagelayout":
-                                    gShape.imagelayout = file;
-                                    gButton.imagelayout = file;
-                                    gLabel.imagelayout = file;
-                                    gTextBox.imagelayout = file;
-                                    control.BackgroundImageLayoutChanged += G_imagetype;
-                                    break;
-                                case "font":
-                                    gShape.font = file;
-                                    gButton.font = file;
-                                    gLabel.font = file;
-                                    gTextBox.font = file;
-                                    control.FontChanged += G_font;
-                                    break;
-                                case "text":
-                                    gShape.text = file;
-                                    gButton.text = file;
-                                    gLabel.text = file;
-                                    gTextBox.text = file;
-                                    control.TextChanged += G_text;
-                                    break;
-                                default:
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'click' 'hover' 'move' 'scale' 'backcolor' 'forecolor' 'image' 'imagetype' 'font' or 'text' for 'event' in {SegmentSeperator} {codeLine}");
-                                    break;
+                                ErrorText(parts, ErrorTypes.missingControl, keyword, name);
                             }
                         } 
                         catch 
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // EVENT
                         break;
                     case "bringto":
@@ -1061,7 +1371,7 @@ namespace EZCode
                             Control? control = getControl(parts[2]);
                             if (control == null)
                             {
-                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Could not find Control named '{parts[2]}' in {SegmentSeperator} {codeLine}");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Could not find Control named '{parts[2]}' in {SegmentSeperator} {codeLine}");
                             }
                             switch (next)
                             {
@@ -1076,13 +1386,13 @@ namespace EZCode
                                     }
                                     break;
                                 default:
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'front' or 'back' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'front' or 'back' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                         }
                         catch
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         }
                         break;
                     default:
@@ -1105,22 +1415,22 @@ namespace EZCode
                                     case "#suppress":
                                         if (parts[index] != "error")
                                         {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#suppress' in {SegmentSeperator} {codeLine}");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#suppress' in {SegmentSeperator} {codeLine}");
                                         }
                                         break;
                                     case "#create":
                                         if (parts[index] != "error")
                                         {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#create' in {SegmentSeperator} {codeLine}");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#create' in {SegmentSeperator} {codeLine}");
                                         }
                                         string[] strings = getString_value(parts, index + 1, true);
                                         if (strings[0] == "")
                                         {
-                                            returnOutput += ErrorText(parts, ErrorTypes.unkown);
+                                            ErrorText(parts, ErrorTypes.unkown);
                                         }
                                         else
                                         {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: strings[0]);
+                                            ErrorText(parts, ErrorTypes.custom, custom: strings[0]);
                                         }
                                         break;
                                 }
@@ -1134,21 +1444,26 @@ namespace EZCode
                             else if (AllControls.Select(x => x.Name).Contains(keyword))
                             {
                                 Control control = getControl(keyword);
-                                control = DoControl(parts, control.AccessibleName, 0);
+                                control = await DoControl(parts, control.AccessibleName, 0);
                             }
                             else if (groups.Select(x => x.Name).Contains(keyword))
                             {
                                 Group group = getGroup(keyword);
                                 group = DoGroup(parts, 0, keyword);
                             }
+                            else if (windows.Select(x => x.Name).Contains(keyword))
+                            {
+                                Window Window = getWindow(keyword);
+                                Window = await DoWindow(parts, 0, keyword);
+                            }
                             else if (!keyword.StartsWith("//") && !keyword.StartsWith("{") && !keyword.StartsWith("}") && keyword != "")
                             {
-                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a keyword or variable named '{keyword}' in {SegmentSeperator} {codeLine}");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a keyword or variable named '{keyword}' in {SegmentSeperator} {codeLine}");
                             }
                         }
                         catch
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.unkown);
+                            ErrorText(parts, ErrorTypes.unkown);
                         }
                         break;
                 }
@@ -1158,9 +1473,442 @@ namespace EZCode
             }
             catch
             {
-                returnOutput += ErrorText(_parts, ErrorTypes.unkown) + "\n";
+                returnOutput += ErrorText(_parts, ErrorTypes.unkown, returnoutput:false) + "\n";
                 return new string[] { returnOutput, "true" };
             }
+        }
+        static bool IsNumericString(string input)
+        {
+            // Use a regular expression to match a string containing only numeric characters
+            return Regex.IsMatch(input, @"^\d+$");
+        }
+        async Task<Window> DoWindow(string[] parts, int index, string keyword)
+        {
+            Window? Window = null;
+            string name = parts[index];
+            string type = parts[index + 1];
+            switch (type)
+            {
+                case "new":
+                    {
+                        Window = getWindow(name);
+                        if (Window == null)
+                        {
+                            Window = new Window(name);
+                            Window.KeyDown += KeyInput_Down;
+                            Window.KeyUp += KeyInput_Up;
+                            Window.MouseWheel += MouseInput_Wheel;
+                            Window.MouseMove += MouseInput_Move;
+                            Window.MouseDown += MouseInput_Down;
+                            Window.MouseUp += MouseInput_Up;
+                            windows.Add(Window);
+                            Window = await changeWindow(Window, parts, index + 2);
+                        }
+                        else
+                        {
+                            ErrorText(parts, ErrorTypes.alreadyMember, keyword, name);
+                        }
+                    }
+                    break;
+                case "change":
+                    {
+                        Window = getWindow(name);
+                        if (Window != null)
+                        {
+                            Window = await changeWindow(Window, parts, index + 2);
+                        }
+                        else
+                        {
+                            ErrorText(parts, ErrorTypes.missingWindow, keyword, name);
+                        }
+                    }
+                    break;
+                case "clear":
+                    {
+                        Window = getWindow(name);
+                        if (Window != null)
+                        {
+                            foreach (Control control in Window.Controls)
+                            {
+                                control.Dispose();
+                            }
+                        }
+                        else
+                        {
+                            ErrorText(parts, ErrorTypes.missingWindow, keyword, name);
+                        }
+                    }
+                    break;
+                case "close":
+                    {
+                        Window = getWindow(name);
+                        if (Window != null)
+                        {
+                            Window.Close();
+                        }
+                        else
+                        {
+                            ErrorText(parts, ErrorTypes.missingWindow, keyword, name);
+                        }
+                    }
+                    break;
+                case "open":
+                    {
+                        Window = getWindow(name);
+                        if (Window != null)
+                        {
+                            Window.Show();
+                        }
+                        else
+                        {
+                            ErrorText(parts, ErrorTypes.missingWindow, keyword, name);
+                        }
+                    }
+                    break;
+                case "display":
+                    {
+                        Window = getWindow(name);
+                        if (Window != null)
+                        {
+                            Control? control = getControl(parts[index + 2]);
+                            if (control != null)
+                            {
+                                Window.Controls.Add(control);
+                            }
+                            else
+                            {
+                                Group group = getGroup(parts[index + 2]);
+                                if (group.isSet)
+                                {
+                                    Window.Controls.AddRange(group.Controls.ToArray());
+                                }
+                                else
+                                {
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a Control or Group named '{parts[index + 2]}' in {SegmentSeperator} {codeLine}");
+                                }
+                            }
+                        }
+                        else
+                        {
+                            ErrorText(parts, ErrorTypes.missingWindow, keyword, name);
+                        }
+                    }
+                    break;
+                case "destroy":
+                    {
+                        Window = getWindow(name);
+                        if (Window != null)
+                        {
+                            Window.Close();
+                            windows.Remove(Window);
+                        }
+                        else
+                        {
+                            ErrorText(parts, ErrorTypes.missingWindow, keyword, name);
+                        }
+                    }
+                    break;
+                default:
+                    {
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'display', 'change', 'close', 'open', or 'destroy' for '{name}' in {SegmentSeperator} {codeLine}");
+                    }
+                    break;
+            }
+            return Window;
+        }
+        async Task<Window> changeWindow(Window window, string[] parts, int index)
+        {
+            if(parts.Length - 1 >= index)
+            {
+                if (parts[index] == ":")
+                {
+                    string[] strings = string.Join(" ", parts.SkipWhile(x=>x !=  ":").Skip(1).ToArray()).Split(",");
+                    foreach (string p in strings)
+                    {
+                        string[] values = p.Split(':');
+                        string[] before = getString_value(values, 0);
+                        string[] after = getString_value(values, int.Parse(before[1]));
+                        switch (before[0].Trim().ToLower())
+                        {
+                            case "focus":
+                                {
+                                    if ((bool)BoolCheck(after, 0)) window.Focus();
+                                }
+                                break;
+                            case "enable":
+                                {
+                                    window.Enabled = (bool)BoolCheck(after, 0);
+                                }
+                                break;
+                            case "minwidth":
+                                {
+                                    float[] floats = find_value(after, 0, 600);
+                                    window.MinimumSize = new Size((int)floats[0], window.MinimumSize.Height);
+                                }
+                                break;
+                            case "minheight":
+                                {
+                                    float[] floats = find_value(after, 0, 600);
+                                    window.MinimumSize = new Size(window.MinimumSize.Width, (int)floats[0]);
+                                }
+                                break;
+                            case "maxwidth":
+                                {
+                                    float[] floats = find_value(after, 0, 600);
+                                    window.MaximumSize = new Size((int)floats[0], window.MaximumSize.Height);
+                                }
+                                break;
+                            case "maxheight":
+                                {
+                                    float[] floats = find_value(after, 0, 400);
+                                    window.MaximumSize = new Size(window.MaximumSize.Width, (int)floats[0]);
+                                }
+                                break;
+                            case "width":
+                                {
+                                    float[] floats = find_value(after, 0, 600);
+                                    window.Width = (int)floats[0];
+                                }
+                                break;
+                            case "height":
+                                {
+                                    float[] floats = find_value(after, 0, 400);
+                                    window.Height = (int)floats[0];
+                                }
+                                break;
+                            case "left":
+                                {
+                                    float[] floats = find_value(after, 0, window.Left);
+                                    window.Left = (int)floats[0];
+                                }
+                                break;
+                            case "top":
+                                {
+                                    float[] floats = find_value(after, 0, window.Top);
+                                    window.Top = (int)floats[0];
+                                }
+                                break;
+                            case "opacity":
+                                {
+                                    float[] floats = find_value(after, 0, 1);
+                                    if (floats[0] >= 0 && floats[0] <= 1) 
+                                        window.Opacity = floats[0];
+                                    else ErrorText(parts, ErrorTypes.custom, custom: $"Expected opacity value to be withen 0 and 1 in {SegmentSeperator} {codeLine}");
+                                }
+                                break;
+                            case "text":
+                                {
+                                    window.Text = after[0];
+                                }
+                                break;
+                            case "autosize":
+                                {
+                                    window.AutoSize = (bool)BoolCheck(after, 0);
+                                }
+                                break;
+                            case "minimizebox":
+                                {
+                                    window.MinimizeBox = (bool)BoolCheck(after, 0);
+                                }
+                                break;
+                            case "maximizebox":
+                                {
+                                    window.MaximizeBox = (bool)BoolCheck(after, 0);
+                                }
+                                break;
+                            case "showicon":
+                                {
+                                    window.ShowIcon = (bool)BoolCheck(after, 0);
+                                }
+                                break;
+                            case "showintaskbar":
+                                {
+                                    window.ShowInTaskbar = (bool)BoolCheck(after, 0);
+                                }
+                                break;
+                            case "icon":
+                                {
+                                    string[] icon = await getFile(after, 0);
+                                    try
+                                    {
+                                        Icon i = new Icon(icon[0]);
+                                        window.Icon = i;
+                                    }
+                                    catch
+                                    {
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"An error occured setting the icon to '{window.Name}' in {SegmentSeperator} {codeLine}");
+                                    }
+                                }
+                                break;
+                            case "state":
+                                {
+                                    string state = after[0];
+                                    if (state == "maximized")
+                                    {
+                                        window.WindowState = FormWindowState.Maximized;
+                                    }
+                                    if (state == "minimized")
+                                    {
+                                        window.WindowState = FormWindowState.Minimized;
+                                    }
+                                    if (state == "normal")
+                                    {
+                                        window.WindowState = FormWindowState.Normal;
+                                    }
+                                    else
+                                    {
+                                        throw new Exception();
+                                    }
+                                }
+                                break;
+                            case "type":
+                                {
+                                    string type = after[0];
+                                    if (type == "none")
+                                    {
+                                        window.FormBorderStyle = FormBorderStyle.None;
+                                    }
+                                    else if (type == "fixed3d")
+                                    {
+                                        window.FormBorderStyle = FormBorderStyle.Fixed3D;
+                                    }
+                                    else if (type == "fixeddialog")
+                                    {
+                                        window.FormBorderStyle = FormBorderStyle.FixedDialog;
+                                    }
+                                    else if (type == "fixedsingle")
+                                    {
+                                        window.FormBorderStyle = FormBorderStyle.FixedSingle;
+                                    }
+                                    else if (type == "fixedtoolwindow")
+                                    {
+                                        window.FormBorderStyle = FormBorderStyle.FixedToolWindow;
+                                    }
+                                    else if (type == "sizable")
+                                    {
+                                        window.FormBorderStyle = FormBorderStyle.Sizable;
+                                    }
+                                    else if (type == "sizabletoolwindow")
+                                    {
+                                        window.FormBorderStyle = FormBorderStyle.SizableToolWindow;
+                                    }
+                                    else
+                                    {
+                                        throw new Exception();
+                                    }
+                                }
+                                break;
+                            case "startposition":
+                                {
+                                    string type = after[0];
+                                    if (type == "manual")
+                                    {
+                                        window.StartPosition = FormStartPosition.Manual;
+                                    }
+                                    else if (type == "center")
+                                    {
+                                        window.StartPosition = FormStartPosition.CenterScreen;
+                                    }
+                                    else if (type == "defaultbounds")
+                                    {
+                                        window.StartPosition = FormStartPosition.WindowsDefaultBounds;
+                                    }
+                                    else if (type == "default")
+                                    {
+                                        window.StartPosition = FormStartPosition.WindowsDefaultLocation;
+                                    }
+                                    else
+                                    {
+                                        throw new Exception();
+                                    }
+                                }
+                                break;
+                            case "backcolor":
+                                {
+                                    window.BackColor = returncolor(parts, after, 0, window.BackColor);
+                                }
+                                break;
+                            case "forecolor":
+                                {
+                                    window.ForeColor = returncolor(parts, after, 0, window.ForeColor);
+                                }
+                                break;
+                            case "font":
+                                {
+                                    string all = string.Join("", after[0].Split(" ")).Trim();
+                                    bool thing2 = all.StartsWith("[") && all.EndsWith("]#suppresserror".ToLower());
+                                    string fontType = "Segoe UI";
+                                    int fontSize = 9;
+                                    FontStyle fontStyle = FontStyle.Regular;
+                                    if ((all.StartsWith("[") && all.EndsWith("]")) || thing2)
+                                    {
+                                        if (!thing2) all = all.Substring(1, all.Length - 2);
+                                        else all = all.Substring(1, all.Length - 1).Replace("]#suppresserror", "");
+                                        string[] seperator = all.Split(";");
+                                        if (seperator.Length == 3)
+                                        {
+                                            if (IsRealFont(seperator[0]))
+                                            {
+                                                fontType = seperator[0];
+                                            }
+                                            else
+                                            {
+                                                ErrorText(parts, ErrorTypes.custom, custom: $"'{fontType}' is not a valid font. Try 'Arial' or go to https://learn.mcrosoft.com for more inWindowation about supported WinWindows fonts. Exception for '{window.Name}' in line {SegmentSeperator} {codeLine}");
+                                            }
+                                            try
+                                            {
+                                                float[] floats = find_value(seperator, 1, -1);
+                                                fontSize = (int)floats[0];
+                                                if (fontSize < 0) new Exception("");
+                                            }
+                                            catch
+                                            {
+                                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected a number greater greater than zero for font size value in {SegmentSeperator} {codeLine}");
+                                            }
+                                            if (Enum.TryParse(seperator[2], out FontStyle parsedFontStyle))
+                                            {
+                                                fontStyle = parsedFontStyle;
+                                            }
+                                            else
+                                            {
+                                                ErrorText(parts, ErrorTypes.custom, custom: $"'{seperator[2]}' is not a valid font style. Valid styles are: {string.Join(", ", Enum.GetNames(typeof(FontStyle)))}. Exception for '{window.Name}' in line {SegmentSeperator} {codeLine}");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Requires 3 values for font in {SegmentSeperator} {codeLine}");
+                                        }
+                                    }
+                                    else if (parts.Length != 1)
+                                    {
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for font value in {SegmentSeperator} {codeLine}");
+                                    }
+                                    window.Font = new Font(fontType, fontSize, fontStyle);
+                                }
+                                break;
+                            default:
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected a correct property name for '{window.Name}' in {SegmentSeperator} {codeLine}");
+                                break;
+                        }
+                    }
+                }
+                else
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' to initialize values to set in {SegmentSeperator} {codeLine}");
+                }
+            }
+            return window;
+        }
+        Window? getWindow(string name)
+        {
+            for (int i = 0; i < windows.Count; i++)
+            {
+                if (windows[i].Name == name)
+                {
+                    return windows[i];
+                }
+            }
+            return null;
         }
         string[] ExtractContent(string[] _input, string[] parts)
         {
@@ -1193,7 +1941,7 @@ namespace EZCode
             }
 
             // If no closing bracket is found, throw an exception
-            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected closing bracket for '{parts[0]}' in {SegmentSeperator} {codeLine}");
+            ErrorText(parts, ErrorTypes.custom, custom: $"Expected closing bracket for '{parts[0]}' in {SegmentSeperator} {codeLine}");
             return new string[0];
         }
         int GetZIndex(Control control)
@@ -1227,7 +1975,7 @@ namespace EZCode
                     string values = colon[0];
                     if (!values.StartsWith(":") && values != "")
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the list in {SegmentSeperator} {codeLine}");
+                        ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the list in {SegmentSeperator} {codeLine}");
                     }
                     else if (values == "")
                     {
@@ -1250,7 +1998,7 @@ namespace EZCode
                         string values_ = colon_[0];
                         if (!values_.StartsWith(":") && values_ == "")
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected values set the list in {SegmentSeperator} {codeLine}");
+                            ErrorText(parts, ErrorTypes.custom, $"Expected values set the list in {SegmentSeperator} {codeLine}");
                         }
                         else if (!values_.Contains(":"))
                         {
@@ -1265,11 +2013,11 @@ namespace EZCode
                     }
                     else if (!var.isArray())
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
+                        ErrorText(parts, ErrorTypes.missingVar, keyword, name);
                     }
                     break;
                 case "equals":
@@ -1283,7 +2031,7 @@ namespace EZCode
                         string values__ = colon__[0];
                         if (values__ == "")
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the list in {SegmentSeperator} {codeLine}");
+                            ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the list in {SegmentSeperator} {codeLine}");
                         }
                         else
                         {
@@ -1293,11 +2041,11 @@ namespace EZCode
                     }
                     else if (!var.isArray())
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
+                        ErrorText(parts, ErrorTypes.missingVar, keyword, name);
                     }
                     break;
                 case "clear":
@@ -1308,11 +2056,11 @@ namespace EZCode
                     }
                     else if (!var.isArray())
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
+                        ErrorText(parts, ErrorTypes.missingVar, keyword, name);
                     }
                     break;
                 case "destroy":
@@ -1323,15 +2071,15 @@ namespace EZCode
                     }
                     else if (!var.isArray())
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.missingVar, keyword, name);
+                        ErrorText(parts, ErrorTypes.missingVar, keyword, name);
                     }
                     break;
                 default:
-                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' 'destroy' or 'clear' in {SegmentSeperator} {codeLine}");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' 'destroy' or 'clear' in {SegmentSeperator} {codeLine}");
                     break;
             }
             return var;
@@ -1351,7 +2099,7 @@ namespace EZCode
                     group = new Group(name);
                     if (!values.StartsWith(":") && values != "")
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' to set values to the Group in {SegmentSeperator} {codeLine}");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' to set values to the Group in {SegmentSeperator} {codeLine}");
                     }
                     else if (values == "")
                     {
@@ -1377,7 +2125,7 @@ namespace EZCode
                         string values_ = colon_[0];
                         if (!values_.StartsWith(":") && values_ == "")
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected values add to the Group in {SegmentSeperator} {codeLine}");
+                            ErrorText(parts, ErrorTypes.custom, $"Expected values add to the Group in {SegmentSeperator} {codeLine}");
                         }
                         else if (!values_.Contains(":"))
                         {
@@ -1395,7 +2143,7 @@ namespace EZCode
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                        ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
                     }
                     break;
                 case "equals":
@@ -1409,7 +2157,7 @@ namespace EZCode
                         string values__ = colon__[0];
                         if (values__ == "")
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group in {SegmentSeperator} {codeLine}");
+                            ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group in {SegmentSeperator} {codeLine}");
                         }
                         else
                         {
@@ -1419,7 +2167,7 @@ namespace EZCode
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                        ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
                     }
                     break;
                 case "remove":
@@ -1441,7 +2189,7 @@ namespace EZCode
                         }
                         if (index == null && rem == null)
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group in {SegmentSeperator} {codeLine}");
+                            ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group in {SegmentSeperator} {codeLine}");
                         }
                         else
                         {
@@ -1458,7 +2206,7 @@ namespace EZCode
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                        ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
                     }
                     break;
                 case "clear":
@@ -1469,7 +2217,7 @@ namespace EZCode
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                        ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
                     }
                     break;
                 case "destroy":
@@ -1480,7 +2228,7 @@ namespace EZCode
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                        ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
                     }
                     break;
                 case "destroyall":
@@ -1491,19 +2239,19 @@ namespace EZCode
                             groups.Remove(g);
                             foreach(Control c in g.Controls)
                             {
-                                Space.Controls.Remove(c);
+                                c.Dispose();
                             }
                         }
                         else
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
+                            ErrorText(parts, ErrorTypes.missingGroup, keyword, name);
                         }
                     }
                     break;
                 case "change":
                     try
                     {
-                        bool abs = BoolCheck(parts, _index + 2);
+                        bool abs = (bool)BoolCheck(parts, _index + 2);
                         Group group1 = getGroup(name);
                         if (group1.isSet)
                         {
@@ -1534,11 +2282,11 @@ namespace EZCode
                     }
                     catch
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.normal, keyword);
+                        ErrorText(parts, ErrorTypes.normal, keyword);
                     }
                     break;
                 default:
-                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' 'remove' 'change' or 'clear' in {SegmentSeperator} {codeLine}");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' 'remove' 'change' or 'clear' in {SegmentSeperator} {codeLine}");
                     break;
             }
             return group;
@@ -1554,20 +2302,40 @@ namespace EZCode
                     case "+":
                     case "-":
                         {
-                            float[] floats = find_value(parts, index + 1, 0);
-                            string next = floats[0].ToString();
-                            if (var.isNumber())
+                            try
                             {
-                                var.Multiply(mid, next);
+                                float[] floats = find_value(parts, index + 1, 0);
+                                string next = floats[0].ToString();
+                                if (var.isNumber())
+                                {
+                                    var.Multiply(mid, next);
+                                }
+                                else if (var.isString())
+                                {
+                                    string[] strings = getString_value(parts, index + 1);
+                                    var.Change(mid, strings[0]);
+                                }
+                                else
+                                {
+                                    new Exception("Expected Number or Text Variable");
+                                }
                             }
-                            else if (var.isString())
+                            catch
                             {
-                                string[] strings = getString_value(parts, index + 1);
-                                var.Change(mid, strings[0]);
-                            }
-                            else
-                            {
-                                new Exception("Expected Number or Text Variable");
+                                if (!var.isNumber() && !var.isArray())
+                                {
+                                    string[] strings = getString_value(parts, index + 1, true);
+                                    var.Change(mid, strings[0]);
+                                }
+                                else if (var.isNumber() && mid == "=")
+                                {
+                                    string[] strings = getString_value(parts, index + 1);
+                                    var.set(strings[0]);
+                                }
+                                else
+                                {
+                                    new Exception("Expected Number or Text Variable");
+                                }
                             }
                         }
                         break;
@@ -1582,7 +2350,7 @@ namespace EZCode
                             }
                             else
                             {
-                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a Number Variable in {SegmentSeperator} {codeLine}");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected a Number Variable in {SegmentSeperator} {codeLine}");
                             }
                         }
                         break;
@@ -1594,24 +2362,27 @@ namespace EZCode
                             }
                             catch
                             {
-                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"There was an error setting the variable to the correct value in {SegmentSeperator} {codeLine}");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"There was an error setting the variable to the correct value in {SegmentSeperator} {codeLine}");
                             }
                         }
                         break;
                     default:
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"There was an Error with changing '{var.Name}'. Expected '+', '-', '*', '/', '=', or ':' in {SegmentSeperator} {codeLine}");
+                            if (var.returnBool(var.value()) != null && BoolCheck(parts, index, false) != null)
+                                var.set(BoolCheck(parts, index) == true ? "1" : "0");
+                            else
+                                ErrorText(parts, ErrorTypes.custom, custom: $"There was an Error with changing '{var.Name}'. Expected '+', '-', '*', '/', '=', or ':' in {SegmentSeperator} {codeLine}");
                         }
                         break;
                 }
             }
             catch
             {
-                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"There was an Error with changing '{var.Name}' in {SegmentSeperator} {codeLine}");
+                ErrorText(parts, ErrorTypes.custom, custom: $"There was an Error with changing '{var.Name}' in {SegmentSeperator} {codeLine}");
             }
             return var;
         }
-        Control DoControl(string[] parts, string contype, int index)
+        async Task<Control> DoControl(string[] parts, string contype, int index)
         {
             GShape? obj = new GShape();
             GLabel? lab = new GLabel();
@@ -1623,7 +2394,7 @@ namespace EZCode
                 contype == "textbox" ? controlType.Textbox :
                 contype == "button" ? controlType.GButton :
                 controlType.None;
-            Control control = createControl(parts, controltype, index);
+            Control control = await createControl(parts, controltype, index);
             obj = control is GShape ? control as GShape : null;
             lab = control is GLabel ? control as GLabel : null;
             txb = control is GTextBox ? control as GTextBox : null;
@@ -1635,19 +2406,19 @@ namespace EZCode
             return control;
         }
         Group getGroup(string name)
-         {
-             Group group = new Group(name);
-             group.isSet = false;
-             for (int i = 0; i < groups.Count; i++)
-             {
-                 if (groups[i].Name == name)
-                 {
-                     group = groups[i];
-                     group.isSet = true;
-                 }
-             }
-             return group;
-         } 
+        {
+            Group group = new Group(name);
+            group.isSet = false;
+            for (int i = 0; i < groups.Count; i++)
+            {
+                if (groups[i].Name == name)
+                {
+                    group = groups[i];
+                    group.isSet = true;
+                }
+            }
+            return group;
+        } 
         void StopAllSounds()
         {
             for (int i = 0; i < sounds.Count; i++)
@@ -1667,14 +2438,13 @@ namespace EZCode
             }
             return player;
         }
-        bool BoolCheck(string[] parts, int index, bool oposite = false)
+        bool? BoolCheck(string[] parts, int index, bool error = true)
         {
-            bool check = false;
+            bool? check = null;
 
             if (parts[index].Contains("?"))
             {
                 check = QMarkCheck(parts, index)[0] == 1;
-                if (oposite) check = !check;
             }
             else
             {
@@ -1683,13 +2453,17 @@ namespace EZCode
                 {
                     check = var.returnBool();
                 }
-                else if (!var.isSet && var.returnBool(parts[index].Trim()) != null)
+                else if (!var.isSet && Var.staticReturnBool(parts[index].Trim()) != null)
                 {
-                    check = var.returnBool(parts[index].Trim()) == true;
+                    check = Var.staticReturnBool(parts[index].Trim()) == true;
+                }
+                else if (var.isSet && var.returnBool() != null)
+                {
+                    check = var.returnBool();
                 }
                 else
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected a boolean variable in {SegmentSeperator} {codeLine}");
+                    if (error) ErrorText(parts, ErrorTypes.custom, custom: $"Expected a boolean variable in {SegmentSeperator} {codeLine}");
                 }
             }
             return check;
@@ -1748,7 +2522,28 @@ namespace EZCode
 
                 if (value != "")
                 {
-                    check = IfCheck(value);
+                    string[] values = value.Split(" ");
+                    for (int i = 0; i < values.Length; i++)
+                    {
+                        try
+                        {
+                            float[] floats = find_value(values, i, 0);
+                            values[i] = floats[0].ToString();
+                        }
+                        catch
+                        {
+                            try
+                            {
+                                string[] strings = getString_value(values, i);
+                                values[i] = strings[0];
+                            }
+                            catch
+                            {
+                                // Nothing
+                            }
+                        }
+                    }
+                    check = IfCheck(string.Join(" ", values));
                 }
                 else
                 {
@@ -1906,7 +2701,7 @@ namespace EZCode
                     catch
                     {
                         errorText = $"Expected new variable name after '=>' for '{keyword}' in {SegmentSeperator} {codeLine}";
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: errorText);
+                        ErrorText(parts, ErrorTypes.custom, custom: errorText);
                     }
                     break;
                 case ":":
@@ -1917,14 +2712,14 @@ namespace EZCode
                     catch
                     {
                         errorText = $"Expected variable name after ':' for '{keyword}' in {SegmentSeperator} {codeLine}";
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: errorText);
+                        ErrorText(parts, ErrorTypes.custom, custom: errorText);
                     }
                     break;
                 case "":
                     break;
                 default:
                     errorText = $"Expected '=>' or ':' for '{keyword}' in {SegmentSeperator} {codeLine}";
-                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: errorText);
+                    ErrorText(parts, ErrorTypes.custom, custom: errorText);
                     break;
             }
             return errorText;
@@ -1952,7 +2747,7 @@ namespace EZCode
                     var.set(alreadyVal);
                     break;
                 case false:
-                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Can not find a variable named '{name}' in {SegmentSeperator} {codeLine}");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Can not find a variable named '{name}' in {SegmentSeperator} {codeLine}");
                     break;
             }
 
@@ -1963,9 +2758,9 @@ namespace EZCode
         {
             string name = parts[index].Trim();
 
-            if(UnusableNames.Contains(name) || UnusableContains.Any(unusable => name.Contains(unusable)) || name.Contains(":") || name.Contains("|") || name.Contains("\\") || name.Trim() == "")
+            if(UnusableNames.Contains(name) || IsNumericString(name) || UnusableContains.Any(unusable => name.Contains(unusable)) || name.Contains(":") || name.Contains("|") || name.Contains("\\") || name.Trim() == "")
             {
-                returnOutput += ErrorText(parts, ErrorTypes.violation, name: name);
+                ErrorText(parts, ErrorTypes.violation, name: name);
             }
 
             Var var = new Var(name);
@@ -1977,45 +2772,52 @@ namespace EZCode
             }
             else if (!reuse && vars.Select(x => x.Name).Contains(name))
             {
-                returnOutput += ErrorText(parts, ErrorTypes.alreadyMember, "Variable", name);
+                ErrorText(parts, ErrorTypes.alreadyMember, "Variable", name);
             }
             if (alreadyVal == null && alreadyarray == null)
             {
                 string stringvalue = "";
                 int? intval = null;
 
-                if (allowJump && parts[index + 1] == ":")
+                try
                 {
-                    try
+                    if (allowJump && parts[index + 1] == ":")
                     {
-                        string str = string.Join(' ', parts.Skip(index + 2));
-                        if (str.Trim() == "")
+                        try
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected an assigned value after ':' in {SegmentSeperator} {codeLine}");
-                        }
+                            string str = string.Join(' ', parts.Skip(index + 2));
+                            if (str.Trim() == "")
+                            {
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected an assigned value after ':' in {SegmentSeperator} {codeLine}");
+                            }
 
-                        string[] strings = await PlaySwitch(jumpsto: str);
-                        stringvalue = strings[0];
+                            string[] strings = await PlaySwitch(jumpsto: str);
+                            stringvalue = strings[0];
+                        }
+                        catch
+                        {
+                            ErrorText(parts, ErrorTypes.custom, custom: $"There was an error setting the variable to the correct value in {SegmentSeperator} {codeLine}");
+                        }
                     }
-                    catch
+                    else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"There was an error setting the variable to the correct value in {SegmentSeperator} {codeLine}");
+                        try
+                        {
+                            float[] intValue = find_value(parts, index + 1, 0);
+                            intval = (int)intValue[0];
+                            index = (int)intValue[1];
+                        }
+                        catch
+                        {
+                            string[] gotstring1 = getString_value(parts, index + 1, true);
+                            stringvalue = gotstring1[0];
+                            index = int.Parse(gotstring1[1]);
+                        }
                     }
                 }
-                else
+                catch
                 {
-                    try
-                    {
-                        float[] intValue = find_value(parts, index + 1, 0);
-                        intval = (int)intValue[0];
-                        index = (int)intValue[1];
-                    }
-                    catch
-                    {
-                        string[] gotstring1 = getString_value(parts, index + 1);
-                        stringvalue = gotstring1[0];
-                        index = int.Parse(gotstring1[1]);
-                    }
+                    stringvalue = "";
                 }
                 var.set(intval != null ? intval.ToString() : stringvalue);
             }
@@ -2051,7 +2853,7 @@ namespace EZCode
                                     int v2 = (int)fl2[0];
                                     if (v1 >= v2)
                                     {
-                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Minumum can not be greater or equal to the max in 'system:random' line {codeLine}");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"Minumum can not be greater or equal to the max in 'system:random' line {codeLine}");
                                         return "0";
                                     }
                                     Random rand = new Random();
@@ -2067,6 +2869,31 @@ namespace EZCode
                                 Random rand0 = new Random();
                                 value = rand0.NextSingle().ToString();
                                 break;
+                        }
+                        break;
+                    case "number":
+                        {
+                            string[] strings = getString_value(ind, 2, usecolon:false);
+                            string name = strings[0];
+                            Var var = getVar(name);
+                            if (var.isSet)
+                            {
+                                value = var.isNumber().ToString();
+                            }
+                            else
+                            {
+                                bool number = false;
+                                try
+                                {
+                                    int.Parse(name);
+                                    number = true;
+                                }
+                                catch
+                                {
+                                    number = false;
+                                }
+                                value = number.ToString();
+                            }
                         }
                         break;
                     case "machine":
@@ -2095,17 +2922,17 @@ namespace EZCode
                                 break;
                         }
                         break;
-                    /*case "litteral":
+                    case "litteral":
                         if (value.Contains("system:litteral:"))
                         {
-                            string[] strings = getString_value(ind, 2, false, false, false, false);
+                            string[] strings = getString_value(ind, 2, false, false, false, false, "", false);
                             return strings[0];
                         }
                         else
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' after 'system:litteral' in {SegmentSeperator} {codeLine}");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' after 'system:litteral' in {SegmentSeperator} {codeLine}");
                         }
-                        break;*/
+                        break;
                     case "space":
                         value = " ";
                         break;
@@ -2124,7 +2951,7 @@ namespace EZCode
             else if (AllControls.Select(x => x.Name).Contains(ind[0]) && ind.Length > 1)
             {
                 Control control = AllControls.FirstOrDefault(x => x.Name == ind[0]);
-                switch (ind[1])
+                switch (ind[1].ToLower())
                 {
                     case "x":
                         value = control.Left.ToString();
@@ -2132,9 +2959,11 @@ namespace EZCode
                     case "y":
                         value = control.Top.ToString();
                         break;
+                    case "w":
                     case "width":
                         value = control.Width.ToString();
                         break;
+                    case "h":
                     case "height":
                         value = control.Height.ToString();
                         break;
@@ -2159,7 +2988,7 @@ namespace EZCode
                         if (control is not GShape)
                             value = control.Text.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Shapes don't have a '{ind[1]}' property in {SegmentSeperator} " + codeLine);
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Shapes don't have a '{ind[1]}' property in {SegmentSeperator} " + codeLine);
                         break;
                     case "forecolor":
                     case "fc":
@@ -2170,27 +2999,27 @@ namespace EZCode
                         if (control is not GShape)
                             value = control.ForeColor.R.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-r' property in {SegmentSeperator} " + codeLine);
+                            ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-r' property in {SegmentSeperator} " + codeLine);
                         break;
                     case "forecolor-g":
                     case "fcg":
                         if (control is not GShape)
                             value = control.ForeColor.G.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-g' property in {SegmentSeperator} " + codeLine);
+                            ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-g' property in {SegmentSeperator} " + codeLine);
                         break;
                     case "forecolor-b":
                     case "fcb":
                         if (control is not GShape)
                             value = control.ForeColor.B.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-b' property in {SegmentSeperator} " + codeLine);
+                            ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-b' property in {SegmentSeperator} " + codeLine);
                         break;
                     case "click":
-                        if (control is GButton)
-                            value = control.AccessibleDescription.Split("\n")[0];
+                        if (control is GButton a)
+                            value = a.isclick.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: "Only Buttons have a 'click' value in {SegmentSeperator} " + codeLine);
+                            ErrorText(parts, ErrorTypes.custom, custom: "Only Buttons have a 'click' value in {SegmentSeperator} " + codeLine);
                         break;
                     case "font":
                         value = $"{control.Font.Name}, {control.Font.Size}, {control.Font.Style}";
@@ -2209,56 +3038,222 @@ namespace EZCode
                         if(control is GShape gs)
                             value = string.Join(",", gs.Points);
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Shapes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Shapes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
                         break;
                     case "auto":
                     case "autosize":
                         if (control is GLabel l)
                             value = l.AutoSize.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Labels have 'autosize' value in {SegmentSeperator} " + codeLine);
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Labels have 'autosize' value in {SegmentSeperator} " + codeLine);
                         break;
                     case "multi":
                     case "multiline":
                         if (control is GTextBox t)
                             value = t.Multiline == true ? "1" : "0";
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
                         break;
                     case "wrap":
                     case "wordwrap":
                         if (control is GTextBox tt)
                             value = tt.WordWrap == true ? "1" : "0";
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
                         break;
                     case "vertical":
                     case "verticalscrollbar":
                         if (control is GTextBox ttt)
                             value = ttt.ScrollBars == ScrollBars.Vertical || ttt.ScrollBars == ScrollBars.Both ? "1" : "0";
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
                         break;
                     case "horizantal":
                     case "horizantalscrollbar":
                         if (control is GTextBox tttt)
                             value = tttt.ScrollBars == ScrollBars.Vertical || tttt.ScrollBars == ScrollBars.Both ? "1" : "0";
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
                         break;
                     case "p":
                     case "poly":
                         if (control is GShape g)
                             value = g.Poly.ToString();
                         else
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Only Shapes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Shapes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
                         break;
                     case "z":
                     case "zindex":
                         value = GetZIndex(control).ToString();
                         break;
+                    case "focused":
+                            value = control.Focused ? "1" : "0";
+                        break;
+                    case "enabled":
+                            value = control.Enabled ? "1" : "0";
+                        break;
+                    case "readonly":
+                        if (control is GTextBox rt)
+                            value = rt.ReadOnly ? "1" : "0";
+                        else
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
+                        break;
                     default:
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"'{ind[0]}' is not a valid value for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"'{ind[0]}' is not a valid value for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                        break;
+                }
+            }
+            else if (windows.Select(x => x.Name).Contains(ind[0]) && ind.Length > 1)
+            {
+                Window window = getWindow(ind[0]);
+                switch (ind[1])
+                {
+                    case "autosize":
+                        {
+                            value = window.AutoSize.ToString();
+                        }
+                        break;
+                    case "minimizebox":
+                        {
+                            value = window.MinimizeBox.ToString();
+                        }
+                        break;
+                    case "maximizebox":
+                        {
+                            value = window.MaximizeBox.ToString();
+                        }
+                        break;
+                    case "showicon":
+                        {
+                            value = window.ShowIcon.ToString();
+                        }
+                        break;
+                    case "showintaskbar":
+                        {
+                            value = window.ShowInTaskbar.ToString();
+                        }
+                        break;
+                    case "icon":
+                        {
+                            value = window.Icon.ToString();
+                        }
+                        break;
+                    case "state":
+                        {
+                            value = window.WindowState.ToString();
+                        }
+                        break;
+                    case "position":
+                        {
+                            value = window.StartPosition.ToString();
+                        }
+                        break;
+                    case "type":
+                        {
+                            value = window.FormBorderStyle.ToString();
+                        }
+                        break;
+                    case "maxwidth":
+                        {
+                            value = window.MaximumSize.Width.ToString();
+                        }
+                        break;
+                    case "maxheight":
+                        {
+                            value = window.MaximumSize.Height.ToString();
+                        }
+                        break;
+                    case "minwidth":
+                        {
+                            value = window.MinimumSize.Width.ToString();
+                        }
+                        break;
+                    case "minheight":
+                        {
+                            value = window.MinimumSize.Height.ToString();
+                        }
+                        break;
+                    case "width":
+                        {
+                            value = window.Width.ToString();
+                        }
+                        break;
+                    case "height":
+                        {
+                            value = window.Width.ToString();
+                        }
+                        break;
+                    case "left":
+                        {
+                            value = window.Left.ToString();
+                        }
+                        break;
+                    case "top":
+                        {
+                            value = window.Top.ToString();
+                        }
+                        break;
+                    case "opacity":
+                        {
+                            value = window.Opacity.ToString();
+                        }
+                        break;
+                    case "backcolor":
+                    case "bc":
+                        value = $"{window.BackColor.R}, {window.BackColor.G}, {window.BackColor.B}";
+                        break;
+                    case "backcolor-r":
+                    case "bcr":
+                        value = window.BackColor.R.ToString();
+                        break;
+                    case "backcolor-g":
+                    case "bcg":
+                        value = window.BackColor.G.ToString();
+                        break;
+                    case "backcolor-b":
+                    case "bcb":
+                        value = window.BackColor.B.ToString();
+                        break;
+                    case "t":
+                    case "text":
+                        value = window.Text.ToString();
+                        break;
+                    case "forecolor":
+                    case "fc":
+                        value = $"{window.ForeColor.R}, {window.ForeColor.G}, {window.ForeColor.B}";
+                        break;
+                    case "forecolor-r":
+                    case "fcr":
+                        value = window.ForeColor.R.ToString();
+                        break;
+                    case "forecolor-g":
+                    case "fcg":
+                        value = window.ForeColor.G.ToString();
+                        break;
+                    case "forecolor-b":
+                    case "fcb":
+                        value = window.ForeColor.B.ToString();
+                        break;
+                    case "font":
+                        value = $"{window.Font.Name}, {window.Font.Size}, {window.Font.Style}";
+                        break;
+                    case "fontname":
+                        value = window.Font.Name;
+                        break;
+                    case "fontsize":
+                        value = window.Font.Size.ToString();
+                        break;
+                    case "fontstyle":
+                        value = window.Font.Style.ToString();
+                        break;
+                    case "focused":
+                            value = window.Focused ? "1" : "0";
+                        break;
+                    case "enabled":
+                            value = window.Enabled ? "1" : "0";
+                        break;
+                    default:
+                        ErrorText(parts, ErrorTypes.custom, custom: $"'{ind[0]}' is not a valid value for '{window.Name}' in {SegmentSeperator} {codeLine}");
                         break;
                 }
             }
@@ -2272,16 +3267,41 @@ namespace EZCode
                         if(ind.Length > 2 && var.isArray())
                         {
                             float _number = find_value(ind, 2, 0)[0];
-                            value = var.array[(int)_number].Length.ToString();                            
+                            value = var.array[(int)_number].Length.ToString();
                         }
                         else if (ind.Length > 2 && !var.isArray())
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected an array variable in {SegmentSeperator} {codeLine}");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected an array variable in {SegmentSeperator} {codeLine}");
+                        }
+                        break;
+                    case "contains":
+                        if (ind.Length > 2)
+                        {
+                            string v = ind[2];
+                            value = var.value().Contains(v) ? "1" : "0";
+                        }
+                        else
+                        {
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected a value to check in '{ind[0]}:{ind[1]}' for in {SegmentSeperator} {codeLine}");
                         }
                         break;
                     default:
                         float number = find_value(ind, 1, 0)[0];
                         value = var.array[(int)number];
+                        break;
+                }
+            }
+            else if (groups.Select(x => x.Name).Contains(ind[0]) && ind.Length > 1) 
+            {
+                Group group = getGroup(ind[0]);
+                switch (ind[1])
+                {
+                    case "length":
+                        value = group.Controls.Count.ToString();
+                        break;
+                    default:
+                        float number = find_value(ind, 1, 0)[0];
+                        value = group.Controls[(int)number].Name;
                         break;
                 }
             }
@@ -2301,37 +3321,6 @@ namespace EZCode
             }
 
             return value;
-        }
-        void UpdateControlVariables()
-        {
-            AllControls.AddRange(shapes); AllControls.AddRange(buttons);
-            AllControls.AddRange(labels); AllControls.AddRange(textboxes);
-            /*foreach(Control control in AllControls)
-            {
-                for (int i = 0; i < vars.Count; i++)
-                {
-                    if (vars[i].Name == $"{control.Name}:x") vars[i].number = control.Left;
-                    //else if (vars[i].Name == $"{control.Name}:y") vars[i].number = control.Top;
-                    else if (vars[i].Name == $"width") vars[i].number = control.Width;
-                    else if (vars[i].Name == $"height") vars[i].number = control.Height;
-                    else if (vars[i].Name == $"r") vars[i].number = control.BackColor.R;
-                    else if (vars[i].Name == $"g") vars[i].number = control.BackColor.G;
-                    else if (vars[i].Name == $"b") vars[i].number = control.BackColor.B;
-
-                    if(control.AccessibleName == "button" || control.AccessibleName == "label" || control.AccessibleName == "textbox")
-                    {
-                        if (vars[i].Name == $"{control.Name}:text-r") vars[i].number = control.ForeColor.R;
-                        else if (vars[i].Name == $"{control.Name}:text-g") vars[i].number = control.ForeColor.G;
-                        else if (vars[i].Name == $"{control.Name}:text-b") vars[i].number = control.ForeColor.B;
-                        else if (vars[i].Name == $"{control.Name}:text") vars[i].text = control.Text;
-                    }
-                    if(control.AccessibleName == "button")
-                    {
-                        if (vars[i].Name == $"{control.Name}:click") vars[i].number = int.Parse(control.AccessibleDescription.Split("\n")[0]);
-                        control.AccessibleDescription = "0\nnull";
-                    }
-                }
-            }*/
         }
         Control? getControl(string name, controlType controltype = controlType.None)
         {
@@ -2358,11 +3347,12 @@ namespace EZCode
 
             return control;
         }
-        Control createControl(string[] parts, controlType controltype, int index = 1, bool overwrite = true)
+        async Task<Control> createControl(string[] parts, controlType controltype, int index = 1, bool overwrite = true)
         {
             string name = parts[index];
 
             int violation = overwrite ? 0 : AllControls.Select(x => x.Name).Contains(name) == true ? 1 : UnusableNames.Contains(name) ? 2 : UnusableContains.Any(unusable => name.Contains(unusable)) ? 2 : 0;
+            violation = IsNumericString(name) ? 2 : violation;
 
             string type = controltype == controlType.GButton ? "button" :
                 controltype == controlType.Shape ? "shape" : 
@@ -2373,10 +3363,10 @@ namespace EZCode
             switch (violation)
             {
                 case 1:
-                    returnOutput += ErrorText(parts, ErrorTypes.alreadyMember, "Control", name);
+                    ErrorText(parts, ErrorTypes.alreadyMember, "Control", name);
                     break;
                 case 2:
-                    returnOutput += ErrorText(parts, ErrorTypes.violation, name: name);
+                    ErrorText(parts, ErrorTypes.violation, name: name);
                     break;
             }
 
@@ -2384,7 +3374,7 @@ namespace EZCode
             {
                 GShape control = new GShape();
                 if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GShape;
-                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
+                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
                 try
                 {
                     control.Name = name;
@@ -2395,12 +3385,12 @@ namespace EZCode
                 }
                 catch
                 {
-                    returnOutput += ErrorText(parts, ErrorTypes.normal, type);
+                    ErrorText(parts, ErrorTypes.normal, type);
                 }
 
                 if (getControl(name) == null && overwrite)
                 {
-                    Space.Controls.Add(control);
+                    if(InPanel) Space.Controls.Add(control);
                     shapes.Add(control);
                 }
 
@@ -2410,7 +3400,7 @@ namespace EZCode
             {
                 GLabel control = new GLabel();
                 if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GLabel;
-                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
+                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
                 control.Name = name;
                 control.AccessibleName = type;
 
@@ -2420,11 +3410,11 @@ namespace EZCode
                 }
                 catch
                 {
-                    returnOutput += ErrorText(parts, ErrorTypes.normal, type);
+                    ErrorText(parts, ErrorTypes.normal, type);
                 }
                 if (getControl(name) == null && overwrite)
                 {
-                    Space.Controls.Add(control);
+                    if (InPanel) Space.Controls.Add(control);
                     labels.Add(control);
                 }
                 return control;
@@ -2433,7 +3423,7 @@ namespace EZCode
             {
                 GTextBox control = new GTextBox();
                 if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GTextBox;
-                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
+                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
                 control.Name = name;
                 control.AccessibleName = type;
 
@@ -2443,12 +3433,12 @@ namespace EZCode
                 }
                 catch
                 {
-                    returnOutput += ErrorText(parts, ErrorTypes.normal, type);
+                    ErrorText(parts, ErrorTypes.normal, type);
                 }
 
                 if (getControl(name) == null && overwrite)
                 {
-                    Space.Controls.Add(control);
+                    if (InPanel) Space.Controls.Add(control);
                     textboxes.Add(control);
                 }
 
@@ -2458,7 +3448,7 @@ namespace EZCode
             {
                 GButton control = new GButton();
                 if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GButton;
-                else if(getControl(name) != null && getControl(name).AccessibleName != type && overwrite) returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
+                else if(getControl(name) != null && getControl(name).AccessibleName != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
                 control.Name = name;
                 control.AccessibleName = type;
                 control.Click += GButtonClick;
@@ -2469,12 +3459,12 @@ namespace EZCode
                 }
                 catch
                 {
-                    returnOutput += ErrorText(parts, ErrorTypes.normal, type);
+                    ErrorText(parts, ErrorTypes.normal, type);
                 }
 
                 if (getControl(name) == null && overwrite)
                 {
-                    Space.Controls.Add(control);
+                    if (InPanel) Space.Controls.Add(control);
                     buttons.Add(control);
                 }
                 return control;
@@ -2508,7 +3498,7 @@ namespace EZCode
                         points = poly;
                         if (poly < 3)
                         {
-                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}' in {SegmentSeperator} {codeLine}");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}' in {SegmentSeperator} {codeLine}");
                         }
                         else if (poly == 3) gs.type = GShape.Type.Triangle;
                         else if (poly == 4) gs.type = GShape.Type.Square;
@@ -2521,7 +3511,7 @@ namespace EZCode
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                     }
                 }
                 catch
@@ -2550,11 +3540,11 @@ namespace EZCode
                 {
                     if (parts.Length - 1 >= v9)
                     {
-                        con.Multiline = BoolCheck(parts, v9);
+                        con.Multiline = (bool)BoolCheck(parts, v9);
                     }
                     if (parts.Length - 1 >= v9 + 1)
                     {
-                        bool tr = BoolCheck(parts, v9 + 1);
+                        bool tr = (bool)BoolCheck(parts, v9 + 1);
                         con.WordWrap = tr;
                         con.AcceptsReturn = !tr;
                         con.AcceptsTab = !tr;
@@ -2563,7 +3553,7 @@ namespace EZCode
                     if (parts.Length - 1 >= v9 + 2)
                     {
                         ScrollBars scroll = con.ScrollBars;
-                        bool tr = BoolCheck(parts, v9 + 2);
+                        bool tr = (bool)BoolCheck(parts, v9 + 2);
                         con.ScrollBars = 
                             scroll == ScrollBars.None && tr ? ScrollBars.Vertical :
                             scroll == ScrollBars.Horizontal && tr ? ScrollBars.Both :
@@ -2573,7 +3563,7 @@ namespace EZCode
                     if (parts.Length - 1 >= v9 + 3)
                     {
                         ScrollBars scroll = con.ScrollBars;
-                        bool tr = BoolCheck(parts, v9 + 3);
+                        bool tr = (bool)BoolCheck(parts, v9 + 3);
                         con.ScrollBars =
                             scroll == ScrollBars.None && tr ? ScrollBars.Horizontal :
                             scroll == ScrollBars.Vertical && tr ? ScrollBars.Both :
@@ -2596,7 +3586,7 @@ namespace EZCode
                 {
                     if (parts.Length - 1 >= v9)
                     {
-                        control.AutoSize = BoolCheck(parts, v9);
+                        control.AutoSize = (bool)BoolCheck(parts, v9);
                     }
                 }
                 control.Left = x;
@@ -2621,9 +3611,27 @@ namespace EZCode
                     string[] after = getString_value(values, int.Parse(before[1]));
                     switch(before[0].Trim().ToLower())
                     {
+                        case "focus":
+                            {
+                                if ((bool)BoolCheck(after, 0)) control.Focus();
+                            }
+                            break;
+                        case "readonly":
+                            {
+                                if (control is GTextBox g)
+                                    g.ReadOnly = (bool)BoolCheck(after, 0);
+                                else
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                            }
+                            break;
+                        case "enable":
+                            {
+                                control.Enabled = (bool)BoolCheck(after, 0);
+                            }
+                            break;
                         case "font":
                             {
-                                string all = string.Join("", after[0].Split(" ")).Trim();
+                                string all = string.Join(" ", after[0].Split(" ")).Trim();
                                 bool thing2 = all.StartsWith("[") && all.EndsWith("]#suppresserror".ToLower());
                                 string fontType = "Segoe UI";
                                 int fontSize = 9;
@@ -2633,6 +3641,11 @@ namespace EZCode
                                     if (!thing2) all = all.Substring(1, all.Length - 2);
                                     else all = all.Substring(1, all.Length - 1).Replace("]#suppresserror", "");
                                     string[] seperator = all.Split(";");
+                                    for (int i = 0; i < seperator.Length; i++)
+                                    {
+                                        string[] strings = getString_value(seperator, i);
+                                        seperator[i] = strings[0];
+                                    }
                                     if (seperator.Length == 3)
                                     {
                                         if (IsRealFont(seperator[0]))
@@ -2641,7 +3654,7 @@ namespace EZCode
                                         }
                                         else
                                         {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"'{fontType}' is not a valid font. Try 'Arial' or go to https://learn.mcrosoft.com for more information about supported WinForms fonts. Exception for '{control.Name}' in line {SegmentSeperator} {codeLine}");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Exception for '{control.Name}' in line {SegmentSeperator} {codeLine}. '{seperator[0]}' is not a valid font. Try 'Arial' or go to https://learn.mcrosoft.com for more inWindowation about supported WinWindows fonts.");
                                         }
                                         try
                                         {
@@ -2651,25 +3664,25 @@ namespace EZCode
                                         }
                                         catch
                                         {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected a number greater greater than zero for font size value in {SegmentSeperator} {codeLine}");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected a number greater greater than zero for font size value in {SegmentSeperator} {codeLine}");
                                         }
-                                        if (Enum.TryParse(seperator[2], out FontStyle parsedFontStyle))
+                                        if (Enum.TryParse(char.ToUpper(seperator[2][0]) + seperator[2].Substring(1).ToLower(), out FontStyle parsedFontStyle))
                                         {
                                             fontStyle = parsedFontStyle;
                                         }
                                         else
                                         {
-                                            returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"'{seperator[2]}' is not a valid font style. Valid styles are: {string.Join(", ", Enum.GetNames(typeof(FontStyle)))}. Exception for '{control.Name}' in line {SegmentSeperator} {codeLine}");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Exception for '{control.Name}' in line {SegmentSeperator} {codeLine}. '{seperator[2]}' is not a valid font style. Valid styles are: {string.Join(", ", Enum.GetNames(typeof(FontStyle)))}.");
                                         }
                                     }
                                     else
                                     {
-                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Requires 3 values for font in {SegmentSeperator} {codeLine}");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"Requires 3 values for font in {SegmentSeperator} {codeLine}");
                                     }
                                 }
                                 else if (parts.Length != 1)
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for font value in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for font value in {SegmentSeperator} {codeLine}");
                                 }
                                 control.Font = new Font(fontType, fontSize, fontStyle);
                             }
@@ -2683,21 +3696,14 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
                         case "auto":
                         case "autosize":
                             {
-                                if (control is GLabel lb)
-                                {
-                                    lb.AutoSize = BoolCheck(after, 0);
-                                }
-                                else
-                                {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'label' for '{control.Name}' in {SegmentSeperator} {codeLine}");
-                                }
+                                control.AutoSize = (bool)BoolCheck(after, 0);
                             }
                             break;
                         case "multi":
@@ -2705,11 +3711,11 @@ namespace EZCode
                             {
                                 if (control is GTextBox tb)
                                 {
-                                    tb.Multiline = BoolCheck(after, 0);
+                                    tb.Multiline = (bool)BoolCheck(after, 0);
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
@@ -2718,7 +3724,7 @@ namespace EZCode
                             {
                                 if (control is GTextBox tb)
                                 {
-                                    bool tr = BoolCheck(after, 0);
+                                    bool tr = (bool)BoolCheck(after, 0);
                                     tb.WordWrap = tr;
                                     tb.AcceptsReturn = !tr;
                                     tb.AcceptsTab = !tr;
@@ -2726,7 +3732,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
@@ -2736,7 +3742,7 @@ namespace EZCode
                                 if (control is GTextBox tb)
                                 {
                                     ScrollBars scroll = tb.ScrollBars;
-                                    bool tr = BoolCheck(after, 0);
+                                    bool tr = (bool)BoolCheck(after, 0);
                                     tb.ScrollBars =
                                         scroll == ScrollBars.None && tr ? ScrollBars.Vertical :
                                         scroll == ScrollBars.Horizontal && tr ? ScrollBars.Both :
@@ -2745,7 +3751,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
@@ -2755,7 +3761,7 @@ namespace EZCode
                                 if (control is GTextBox tb)
                                 {
                                     ScrollBars scroll = tb.ScrollBars;
-                                    bool tr = BoolCheck(after, 0);
+                                    bool tr = (bool)BoolCheck(after, 0);
                                     tb.ScrollBars =
                                         scroll == ScrollBars.None && tr ? ScrollBars.Horizontal :
                                         scroll == ScrollBars.Vertical && tr ? ScrollBars.Both :
@@ -2764,7 +3770,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
@@ -2821,7 +3827,7 @@ namespace EZCode
                                     int poly = (int)floats[0];
                                     if (poly < 3)
                                     {
-                                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}' in {SegmentSeperator} {codeLine}");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}' in {SegmentSeperator} {codeLine}");
                                     }
                                     else if (poly == 3) gs.type = GShape.Type.Triangle;
                                     else if (poly == 4) gs.type = GShape.Type.Square;
@@ -2834,12 +3840,12 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             break;
                         default:
-                            returnOutput += ErrorText(_parts, ErrorTypes.custom, custom: $"Expected one of the following values 'x', 'y', 'w', 'h', 'bc', or 'fc' for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                            ErrorText(_parts, ErrorTypes.custom, custom: $"Expected one of the following values 'x', 'y', 'w', 'h', 'bc', or 'fc' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                             break;
                     }
                 }
@@ -2887,7 +3893,7 @@ namespace EZCode
                     }
                     else
                     {
-                        returnOutput += ErrorText(allparts, ErrorTypes.custom, custom: $"Requires 3 values for color in {SegmentSeperator} {codeLine}");
+                        ErrorText(allparts, ErrorTypes.custom, custom: $"Requires 3 values for color in {SegmentSeperator} {codeLine}");
                     }
                 }
                 else if (all.Equals("transparent"))
@@ -2896,7 +3902,7 @@ namespace EZCode
                 }
                 else if(parts.Length != 1)
                 {
-                    returnOutput += ErrorText(allparts, ErrorTypes.custom, custom: $"Expected '[' and ']' for color value in {SegmentSeperator} {codeLine}");
+                    ErrorText(allparts, ErrorTypes.custom, custom: $"Expected '[' and ']' for color value in {SegmentSeperator} {codeLine}");
                 }
                 c = Color.FromArgb(r, g, b);
             }
@@ -2931,18 +3937,18 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected 2 values for a single point in points value in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 2 values for a single point in points value in {SegmentSeperator} {codeLine}");
                                 }
                             }
                             else
                             {
-                                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '(' and ')' for points value in {SegmentSeperator} {codeLine}");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected '(' and ')' for points value in {SegmentSeperator} {codeLine}");
                             }
                         }
                     }
                     else
                     {
-                        returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{gs.Name}' in {SegmentSeperator} {codeLine}");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{gs.Name}' in {SegmentSeperator} {codeLine}");
                     }
                     gs.Points = ppoints.ToArray();
                 }
@@ -2953,13 +3959,13 @@ namespace EZCode
             }
             else
             {
-                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for points value in {SegmentSeperator} {codeLine}");
+                ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for points value in {SegmentSeperator} {codeLine}");
             }
             gs.type = GShape.Type.Custom;
             gs.Refresh();
             return gs;
         }
-        string[] getString_value(string[] parts, int next, bool all = false, bool useVar = true, bool useEquation = true, bool useRaw = true, string def = "")
+        string[] getString_value(string[] parts, int next, bool all = false, bool useVar = true, bool useEquation = true, bool useRaw = true, string def = "", bool usecolon = true)
         {
             string value = def;
             string val = "";
@@ -3069,7 +4075,7 @@ namespace EZCode
             }
 
             value = val;
-            value = ColonResponse(value, parts);
+            if (usecolon) value = ColonResponse(value, parts);
 
             return new string[] { value, next.ToString() };
         }
@@ -3103,7 +4109,7 @@ namespace EZCode
             }
             else if (ended == 1)
             {
-                returnOutput += ErrorText(parts, ErrorTypes.custom, custom: $"Syntax error in {SegmentSeperator} {codeLine}. Expected ')' to end equation.");
+                ErrorText(parts, ErrorTypes.custom, custom: $"Syntax error in {SegmentSeperator} {codeLine}. Expected ')' to end equation.");
             }
 
             return new float[] { float.Parse(value), next };
@@ -3165,11 +4171,11 @@ namespace EZCode
         #endregion
 
         #region Control_Events
-        private void GButtonClick(object sender, EventArgs e)
+        async void GButtonClick(object sender, EventArgs e)
         {
             GButton button = (GButton)sender;
-            button.AccessibleDescription = "1\nnull";
-            if (button.click != "")
+            button.isclick = 1;
+            if (button.click != "" && button.click != null)
             {
                 G_click(sender, e);
             }
@@ -3185,7 +4191,21 @@ namespace EZCode
             text,
             image,
             imagelayout,
-            font
+            font,
+            scroll,
+            focused,
+            controladded,
+            controlremoved,
+            defocused,
+            close,
+            open,
+            enabledchanged,
+            keydown,
+            keyup,
+            keypress,
+            resized,
+            resizestart,
+            resizeend
         }
         private void G_click(object sender, EventArgs e)
         {
@@ -3227,9 +4247,66 @@ namespace EZCode
         {
             PlayScriptFromEvent(sender, eventType.imagelayout);
         }
+        private void G_scroll(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.scroll);
+        }
+        private void G_focused(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.focused);
+        }
+        private void G_ctroladded(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.controladded);
+        }
+        private void G_controlremoved(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.controlremoved);
+        }
+        private void G_defocused(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.defocused);
+        }
+        private void G_close(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.close);
+        }
+        private void G_open(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.open);
+        }
+        private void G_enabledchanged(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.enabledchanged);
+        }
+        private void G_keydown(object? sender, KeyEventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.keydown);
+        }
+        private void G_keyup(object? sender, KeyEventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.keyup);
+        }
+        private void G_press(object? sender, KeyPressEventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.keypress);
+        }
+        private void G_resize(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.resized);
+        }
+        private void G_resizedstart(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.resizestart);
+        }
+        private void G_resizedend(object? sender, EventArgs e)
+        {
+            PlayScriptFromEvent(sender, eventType.resizeend);
+        }
         private async void PlayScriptFromEvent(object sender, eventType eventtype)
         {
             if (!playing) return;
+            Window? w = sender.ToString().Contains(nameof(w)) ? sender as Window : sender is Window ? sender as Window : null;
             GShape? s = sender.ToString().Contains(nameof(s)) ? sender as GShape : sender is GShape ? sender as GShape : null;
             GLabel? l = sender.ToString().Contains(nameof(l)) ? sender as GLabel : sender is GLabel ? sender as GLabel : null;
             GButton? b = sender.ToString().Contains(nameof(b)) ? sender as GButton : sender is GButton ? sender as GButton : null;
@@ -3237,16 +4314,29 @@ namespace EZCode
             string file = "";
             switch (eventtype)
             {
-                case eventType.click: file = s != null ? s.click : l != null ? l.click : b != null ? b.click : t != null ? t.click : "null"; break;
-                case eventType.mousehover: file = s != null ? s.mousehover : l != null ? l.mousehover : b != null ? b.mousehover : t != null ? t.mousehover : "null"; break;
-                case eventType.text: file = s != null ? s.text : l != null ? l.text : b != null ? b.text : t != null ? t.text : "null"; break;
-                case eventType.move: file = s != null ? s.move : l != null ? l.move : b != null ? b.move : t != null ? t.move : "null"; break;
+                case eventType.click: file = s != null ? s.click : l != null ? l.click : b != null ? b.click : t != null ? t.click : w != null ? w.click : "null"; break;
+                case eventType.mousehover: file = s != null ? s.mousehover : l != null ? l.mousehover : b != null ? b.mousehover : t != null ? t.mousehover : w != null ? w.mousehover : "null"; break;
+                case eventType.text: file = s != null ? s.text : l != null ? l.text : b != null ? b.text : t != null ? t.text : w != null ? w.text : "null"; break;
+                case eventType.move: file = s != null ? s.move : l != null ? l.move : b != null ? b.move : t != null ? t.move : w != null ? w.move : "null"; break;
                 case eventType.scale: file = s != null ? s.scale : l != null ? l.scale : b != null ? b.scale : t != null ? t.scale : "null"; break;
-                case eventType.backcolor: file = s != null ? s.backcolor : l != null ? l.backcolor : b != null ? b.backcolor : t != null ? t.backcolor : "null"; break;
-                case eventType.forecolor: file = s != null ? s.forecolor : l != null ? l.forecolor : b != null ? b.forecolor : t != null ? t.forecolor : "null"; break;
-                case eventType.font: file = s != null ? s.font : l != null ? l.font : b != null ? b.font : t != null ? t.font : "null"; break;
-                case eventType.image: file = s != null ? s.image : l != null ? l.image : b != null ? b.image : t != null ? t.image : "null"; break;
-                case eventType.imagelayout: file = s != null ? s.imagelayout : l != null ? l.imagelayout : b != null ? b.imagelayout : t != null ? t.imagelayout : "null"; break;
+                case eventType.backcolor: file = s != null ? s.backcolor : l != null ? l.backcolor : b != null ? b.backcolor : t != null ? t.backcolor : w != null ? w.backcolor : "null"; break;
+                case eventType.forecolor: file = s != null ? s.forecolor : l != null ? l.forecolor : b != null ? b.forecolor : t != null ? t.forecolor : w != null ? w.forecolor : "null"; break;
+                case eventType.font: file = s != null ? s.font : l != null ? l.font : b != null ? b.font : t != null ? t.font : w != null ? w.forecolor : "null"; break;
+                case eventType.image: file = s != null ? s.image : l != null ? l.image : b != null ? b.image : t != null ? t.image : w != null ? w.image : "null"; break;
+                case eventType.imagelayout: file = s != null ? s.imagelayout : l != null ? l.imagelayout : b != null ? b.imagelayout : t != null ? t.imagelayout : w != null ? w.imagelayout : "null"; break;
+                case eventType.scroll: file = w.scroll; break;
+                case eventType.focused: file = w.focused; break;
+                case eventType.controladded: file = w.controladded; break;
+                case eventType.controlremoved: file = w.controlremoved; break;
+                case eventType.defocused: file = w.defocused; break;
+                case eventType.close: file = w.close; break;
+                case eventType.open: file = w.open; break;
+                case eventType.enabledchanged: file = w.enabledchanged; break;
+                case eventType.keydown: file = w.keydown; break;
+                case eventType.keyup: file = w.keyup; break;
+                case eventType.resized: file = w.resized; break;
+                case eventType.resizestart: file = w.resizedstart; break;
+                case eventType.resizeend: file = w.resizedend; break;
             }
             await PlaySwitch(jumpsto: $"file play {file}");
         }
@@ -3259,9 +4349,17 @@ namespace EZCode
         /// </summary>
         public void Stop()
         {
-            if (showStartAndEnd && playing)
-                AddText("Build Stopped");
-            playing = false;
+            _pplaying = false;
+            returnOutput = "";
+            devDisplay = true;
+            devportal = 0;
+            ifmany = 0;
+            lastif = true;
+            loopmany = 0;
+            foreach (Window Window in windows)
+            {
+                Window.Close();
+            }
         }
         /// <summary>
         /// Sets the Console Input to the inputted text
@@ -3271,14 +4369,16 @@ namespace EZCode
         {
             if (!playing && text == "help")
             {
-                string help = @"Need help? Look over the list below. If you still need help, please look go to the official EZCode website: https://ez-code.web.app";
+                string help = @"Need help? Please go to the official EZCode website: https://ez-code.web.app";
                 AddText(help);
             }
             if (!playing) return;
             senttext = text;
             sent = true;
         }
-        /// <summary> Sets the Key Input to the inputted key for the keydown </summary>
+        /// <summary> 
+        /// Sets the Key Input to the inputted key for the keydown
+        /// </summary>
         public void KeyInput_Down(KeyEventArgs e) {
             Keys.Add(e.KeyCode);
         }
@@ -3311,6 +4411,14 @@ namespace EZCode
             mouseButtons.Remove(e.Button); 
         }
         public void MouseInput_Up(object sender, MouseEventArgs e) { MouseInput_Up(e); }
+        /// <summary>
+        /// Sets the Mouse Wheel Input to the delta of the mouse as: -1, 0, or 1
+        /// </summary>
+        public void MouseInput_Wheel(MouseEventArgs e)
+        {
+            mouseWheel = e.Delta;
+        }
+        public void MouseInput_Wheel(object sender, MouseEventArgs e) { MouseInput_Wheel(e); }
         /// <summary>
         /// Put this in OnTextChange. This decides to scroll to end, sets the Normal/Error Colors, and sets the RichTextbox.
         /// </summary>
@@ -3372,6 +4480,7 @@ namespace EZCode
             missingVar,
             missingSound,
             missingGroup,
+            missingWindow,
             unkown,
             custom
         }
@@ -3379,11 +4488,11 @@ namespace EZCode
         /// Add an error to the output
         /// </summary>
         /// <param name="parts">To check to see if there is an overide in the line</param>
-        /// <param name="error">The type of error for uniform output</param>
+        /// <param name="error">The type of error for uniWindow output</param>
         /// <param name="keyword">keyword, for error type</param>
         /// <param name="name">name, for the error type</param>
         /// <param name="custom">cutom error, this makes the 'name' and 'keyword' parameters not needed</param>
-        public string ErrorText(string[] parts, ErrorTypes error, string keyword = "keyword", string name = "name", string custom = "")
+        public string ErrorText(string[] parts, ErrorTypes error, string keyword = "keyword", string name = "name", string custom = "An Error Occured", bool returnoutput = true)
         {
             string text = 
                 error == ErrorTypes.unkown ? $"An error occured in {SegmentSeperator} {codeLine}" :
@@ -3393,6 +4502,7 @@ namespace EZCode
                 error == ErrorTypes.missingVar ? $"Could not find a Variable named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.missingSound ? $"Could not find a Sound Player named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.missingGroup ? $"Could not find a Group named '{name}' in {SegmentSeperator} {codeLine}" :
+                error == ErrorTypes.missingWindow ? $"Could not find a Window named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.alreadyMember ? $"Naming violation in {SegmentSeperator} {codeLine}. There is already a '{keyword}' named '{name}'" :
                 error == ErrorTypes.custom ? custom : "An Error Occured, We don't know why. If it helps, it was on line " + codeLine;
 
@@ -3401,6 +4511,7 @@ namespace EZCode
             {
                 text = ScriptDirectory != "" ? $"{ScriptDirectory}: {text}" : text;
             }
+            if (returnoutput) returnOutput += text; 
             AddText(text, true, RichConsole, true);
             return text;
         }
@@ -3432,7 +4543,7 @@ namespace EZCode
         {
             var ex = e.ExceptionObject as Exception;
 
-            returnOutput += ErrorText(new string[] { }, ErrorTypes.unkown);
+            ErrorText(new string[] { }, ErrorTypes.unkown);
         }
         #endregion
     }

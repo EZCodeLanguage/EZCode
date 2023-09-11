@@ -1,8 +1,7 @@
-﻿using Variables;
-using GControls;
+﻿using EZCode.GControls;
 using System.Windows.Forms;
 
-namespace Groups;
+namespace EZCode.Groups;
 
 class Group
 {

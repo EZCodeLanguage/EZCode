@@ -1,7 +1,7 @@
 ﻿using System.Globalization;
 using System.Text.RegularExpressions;
 
-namespace Variables
+namespace EZCode.Variables
 {
     public interface Ivar
     {
@@ -31,7 +31,7 @@ namespace Variables
         bool isFile(string value);
         bool isString();
         string value();
-        bool? returnBool(string value);
+        bool? returnBool();
     }
     public class Var : Ivar
     {
@@ -68,7 +68,7 @@ namespace Variables
                     {
                         Description = Description == Ivar.Types.None ? Ivar.Types.File : Description;
                     }
-                    else if (returnBool(value) != null)
+                    else if (returnBool() != null)
                     {
                         Description = Description == Ivar.Types.None ? Ivar.Types.Bool : Description;
                     }
@@ -167,7 +167,7 @@ namespace Variables
                                     text = text.Remove(i);
                                 }
                             }
-                            Description = returnBool(text) == true ? Ivar.Types.Bool : Description;
+                            Description = returnBool() == true ? Ivar.Types.Bool : Description;
                             setted = true;
                             break;
                     }
@@ -282,7 +282,7 @@ namespace Variables
                 return text.ToString();
             }
         }
-        public bool? returnBool(string value)
+        public static bool? staticReturnBool(string value)
         {
             if (value == "yes" || value == "Yes" || value == "Y" || value == "y" || value == "true" || value == "True" || value == "1")
             {
@@ -297,10 +297,13 @@ namespace Variables
                 return null;
             }
         }
-        public bool returnBool()
+        public bool? returnBool()
         {
-            string value = text != null ? text : "";
-            if(Description == Ivar.Types.Bool || Description == Ivar.Types.Float)
+            return returnBool(text != null ? text : "");
+        }
+        public bool? returnBool(string value)
+        {
+            if(Description == Ivar.Types.Bool || Description == Ivar.Types.Float || Description == Ivar.Types.String)
             {
                 if (value == "yes" || value == "Yes" || value == "Y" || value == "y" || value == "true" || value == "True" || value == "1")
                 {
@@ -317,7 +320,7 @@ namespace Variables
             }
             else
             {
-                return false;
+                return null;
             }
         }
     }

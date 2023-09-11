@@ -1,17 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Drawing;
+﻿using System.Drawing;
 using System.Drawing.Drawing2D;
-using System.Linq;
-using System.Numerics;
-using System.Text;
-using System.Threading.Tasks;
 using System.Windows.Forms;
 using Point = System.Drawing.Point;
 
-namespace GControls // Controls
+namespace EZCode.GControls
 {
-    internal interface IGControl
+    public interface IGControl
     {
         string click { get; set; }
         string mousehover { get; set; }
@@ -23,7 +17,7 @@ namespace GControls // Controls
         string image { get; set; }
         string imagelayout { get; set; }
     }
-    public partial class GControl : System.Windows.Forms.Control, IGControl
+    public partial class GControl : Control, IGControl
     {
         public string click { get; set; }
         public string mousehover { get; set; }
@@ -34,21 +28,7 @@ namespace GControls // Controls
         public string font { get; set; }
         public string image { get; set; }
         public string imagelayout { get; set; }
-        public string text
-        {
-            get => text;
-            set
-            {
-                text = value;
-                //OnTextChangedCustom(EventArgs.Empty);
-            }
-        }
-
-        public event EventHandler<EventArgs> OnTextChanged;
-        protected virtual void OnTextChangedCustom(EventArgs e)
-        {
-            OnTextChanged?.Invoke(this, e);
-        }
+        public string text { get; set; }
     }
     public partial class GShape : PictureBox, IGControl
     {
@@ -151,6 +131,7 @@ namespace GControls // Controls
     public partial class GButton : Button, IGControl
     {
         public string click { get; set; }
+        public int isclick { get; set; }
         public string mousehover { get; set; }
         public string move { get; set; }
         public string scale { get; set; }
