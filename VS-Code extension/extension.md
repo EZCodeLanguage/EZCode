@@ -1,2 +1,0 @@
-#Visual Studio Code EZCode Extension
-The VS Code extension for your EzCode programming language will enhance the coding experience by providing custom word highlighting and syntax support. This extension will intelligently recognize and highlight EzCode-specific keywords, functions, and other language constructs, making the code more visually distinct and easier to read.
