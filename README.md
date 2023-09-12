@@ -1,10 +1,8 @@
-# EzCode Source Code Repository
+# EzCode Code
 
 Welcome to the EzCode source code repository! This repository contains the code for the EzCode project, which includes the IDE, Viewer, Packager, and Player.
 
 ## Project Links
-
-- [Main Repository](https://github.com/JBrosDevelopment/EzCode.git): This is the main repository for the EzCode project, where you can find the source code for the IDE, Viewer, Packager, and Player.
 
 - [Project Repository](https://github.com/JBrosDevelopment/EZCode-Projects.git): This repository contains various projects created using EzCode. You can explore and contribute to different examples and applications built with EzCode.
 
