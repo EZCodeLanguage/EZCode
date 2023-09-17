@@ -27,6 +27,8 @@ namespace EZCode.Windows
         public string resized { get; set; }
         public string resizedstart { get; set; }
         public string resizedend { get; set; }
+        public string BGImageFile { get; set; }
+        public string IconImageFile { get; set; }
 
         public Window()
         {

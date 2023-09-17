@@ -7,7 +7,6 @@ using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement.ProgressBar;
 using Group = EZCode.Groups.Group;
 using Player = Sound.Player;
 using Types = EZCode.Variables.Ivar.Types;
@@ -313,7 +312,7 @@ namespace EZCode
                 output += task[0];
                 ConsoleText = output;
             }
-            playing = false;
+            if (playing) playing = false;
             StopAllSounds();
             return output;
         }
@@ -762,10 +761,12 @@ namespace EZCode
                             if (get_1 == null)
                             {
                                 ErrorText(parts, ErrorTypes.missingControl, keyword, parts[1]);
+                                return new[] { returnOutput, stillInFile.ToString() };
                             }
                             if (get_2 == null)
                             {
                                 ErrorText(parts, ErrorTypes.missingControl, keyword, parts[2]);
+                                return new[] { returnOutput, stillInFile.ToString() };
                             }
 
                             Rectangle rect1 = new Rectangle();
@@ -851,18 +852,16 @@ namespace EZCode
                                     endindex = int.Parse(file_w[1]);
                                     output = success == true ? "1" : "0";
                                     break;
-                                case "path":
-                                    string[] _strings = await getFile(_parts, parts.ToList().IndexOf("file") + 2);
-                                    output = _strings[0];
-                                    endindex = parts.ToList().IndexOf(_strings[0].Split(" ")[_strings[0].Split(" ").Length - 1]);
-                                    if (!validpathcheck(output))
+                                case "validpath":
                                     {
-                                        ErrorText(parts, ErrorTypes.custom, custom: $"The path given is invalid for '{keyword}' in {SegmentSeperator} {codeLine}");
+                                        string[] file_ = await getFile(parts, 2);
+                                        output = validpathcheck(file_[0]) ? "1" : "0";
+                                        endindex = int.Parse(file_[1]);
                                     }
                                     break;
                                 case "play":
                                     string[] file_p = await getFile(parts, 2);
-                                    if (!File.Exists(file_p[0])) throw new Exception($"File not found in {SegmentSeperator} {codeLine}");
+                                    if (!File.Exists(file_p[0])) ErrorText(parts, ErrorTypes.custom, custom: $"File not found in {SegmentSeperator} {codeLine}");
                                     string code = File.ReadAllText(file_p[0]);
                                     endindex = int.Parse(file_p[1]);
                                     string[] lines = code.Split(seperatorChars);
@@ -875,7 +874,7 @@ namespace EZCode
                                         codeLine = i + 1;
                                         string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }), "", lines, 0);
                                         if (bool.Parse(task[1]) == false) i = lines.Length - 1;
-                                        output += task[0];
+                                        output += output == "" ? task[0] : "\n" + task[0];
                                     }
                                     ScriptDirectory = tempscript;
                                     codeLine = templine;
@@ -887,8 +886,14 @@ namespace EZCode
                                 case "create":
                                     {
                                         string[] file_ = await getFile(parts, 2);
-                                        if (File.Exists(file_[0])) throw new Exception($"File already exists in {SegmentSeperator} {codeLine}");
                                         File.Create(file_[0]).Close();
+                                        output = File.Exists(file_[0]) ? "1" : "0";
+                                        endindex = int.Parse(file_[1]);
+                                    }
+                                    break;
+                                case "exists":
+                                    {
+                                        string[] file_ = await getFile(parts, 2);
                                         output = File.Exists(file_[0]) ? "1" : "0";
                                         endindex = int.Parse(file_[1]);
                                     }
@@ -951,12 +956,9 @@ namespace EZCode
                             switch (type)
                             {
                                 case "console":
-                                    if (!jumpTo)
+                                    while (!sent && playing)
                                     {
-                                        while (!sent && playing)
-                                        {
-                                            await Task.Delay(200);
-                                        }
+                                        await Task.Delay(200);
                                     }
                                     output = senttext;
                                     index = 2;
@@ -968,7 +970,7 @@ namespace EZCode
                                             output = string.Join(",", Keys);
                                             break;
                                         default:
-                                            output = Keys.Select(x => x.ToString()).FirstOrDefault(y => y == parts[2].Trim()) != null ? "1" : "0";
+                                            output = Keys.Select(x => x.ToString().ToLower()).FirstOrDefault(y => y == parts[2].Trim().ToLower()) != null ? "1" : "0";
                                             break;
                                     }
                                     break;
@@ -1015,7 +1017,7 @@ namespace EZCode
                                                     output = string.Join(",", mouseButtons);
                                                     break;
                                                 default:
-                                                    output = mouseButtons.Select(x => x.ToString()).FirstOrDefault(y => y == parts[3].Trim()) != null ? "1" : "0";
+                                                    output = mouseButtons.Select(x => x.ToString().ToLower()).FirstOrDefault(y => y == parts[3].Trim().ToLower()) != null ? "1" : "0";
                                                     break;
                                             }
                                             break;
@@ -1061,6 +1063,11 @@ namespace EZCode
                             if(name == "stopall")
                             {
                                 StopAllSounds();
+                                return new string[] { returnOutput, stillInFile.ToString() };
+                            }
+                            else if(name == "volume")
+                            {
+                                Player.Volume = find_value(parts, 2, 0)[0];
                                 return new string[] { returnOutput, stillInFile.ToString() };
                             }
                             string type = parts[int.Parse(namearray[1])];
@@ -1116,19 +1123,8 @@ namespace EZCode
                                         ErrorText(parts, ErrorTypes.missingSound, keyword, name);
                                     }
                                     break;
-                                case "volume":
-                                    Player player____ = await GetPlayer(name);
-                                    if (player____.Name != "")
-                                    {
-                                        player____.Volume = find_value(parts, 3, 0)[0];
-                                    }
-                                    else
-                                    {
-                                        ErrorText(parts, ErrorTypes.missingSound, keyword, name);
-                                    }
-                                    break;
                                 default:
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'destroy' 'play' 'stop' or 'volume' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'destroy' 'play' or 'stop' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                         }
@@ -1297,12 +1293,12 @@ namespace EZCode
                                         window.scroll = file;
                                         window.Scroll += G_scroll;
                                         break;
-                                    case "focus":
+                                    case "focused":
                                         window.focused = file;
                                         window.GotFocus += G_focused;
                                         break;
                                     case "controladded":
-                                        window.focused = file;
+                                        window.controladded = file;
                                         window.ControlAdded += G_ctroladded;
                                         break;
                                     case "controlremoved":
@@ -1311,7 +1307,7 @@ namespace EZCode
                                         break;
                                     case "defocused":
                                         window.defocused = file;
-                                        window.defocused += G_defocused;
+                                        window.LostFocus += G_defocused;
                                         break;
                                     case "close":
                                         window.close = file;
@@ -1350,7 +1346,7 @@ namespace EZCode
                                         window.ResizeEnd += G_resizedend;
                                         break;
                                     default:
-                                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'click' 'hover' 'move' 'scale' 'backcolor' 'forecolor' 'image' 'imagetype' 'font' or 'text' for 'event' in {SegmentSeperator} {codeLine}");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a correct property listener for 'event' in {SegmentSeperator} {codeLine}");
                                         break;
                                 }
                             }
@@ -1449,7 +1445,7 @@ namespace EZCode
                             else if (groups.Select(x => x.Name).Contains(keyword))
                             {
                                 Group group = getGroup(keyword);
-                                group = DoGroup(parts, 0, keyword);
+                                group = await DoGroup(parts, 0, keyword);
                             }
                             else if (windows.Select(x => x.Name).Contains(keyword))
                             {
@@ -1467,7 +1463,6 @@ namespace EZCode
                         }
                         break;
                 }
-                returnOutput += returnOutput.Equals("") ? "" : "\n";
                 senttext = ""; sent = false;
                 return new string[] { returnOutput, stillInFile.ToString() };
             }
@@ -1637,7 +1632,7 @@ namespace EZCode
                                 break;
                             case "enable":
                                 {
-                                    window.Enabled = (bool)BoolCheck(after, 0);
+                                    window.Enabled = BoolCheck(after, 0) == true;
                                 }
                                 break;
                             case "minwidth":
@@ -1731,8 +1726,17 @@ namespace EZCode
                                     string[] icon = await getFile(after, 0);
                                     try
                                     {
-                                        Icon i = new Icon(icon[0]);
-                                        window.Icon = i;
+                                        if (icon[0] == "none")
+                                        {
+                                            window.Icon = null;
+                                            icon[0] = "none";
+                                        }
+                                        else
+                                        {
+                                            Icon i = new Icon(icon[0]);
+                                            window.Icon = i;
+                                            window.IconImageFile = icon[0];
+                                        }
                                     }
                                     catch
                                     {
@@ -1835,7 +1839,7 @@ namespace EZCode
                                 break;
                             case "font":
                                 {
-                                    string all = string.Join("", after[0].Split(" ")).Trim();
+                                    string all = string.Join(" ", after[0].Split(" ")).Trim();
                                     bool thing2 = all.StartsWith("[") && all.EndsWith("]#suppresserror".ToLower());
                                     string fontType = "Segoe UI";
                                     int fontSize = 9;
@@ -1845,6 +1849,11 @@ namespace EZCode
                                         if (!thing2) all = all.Substring(1, all.Length - 2);
                                         else all = all.Substring(1, all.Length - 1).Replace("]#suppresserror", "");
                                         string[] seperator = all.Split(";");
+                                        for (int i = 0; i < seperator.Length; i++)
+                                        {
+                                            string[] _strings = getString_value(seperator, i);
+                                            seperator[i] = _strings[0];
+                                        }
                                         if (seperator.Length == 3)
                                         {
                                             if (IsRealFont(seperator[0]))
@@ -1853,7 +1862,7 @@ namespace EZCode
                                             }
                                             else
                                             {
-                                                ErrorText(parts, ErrorTypes.custom, custom: $"'{fontType}' is not a valid font. Try 'Arial' or go to https://learn.mcrosoft.com for more inWindowation about supported WinWindows fonts. Exception for '{window.Name}' in line {SegmentSeperator} {codeLine}");
+                                                ErrorText(parts, ErrorTypes.custom, custom: $"Exception for '{window.Name}' in line {SegmentSeperator} {codeLine}. '{seperator[0]}' is not a valid font. Try 'Arial' or go to https://learn.mcrosoft.com for more inWindowation about supported WinWindows fonts.");
                                             }
                                             try
                                             {
@@ -1865,13 +1874,13 @@ namespace EZCode
                                             {
                                                 ErrorText(parts, ErrorTypes.custom, custom: $"Expected a number greater greater than zero for font size value in {SegmentSeperator} {codeLine}");
                                             }
-                                            if (Enum.TryParse(seperator[2], out FontStyle parsedFontStyle))
+                                            if (Enum.TryParse(char.ToUpper(seperator[2][0]) + seperator[2].Substring(1).ToLower(), out FontStyle parsedFontStyle))
                                             {
                                                 fontStyle = parsedFontStyle;
                                             }
                                             else
                                             {
-                                                ErrorText(parts, ErrorTypes.custom, custom: $"'{seperator[2]}' is not a valid font style. Valid styles are: {string.Join(", ", Enum.GetNames(typeof(FontStyle)))}. Exception for '{window.Name}' in line {SegmentSeperator} {codeLine}");
+                                                ErrorText(parts, ErrorTypes.custom, custom: $"Exception for '{window.Name}' in line {SegmentSeperator} {codeLine}. '{seperator[2]}' is not a valid font style. Valid styles are: {string.Join(", ", Enum.GetNames(typeof(FontStyle)))}.");
                                             }
                                         }
                                         else
@@ -1886,8 +1895,59 @@ namespace EZCode
                                     window.Font = new Font(fontType, fontSize, fontStyle);
                                 }
                                 break;
+                            case "image":
+                                {
+                                    string[] image = await getFile(after, 0);
+                                    try
+                                    {
+                                        if (image[0] == "none")
+                                        {
+                                            window.BackgroundImage = null;
+                                        }
+                                        else
+                                        {
+                                            Image i = Image.FromFile(image[0]);
+                                            window.BackgroundImage = i;
+                                        }
+                                        window.BGImageFile = image[0];
+                                    }
+                                    catch
+                                    {
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"An error occured setting the image for '{window.Name}' in {SegmentSeperator} {codeLine}");
+                                    }
+                                }
+                                break;
+                            case "imagelayout":
+                                {
+                                    string type = after[0];
+                                    if (type == "tile")
+                                    {
+                                        window.BackgroundImageLayout = ImageLayout.Tile;
+                                    }
+                                    else if (type == "center")
+                                    {
+                                        window.BackgroundImageLayout = ImageLayout.Center;
+                                    }
+                                    else if (type == "zoom")
+                                    {
+                                        window.BackgroundImageLayout = ImageLayout.Zoom;
+                                    }
+                                    else if (type == "none")
+                                    {
+                                        window.BackgroundImageLayout = ImageLayout.None;
+                                    }
+                                    else if (type == "stretch")
+                                    {
+                                        window.BackgroundImageLayout = ImageLayout.Stretch;
+                                    }
+                                    else
+                                    {
+                                        throw new Exception();
+                                    }
+                                }
+                                break;
                             default:
-                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected a correct property name for '{window.Name}' in {SegmentSeperator} {codeLine}");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"'{before[0].Trim()}' is not a correct property for '{window.Name}' in {SegmentSeperator} {codeLine}");
                                 break;
                         }
                     }
@@ -2063,6 +2123,45 @@ namespace EZCode
                         ErrorText(parts, ErrorTypes.missingVar, keyword, name);
                     }
                     break;
+                case "remove":
+                    Var var_r = getVar(name);
+                    if (var_r.isSet && var_r.isArray())
+                    {
+                        varray = var_r.array.ToList();
+                        float[]? indexes = null;
+                        int? index = null;
+                        string? rem = null;
+                        try
+                        {
+                            indexes = find_value(parts, _index + 2, -1);
+                            index = (int)indexes[0];
+                        }
+                        catch
+                        {
+                            rem = parts[_index + 2];
+                        }
+                        if (index == null && rem == null)
+                        {
+                            ErrorText(parts, ErrorTypes.custom, $"Expected an index or a value to remove from the list in {SegmentSeperator} {codeLine}");
+                        }
+                        else
+                        {
+                            if (index != null)
+                            {
+                                varray.RemoveAt((int)index);
+                            }
+                            else if (rem != null)
+                            {
+                                varray.Remove(rem);
+                            }
+                        }
+                        var_r.set(array:varray.ToArray());
+                    }
+                    else
+                    {
+                        ErrorText(parts, ErrorTypes.custom, custom:$"Expected a list variable in {SegmentSeperator} {codeLine}");
+                    }
+                    break;
                 case "destroy":
                     var = getVar(name);
                     if (var.isSet && var.isArray())
@@ -2079,12 +2178,12 @@ namespace EZCode
                     }
                     break;
                 default:
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' 'destroy' or 'clear' in {SegmentSeperator} {codeLine}");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'add', 'equals', 'remove', 'destroy' or 'clear' in {SegmentSeperator} {codeLine}");
                     break;
             }
             return var;
         }
-        Group DoGroup(string[] parts, int _index, string keyword)
+        async Task<Group> DoGroup(string[] parts, int _index, string keyword)
         {
             Group group = new Group("");
             group.isSet = false;
@@ -2180,16 +2279,16 @@ namespace EZCode
                         Control? rem = null;
                         try
                         {
-                            indexes = find_value(parts, _index, -1);
+                            indexes = find_value(parts, _index + 2, -1);
                             index = (int)indexes[0];
                         }
                         catch
                         {
-                            rem = getControl(parts[_index]);
+                            rem = getControl(parts[_index + 2]);
                         }
                         if (index == null && rem == null)
                         {
-                            ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group in {SegmentSeperator} {codeLine}");
+                            ErrorText(parts, ErrorTypes.custom, $"Expected an index or a value to remove from the group in {SegmentSeperator} {codeLine}");
                         }
                         else
                         {
@@ -2251,33 +2350,32 @@ namespace EZCode
                 case "change":
                     try
                     {
-                        bool abs = (bool)BoolCheck(parts, _index + 2);
+                        int ne = 3;
+                        bool? _abs = BoolCheck(parts, _index + 2, false);
+                        bool abs = false;
+                        if (_abs == true) abs = true;
+                        else if(_abs == false) abs = false;
+                        else
+                        {
+                            //ErrorText(parts, ErrorTypes.custom, custom: $"Expected the 'absolute' value for {name} in {SegmentSeperator} {codeLine}");
+                            ne = 2;
+                        }
                         Group group1 = getGroup(name);
                         if (group1.isSet)
                         {
                             group1.Absolute = abs;
-                            Control control = new Control();
-                            control.Text = group1.Text;
-                            control.Top = group1.Y;
-                            control.Width = group1.Width;
-                            control.Height = group1.Height;
-                            control.BackColor = Color.FromArgb(group1.bgR, group1.bgG, group1.bgB);
-                            control.ForeColor = Color.FromArgb(group1.fcR, group1.fcG, group1.fcB);
-                            control.Text = group1.Text;
+                            Control tempc = (Control)group1;
+                            Control control = new Control()
+                            {
+                                BackColor = group1.BackColor,
+                                ForeColor = group1.ForeColor,
+                            };
+                            control = await Change(control, parts, _index + ne, true, false, true);
 
-                            control = Change(control, parts, _index + 3, true, false, false, true);
-
-                            group1.X = control.Left;
-                            group1.Y = control.Top;
-                            group1.Width = control.Width;
-                            group1.Height = control.Height;
-                            group1.bgR = control.BackColor.R;
-                            group1.bgG = control.BackColor.G;
-                            group1.bgB = control.BackColor.B;
-                            group1.fcR = control.ForeColor.R;
-                            group1.fcG = control.ForeColor.G;
-                            group1.fcB = control.ForeColor.B;
-                            group1.Text = control.Text;
+                            if(!abs)
+                                group1.SetRelativeChenges(control);
+                            else
+                                group1.SetAbsoluteChenges(tempc, control);
                         }
                     }
                     catch
@@ -2286,7 +2384,7 @@ namespace EZCode
                     }
                     break;
                 default:
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'add' 'equals' 'remove' 'change' or 'clear' in {SegmentSeperator} {codeLine}");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'add', 'equals', 'remove', 'change', or 'clear' in {SegmentSeperator} {codeLine}");
                     break;
             }
             return group;
@@ -2623,6 +2721,7 @@ namespace EZCode
         }
         bool validpathcheck(string path)
         {
+            path = path.Replace("/", "\\");
             Regex driveCheck = new Regex(@"^[a-zA-Z]:\\$");
             if (string.IsNullOrWhiteSpace(path) || path.Length < 3)
             {
@@ -2840,14 +2939,72 @@ namespace EZCode
             {
                 switch (ind[1])
                 {
+                    case "time":
+                        {
+                            switch (ind[2].ToLower())
+                            {
+                                case "today":
+                                    value = DateTime.Today.ToString();
+                                    break;
+                                case "now":
+                                    value = DateTime.Now.ToString();
+                                    break;
+                                case "utcnow":
+                                    value = DateTime.UtcNow.ToString();
+                                    break;
+                                case "unixepoch":
+                                    value = DateTime.UnixEpoch.ToString();
+                                    break;
+                                case "hour24":
+                                    value = DateTime.Now.Hour.ToString();
+                                    break;
+                                case "hour":
+                                    value = DateTime.Now.ToString("h tt");
+                                    break;
+                                case "minute":
+                                    value = DateTime.Now.Minute.ToString("00");
+                                    break;
+                                case "second":
+                                    value = DateTime.Now.Second.ToString("00");
+                                    break;
+                                case "milisecond":
+                                    value = DateTime.Now.Millisecond.ToString("000");
+                                    break;
+                                case "nownormal":
+                                    value = DateTime.Now.ToString("yyyy/MM/dd h:mm tt");
+                                    break;
+                                case "now24":
+                                    value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                                    break;
+                                case "date":
+                                    value = DateTime.Now.ToString("yyyy/MM/dd");
+                                    break;
+                                case "datedash":
+                                    value = DateTime.Now.ToString("yyyy-MM-dd");
+                                    break;
+                                case "month":
+                                    value = DateTime.Now.ToString("MMMM");
+                                    break;
+                                case "monthnumber":
+                                    value = DateTime.Now.ToString("MM");
+                                    break;
+                                case "day":
+                                    value = DateTime.Now.Day.ToString();
+                                    break;
+                                default:
+                                    value = DateTime.Now.ToString();
+                                    break;
+                            }
+                        }
+                        break;
                     case "random":
                         switch (ind[2])
                         {
-                            case "int":
-                                bool more = value.Contains("system:random:int:");
+                            default:
+                                bool more = value.Contains("system:random:");
                                 if (more)
                                 {
-                                    float[] fl1 = find_value(ind, 3, 0, true, false);
+                                    float[] fl1 = find_value(ind, 2, 0, true, false);
                                     float[] fl2 = find_value(ind, (int)fl1[1], 0, true, false);
                                     int v1 = (int)fl1[0];
                                     int v2 = (int)fl2[0];
@@ -2878,7 +3035,7 @@ namespace EZCode
                             Var var = getVar(name);
                             if (var.isSet)
                             {
-                                value = var.isNumber().ToString();
+                                value = var.isNumber() ? "1" : "0";
                             }
                             else
                             {
@@ -2892,35 +3049,35 @@ namespace EZCode
                                 {
                                     number = false;
                                 }
-                                value = number.ToString();
+                                value = number ? "1" : "0";
                             }
                         }
                         break;
                     case "machine":
-                        switch (ind[2])
+                        switch (ind[2].ToLower())
                         {
-                            case "MachineName":
+                            case "machinename":
                                 value = Environment.MachineName.ToString();
                                 break;
-                            case "OSVersion":
+                            case "osversion":
                                 value = Environment.OSVersion.ToString();
                                 break;
-                            case "Is64BitOperatingSystem":
-                                value = Environment.Is64BitOperatingSystem.ToString();
+                            case "is64bitoperatingsystem":
+                                value = Environment.Is64BitOperatingSystem ? "1" : "0";
                                 break;
-                            case "UserName":
+                            case "username":
                                 value = Environment.UserName.ToString();
                                 break;
-                            case "WorkingSet":
+                            case "workingset":
                                 value = Environment.WorkingSet.ToString();
                                 break;
-                            case "HasShutdownStarted":
-                                value = Environment.HasShutdownStarted.ToString();
-                                break;
-                            case "CurrentDirectory":
-                                value = Environment.CurrentDirectory.ToString();
+                            case "hasshutdownstarted":
+                                value = Environment.HasShutdownStarted ? "1" : "0";
                                 break;
                         }
+                        break;
+                    case "currentdirectory":
+                        value = Environment.CurrentDirectory.ToString();
                         break;
                     case "litteral":
                         if (value.Contains("system:litteral:"))
@@ -2985,10 +3142,7 @@ namespace EZCode
                         break;
                     case "t":
                     case "text":
-                        if (control is not GShape)
-                            value = control.Text.ToString();
-                        else
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Shapes don't have a '{ind[1]}' property in {SegmentSeperator} " + codeLine);
+                        value = control.Text.ToString();
                         break;
                     case "forecolor":
                     case "fc":
@@ -2996,24 +3150,15 @@ namespace EZCode
                         break;
                     case "forecolor-r":
                     case "fcr":
-                        if (control is not GShape)
-                            value = control.ForeColor.R.ToString();
-                        else
-                            ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-r' property in {SegmentSeperator} " + codeLine);
+                        value = control.ForeColor.R.ToString();
                         break;
                     case "forecolor-g":
                     case "fcg":
-                        if (control is not GShape)
-                            value = control.ForeColor.G.ToString();
-                        else
-                            ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-g' property in {SegmentSeperator} " + codeLine);
+                        value = control.ForeColor.G.ToString();
                         break;
                     case "forecolor-b":
                     case "fcb":
-                        if (control is not GShape)
-                            value = control.ForeColor.B.ToString();
-                        else
-                            ErrorText(parts, ErrorTypes.custom, custom: "Shapes can don't have a 'text-b' property in {SegmentSeperator} " + codeLine);
+                        value = control.ForeColor.B.ToString();
                         break;
                     case "click":
                         if (control is GButton a)
@@ -3043,7 +3188,7 @@ namespace EZCode
                     case "auto":
                     case "autosize":
                         if (control is GLabel l)
-                            value = l.AutoSize.ToString();
+                            value = l.AutoSize ? "1" : "0";
                         else
                             ErrorText(parts, ErrorTypes.custom, custom: $"Only Labels have 'autosize' value in {SegmentSeperator} " + codeLine);
                         break;
@@ -3098,6 +3243,19 @@ namespace EZCode
                         else
                             ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
                         break;
+                    case "image":
+                        {
+                            value = control is GShape aa ? aa.BGImageFile :
+                                control is GTextBox ab ? ab.BGImageFile :
+                                control is GButton ac ? ac.BGImageFile :
+                                control is GLabel ad ? ad.BGImageFile : "";
+                        }
+                        break;
+                    case "imagelayout":
+                        {
+                            value = control.BackgroundImageLayout.ToString();
+                        }
+                        break;
                     default:
                         ErrorText(parts, ErrorTypes.custom, custom: $"'{ind[0]}' is not a valid value for '{control.Name}' in {SegmentSeperator} {codeLine}");
                         break;
@@ -3110,32 +3268,32 @@ namespace EZCode
                 {
                     case "autosize":
                         {
-                            value = window.AutoSize.ToString();
+                            value = window.AutoSize ? "1" : "0";
                         }
                         break;
                     case "minimizebox":
                         {
-                            value = window.MinimizeBox.ToString();
+                            value = window.MinimizeBox ? "1" : "0";
                         }
                         break;
                     case "maximizebox":
                         {
-                            value = window.MaximizeBox.ToString();
+                            value = window.MaximizeBox ? "1" : "0";
                         }
                         break;
                     case "showicon":
                         {
-                            value = window.ShowIcon.ToString();
+                            value = window.ShowIcon ? "1" : "0";
                         }
                         break;
                     case "showintaskbar":
                         {
-                            value = window.ShowInTaskbar.ToString();
+                            value = window.ShowInTaskbar ? "1" : "0";
                         }
                         break;
                     case "icon":
                         {
-                            value = window.Icon.ToString();
+                            value = window.IconImageFile;
                         }
                         break;
                     case "state":
@@ -3143,7 +3301,7 @@ namespace EZCode
                             value = window.WindowState.ToString();
                         }
                         break;
-                    case "position":
+                    case "startposition":
                         {
                             value = window.StartPosition.ToString();
                         }
@@ -3180,7 +3338,7 @@ namespace EZCode
                         break;
                     case "height":
                         {
-                            value = window.Width.ToString();
+                            value = window.Height.ToString();
                         }
                         break;
                     case "left":
@@ -3251,6 +3409,16 @@ namespace EZCode
                         break;
                     case "enabled":
                             value = window.Enabled ? "1" : "0";
+                        break;
+                    case "image":
+                        {
+                            value = window.BGImageFile;
+                        }
+                        break;
+                    case "imagelayout":
+                        {
+                            value = window.BackgroundImageLayout.ToString();
+                        }
                         break;
                     default:
                         ErrorText(parts, ErrorTypes.custom, custom: $"'{ind[0]}' is not a valid value for '{window.Name}' in {SegmentSeperator} {codeLine}");
@@ -3379,7 +3547,7 @@ namespace EZCode
                 {
                     control.Name = name;
                     control.BackColor = Color.Black;
-                    control = Change(control, parts, index + 1, false, false, false, false, true) as GShape;
+                    control = await Change(control, parts, index + 1, false, false, true) as GShape;
                     control.Name = name;
                     control.AccessibleName = type;
                 }
@@ -3406,7 +3574,7 @@ namespace EZCode
 
                 try
                 {
-                    control = Change(control, parts, index + 1) as GLabel;
+                    control = await Change(control, parts, index + 1) as GLabel;
                 }
                 catch
                 {
@@ -3429,7 +3597,7 @@ namespace EZCode
 
                 try
                 {
-                    control = Change(control, parts, index + 1) as GTextBox;
+                    control = await Change(control, parts, index + 1) as GTextBox;
                 }
                 catch
                 {
@@ -3455,7 +3623,7 @@ namespace EZCode
 
                 try
                 {
-                    control = Change(control, parts, index + 1) as GButton;
+                    control = await Change(control, parts, index + 1) as GButton;
                 }
                 catch
                 {
@@ -3471,7 +3639,7 @@ namespace EZCode
             }
             return null;
         }
-        Control Change(Control _control, string[] _parts, int index, bool text = true, bool white = true, bool nfifty = true, bool allzero = false, bool sides = false)
+        async Task<Control> Change(Control _control, string[] _parts, int index, bool text = true, bool allzero = false, bool sides = false)
         {
             string[] parts = string.Join(" ", _parts.Skip(index)).Split(",");
             Control control = _control;
@@ -3602,8 +3770,8 @@ namespace EZCode
             {
                 int x = control.Left,
                     y = control.Top,
-                    w = allzero ? 0 : nfifty ? 75 : control.Width,
-                    h = allzero ? 0 : nfifty ? 25 : control.Height;
+                    w = control.Width,
+                    h = control.Height;
                 foreach(string p in parts)
                 {
                     string[] values = p.Split(':');
@@ -3844,8 +4012,63 @@ namespace EZCode
                                 }
                             }
                             break;
+                        case "image":
+                            {
+                                string[] image = await getFile(after, 0);
+                                try
+                                {
+                                    if (image[0] == "none")
+                                    {
+                                        control.BackgroundImage = null;
+                                        image[0] = "";
+                                    }
+                                    else
+                                    {
+                                        Image i = Image.FromFile(image[0]);
+                                        control.BackgroundImage = i;
+                                    }
+                                    if (control is GShape aa) aa.BGImageFile = image[0];
+                                    else if (control is GLabel ab) ab.BGImageFile = image[0];
+                                    else if (control is GButton ac) ac.BGImageFile = image[0];
+                                    else if (control is GTextBox ad) ad.BGImageFile = image[0];
+                                }
+                                catch
+                                {
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"An error occured setting the image for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                                }
+                            }
+                            break;
+                        case "imagelayout":
+                            {
+                                string type = after[0];
+                                if (type == "tile")
+                                {
+                                    control.BackgroundImageLayout = ImageLayout.Tile;
+                                }
+                                else if (type == "center")
+                                {
+                                    control.BackgroundImageLayout = ImageLayout.Center;
+                                }
+                                else if (type == "zoom")
+                                {
+                                    control.BackgroundImageLayout = ImageLayout.Zoom;
+                                }
+                                else if (type == "none")
+                                {
+                                    control.BackgroundImageLayout = ImageLayout.None;
+                                }
+                                else if (type == "stretch")
+                                {
+                                    control.BackgroundImageLayout = ImageLayout.Stretch;
+                                }
+                                else
+                                {
+                                    throw new Exception();
+                                }
+                            }
+                            break;
                         default:
-                            ErrorText(_parts, ErrorTypes.custom, custom: $"Expected one of the following values 'x', 'y', 'w', 'h', 'bc', or 'fc' for '{control.Name}' in {SegmentSeperator} {codeLine}");
+                            ErrorText(_parts, ErrorTypes.custom, custom: $"'{before[0].Trim()}' is not a correct property for '{control.Name}' in {SegmentSeperator} {codeLine}. Visit https://ez-code.web.app for more information about property values.");
                             break;
                     }
                 }
@@ -3974,6 +4197,21 @@ namespace EZCode
             {
 
                 string s = !all ? parts[next] : string.Join(" ", parts.Skip(next).TakeWhile(part => part != "//"));
+                string[] sss = s.Split(" ");
+                List<string> temp_S = new List<string>();
+                bool temp_comp = false;
+                for (int i = 0; i < sss.Length && !temp_comp; i++)
+                {
+                    if (((sss.Length > i) && sss[i] == "#" && sss[i + 1].ToLower() == "suppress" && sss[i + 2].ToLower() == "error") || ((sss.Length - 1 > i) && sss[i].ToLower() == "#suppress" && sss[i + 1].ToLower() == "error"))
+                    {
+                        temp_comp = true;
+                    }
+                    else
+                    {
+                        temp_S.Add(sss[i]);
+                    }
+                }
+                s = string.Join(" ", temp_S);
                 val = s;
                 List<string> texts = s.Split(" ").ToList();
 
@@ -4004,8 +4242,10 @@ namespace EZCode
                             if (ended != 0)
                             {
                                 string equation = brackets.TrimStart('\\').TrimEnd('\\').Replace("\\", "");
-                                string result = SolveEquation(equation);
-                                texts[started] = result;
+                                string? result = SolveEquation(equation);
+                                if (result != null)
+                                    texts[started] = result;
+                                else ErrorText(parts, ErrorTypes.errorEquation);
 
                                 texts.RemoveRange(started + 1, count - 2);
                             }
@@ -4030,26 +4270,61 @@ namespace EZCode
                 string text = "";
                 for (int i = 0; i < texts.Count; i++)
                 {
+                    string txt = texts[i];
                     bool switched = false;
-                    string sw_t = texts[i];
+                    string sw_t = txt;
                     if (useRaw)
                     {
-                        texts[i] = texts[i].Contains(@"\n") && !texts[i].Contains(@"\\n") ? texts[i].Replace(@"\n", Environment.NewLine) : texts[i].Contains(@"\\n") ? texts[i].Replace(@"\\n", @"\n") : texts[i];
-                        texts[i] = texts[i].Contains(@"\!") && !texts[i].Contains(@"\\!") ? texts[i].Replace(@"\!", string.Empty) : texts[i].Contains(@"\\!") ? texts[i].Replace(@"\\!", @"\!") : texts[i];
-                        texts[i] = texts[i].Contains(@"\_") && !texts[i].Contains(@"\\_") ? texts[i].Replace(@"\_", " ") : texts[i].Contains(@"\\_") ? texts[i].Replace(@"\\_", @"\_") : texts[i];
-                        texts[i] = texts[i].Contains(@"\;") && !texts[i].Contains(@"\\;") ? texts[i].Replace(@"\;", "|") : texts[i].Contains(@"\\;") ? texts[i].Replace(@"\\;", @"\;") : texts[i];
-                        texts[i] = texts[i].Contains(@"\=") && !texts[i].Contains(@"\\=") ? texts[i].Replace(@"\=", "=") : texts[i].Contains(@"\\=") ? texts[i].Replace(@"\\=", @"\=") : texts[i];
-                        texts[i] = texts[i].Contains(@"\c") && !texts[i].Contains(@"\\c") ? texts[i].Replace(@"\c", ",") : texts[i].Contains(@"\\c") ? texts[i].Replace(@"\\c", @"\c") : texts[i];
-                        texts[i] = texts[i].Contains(@"\e") && !texts[i].Contains(@"\\e") ? texts[i].Replace(@"\e", "!") : texts[i].Contains(@"\\e") ? texts[i].Replace(@"\\e", @"\e") : texts[i];
-                        texts[i] = texts[i].Contains(@"\$") && !texts[i].Contains(@"\\$") ? texts[i].Replace(@"\$", ":") : texts[i].Contains(@"\\$") ? texts[i].Replace(@"\\$", @"\$") : texts[i];
-                        texts[i] = texts[i].Contains(@"\&") && !texts[i].Contains(@"\\&") ? texts[i].Replace(@"\&", ";") : texts[i].Contains(@"\\&") ? texts[i].Replace(@"\\&", @"\&") : texts[i];
-                        texts[i] = texts[i].Replace(@"\\(", @"\(");
-                        texts[i] = texts[i].Replace(@")\\", @")\");
-                        switched = sw_t == texts[i] ? switched : true;
+                        txt =
+                            txt.Contains(@"\n") && !txt.Contains(@"\\n") ? txt.Replace(@"\n", Environment.NewLine) : txt.Contains(@"\\n") ? txt.Replace(@"\\n", @"\n") :
+                            txt.Contains(@"\!") && !txt.Contains(@"\\!") ? txt.Replace(@"\!", string.Empty) : txt.Contains(@"\\!") ? txt.Replace(@"\\!", @"\!") :
+                            txt.Contains(@"\_") && !txt.Contains(@"\\_") ? txt.Replace(@"\_", " ") : txt.Contains(@"\\_") ? txt.Replace(@"\\_", @"\_") :
+                            txt.Contains(@"\;") && !txt.Contains(@"\\;") ? txt.Replace(@"\;", ":") : txt.Contains(@"\\;") ? txt.Replace(@"\\;", @"\;") :
+                            txt.Contains(@"\=") && !txt.Contains(@"\\=") ? txt.Replace(@"\=", "=") : txt.Contains(@"\\=") ? txt.Replace(@"\\=", @"\=") :
+                            txt.Contains(@"\c") && !txt.Contains(@"\\c") ? txt.Replace(@"\c", ",") : txt.Contains(@"\\c") ? txt.Replace(@"\\c", @"\c") :
+                            txt.Contains(@"\e") && !txt.Contains(@"\\e") ? txt.Replace(@"\e", "!") : txt.Contains(@"\\e") ? txt.Replace(@"\\e", @"\e") :
+                            txt.Contains(@"\$") && !txt.Contains(@"\\$") ? txt.Replace(@"\$", "|") : txt.Contains(@"\\$") ? txt.Replace(@"\\$", @"\$") :
+                            txt.Contains(@"\&") && !txt.Contains(@"\\&") ? txt.Replace(@"\&", ";") : txt.Contains(@"\\&") ? txt.Replace(@"\\&", @"\&") : 
+                            txt;
+                        txt = txt.Replace(@"\\(", @"\(");
+                        txt = txt.Replace(@")\\", @")\");
+
+                        if (txt.Contains(@"\-"))
+                        {
+                            List<char> split = new List<char>();
+                            bool _a = false;
+                            for (int j = 0; j < txt.Length; j++)
+                            {
+                                if (_a)
+                                {
+                                    _a = false;
+                                    continue;
+                                }
+                                else if ((txt[j] != '\\' && txt.Length - 1 > j && txt[j + 1] != '-') || txt.Length - 1 <= j)
+                                {
+                                    split.Add(txt[j]);
+                                }
+                                else
+                                {
+                                    _a = true;
+                                    try
+                                    {
+                                        split.RemoveAt(j - 1);
+                                    }
+                                    catch
+                                    {
+                                        texts[i - 1] = string.Join("", texts[i - 1].Take(texts[i - 1].Length - 1));
+                                    }
+                                }
+                            }
+                            txt = string.Join("", split);
+                        }
+
+                        switched = sw_t == txt ? switched : true;
                     }
-                    if (useVar && ((texts[i].StartsWith("'") && texts[i].EndsWith("'")) || Regex.Matches(texts[i], "'").Count > 1))
+                    if (useVar && ((txt.StartsWith("'") && txt.EndsWith("'")) || Regex.Matches(txt, "'").Count > 1))
                     {
-                        string[] varray = texts[i].Split("'");
+                        string[] varray = txt.Split("'");
                         for (int j = 0; j < varray.Length; j++)
                         {
                             if (j % 2 == 1)
@@ -4060,15 +4335,15 @@ namespace EZCode
                                 }
                             }
                         }
-                        texts[i] = string.Join("", varray);
+                        txt = string.Join("", varray);
                     }
                     if (useRaw)
                     {
-                        texts[i] = texts[i].Contains(@"\""") && !texts[i].Contains(@"\\""") ? texts[i].Replace(@"\""", "'") : texts[i].Contains(@"\\""") ? texts[i].Replace(@"\\""", @"\""") : texts[i];
-                        switched = sw_t == texts[i] ? switched : true;
-                        texts[i] = !switched && texts[i].Contains(@"\") && !texts[i].Contains(@"\\") ? texts[i].Replace(@"\", string.Empty) : !switched && texts[i].Contains(@"\\") ? texts[i].Replace(@"\\", @"\") : texts[i];
+                        txt = txt.Contains(@"\""") && !txt.Contains(@"\\""") ? txt.Replace(@"\""", "'") : txt.Contains(@"\\""") ? txt.Replace(@"\\""", @"\""") : txt;
+                        switched = sw_t == txt ? switched : true;
+                        txt = !switched && txt.Contains(@"\") && !txt.Contains(@"\\") ? txt.Replace(@"\", string.Empty) : !switched && txt.Contains(@"\\") ? txt.Replace(@"\\", @"\") : txt;
                     }
-                    text += texts[i];
+                    text += txt;
                     if (i < texts.Count - 1) text += " ";
                 }
                 val = text;
@@ -4104,8 +4379,10 @@ namespace EZCode
             if (ended != 0)
             {
                 string equation = brackets.ToString().TrimStart('\\').TrimEnd('\\').Replace("\\", "");
-                string result = SolveEquation(equation);
-                value = result;
+                string? result = SolveEquation(equation);
+                if (result != null)
+                    value = result;
+                else ErrorText(parts, ErrorTypes.errorEquation);
             }
             else if (ended == 1)
             {
@@ -4146,7 +4423,7 @@ namespace EZCode
             }
             return new float[] { v, next };
         }
-        string SolveEquation(string equation)
+        string? SolveEquation(string equation)
         {
             try
             {
@@ -4165,7 +4442,7 @@ namespace EZCode
             }
             catch
             {
-                return "Error: Unable to solve the equation.";
+                return null;
             }
         }
         #endregion
@@ -4321,7 +4598,7 @@ namespace EZCode
                 case eventType.scale: file = s != null ? s.scale : l != null ? l.scale : b != null ? b.scale : t != null ? t.scale : "null"; break;
                 case eventType.backcolor: file = s != null ? s.backcolor : l != null ? l.backcolor : b != null ? b.backcolor : t != null ? t.backcolor : w != null ? w.backcolor : "null"; break;
                 case eventType.forecolor: file = s != null ? s.forecolor : l != null ? l.forecolor : b != null ? b.forecolor : t != null ? t.forecolor : w != null ? w.forecolor : "null"; break;
-                case eventType.font: file = s != null ? s.font : l != null ? l.font : b != null ? b.font : t != null ? t.font : w != null ? w.forecolor : "null"; break;
+                case eventType.font: file = s != null ? s.font : l != null ? l.font : b != null ? b.font : t != null ? t.font : w != null ? w.font : "null"; break;
                 case eventType.image: file = s != null ? s.image : l != null ? l.image : b != null ? b.image : t != null ? t.image : w != null ? w.image : "null"; break;
                 case eventType.imagelayout: file = s != null ? s.imagelayout : l != null ? l.imagelayout : b != null ? b.imagelayout : t != null ? t.imagelayout : w != null ? w.imagelayout : "null"; break;
                 case eventType.scroll: file = w.scroll; break;
@@ -4334,6 +4611,7 @@ namespace EZCode
                 case eventType.enabledchanged: file = w.enabledchanged; break;
                 case eventType.keydown: file = w.keydown; break;
                 case eventType.keyup: file = w.keyup; break;
+                case eventType.keypress: file = w.keypress; break;
                 case eventType.resized: file = w.resized; break;
                 case eventType.resizestart: file = w.resizedstart; break;
                 case eventType.resizeend: file = w.resizedend; break;
@@ -4349,6 +4627,7 @@ namespace EZCode
         /// </summary>
         public void Stop()
         {
+            AddText("Build Ended");
             _pplaying = false;
             returnOutput = "";
             devDisplay = true;
@@ -4360,6 +4639,7 @@ namespace EZCode
             {
                 Window.Close();
             }
+            StopAllSounds();
         }
         /// <summary>
         /// Sets the Console Input to the inputted text
@@ -4450,7 +4730,6 @@ namespace EZCode
         /// <param name="newLine">Automatic Newline </param>
         public void AddText(string text, bool error = false, RichTextBox? control = null, bool? newLine = true)
         {
-            text = string.Join(" ", text.Split(" ").TakeWhile(x => x != "#suppress").TakeWhile(y=>y != "#create"));
             text = newLine == true ? text + Environment.NewLine : text;
             ConsoleText += text;
             RichConsole = control != null ? control : RichConsole;
@@ -4481,6 +4760,7 @@ namespace EZCode
             missingSound,
             missingGroup,
             missingWindow,
+            errorEquation,
             unkown,
             custom
         }
@@ -4504,6 +4784,7 @@ namespace EZCode
                 error == ErrorTypes.missingGroup ? $"Could not find a Group named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.missingWindow ? $"Could not find a Window named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.alreadyMember ? $"Naming violation in {SegmentSeperator} {codeLine}. There is already a '{keyword}' named '{name}'" :
+                error == ErrorTypes.errorEquation ? $"Unable to solve the equation in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.custom ? custom : "An Error Occured, We don't know why. If it helps, it was on line " + codeLine;
 
             if ((parts.Contains("#suppress") && parts.Contains("error")) || (parts.Contains("#") && parts.Contains("suppress") && parts.Contains("error"))) return "";

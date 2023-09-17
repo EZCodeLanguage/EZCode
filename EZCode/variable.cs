@@ -209,7 +209,15 @@ namespace EZCode.Variables
             }
             else
             {
-                return false;
+                try
+                {
+                    float.Parse(text);
+                    return true;
+                }
+                catch
+                {
+                    return false;
+                }
             }
         }
         public bool isArray()

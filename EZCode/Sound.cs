@@ -9,22 +9,21 @@ namespace Sound
         private WaveOutEvent waveOut;
         private AudioFileReader audioFileReader;
 
-        public float Volume
+        private static WaveOutEvent staticwaveout = new WaveOutEvent();
+        private static float? _volume = null;
+        public static float Volume
         {
-            get => waveOut?.Volume ?? 0.5f;
+            get => _volume ?? 0.5f;
             set
             {
-                if (waveOut != null)
-                {
-                    waveOut.Volume = value;
-                }
+                _volume = value;
+                staticwaveout.Volume = value;
             }
         }
 
-        public Player(string name = "", string filepath = "", float volume = 0.5f)
+        public Player(string name = "", string filepath = "")
         {
             this.Name = name;
-            this.Volume = volume;
             this.filePath = filepath;
             if(filePath != "")
             {
@@ -46,7 +45,7 @@ namespace Sound
         {
             if (waveOut != null)
             {
-                audioFileReader.Position = 0; // Reset position to the beginning
+                audioFileReader.Position = 0;
                 waveOut.Play();
                 waveOut.PlaybackStopped += LoopPlaybackStopped;
             }
@@ -57,14 +56,13 @@ namespace Sound
             if (waveOut != null)
             {
                 waveOut.Stop();
-                audioFileReader.Position = 0; // Reset position to the beginning
+                audioFileReader.Position = 0; 
                 waveOut.PlaybackStopped -= LoopPlaybackStopped;
             }
         }
 
         private void LoopPlaybackStopped(object sender, StoppedEventArgs e)
         {
-            // When playback stops, reset the position and play again (looping)
             if (waveOut != null)
             {
                 audioFileReader.Position = 0;

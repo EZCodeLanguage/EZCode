@@ -1,4 +1,5 @@
 ﻿using EZCode.GControls;
+using System.Drawing;
 using System.Windows.Forms;
 
 namespace EZCode.Groups;
@@ -244,6 +245,20 @@ class Group
             }
         }
     }
+    public Color BackColor
+    {
+        get
+        {
+            return Color.FromArgb(_bgR, _bgG, _bgB);
+        }
+    }
+    public Color ForeColor
+    {
+        get
+        {
+            return Color.FromArgb(_fcR, _fcG, _fcB);
+        }
+    }
     public bool Absolute { get; set; }
     public bool isSet { get; set; }
     public Group(string name)
@@ -263,11 +278,54 @@ class Group
             if (control is GTextBox t) Textboxes.Add(t);
         }
     }
+    public void SetRelativeChenges(Control control)
+    {
+         X = control.Left;
+         Y = control.Top;
+         Width = control.Width;
+         Height = control.Height;
+         bgR = control.BackColor.R;
+         bgG = control.BackColor.G;
+         bgB = control.BackColor.B;
+         fcR = control.ForeColor.R;
+         fcG = control.ForeColor.G;
+         fcB = control.ForeColor.B;
+         Text = control.Text;
+    }
+    public void SetAbsoluteChenges(Control oldc, Control newc)
+    {
+         if (oldc.Left != newc.Left) X = newc.Left;
+         if (oldc.Top != newc.Top) Y = newc.Top;
+         if (oldc.Width != newc.Width) Width = newc.Width;
+         if (oldc.Height != newc.Height) Height = newc.Height;
+         if (oldc.BackColor.R != newc.BackColor.R) bgR = newc.BackColor.R;
+         if (oldc.BackColor.G != newc.BackColor.G) bgG = newc.BackColor.G;
+         if (oldc.BackColor.B != newc.BackColor.B) bgB = newc.BackColor.B;
+         if (oldc.ForeColor.R != newc.ForeColor.R) fcR = newc.ForeColor.R;
+         if (oldc.ForeColor.G != newc.ForeColor.G) fcG = newc.ForeColor.G;
+         if (oldc.ForeColor.B != newc.ForeColor.B) fcB = newc.ForeColor.B;
+         if (oldc.Text != newc.Text) Text = newc.Text;
+    }
     public void clear()
     {
         Buttons.Clear();
         Textboxes.Clear();
         Shapes.Clear();
         Labels.Clear();
+    }
+
+    public static explicit operator Control(Group v)
+    {
+        Control control = new Control();
+
+        control.Text = v.Text;
+        control.Top = v.Y;
+        control.Left = v.X;
+        control.Width = v.Width;
+        control.Height = v.Height;
+        control.BackColor = Color.FromArgb(v.bgR, v.bgG, v.bgB);
+        control.ForeColor = Color.FromArgb(v.fcR, v.fcG, v.fcB);
+
+        return control;
     }
 }

@@ -99,6 +99,11 @@ namespace EzCode_API
                 {
                     Quit.PerformClick();
                 }
+                else if (keyData == (Keys.Control | Keys.S))
+                {
+                    File.WriteAllText("cache", InputText.Text);
+                    File.WriteAllText("dircache", directory.Text);
+                }
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }

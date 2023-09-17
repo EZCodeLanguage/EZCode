@@ -16,6 +16,7 @@ namespace EZCode.GControls
         string font { get; set; }
         string image { get; set; }
         string imagelayout { get; set; }
+        string BGImageFile { get; set; }
     }
     public partial class GControl : Control, IGControl
     {
@@ -29,6 +30,7 @@ namespace EZCode.GControls
         public string image { get; set; }
         public string imagelayout { get; set; }
         public string text { get; set; }
+        public string BGImageFile { get; set; }
     }
     public partial class GShape : PictureBox, IGControl
     {
@@ -53,6 +55,7 @@ namespace EZCode.GControls
         public string image { get; set; }
         public string imagelayout { get; set; }
         public string text { get; set; }
+        public string BGImageFile { get; set; }
         public Type type;
 
         public GShape(Type type = Type.Square, int? poly = null, PointF[] points = null)
@@ -141,6 +144,7 @@ namespace EZCode.GControls
         public string image { get; set; }
         public string imagelayout { get; set; }
         public string text { get; set; }
+        public string BGImageFile { get; set; }
         public GButton()
         {
             this.Left = 0;
@@ -148,7 +152,6 @@ namespace EZCode.GControls
             this.Width = 75;
             this.Height = 25;
             this.BackColor = Color.White;
-            this.ForeColor = Color.Black;
         }
     }
     public partial class GTextBox : TextBox, IGControl
@@ -163,6 +166,7 @@ namespace EZCode.GControls
         public string image { get; set; }
         public string imagelayout { get; set; }
         public string text { get; set; }
+        public string BGImageFile { get; set; }
         public GTextBox()
         {
             this.Left = 0;
@@ -170,7 +174,6 @@ namespace EZCode.GControls
             this.Width = 75;
             this.Height = 25;
             this.BackColor = Color.White;
-            this.ForeColor = Color.Black;
         }
     }
     public partial class GLabel : Label, IGControl
@@ -185,6 +188,7 @@ namespace EZCode.GControls
         public string image { get; set; }
         public string imagelayout { get; set; }
         public string text { get; set; }
+        public string BGImageFile { get; set; }
         public GLabel()
         {
             this.Left = 0;
@@ -193,7 +197,6 @@ namespace EZCode.GControls
             this.Height = 25;
             this.AutoSize = true;
             this.BackColor = Color.Transparent;
-            this.ForeColor = Color.Black;
         }
     }
 }
