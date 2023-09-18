@@ -1,12 +1,15 @@
 ﻿using EZCode.GControls;
+using EZCode.Methods;
 using EZCode.Variables;
 using EZCode.Windows;
 using NCalc;
 using System.Data;
+using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using static System.Windows.Forms.LinkLabel;
 using Group = EZCode.Groups.Group;
 using Player = Sound.Player;
 using Types = EZCode.Variables.Ivar.Types;
@@ -96,10 +99,6 @@ namespace EZCode
         /// List for variables
         /// </summary>
         private List<Var> vars = new List<Var>();
-        /// <summary>
-        /// List of Objects
-        /// </summary>
-        private List<object> objects = new List<object>();
         /// <summary>
         /// List of Groups
         /// </summary>
@@ -201,7 +200,7 @@ namespace EZCode
                     Window.Close();
                 }
                 if (_pplaying && showStartAndEnd)
-                    AddText("Build Start");
+                    AddText("Build Started");
                 else if(!_pplaying && showStartAndEnd)
                     AddText("Build Ended");
             }
@@ -210,9 +209,9 @@ namespace EZCode
         /// <summary>
         /// string array for naming violations
         /// </summary>
-        public string[] UnusableNames = new string[] { "await", "button", "print", "group", "clear", "write", "stop", "DEVPORTAL",
-            "event", "textbox", "multiLine", "shape", "image", "label", "font", "move", "scale", "color", "intersects", "var", "if",
-            "input", "list", "file", "sound", "if", "//", "#create", "#suppress", "#", "system:", "?", "=", "!", ">", "<", "+", "loop",
+        public string[] UnusableNames = new string[] { "await", "button", "print", "group", "clear", "write", "stop", "DEVPORTAL", "methodend",
+            "event", "textbox", "multiLine", "shape", "image", "label", "font", "move", "scale", "color", "intersects", "var", "if", "method",
+            "input", "list", "file", "sound", "if", "//", "#create", "#suppress", "#", "system:", "?", "=", "!", ">", "<", "+", "loop", "globalvar",
             "-", "|", "\\", ",", "@", "#", "$", "%", "^", "&", "*", "(", ")", "/", "~", "`", ".", ":", ";", "window", "system", "messagebox" };
         /// <summary>
         /// char array for unusable names that can't even be used once in the name
@@ -233,8 +232,15 @@ namespace EZCode
         /// Refreshes screen when a control is changed/created
         /// </summary>
         public bool RefreshOnControl = false;
-
+        /// <summary>
+        /// Decides if the program is in a panel or something, or if it is used to open a new window.
+        /// </summary>
         public bool InPanel { get; set; }
+
+        /// <summary>
+        /// The list of methods in the program
+        /// </summary>
+        private List<Method> methods = new List<Method>();
 
         /// <summary>
         /// Initializes the EZCode Player with the provided parameters.
@@ -270,7 +276,6 @@ namespace EZCode
         public async Task<string> Play(string code)
         {
             if (playing) return "";
-            playing = true;
             AllControls.Clear();
             Space.Controls.Clear();
             vars.Clear();
@@ -280,12 +285,102 @@ namespace EZCode
             textboxes.Clear();
             buttons.Clear();
             windows.Clear();
-            objects.Clear();
+            methods.Clear();
             if (ClearConsole) RichConsole.Clear();
-            if (showStartAndEnd) AddText("Build Started");
             Code = code;
             string output = string.Empty;
-            List<string> lines = code.Split(seperatorChars).ToList();
+            List<string> lines = code.Split(seperatorChars).Where(x => !x.Equals("\r")).ToList();
+
+            int? methodend = null, methodstart = null;
+            try
+            {
+                Method method = new Method();
+                for (int i = 0, k = 0; i < lines.Count; i++)
+                {
+                    string line = lines[i].Trim();
+                    string[] parts = line.Split(" ");
+                    if (parts[0] == "method")
+                    {
+                        if (method.IsSet == true)
+                        {
+                            string msg = $"A method is missing an end in {SegmentSeperator} {k + 1}";
+                            AddText(msg, true);
+                            return msg;
+                        }
+                        methodstart = i + 1;
+                        k = i;
+                        method.Line = k;
+                        try
+                        {
+                            method.Name = parts[1];
+                        }
+                        catch
+                        {
+                            string msg = $"Could not find the method name in {SegmentSeperator} {i + 1}";
+                            AddText(msg, true);
+                            return msg;
+                        }
+                        try
+                        {
+                            if (parts[2] == ":")
+                            {
+                                try
+                                {
+                                    string[] allvalues = string.Join(" ", parts.Skip(3)).Split(",");
+                                    List<Var> paremeters = new List<Var>();
+                                    for (int j = 0; j < allvalues.Length; j++)
+                                    {
+                                        string[] val = allvalues[j].Split(":").Select(x=>x.Trim()).ToArray();
+                                        paremeters.Add(new Var(val[0], val[1], method:method.Name));
+                                    }
+                                    method.Paremters = paremeters.ToArray();
+                                }
+                                catch
+                                {
+                                    string msg = $"Error setting the parameters for '{method.Name}' in {SegmentSeperator} {i + 1}";
+                                    AddText(msg, true);
+                                    return msg;
+                                }
+                            }
+                            else
+                            {
+                                string msg = $"Expected ':' to set parameters for '{method.Name}' in {SegmentSeperator} {i + 1}";
+                                AddText(msg, true);
+                                return msg;
+                            }
+                        }
+                        catch
+                        {
+
+                        }
+                    }
+                    else if (parts[0] == "methodend")
+                    {
+                        if (!method.IsSet)
+                        {
+                            string msg = $"Expected a method for a 'methodend' in {SegmentSeperator} {i + 1}";
+                            AddText(msg, true);
+                            return msg;
+                        }
+                        currentmethod ??= method;
+                        methodend ??= i - 1;
+                        method.Length = i - k + 1;
+                        method.Contents = lines.Skip(method.Line).Take(method.Length).ToArray();
+                        methods.Add(method);
+                        //if (method.Paremters != null) vars.AddRange(method.Paremters);
+                        method = new Method();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string msg = $"An error occured while finding and setting methods. C# ERROR MESSAGE:'{ex.Message}'";
+                ErrorText(new string[0], ErrorTypes.custom, custom: msg);
+                return msg;
+            }
+            lines = lines.Skip(methodstart == null ? 0 : 1).Take(methodend == null ? lines.Count : (int)methodend).ToList();
+            playing = true;
+            
             for (int i = 0; i < lines.Count; i++)
             {
                 if (!playing) return output;
@@ -320,6 +415,7 @@ namespace EZCode
         #endregion
 
         #region EZCode_Script_Player
+        Method? currentmethod = null;
         string returnOutput = "";
         bool devDisplay = true, lastif = true;
         int devportal = 0, ifmany = 0, loopmany = 0;
@@ -752,6 +848,17 @@ namespace EZCode
                             ErrorText(parts, ErrorTypes.normal, keyword);
                         } // VAR
                         break;
+                    case "globalvar":
+                        try
+                        {
+                            Var var = await CreateVar(parts, allowJump: true, global:true);
+                            vars.Add(var);
+                        }
+                        catch
+                        {
+                            ErrorText(parts, ErrorTypes.normal, keyword);
+                        } // VAR
+                        break;
                     case "intersects":
                         try
                         {
@@ -864,16 +971,33 @@ namespace EZCode
                                     if (!File.Exists(file_p[0])) ErrorText(parts, ErrorTypes.custom, custom: $"File not found in {SegmentSeperator} {codeLine}");
                                     string code = File.ReadAllText(file_p[0]);
                                     endindex = int.Parse(file_p[1]);
-                                    string[] lines = code.Split(seperatorChars);
+                                    List<string> lines = code.Split(seperatorChars).ToList();
                                     string tempscript = ScriptDirectory;
                                     int templine = codeLine;
                                     ScriptDirectory = file_p[0];
-                                    for (int i = 0; i < lines.Length; i++)
+                                    for (int i = 0; i < lines.Count; i++)
                                     {
                                         if (!playing) continue;
                                         codeLine = i + 1;
-                                        string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }), "", lines, 0);
-                                        if (bool.Parse(task[1]) == false) i = lines.Length - 1;
+                                        List<string> a_parts = lines[i].Split(new char[] { ' ' }).ToList();
+                                        for (int j = 0; j < a_parts.Count; j++)
+                                        {
+                                            if (a_parts[j].Trim() == "->")
+                                            {
+                                                try
+                                                {
+                                                    a_parts.RemoveAt(j);
+                                                    a_parts.AddRange(lines[i + 1].Split(' '));
+                                                    lines.RemoveAt(i + 1);
+                                                }
+                                                catch
+                                                {
+
+                                                }
+                                            }
+                                        }
+                                        string[] task = await PlaySwitch(a_parts.ToArray(), "", lines.ToArray(), 0);
+                                        if (bool.Parse(task[1]) == false) i = lines.Count - 1;
                                         output += output == "" ? task[0] : "\n" + task[0];
                                     }
                                     ScriptDirectory = tempscript;
@@ -933,11 +1057,11 @@ namespace EZCode
                                 case "all":
                                     playing = false;
                                     break;
-                                case "file":
+                                case "return":
                                     stillInFile = false;
                                     break;
                                 default:
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'all' or 'file' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'all' or 'return' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                         }
@@ -1452,6 +1576,137 @@ namespace EZCode
                                 Window Window = getWindow(keyword);
                                 Window = await DoWindow(parts, 0, keyword);
                             }
+                            else if (methods.Select(x => x.Name).Contains(keyword))
+                            {
+                                Method? method = getMethod(keyword);
+                                if (method != null)
+                                {
+                                    //Set up Vars
+                                    List<Var> paremeters = new List<Var>();
+                                    try
+                                    {
+                                        if (parts[1] == ":")
+                                        {
+                                            try
+                                            {
+                                                string[] allvalues = string.Join(" ", parts.Skip(2)).Split(",");
+                                                for (int i = 0; i < allvalues.Length; i++)
+                                                {
+                                                    string name = allvalues[i].Trim();
+                                                    Var v = new Var("") { isSet = false };
+                                                    try
+                                                    {
+                                                        v.set(float.Parse(name).ToString());
+                                                    }
+                                                    catch
+                                                    {
+                                                        v = getVar(name);
+                                                    }
+                                                    if (!v.isSet) 
+                                                    {
+                                                        v.set(name);
+                                                    }
+                                                    paremeters.Add(v);
+                                                    method.Paremters[i].set(v.Value);
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                string msg = $"Error setting the parameters for '{method.Name}' in {SegmentSeperator} {codeLine}";
+                                                ErrorText(parts, ErrorTypes.custom, custom:msg);
+                                            }
+                                        }
+                                        else if (parts[1] == "=>")
+                                        {
+                                            try
+                                            {
+                                                string[] allvalues = string.Join(" ", parts.Skip(2)).Split(",");
+                                                for (int i = 0; i < allvalues.Length; i++)
+                                                {
+                                                    string name = allvalues[i].Trim();
+                                                    Var v = await CreateVar(allvalues, i, false, "");
+                                                    paremeters.Add(v);
+                                                    vars.Add(v);
+                                                }
+                                            }
+                                            catch
+                                            {
+                                                string msg = $"Error setting the parameters for '{method.Name}' in {SegmentSeperator} {codeLine}";
+                                                ErrorText(parts, ErrorTypes.custom, custom:msg);
+                                            }
+                                        }
+                                        else
+                                        {
+                                            string msg = $"Expected ':' or '=>' to set parameters for '{method.Name}' in {SegmentSeperator} {codeLine}";
+                                            ErrorText(parts, ErrorTypes.custom, custom:msg);
+                                        }
+                                    }
+                                    catch
+                                    {
+
+                                    }
+
+                                    Var[] _vars = vars.ToArray();
+                                    for (int i = 0; i < vars.Count; i++)
+                                    {
+                                        if (vars[i].Method != "")
+                                        {
+                                            vars.Remove(vars[i]);
+                                            i--;
+                                        }
+                                    }
+
+                                    if (method.Paremters != null) 
+                                        vars.AddRange(method.Paremters);
+
+                                    //Run Method
+
+                                    List<string> lines = method.Contents.ToList();
+                                    string output = "";
+                                    for (int i = 1; i < method.Length - 1; i++)
+                                    {
+                                        if (!playing) continue;
+                                        codeLine = i + 1;
+                                        List<string> a_parts = lines[i].Split(new char[] { ' ' }).ToList();
+                                        for (int j = 0; j < a_parts.Count; j++)
+                                        {
+                                            if (a_parts[j].Trim() == "->")
+                                            {
+                                                try
+                                                {
+                                                    a_parts.RemoveAt(j);
+                                                    a_parts.AddRange(lines[i + 1].Split(' '));
+                                                    lines.RemoveAt(i + 1);
+                                                }
+                                                catch
+                                                {
+
+                                                }
+                                            }
+                                        }
+                                        string[] task = await PlaySwitch(a_parts.ToArray(), "", lines.ToArray(), i);
+                                        if (bool.Parse(task[1]) == false) i = lines.Count - 1;
+                                        output += task[0];
+                                        ConsoleText = output;
+                                    }
+
+                                    //Set and Delete Vars
+
+                                    if (method.Paremters != null)
+                                    {
+                                        for (int i = 0; i < method.Paremters.Length; i++)
+                                        {
+                                            paremeters[i].set(method.Paremters[i].Value);
+                                            vars.Remove(method.Paremters[i]);
+                                        } 
+                                    }
+                                    vars = _vars.ToList();
+                                }
+                                else
+                                {
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a Method named '{method}' in {SegmentSeperator} {codeLine}");
+                                }
+                            }
                             else if (!keyword.StartsWith("//") && !keyword.StartsWith("{") && !keyword.StartsWith("}") && keyword != "")
                             {
                                 ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a keyword or variable named '{keyword}' in {SegmentSeperator} {codeLine}");
@@ -1472,6 +1727,10 @@ namespace EZCode
                 return new string[] { returnOutput, "true" };
             }
         }
+        Method? getMethod(string name)
+        {
+            return methods.FirstOrDefault(x => x.Name == name, null);
+        }
         static bool IsNumericString(string input)
         {
             // Use a regular expression to match a string containing only numeric characters
@@ -1481,6 +1740,10 @@ namespace EZCode
         {
             Window? Window = null;
             string name = parts[index];
+            if(methods.Select(x => x.Name).Contains(name))
+            {
+                ErrorText(parts, ErrorTypes.methodnamingvoilation, "Window", name);
+            }
             string type = parts[index + 1];
             switch (type)
             {
@@ -1961,14 +2224,7 @@ namespace EZCode
         }
         Window? getWindow(string name)
         {
-            for (int i = 0; i < windows.Count; i++)
-            {
-                if (windows[i].Name == name)
-                {
-                    return windows[i];
-                }
-            }
-            return null;
+            return windows.FirstOrDefault(x => x.Name == name, null);
         }
         string[] ExtractContent(string[] _input, string[] parts)
         {
@@ -2026,6 +2282,11 @@ namespace EZCode
             Var var = new Var("");
             var.isSet = false;
             string name = parts[_index];
+            if (methods.Select(x => x.Name).Contains(name))
+            {
+                ErrorText(parts, ErrorTypes.methodnamingvoilation, "List", name);
+                return var;
+            }
             string type = parts[_index + 1];
             List<string> varray = new List<string>();
             switch (type)
@@ -2188,6 +2449,11 @@ namespace EZCode
             Group group = new Group("");
             group.isSet = false;
             string name = parts[_index];
+            if (methods.Select(x => x.Name).Contains(name))
+            {
+                ErrorText(parts, ErrorTypes.methodnamingvoilation, "Group", name);
+                return group;
+            }
             string type = parts[_index + 1];
             List<Control> varray = new List<Control>();
             switch (type)
@@ -2505,17 +2771,8 @@ namespace EZCode
         }
         Group getGroup(string name)
         {
-            Group group = new Group(name);
-            group.isSet = false;
-            for (int i = 0; i < groups.Count; i++)
-            {
-                if (groups[i].Name == name)
-                {
-                    group = groups[i];
-                    group.isSet = true;
-                }
-            }
-            return group;
+            Group group = new Group(name) { isSet = false };
+            return groups.FirstOrDefault(x => x.Name == name, group);
         } 
         void StopAllSounds()
         {
@@ -2568,16 +2825,8 @@ namespace EZCode
         }
         Var getVar(string name)
         {
-            Var var = new Var("");
-            var.isSet = false;
-            for (int i = 0; i < vars.Count; i++)
-            {
-                if (vars[i].Name == name)
-                {
-                    var = vars[i];
-                }
-            }
-            return var;
+            Var var = new Var("") { isSet = false };
+            return vars.FirstOrDefault(x => x.Name == name, var);
         }
         int[] QMarkCheck(string[] parts, int index)
         {
@@ -2853,7 +3102,7 @@ namespace EZCode
             vars[index] = var;
             return var;
         }
-        async Task<Var> CreateVar(string[] parts, int index = 1, bool reuse = true, string? alreadyVal = null, bool allowJump = false, string[]? alreadyarray = null, Types description = Types.None)
+        async Task<Var> CreateVar(string[] parts, int index = 1, bool reuse = true, string? alreadyVal = null, bool allowJump = false, string[]? alreadyarray = null, Types description = Types.None, bool global = false)
         {
             string name = parts[index].Trim();
 
@@ -2864,10 +3113,15 @@ namespace EZCode
 
             Var var = new Var(name);
             var.Description = description;
+            var.Method = global ? "" : currentmethod != null ? currentmethod.Name : "";
 
             if (reuse && vars.Select(x => x.Name).Contains(name))
             {
                 var = vars.FirstOrDefault(x => x.Name == name);
+            }
+            else if (methods.Select(x => x.Name).Contains(name))
+            {
+                ErrorText(parts, ErrorTypes.methodnamingvoilation, "Variable", name);
             }
             else if (!reuse && vars.Select(x => x.Name).Contains(name))
             {
@@ -3519,7 +3773,7 @@ namespace EZCode
         {
             string name = parts[index];
 
-            int violation = overwrite ? 0 : AllControls.Select(x => x.Name).Contains(name) == true ? 1 : UnusableNames.Contains(name) ? 2 : UnusableContains.Any(unusable => name.Contains(unusable)) ? 2 : 0;
+            int violation = methods.Select(x => x.Name).Contains(name) == true ? 3 : overwrite ? 0 : AllControls.Select(x => x.Name).Contains(name) == true ? 1 : UnusableNames.Contains(name) ? 2 : UnusableContains.Any(unusable => name.Contains(unusable)) ? 2 : 0;
             violation = IsNumericString(name) ? 2 : violation;
 
             string type = controltype == controlType.GButton ? "button" :
@@ -3535,6 +3789,9 @@ namespace EZCode
                     break;
                 case 2:
                     ErrorText(parts, ErrorTypes.violation, name: name);
+                    break;
+                case 3:
+                    ErrorText(parts, ErrorTypes.methodnamingvoilation, "Control", name);
                     break;
             }
 
@@ -4211,6 +4468,14 @@ namespace EZCode
                         temp_S.Add(sss[i]);
                     }
                 }
+                if (usecolon)
+                {
+                    for (int i = 0; i < temp_S.Count; i++)
+                    {
+                        string t = ColonResponse(temp_S[i], parts);
+                        temp_S[i] = t == "" ? temp_S[i] : t;
+                    }
+                }
                 s = string.Join(" ", temp_S);
                 val = s;
                 List<string> texts = s.Split(" ").ToList();
@@ -4350,7 +4615,6 @@ namespace EZCode
             }
 
             value = val;
-            if (usecolon) value = ColonResponse(value, parts);
 
             return new string[] { value, next.ToString() };
         }
@@ -4589,6 +4853,7 @@ namespace EZCode
             GButton? b = sender.ToString().Contains(nameof(b)) ? sender as GButton : sender is GButton ? sender as GButton : null;
             GTextBox? t = sender.ToString().Contains(nameof(t)) ? sender as GTextBox : sender is GTextBox ? sender as GTextBox : null;
             string file = "";
+            bool isfile = true;
             switch (eventtype)
             {
                 case eventType.click: file = s != null ? s.click : l != null ? l.click : b != null ? b.click : t != null ? t.click : w != null ? w.click : "null"; break;
@@ -4616,7 +4881,9 @@ namespace EZCode
                 case eventType.resizestart: file = w.resizedstart; break;
                 case eventType.resizeend: file = w.resizedend; break;
             }
-            await PlaySwitch(jumpsto: $"file play {file}");
+            if ()
+            if (isfile) await PlaySwitch(jumpsto: $"file play {file}");
+            else await PlaySwitch(jumpsto:file);
         }
         #endregion
 
@@ -4761,6 +5028,7 @@ namespace EZCode
             missingGroup,
             missingWindow,
             errorEquation,
+            methodnamingvoilation,
             unkown,
             custom
         }
@@ -4785,6 +5053,7 @@ namespace EZCode
                 error == ErrorTypes.missingWindow ? $"Could not find a Window named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.alreadyMember ? $"Naming violation in {SegmentSeperator} {codeLine}. There is already a '{keyword}' named '{name}'" :
                 error == ErrorTypes.errorEquation ? $"Unable to solve the equation in {SegmentSeperator} {codeLine}" :
+                error == ErrorTypes.methodnamingvoilation ? $"Can not name '{keyword}' as '{name}' because there is a method already named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.custom ? custom : "An Error Occured, We don't know why. If it helps, it was on line " + codeLine;
 
             if ((parts.Contains("#suppress") && parts.Contains("error")) || (parts.Contains("#") && parts.Contains("suppress") && parts.Contains("error"))) return "";

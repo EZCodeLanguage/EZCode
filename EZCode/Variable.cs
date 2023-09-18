@@ -15,6 +15,8 @@ namespace EZCode.Variables
             String
         }
         string Name { get; set; }
+        string Value { get; }
+        string? Method { get; set; }
         float? number { get; set; }
         string? text { get; set; }
         object? accessible { get; set; }
@@ -36,21 +38,30 @@ namespace EZCode.Variables
     public class Var : Ivar
     {
         public string Name { get; set; }
+        public string? Method { get; set; }
         public float? number { get; set; }
         public string? text { get; set; }
         public object? accessible { get; set; }
         public string[] array { get; set; }
         public bool isSet { get; set; }
         public Ivar.Types Description { get; set; }
+        public string Value
+        {
+            get
+            {
+                return value();
+            }
+        }
 
-        public Var(string name, string value = "", Ivar.Types type = Ivar.Types.None) 
+        public Var(string name, string value = "", Ivar.Types type = Ivar.Types.None, string? method = null)
         {
             Name = name;
             number = null;
             text = null;
             Description = type;
+            Method = method;
             set(value);
-        }
+         }
         public void set(string? value = null, string[]? array = null)
         {
             if (value != null)
