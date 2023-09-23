@@ -4,12 +4,10 @@ using EZCode.Variables;
 using EZCode.Windows;
 using NCalc;
 using System.Data;
-using System.Diagnostics;
 using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using static System.Windows.Forms.LinkLabel;
 using Group = EZCode.Groups.Group;
 using Player = Sound.Player;
 using Types = EZCode.Variables.Ivar.Types;
@@ -201,7 +199,7 @@ namespace EZCode
                 }
                 if (_pplaying && showStartAndEnd)
                     AddText("Build Started");
-                else if(!_pplaying && showStartAndEnd)
+                else if (!_pplaying && showStartAndEnd)
                     AddText("Build Ended");
             }
         }
@@ -209,25 +207,25 @@ namespace EZCode
         /// <summary>
         /// string array for naming violations
         /// </summary>
-        public string[] UnusableNames = new string[] { "await", "button", "print", "group", "clear", "write", "stop", "DEVPORTAL", "methodend",
+        public static string[] UnusableNames { get; } = new string[] { "await", "button", "print", "group", "clear", "write", "stop", "DEVPORTAL", "methodend",
             "event", "textbox", "multiLine", "shape", "image", "label", "font", "move", "scale", "color", "intersects", "var", "if", "method",
-            "input", "list", "file", "sound", "if", "//", "#create", "#suppress", "#", "system:", "?", "=", "!", ">", "<", "+", "loop", "globalvar",
+            "input", "list", "file", "sound", "if", "//", "#create", "#suppress", "#", "system:", "?", "=", "!", ">", "<", "+", "loop", "global",
             "-", "|", "\\", ",", "@", "#", "$", "%", "^", "&", "*", "(", ")", "/", "~", "`", ".", ":", ";", "window", "system", "messagebox" };
         /// <summary>
         /// char array for unusable names that can't even be used once in the name
         /// </summary>
-        public char[] UnusableContains = new char[] { '?', '=', '!', ':', '>', '<', '|', '\\', '#', '(', ')', '&', '^', '*', '+', '-', '/', '{', '}' };
+        public static char[] UnusableContains { get; } = new char[] { '?', '=', '!', ':', '>', '<', '|', '\\', '#', '(', ')', '&', '^', '*', '+', '-', '/', '{', '}' };
         /// <summary>
         /// The character tht seperates each line of code. Automatically { '\n', '|' } but this can be added to if needed 
         /// </summary>
-        public char[] seperatorChars = new char[] { '\n', '|' };
+        public static char[] seperatorChars { get; private set; } = new char[] { '\n', '|' };
         /// <summary>
         /// List of keys being pressed
         /// Needs to have Key_Down and Key_Up event connected to KeyInput_Down and KeyInput_Up
         /// </summary>
         public HashSet<Keys> Keys = new HashSet<Keys>();
 
-        private string SegmentSeperator = "segment";
+        public static readonly string SegmentSeperator = "segment";
         /// <summary>
         /// Refreshes screen when a control is changed/created
         /// </summary>
@@ -269,149 +267,6 @@ namespace EZCode
             GLabel,
             GButton
         }
-        /// <summary>
-        /// Plays EZCode code. Make sure you have initialized first.
-        /// </summary>
-        /// <param name="code">The string representing the EZCode content to be played.</param>
-        public async Task<string> Play(string code)
-        {
-            if (playing) return "";
-            AllControls.Clear();
-            Space.Controls.Clear();
-            vars.Clear();
-            groups.Clear();
-            shapes.Clear();
-            labels.Clear();
-            textboxes.Clear();
-            buttons.Clear();
-            windows.Clear();
-            methods.Clear();
-            if (ClearConsole) RichConsole.Clear();
-            Code = code;
-            string output = string.Empty;
-            List<string> lines = code.Split(seperatorChars).Where(x => !x.Equals("\r")).ToList();
-
-            int? methodend = null, methodstart = null;
-            try
-            {
-                Method method = new Method();
-                for (int i = 0, k = 0; i < lines.Count; i++)
-                {
-                    string line = lines[i].Trim();
-                    string[] parts = line.Split(" ");
-                    if (parts[0] == "method")
-                    {
-                        if (method.IsSet == true)
-                        {
-                            string msg = $"A method is missing an end in {SegmentSeperator} {k + 1}";
-                            AddText(msg, true);
-                            return msg;
-                        }
-                        methodstart = i + 1;
-                        k = i;
-                        method.Line = k;
-                        try
-                        {
-                            method.Name = parts[1];
-                        }
-                        catch
-                        {
-                            string msg = $"Could not find the method name in {SegmentSeperator} {i + 1}";
-                            AddText(msg, true);
-                            return msg;
-                        }
-                        try
-                        {
-                            if (parts[2] == ":")
-                            {
-                                try
-                                {
-                                    string[] allvalues = string.Join(" ", parts.Skip(3)).Split(",");
-                                    List<Var> paremeters = new List<Var>();
-                                    for (int j = 0; j < allvalues.Length; j++)
-                                    {
-                                        string[] val = allvalues[j].Split(":").Select(x=>x.Trim()).ToArray();
-                                        paremeters.Add(new Var(val[0], val[1], method:method.Name));
-                                    }
-                                    method.Paremters = paremeters.ToArray();
-                                }
-                                catch
-                                {
-                                    string msg = $"Error setting the parameters for '{method.Name}' in {SegmentSeperator} {i + 1}";
-                                    AddText(msg, true);
-                                    return msg;
-                                }
-                            }
-                            else
-                            {
-                                string msg = $"Expected ':' to set parameters for '{method.Name}' in {SegmentSeperator} {i + 1}";
-                                AddText(msg, true);
-                                return msg;
-                            }
-                        }
-                        catch
-                        {
-
-                        }
-                    }
-                    else if (parts[0] == "methodend")
-                    {
-                        if (!method.IsSet)
-                        {
-                            string msg = $"Expected a method for a 'methodend' in {SegmentSeperator} {i + 1}";
-                            AddText(msg, true);
-                            return msg;
-                        }
-                        currentmethod ??= method;
-                        methodend ??= i - 1;
-                        method.Length = i - k + 1;
-                        method.Contents = lines.Skip(method.Line).Take(method.Length).ToArray();
-                        methods.Add(method);
-                        //if (method.Paremters != null) vars.AddRange(method.Paremters);
-                        method = new Method();
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                string msg = $"An error occured while finding and setting methods. C# ERROR MESSAGE:'{ex.Message}'";
-                ErrorText(new string[0], ErrorTypes.custom, custom: msg);
-                return msg;
-            }
-            lines = lines.Skip(methodstart == null ? 0 : 1).Take(methodend == null ? lines.Count : (int)methodend).ToList();
-            playing = true;
-            
-            for (int i = 0; i < lines.Count; i++)
-            {
-                if (!playing) return output;
-                codeLine = i + 1;
-                List<string> parts = lines[i].Split(new char[] { ' ' }).ToList();
-                for (int j = 0; j < parts.Count; j++)
-                {
-                    if (parts[j].Trim() == "->")
-                    {
-                        try
-                        {
-                            parts.RemoveAt(j);
-                            parts.AddRange(lines[i + 1].Split(' '));
-                            lines.RemoveAt(i + 1);
-                        }
-                        catch
-                        {
-
-                        }
-                    }
-                }
-                string[] task = await PlaySwitch(parts.ToArray(), "", lines.ToArray(), i);
-                if (bool.Parse(task[1]) == false) i = lines.Count - 1;
-                output += task[0];
-                ConsoleText = output;
-            }
-            if (playing) playing = false;
-            StopAllSounds();
-            return output;
-        }
-
         #endregion
 
         #region EZCode_Script_Player
@@ -848,11 +703,59 @@ namespace EZCode
                             ErrorText(parts, ErrorTypes.normal, keyword);
                         } // VAR
                         break;
-                    case "globalvar":
+                    case "global":
                         try
                         {
-                            Var var = await CreateVar(parts, allowJump: true, global:true);
-                            vars.Add(var);
+                            switch (parts[1])
+                            {
+                                case "var":
+                                    try
+                                    {
+                                        Var var = await CreateVar(parts, 2, allowJump: true, global: true);
+                                        vars.Add(var);
+                                    }
+                                    catch
+                                    {
+                                        ErrorText(parts, ErrorTypes.normal, $"global {parts[1]}");
+                                    }
+                                    break;
+                                case "list":
+                                    try
+                                    {
+                                        DoList(parts, 2, parts[1], true);
+                                    }
+                                    catch
+                                    {
+                                        ErrorText(parts, ErrorTypes.normal, $"global {parts[1]}");
+                                    }
+                                    break;
+                                case "group":
+                                    try
+                                    {
+                                        await DoGroup(parts, 2, parts[1], true);
+                                    }
+                                    catch
+                                    {
+                                        ErrorText(parts, ErrorTypes.normal, $"global {parts[1]}");
+                                    }
+                                    break;
+                                case "shape":
+                                case "label":
+                                case "textbox":
+                                case "button":
+                                    try
+                                    {
+                                        await DoControl(parts, parts[1], 2, true);
+                                    }
+                                    catch
+                                    {
+                                        ErrorText(parts, ErrorTypes.normal, $"global {parts[1]}");
+                                    }
+                                    break;
+                                default:
+                                    ErrorText(parts, ErrorTypes.custom, custom:$"Expected 'var', 'list', 'group', 'textbox', 'label', 'button', or 'shape' after {keyword} in {SegmentSeperator} {codeLine}");
+                                    break;
+                            }
                         }
                         catch
                         {
@@ -962,7 +865,7 @@ namespace EZCode
                                 case "validpath":
                                     {
                                         string[] file_ = await getFile(parts, 2);
-                                        output = validpathcheck(file_[0]) ? "1" : "0";
+                                        output = EZProj.validfile(file_[0]) ? "1" : "0";
                                         endindex = int.Parse(file_[1]);
                                     }
                                     break;
@@ -1005,6 +908,19 @@ namespace EZCode
                                     if (jumpTo)
                                     {
                                         return new string[] { output, stillInFile.ToString() };
+                                    }
+                                    break;
+                                case "playproj":
+                                    {
+                                        file_p = await getFile(parts, 2);
+                                        if (!File.Exists(file_p[0])) ErrorText(parts, ErrorTypes.custom, custom: $"File not found in {SegmentSeperator} {codeLine}");
+                                        code = File.ReadAllText(file_p[0]);
+                                        endindex = int.Parse(file_p[1]);
+                                        EzCode ezCode = new EzCode();
+                                        ezCode.Initialize(_space:Space, _console: RichConsole, _showStartAndEnd:false);
+                                        EZProj eZProj = new EZProj(code, file_p[0]);
+                                        eZProj.ShowBuild = false;
+                                        await ezCode.PlayFromConfig(eZProj);
                                     }
                                     break;
                                 case "create":
@@ -1172,7 +1088,7 @@ namespace EZCode
                     case "group":
                         try
                         {
-                            DoGroup(parts, 1, keyword);
+                            await DoGroup(parts, 1, keyword);
                         }
                         catch
                         {
@@ -1518,12 +1434,14 @@ namespace EZCode
                     default:
                         try
                         {
-                            if (keyword == "#" || keyword == "#create".ToLower() || keyword == "#suppress".ToLower())
+                            if (keyword == "#" || keyword == "#create".ToLower() || keyword == "#suppress".ToLower() || keyword == "#current")
                             {
                                 int index = keyword == "#create".ToLower() ? 1 :
                                     keyword == "#" && parts[1] == "create".ToLower() ? 2 :
                                     keyword == "#" && parts[1] == "suppress".ToLower() ? 2 :
+                                    keyword == "#" && parts[1] == "current".ToLower() ? 2 :
                                     keyword == "#suppress".ToLower() ? 1 :
+                                    keyword == "#current".ToLower() ? 1 :
                                     0;
                                 keyword = keyword == "#create".ToLower() ? keyword.ToLower() :
                                     keyword == "#" && parts[1] == "create".ToLower() ? "#create" :
@@ -1543,14 +1461,35 @@ namespace EZCode
                                         {
                                             ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#create' in {SegmentSeperator} {codeLine}");
                                         }
-                                        string[] strings = getString_value(parts, index + 1, true);
-                                        if (strings[0] == "")
+                                        else
                                         {
-                                            ErrorText(parts, ErrorTypes.unkown);
+                                            string[] strings = getString_value(parts, index + 1, true);
+                                            if (strings[0] == "")
+                                            {
+                                                ErrorText(parts, ErrorTypes.unkown);
+                                            }
+                                            else
+                                            {
+                                                ErrorText(parts, ErrorTypes.custom, custom: strings[0]);
+                                            }
+                                        }
+                                        break;
+                                    case "#current":
+                                        if (parts[index] != "file")
+                                        {
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'file' keyword after '#current' in {SegmentSeperator} {codeLine}");
                                         }
                                         else
                                         {
-                                            ErrorText(parts, ErrorTypes.custom, custom: strings[0]);
+                                            string[] strings = await getFile(parts, index + 1);
+                                            if (!EZProj.validfile(strings[0]))
+                                            {
+                                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected a valid file after '#current' in {SegmentSeperator} {codeLine}");
+                                            }
+                                            else
+                                            {
+                                                ScriptDirectory = strings[0];
+                                            }
                                         }
                                         break;
                                 }
@@ -1647,19 +1586,23 @@ namespace EZCode
                                     }
 
                                     Var[] _vars = vars.ToArray();
-                                    for (int i = 0; i < vars.Count; i++)
-                                    {
-                                        if (vars[i].Method != "")
-                                        {
-                                            vars.Remove(vars[i]);
-                                            i--;
-                                        }
-                                    }
+                                    Group[] _groups = groups.ToArray();
+                                    Control[] _allcontrols = AllControls.ToArray();
+
+                                    vars = vars.Where(v => v.Method == "").ToList();
+                                    groups = groups.Where(v => v.Method == "").ToList();
+                                    shapes = shapes.Where(v => v.Method == "").ToList();
+                                    textboxes = textboxes.Where(v => v.Method == "").ToList();
+                                    buttons = buttons.Where(v => v.Method == "").ToList();
+                                    labels = labels.Where(v => v.Method == "").ToList();
 
                                     if (method.Paremters != null) 
                                         vars.AddRange(method.Paremters);
 
                                     //Run Method
+
+                                    Method old = currentmethod;
+                                    currentmethod = method;
 
                                     List<string> lines = method.Contents.ToList();
                                     string output = "";
@@ -1690,6 +1633,7 @@ namespace EZCode
                                         ConsoleText = output;
                                     }
 
+                                    currentmethod = old;
                                     //Set and Delete Vars
 
                                     if (method.Paremters != null)
@@ -1701,6 +1645,14 @@ namespace EZCode
                                         } 
                                     }
                                     vars = _vars.ToList();
+                                    groups = _groups.ToList();
+                                    foreach(Control c in _allcontrols)
+                                    {
+                                        if (c is GShape) shapes.Add(c as GShape);
+                                        else if (c is GTextBox) textboxes.Add(c as GTextBox);
+                                        else if (c is GLabel) labels.Add(c as GLabel);
+                                        else if (c is GButton) buttons.Add(c as GButton);
+                                    }
                                 }
                                 else
                                 {
@@ -2277,7 +2229,7 @@ namespace EZCode
 
             return -1;
         }
-        Var DoList(string[] parts, int _index, string keyword)
+        Var DoList(string[] parts, int _index, string keyword, bool global = false)
         {
             Var var = new Var("");
             var.isSet = false;
@@ -2442,9 +2394,10 @@ namespace EZCode
                     ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'add', 'equals', 'remove', 'destroy' or 'clear' in {SegmentSeperator} {codeLine}");
                     break;
             }
+            var.Method = currentmethod != null && !global ? currentmethod.Name : "";
             return var;
         }
-        async Task<Group> DoGroup(string[] parts, int _index, string keyword)
+        async Task<Group> DoGroup(string[] parts, int _index, string keyword, bool global = false)
         {
             Group group = new Group("");
             group.isSet = false;
@@ -2653,6 +2606,7 @@ namespace EZCode
                     ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'add', 'equals', 'remove', 'change', or 'clear' in {SegmentSeperator} {codeLine}");
                     break;
             }
+            group.Method = currentmethod != null && !global ? currentmethod.Name : "";
             return group;
         }
         async Task<Var> VarManipulation(Var var, string[] parts, int index)
@@ -2746,7 +2700,7 @@ namespace EZCode
             }
             return var;
         }
-        async Task<Control> DoControl(string[] parts, string contype, int index)
+        async Task<Control> DoControl(string[] parts, string contype, int index, bool global = false)
         {
             GShape? obj = new GShape();
             GLabel? lab = new GLabel();
@@ -2758,7 +2712,7 @@ namespace EZCode
                 contype == "textbox" ? controlType.Textbox :
                 contype == "button" ? controlType.GButton :
                 controlType.None;
-            Control control = await createControl(parts, controltype, index);
+            Control control = await createControl(parts, controltype, index, global:global);
             obj = control is GShape ? control as GShape : null;
             lab = control is GLabel ? control as GLabel : null;
             txb = control is GTextBox ? control as GTextBox : null;
@@ -2968,29 +2922,6 @@ namespace EZCode
                     false;
             }
         }
-        bool validpathcheck(string path)
-        {
-            path = path.Replace("/", "\\");
-            Regex driveCheck = new Regex(@"^[a-zA-Z]:\\$");
-            if (string.IsNullOrWhiteSpace(path) || path.Length < 3)
-            {
-                return false;
-            }
-
-            if (!driveCheck.IsMatch(path.Substring(0, 3)))
-            {
-                return false;
-            }
-            string strTheseAreInvalidFileNameChars = new string(Path.GetInvalidPathChars());
-            strTheseAreInvalidFileNameChars += @":/?*" + "\"";
-            Regex containsABadCharacter = new Regex("[" + Regex.Escape(strTheseAreInvalidFileNameChars) + "]");
-            if (containsABadCharacter.IsMatch(path.Substring(3, path.Length - 3)))
-            {
-                return false;
-            }
-
-            return true;
-        }
         async Task<string[]> getFile(string[] parts, int index, int skip = 1, string seperator = " ", bool vars = false)
         {
             string[] get = getString_value(parts, index, true, vars, false, false);
@@ -3018,12 +2949,12 @@ namespace EZCode
             {
                 index = file_s == get ? int.Parse(get[1]) : int.Parse(get[1]) - 1;
             }
-            if (file_s[0].StartsWith("~/"))
+            if (file_s[0].StartsWith("~/") || file_s[0].StartsWith("~\\"))
             {
                 FileInfo fileinfo = new FileInfo(ScriptDirectory);
                 DirectoryInfo directoryinfo = fileinfo.Directory;
-                string filename = file_s[0].Replace("~/", "");
-                string path = Path.Combine(directoryinfo.FullName + "\\" + filename);
+                string filename = file_s[0].Replace("~\\", "").Replace("~/", "");
+                string path = Path.Combine(directoryinfo.FullName, filename);
                 file_s[0] = path;
             }
             string final = file_s == get ? file_s[0] : string.Join(seperator, file_s.Take(file_s.Length - 1));
@@ -3330,7 +3261,10 @@ namespace EZCode
                                 break;
                         }
                         break;
-                    case "currentdirectory":
+                    case "currentfile":
+                        value = ScriptDirectory.Replace(@"\", @"\\");
+                        break;
+                    case "currentplaydirectory":
                         value = Environment.CurrentDirectory.ToString();
                         break;
                     case "litteral":
@@ -3769,7 +3703,7 @@ namespace EZCode
 
             return control;
         }
-        async Task<Control> createControl(string[] parts, controlType controltype, int index = 1, bool overwrite = true)
+        async Task<Control> createControl(string[] parts, controlType controltype, int index = 1, bool overwrite = true, bool global = false)
         {
             string name = parts[index];
 
@@ -3819,6 +3753,7 @@ namespace EZCode
                     shapes.Add(control);
                 }
 
+                control.Method = currentmethod != null && !global ? currentmethod.Name : "";
                 return control;
             }
             else if (controltype == controlType.GLabel)
@@ -3842,6 +3777,8 @@ namespace EZCode
                     if (InPanel) Space.Controls.Add(control);
                     labels.Add(control);
                 }
+
+                control.Method = currentmethod != null && !global ? currentmethod.Name : "";
                 return control;
             }
             else if (controltype == controlType.Textbox)
@@ -3867,6 +3804,7 @@ namespace EZCode
                     textboxes.Add(control);
                 }
 
+                control.Method = currentmethod != null && !global ? currentmethod.Name : "";
                 return control;
             }
             else if (controltype == controlType.GButton)
@@ -3892,6 +3830,8 @@ namespace EZCode
                     if (InPanel) Space.Controls.Add(control);
                     buttons.Add(control);
                 }
+
+                control.Method = currentmethod != null && !global ? currentmethod.Name : "";
                 return control;
             }
             return null;
@@ -4881,13 +4821,180 @@ namespace EZCode
                 case eventType.resizestart: file = w.resizedstart; break;
                 case eventType.resizeend: file = w.resizedend; break;
             }
-            if ()
+            if (!file.Contains(":")) isfile = false;
             if (isfile) await PlaySwitch(jumpsto: $"file play {file}");
             else await PlaySwitch(jumpsto:file);
         }
         #endregion
 
-        #region Public_Helpers
+        #region Public_Methods
+
+        /// <summary>
+        /// Plays EZCode code. Make sure you have initialized first.
+        /// </summary>
+        /// <param name="code">The string representing the EZCode content to be played.</param>
+        /// <param name="clearsconsole">does not clear console if false</param>
+        public async Task<string> Play(string code, bool clearsconsole = true)
+        {
+            if (playing) return "";
+            AllControls.Clear();
+            Space.Controls.Clear();
+            vars.Clear();
+            groups.Clear();
+            shapes.Clear();
+            labels.Clear();
+            textboxes.Clear();
+            buttons.Clear();
+            windows.Clear();
+            methods.Clear();
+            currentmethod = null;
+            if (ClearConsole && clearsconsole) RichConsole.Clear();
+            Code = code;
+            string output = string.Empty;
+            List<string> lines = code.Split(seperatorChars).Where(x => !x.Equals("\r")).ToList();
+
+            int? methodend = null, methodstart = null;
+            try
+            {
+                Method method = new Method();
+                for (int i = 0, k = 0; i < lines.Count; i++)
+                {
+                    string line = lines[i].Trim();
+                    string[] parts = line.Split(" ");
+                    if (parts[0] == "method")
+                    {
+                        if (method.IsSet == true)
+                        {
+                            string msg = $"A method is missing an end in around {SegmentSeperator} {k + 1}";
+                            AddText(msg, true);
+                            return msg;
+                        }
+                        methodstart = i + 1;
+                        k = i;
+                        method.Line = k;
+                        try
+                        {
+                            method.Name = parts[1];
+                            if (UnusableNames.Select(x => x).Contains(method.Name) || UnusableContains.Any(method.Name.Contains))
+                            {
+                                string msg = $"'{method.Name}' is not a valid name in around {SegmentSeperator} {i + 1}";
+                                AddText(msg, true);
+                                return msg;
+                            }
+                        }
+                        catch
+                        {
+                            string msg = $"Could not find the method name in around {SegmentSeperator} {i + 1}";
+                            AddText(msg, true);
+                            return msg;
+                        }
+                        try
+                        {
+                            if (parts[2] == ":")
+                            {
+                                try
+                                {
+                                    string[] allvalues = string.Join(" ", parts.Skip(3)).Split(",");
+                                    List<Var> paremeters = new List<Var>();
+                                    for (int j = 0; j < allvalues.Length; j++)
+                                    {
+                                        string[] val = allvalues[j].Split(":").Select(x => x.Trim()).ToArray();
+                                        paremeters.Add(new Var(val[0], getString_value(val, 2)[0], method: method.Name));
+                                    }
+                                    method.Paremters = paremeters.ToArray();
+                                }
+                                catch
+                                {
+                                    string msg = $"Error setting the parameters for '{method.Name}' in around {SegmentSeperator} {i + 1}";
+                                    AddText(msg, true);
+                                    return msg;
+                                }
+                            }
+                            else
+                            {
+                                string msg = $"Expected ':' to set parameters for '{method.Name}' in around {SegmentSeperator} {i + 1}";
+                                AddText(msg, true);
+                                return msg;
+                            }
+                        }
+                        catch
+                        {
+
+                        }
+                    }
+                    else if (parts[0] == "methodend")
+                    {
+                        if (!method.IsSet)
+                        {
+                            string msg = $"Expected a method for a 'methodend' in around {SegmentSeperator} {i + 1}";
+                            AddText(msg, true);
+                            return msg;
+                        }
+                        currentmethod ??= method;
+                        methodend ??= i - 1;
+                        method.Length = i - k + 1;
+                        method.Contents = lines.Skip(method.Line).Take(method.Length).ToArray();
+                        methods.Add(method);
+                        //if (method.Paremters != null) vars.AddRange(method.Paremters);
+                        method = new Method();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                string msg = $"An error occured while finding and setting methods. C# ERROR MESSAGE:'{ex.Message}'";
+                ErrorText(new string[0], ErrorTypes.custom, custom: msg);
+                return msg;
+            }
+            lines = lines.Skip(methodstart == null ? 0 : 1).Take(methodend == null ? lines.Count : (int)methodend).ToList();
+            playing = true;
+
+            for (int i = 0; i < lines.Count; i++)
+            {
+                if (!playing) return output;
+                codeLine = i + 1;
+                List<string> parts = lines[i].Split(new char[] { ' ' }).ToList();
+                for (int j = 0; j < parts.Count; j++)
+                {
+                    if (parts[j].Trim() == "->")
+                    {
+                        try
+                        {
+                            parts.RemoveAt(j);
+                            parts.AddRange(lines[i + 1].Split(' '));
+                            lines.RemoveAt(i + 1);
+                        }
+                        catch
+                        {
+
+                        }
+                    }
+                }
+                string[] task = await PlaySwitch(parts.ToArray(), "", lines.ToArray(), i);
+                if (bool.Parse(task[1]) == false) i = lines.Count - 1;
+                output += task[0];
+                ConsoleText = output;
+            }
+            if (playing) playing = false;
+            StopAllSounds();
+            return output;
+        }
+
+        /// <summary>
+        /// Play EZCode from an EZProj file (.ezconfig)
+        /// </summary>
+        public async Task<string> PlayFromConfig(EZProj proj)
+        {
+            if (ClearConsole) RichConsole.Clear();
+            InPanel = !proj.Window;
+            showStartAndEnd = proj.ShowBuild;
+            showFileInError = proj.FileInErrors;
+            foreach (string error in proj.Errors)
+            {
+                ErrorText(new string[0], ErrorTypes.custom, custom: error);
+            }
+            return await Play(proj.Program, false);
+        }
 
         /// <summary>
         /// Stops the code currently being played
@@ -5059,7 +5166,8 @@ namespace EZCode
             if ((parts.Contains("#suppress") && parts.Contains("error")) || (parts.Contains("#") && parts.Contains("suppress") && parts.Contains("error"))) return "";
             if (showFileInError)
             {
-                text = ScriptDirectory != "" ? $"{ScriptDirectory}: {text}" : text;
+                string st = ScriptDirectory != "" && currentmethod != null ? $"{ScriptDirectory.Trim()} - '{currentmethod.Name}'" : ScriptDirectory != "" ? ScriptDirectory.Trim() : currentmethod != null ? $"'{currentmethod.Name}'" : "";
+                text = st != "" ? $"{st} : {text}" : text;
             }
             if (returnoutput) returnOutput += text; 
             AddText(text, true, RichConsole, true);
@@ -5072,7 +5180,7 @@ namespace EZCode
         /// <returns></returns>
         public bool SetScriptDirectory(string scriptDirectory)
         {
-            if (validpathcheck(scriptDirectory))
+            if (EZProj.validfile(scriptDirectory))
             {
                 ScriptDirectory = scriptDirectory;
                 return true;

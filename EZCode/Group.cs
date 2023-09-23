@@ -6,6 +6,7 @@ namespace EZCode.Groups;
 
 class Group
 {
+    public string Method { get; set; }
     public HashSet<GButton> Buttons = new HashSet<GButton>();
     public HashSet<GLabel> Labels = new HashSet<GLabel>();
     public HashSet<GShape> Shapes = new HashSet<GShape>();

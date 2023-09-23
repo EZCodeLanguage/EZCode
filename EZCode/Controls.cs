@@ -7,6 +7,7 @@ namespace EZCode.GControls
 {
     public interface IGControl
     {
+        string Method { get; set; }
         string click { get; set; }
         string mousehover { get; set; }
         string move { get; set; }
@@ -20,6 +21,7 @@ namespace EZCode.GControls
     }
     public partial class GControl : Control, IGControl
     {
+        public string Method { get; set; }
         public string click { get; set; }
         public string mousehover { get; set; }
         public string move { get; set; }
@@ -45,6 +47,7 @@ namespace EZCode.GControls
         public PointF[] Points { get; set; }
         public int Poly { get; set; }
         public Type Square { get; }
+        public string Method { get; set; }
         public string click { get; set; }
         public string mousehover { get; set; }
         public string move { get; set; }
@@ -133,6 +136,7 @@ namespace EZCode.GControls
     }
     public partial class GButton : Button, IGControl
     {
+        public string Method { get; set; }
         public string click { get; set; }
         public int isclick { get; set; }
         public string mousehover { get; set; }
@@ -156,6 +160,7 @@ namespace EZCode.GControls
     }
     public partial class GTextBox : TextBox, IGControl
     {
+        public string Method { get; set; }
         public string click { get; set; }
         public string mousehover { get; set; }
         public string move { get; set; }
@@ -178,6 +183,7 @@ namespace EZCode.GControls
     }
     public partial class GLabel : Label, IGControl
     {
+        public string Method { get; set; }
         public string click { get; set; }
         public string mousehover { get; set; }
         public string move { get; set; }

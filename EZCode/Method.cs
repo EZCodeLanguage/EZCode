@@ -19,7 +19,7 @@ namespace EZCode.Methods
         public Var[]? Paremters { get; set; }
         public string[]? Contents { get; set; }
         public bool IsSet = false;
-
+        
         public Method() => Set();
         public Method(string name) => Set(name);
         public Method(string name, Var[]? paremters, string[] contents, int line, int length) => Set(name, paremters, true, line, length, contents);

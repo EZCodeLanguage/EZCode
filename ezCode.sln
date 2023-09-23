@@ -5,7 +5,7 @@ VisualStudioVersion = 17.4.33213.308
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EZCode", "EZCode\EZCode.csproj", "{C8FB09DE-19EC-4F2A-89F9-C159B0956355}"
 EndProject
-Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EzCode-API", "Test-Environment\EzCode-API.csproj", "{4EDF2B71-DD81-446D-9C13-FDA273AB3B2C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Test-Environment", "Test-Environment\Test-Environment.csproj", "{4EDF2B71-DD81-446D-9C13-FDA273AB3B2C}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

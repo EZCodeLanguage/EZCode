@@ -44,6 +44,7 @@
             checkBox4 = new CheckBox();
             splitContainer1 = new SplitContainer();
             splitContainer2 = new SplitContainer();
+            checkBox5 = new CheckBox();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
             splitContainer1.Panel2.SuspendLayout();
@@ -67,7 +68,7 @@
             InputText.Multiline = true;
             InputText.Name = "InputText";
             InputText.ScrollBars = ScrollBars.Both;
-            InputText.Size = new Size(505, 302);
+            InputText.Size = new Size(538, 265);
             InputText.TabIndex = 0;
             InputText.WordWrap = false;
             InputText.KeyPress += InputText_KeyPress;
@@ -79,7 +80,7 @@
             Console.Location = new Point(5, 31);
             Console.Name = "Console";
             Console.ReadOnly = true;
-            Console.Size = new Size(916, 112);
+            Console.Size = new Size(977, 91);
             Console.TabIndex = 2;
             Console.Text = "";
             Console.TextChanged += Console_TextChanged;
@@ -87,9 +88,9 @@
             // Start
             // 
             Start.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            Start.Location = new Point(524, 2);
+            Start.Location = new Point(610, 2);
             Start.Name = "Start";
-            Start.Size = new Size(291, 23);
+            Start.Size = new Size(266, 23);
             Start.TabIndex = 3;
             Start.Text = "Start";
             Start.UseVisualStyleBackColor = true;
@@ -98,16 +99,16 @@
             // ConsoleInput
             // 
             ConsoleInput.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            ConsoleInput.Location = new Point(3, 149);
+            ConsoleInput.Location = new Point(3, 128);
             ConsoleInput.Name = "ConsoleInput";
-            ConsoleInput.Size = new Size(716, 23);
+            ConsoleInput.Size = new Size(777, 23);
             ConsoleInput.TabIndex = 4;
             ConsoleInput.KeyDown += ConsoleInput_KeyDown;
             // 
             // Send
             // 
             Send.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            Send.Location = new Point(725, 148);
+            Send.Location = new Point(786, 127);
             Send.Name = "Send";
             Send.Size = new Size(100, 23);
             Send.TabIndex = 5;
@@ -118,7 +119,7 @@
             // Quit
             // 
             Quit.Anchor = AnchorStyles.Top | AnchorStyles.Right;
-            Quit.Location = new Point(821, 2);
+            Quit.Location = new Point(882, 2);
             Quit.Name = "Quit";
             Quit.Size = new Size(98, 23);
             Quit.TabIndex = 6;
@@ -129,7 +130,7 @@
             // Clear
             // 
             Clear.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
-            Clear.Location = new Point(831, 148);
+            Clear.Location = new Point(892, 127);
             Clear.Name = "Clear";
             Clear.Size = new Size(90, 23);
             Clear.TabIndex = 7;
@@ -143,7 +144,7 @@
             OutputPanel.Dock = DockStyle.Fill;
             OutputPanel.Location = new Point(0, 0);
             OutputPanel.Name = "OutputPanel";
-            OutputPanel.Size = new Size(415, 302);
+            OutputPanel.Size = new Size(443, 265);
             OutputPanel.TabIndex = 8;
             // 
             // directory
@@ -151,7 +152,7 @@
             directory.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
             directory.Location = new Point(11, 9);
             directory.Name = "directory";
-            directory.Size = new Size(924, 23);
+            directory.Size = new Size(985, 23);
             directory.TabIndex = 9;
             // 
             // checkBox1
@@ -183,7 +184,7 @@
             checkBox3.AutoSize = true;
             checkBox3.Checked = true;
             checkBox3.CheckState = CheckState.Checked;
-            checkBox3.Location = new Point(265, 3);
+            checkBox3.Location = new Point(265, 4);
             checkBox3.Name = "checkBox3";
             checkBox3.Size = new Size(99, 19);
             checkBox3.TabIndex = 12;
@@ -193,10 +194,10 @@
             // version
             // 
             version.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
-            version.Location = new Point(439, 2);
+            version.Location = new Point(510, 2);
             version.Name = "version";
             version.ReadOnly = true;
-            version.Size = new Size(79, 23);
+            version.Size = new Size(94, 23);
             version.TabIndex = 13;
             version.Text = "EZCode 0.0.0";
             // 
@@ -205,7 +206,7 @@
             checkBox4.AutoSize = true;
             checkBox4.Checked = true;
             checkBox4.CheckState = CheckState.Checked;
-            checkBox4.Location = new Point(370, 3);
+            checkBox4.Location = new Point(370, 4);
             checkBox4.Name = "checkBox4";
             checkBox4.Size = new Size(68, 19);
             checkBox4.TabIndex = 14;
@@ -225,8 +226,8 @@
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(OutputPanel);
-            splitContainer1.Size = new Size(924, 302);
-            splitContainer1.SplitterDistance = 505;
+            splitContainer1.Size = new Size(985, 265);
+            splitContainer1.SplitterDistance = 538;
             splitContainer1.TabIndex = 15;
             // 
             // splitContainer2
@@ -242,6 +243,7 @@
             // 
             // splitContainer2.Panel2
             // 
+            splitContainer2.Panel2.Controls.Add(checkBox5);
             splitContainer2.Panel2.Controls.Add(Start);
             splitContainer2.Panel2.Controls.Add(checkBox4);
             splitContainer2.Panel2.Controls.Add(Clear);
@@ -253,20 +255,30 @@
             splitContainer2.Panel2.Controls.Add(Console);
             splitContainer2.Panel2.Controls.Add(checkBox3);
             splitContainer2.Panel2.Controls.Add(checkBox2);
-            splitContainer2.Size = new Size(924, 481);
-            splitContainer2.SplitterDistance = 302;
+            splitContainer2.Size = new Size(985, 423);
+            splitContainer2.SplitterDistance = 265;
             splitContainer2.TabIndex = 0;
+            // 
+            // checkBox5
+            // 
+            checkBox5.AutoSize = true;
+            checkBox5.Location = new Point(444, 4);
+            checkBox5.Name = "checkBox5";
+            checkBox5.Size = new Size(60, 19);
+            checkBox5.TabIndex = 15;
+            checkBox5.Text = "EZProj";
+            checkBox5.UseVisualStyleBackColor = true;
             // 
             // EZCode_Form
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.DimGray;
-            ClientSize = new Size(942, 524);
+            ClientSize = new Size(1003, 466);
             Controls.Add(splitContainer2);
             Controls.Add(directory);
             KeyPreview = true;
-            MinimumSize = new Size(873, 450);
+            MinimumSize = new Size(1019, 450);
             Name = "EZCode_Form";
             Text = "EZCode-Testing-Form ";
             FormClosing += EZCode_Form_FormClosing;
@@ -304,5 +316,6 @@
         private CheckBox checkBox4;
         private SplitContainer splitContainer1;
         private SplitContainer splitContainer2;
+        private CheckBox checkBox5;
     }
 }

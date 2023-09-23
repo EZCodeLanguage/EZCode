@@ -38,13 +38,21 @@ namespace EzCode_API
 
         private async void Start_Click(object sender, EventArgs e) // START
         {
-            bool str = directory.Text == "" ? true : ezcode.SetScriptDirectory(directory.Text);
-            ezcode.showStartAndEnd = checkBox1.Checked;
-            ezcode.showFileInError = checkBox2.Checked;
-            ezcode.ClearConsole = checkBox3.Checked;
-            ezcode.InPanel = checkBox4.Checked;
-            if (!str) MessageBox.Show("Invalid path", "Directory", MessageBoxButtons.OK, MessageBoxIcon.Warning);
-            await ezcode.Play(InputText.Text);
+            try
+            {
+                bool str = directory.Text == "" ? true : ezcode.SetScriptDirectory(directory.Text);
+                ezcode.showStartAndEnd = checkBox1.Checked;
+                ezcode.showFileInError = checkBox2.Checked;
+                ezcode.ClearConsole = checkBox3.Checked;
+                ezcode.InPanel = checkBox4.Checked;
+                if (!str) MessageBox.Show("Invalid path", "Directory", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                if (!checkBox5.Checked) await ezcode.Play(InputText.Text);
+                else await ezcode.PlayFromConfig(new EZProj(InputText.Text, directory.Text));
+            }
+            catch (Exception ex) 
+            {
+                System.Console.WriteLine(ex.Message);
+            }
         }
 
         private void Quit_Click(object sender, EventArgs e) // QUIT
