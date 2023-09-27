@@ -12,6 +12,9 @@ namespace EzCode_API
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
             Application.Run(new EZCode_Form());
+
+            //EZCode.EZProj ez = new EZCode.EZProj(@"C:\Users\jlham\OneDrive\Documents\ezcodeTesting\window.ezproj");
+            //Application.Run(new EZCode.EZPlayer.Player(ez));
         }
     }
 }

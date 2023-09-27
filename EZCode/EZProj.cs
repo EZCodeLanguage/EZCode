@@ -24,28 +24,53 @@ namespace EZCode
         /// <summary>
         /// is the opposite of <see cref="EzCode.InPanel"/>
         /// </summary>
-        public bool Window { get; set; } = true;
+        public bool Window { get; set; }
         /// <summary>
         /// is <see cref="EzCode.showFileInError"/>
         /// </summary>
-        public bool FileInErrors { get; set; } = true;
+        public bool FileInErrors { get; set; }
         /// <summary>
         /// is <see cref="EzCode.showStartAndEnd"/>
         /// </summary>
-        public bool ShowBuild { get; set; } = true;
+        public bool ShowBuild { get; set; }
+        /// <summary>
+        /// is visual or just console
+        /// </summary>
+        public bool IsVisual { get; set; }
+        /// <summary>
+        /// Clear console before each build
+        /// </summary>
+        public bool ClearConsole { get; set; }
+        /// <summary>
+        /// Clear console before each build
+        /// </summary>
+        public string Name { get; set; }
+        /// <summary>
+        /// Clear console before each build
+        /// </summary>
+        public bool Debug { get; set; }
+        /// <summary>
+        /// Clear console before each build
+        /// </summary>
+        public bool CloseOnEnd { get; set; }
 
         /// <summary>
         /// New instanse of <see cref="EZProj"/>. 
         /// </summary>
-        public EZProj(string file) => FilePath = file;
+        /// <param name="file">The ezproj file contents being read as a <seealso cref="string"/></param>
+        public EZProj(string file) 
+        {
+            FilePath = file;
+            FileContents = File.ReadAllText(file);
+            Program = ReadConvert();
+        }
         /// <summary>
         /// Initiats and fills out all of the variables: <see cref="FileContents"/>, <see cref="Program"/>, and <see cref="Errors"/>
         /// </summary>
-        /// <param name="file">The ezproj file contents being read as a <seealso cref="string"/></param>
-        public EZProj(string file, string filepath = "")
+        public EZProj(string contents, string filepath)
         {
             FilePath = filepath;
-            FileContents = file;
+            FileContents = contents;
             Program = ReadConvert();
         }
         /// <summary>
@@ -114,6 +139,14 @@ namespace EZCode
         /// <returns>string that contains ezcode. <seealso cref="Program"/></returns>
         public string ReadConvert(string? _filecontent = null)
         {
+            ClearConsole = true; 
+            IsVisual = true; 
+            ShowBuild = false; 
+            FileInErrors = true; 
+            Window = false;
+            Debug = false;
+            CloseOnEnd = true;
+
             string filecontent = FileContents;
             if (_filecontent != null) filecontent = _filecontent;
 
@@ -177,21 +210,36 @@ namespace EZCode
                                 }
                             }
                             break;
+                        case "name":
+                            if (isvar(value))
+                            {
+                                value = getvar(value);
+                            }
+                            Name = insidemarks(value, false);
+                            break;
                         case "fileinerror":
                         case "showbuild":
+                        case "isvisual":
+                        case "closeonend":
+                        case "debug":
                         case "window":
+                        case "clearconsole":
                             if (isvar(value))
                             {
                                 value = getvar(value);
                             }
                             bool? check = Var.staticReturnBool(insidemarks(value, false));
-                            if (value == @"""default""") check = true;
+                            if (value == @"""default""") check = keyword == "fileinerror" || keyword == "isvisual" || keyword == "clearconsole" || keyword == "closeonend" ? true : false;
                             if(check == null) errors.Add($"'{value}' is not a boolean in {EzCode.SegmentSeperator} {lineindex}");
                             switch (keyword)
                             {
                                 case "fileinerror": FileInErrors = check == true; break;
                                 case "showbuild": ShowBuild = check == true; break;
                                 case "window": Window = check == true; break;
+                                case "isvisual": IsVisual = check == true; break;
+                                case "clearconsole": ClearConsole = check == true; break;
+                                case "debug": Debug = check == true; break;
+                                case "closeonend": CloseOnEnd = check == true; break;
                             }
                             break;
                         default:
@@ -216,11 +264,11 @@ namespace EZCode
             }
             Errors = errors.ToArray();
 
-            ezcode += $"|#current file {startup}|{File.ReadAllText(startup)}|";
+            if (startup != "") ezcode += $"#current file {startup}\n{File.ReadAllText(startup)}\n";
             files.Remove(startup);
             foreach (string file in files)
             {
-                ezcode += $"|#current file {file}|{File.ReadAllText(file)}|";
+                ezcode += $"\n#current file {file}\n{File.ReadAllText(file)}\n";
             }
 
             return ezcode;

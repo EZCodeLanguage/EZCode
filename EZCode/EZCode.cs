@@ -72,35 +72,35 @@ namespace EZCode
         /// <summary>
         /// List for Audio output players
         /// </summary>
-        private List<Player> sounds = new List<Player>();
+        private List<Player> sounds;
         /// <summary>
         /// List for Labels
         /// </summary>
-        private List<GLabel> labels = new List<GLabel>();
+        private List<GLabel> labels;
         /// <summary>
         /// List for textboxes
         /// </summary>
-        private List<GTextBox> textboxes = new List<GTextBox>();
+        private List<GTextBox> textboxes;
         /// <summary>
         /// List for buttons
         /// </summary>
-        private List<GButton> buttons = new List<GButton>();
+        private List<GButton> buttons;
         /// <summary>
         /// List for gameobjects
         /// </summary>
-        private List<GShape> shapes = new List<GShape>();
+        private List<GShape> shapes;
         /// <summary>
         /// List for windows
         /// </summary>
-        private List<Window> windows = new List<Window>();
+        private List<Window> windows;
         /// <summary>
         /// List for variables
         /// </summary>
-        private List<Var> vars = new List<Var>();
+        private List<Var> vars;
         /// <summary>
         /// List of Groups
         /// </summary>
-        private List<Group> groups = new List<Group>();
+        private List<Group> groups;
         /// <summary>
         /// List of all controls
         /// </summary>
@@ -150,7 +150,7 @@ namespace EZCode
         /// <summary>
         /// RichTextbox for the console
         /// </summary>
-        private RichTextBox RichConsole;
+        public RichTextBox RichConsole;
 
         string _ConsoleText;
         /// <summary>
@@ -238,7 +238,9 @@ namespace EZCode
         /// <summary>
         /// The list of methods in the program
         /// </summary>
-        private List<Method> methods = new List<Method>();
+        private List<Method> methods;
+
+        public List<string> Errors { get; private set; }
 
         /// <summary>
         /// Initializes the EZCode Player with the provided parameters.
@@ -248,6 +250,16 @@ namespace EZCode
         /// <param name="_console">The RichTextbox that has the error color is wanted.</param>
         public void Initialize(bool inpanel = false, string _directory = "NOTHING", Control _space = null, RichTextBox _console = null, bool _showFileWithErrors = true, bool _showStartAndEnd = true, bool _clearConsole = true)
         {
+            methods = new List<Method>();
+            sounds = new List<Player>();
+            labels = new List<GLabel>();
+            textboxes = new List<GTextBox>();
+            buttons = new List<GButton>();
+            shapes = new List<GShape>();
+            windows = new List<Window>();
+            vars = new List<Var>();
+            groups = new List<Group>();
+            Errors = new List<string>();
             InPanel = inpanel;
             Space = _space;
             RichConsole = _console;
@@ -3213,7 +3225,7 @@ namespace EZCode
                                 break;
                         }
                         break;
-                    case "number":
+                    case "isnumber":
                         {
                             string[] strings = getString_value(ind, 2, usecolon:false);
                             string name = strings[0];
@@ -4985,7 +4997,7 @@ namespace EZCode
         /// </summary>
         public async Task<string> PlayFromConfig(EZProj proj)
         {
-            if (ClearConsole) RichConsole.Clear();
+            if (ClearConsole && RichConsole != null) RichConsole.Clear();
             InPanel = !proj.Window;
             showStartAndEnd = proj.ShowBuild;
             showFileInError = proj.FileInErrors;
@@ -5036,35 +5048,35 @@ namespace EZCode
         public void KeyInput_Down(KeyEventArgs e) {
             Keys.Add(e.KeyCode);
         }
-        public void KeyInput_Down(object sender, KeyEventArgs e) { KeyInput_Down(e); }
+        public void KeyInput_Down(object sender, KeyEventArgs e) => KeyInput_Down(e); 
         /// <summary>
         /// Sets the Key Input to the inputted key for the keyup
         /// </summary>
         public void KeyInput_Up(KeyEventArgs e) {
             Keys.Remove(e.KeyCode);
         }
-        public void KeyInput_Up(object sender, KeyEventArgs e) { KeyInput_Up(e); }
+        public void KeyInput_Up(object sender, KeyEventArgs e) => KeyInput_Up(e); 
         /// <summary>
         /// Gets The Mouse Position
         /// </summary>
         public void MouseInput_Move(MouseEventArgs e) {
             MousePosition = Cursor.Position;
         }
-        public void MouseInput_Move(object sender, MouseEventArgs e) { MouseInput_Move(e); }
+        public void MouseInput_Move(object sender, MouseEventArgs e) => MouseInput_Move(e); 
         /// <summary>
         /// Sets the Mouse Input to the inputted GButton for the MouseDown
         /// </summary>
         public void MouseInput_Down(MouseEventArgs e) {
             mouseButtons.Add(e.Button);
         }
-        public void MouseInput_Down(object sender, MouseEventArgs e) { MouseInput_Down(e); }
+        public void MouseInput_Down(object sender, MouseEventArgs e) => MouseInput_Down(e); 
         /// <summary>
         /// Sets the Mouse Input to the inputted GButton for the MouseUp
         /// </summary>
         public void MouseInput_Up(MouseEventArgs e) { 
             mouseButtons.Remove(e.Button); 
         }
-        public void MouseInput_Up(object sender, MouseEventArgs e) { MouseInput_Up(e); }
+        public void MouseInput_Up(object sender, MouseEventArgs e) => MouseInput_Up(e);
         /// <summary>
         /// Sets the Mouse Wheel Input to the delta of the mouse as: -1, 0, or 1
         /// </summary>
@@ -5072,7 +5084,7 @@ namespace EZCode
         {
             mouseWheel = e.Delta;
         }
-        public void MouseInput_Wheel(object sender, MouseEventArgs e) { MouseInput_Wheel(e); }
+        public void MouseInput_Wheel(object sender, MouseEventArgs e) => MouseInput_Wheel(e); 
         /// <summary>
         /// Put this in OnTextChange. This decides to scroll to end, sets the Normal/Error Colors, and sets the RichTextbox.
         /// </summary>
@@ -5107,6 +5119,7 @@ namespace EZCode
             text = newLine == true ? text + Environment.NewLine : text;
             ConsoleText += text;
             RichConsole = control != null ? control : RichConsole;
+            if (error) Errors.Add(text);
             if (RichConsole != null)
             {
                 if(RichConsole.Text.Length + 100 > RichConsole.MaxLength)
