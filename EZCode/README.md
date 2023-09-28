@@ -6,3 +6,4 @@
  - **Sound.cs** This contains the `Player` class and `EZCode.Sound` namespace.
  - **Window.cs** This contains the `Window` class and `EZCode.Windows` namespace.
  - **Variable.cs** This contains the `Var` class, the `IVar` interface, and the `EZCode.Variables` namsepace.
+ - **Player.cs** This contains the `Player` and `WindowProject` classes as well as the `EZCode.EZProjPlayer` namespace.
