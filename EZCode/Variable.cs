@@ -334,7 +334,7 @@ namespace EZCode.Variables
                 }
                 else
                 {
-                    return false;
+                    return null;
                 }
             }
             else

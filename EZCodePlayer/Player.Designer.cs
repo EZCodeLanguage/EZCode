@@ -83,7 +83,7 @@
             Send.FlatStyle = FlatStyle.Flat;
             Send.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Send.ForeColor = Color.FromArgb(235, 235, 235);
-            Send.Location = new Point(647, 470);
+            Send.Location = new Point(648, 236);
             Send.Name = "Send";
             Send.Size = new Size(65, 23);
             Send.TabIndex = 3;
@@ -100,7 +100,7 @@
             Clear.FlatStyle = FlatStyle.Flat;
             Clear.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Clear.ForeColor = Color.FromArgb(235, 235, 235);
-            Clear.Location = new Point(715, 470);
+            Clear.Location = new Point(715, 236);
             Clear.Name = "Clear";
             Clear.Size = new Size(65, 23);
             Clear.TabIndex = 2;
@@ -118,7 +118,7 @@
             input.BorderStyle = BorderStyle.None;
             input.Font = new Font("Cascadia Code", 12F, FontStyle.Regular, GraphicsUnit.Point);
             input.ForeColor = Color.FromArgb(235, 235, 235);
-            input.Location = new Point(3, 471);
+            input.Location = new Point(4, 238);
             input.Name = "input";
             input.Size = new Size(641, 19);
             input.TabIndex = 1;
@@ -137,7 +137,7 @@
             output.Location = new Point(0, -2);
             output.Name = "output";
             output.ReadOnly = true;
-            output.Size = new Size(780, 319);
+            output.Size = new Size(780, 234);
             output.TabIndex = 0;
             output.Text = "";
             output.WordWrap = false;

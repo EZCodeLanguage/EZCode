@@ -14,16 +14,18 @@
         /// <summary>
         /// Initiates form. Use this: 'Application.Run(new Player(new FileInfo("filepath")));' in the Program class.
         /// </summary>
-        public Player(EZProj eZProj)
+        public Player(EZProj eZProj, Icon? icon = null)
         {
             try
             {
+                Icon = icon;
                 proj = eZProj;
                 InitializeComponent();
                 int d = 0;
                 bool window = false;
 
                 WindowProject windowProject = new WindowProject(proj.Name != null ? proj.Name : proj.FilePath, ezcode, proj, this);
+                windowProject.Icon = icon;
                 if (proj.Window)
                 {
                     window = true;
@@ -31,7 +33,7 @@
                 }
                 else if (proj.IsVisual)
                 {
-                    d = Height - 25;
+                    d = 300;
                 }
                 else if (!proj.IsVisual)
                 {
@@ -53,6 +55,7 @@
                 ezcode.errorColor = Color.FromArgb(255, 20, 20);
                 ezcode.normalColor = !window ? output.ForeColor : Color.Black;
 
+                KeyPreview = true;
                 AppDomain.CurrentDomain.UnhandledException += ezcode.CurrentDomain_UnhandledException;
                 KeyDown += ezcode.KeyInput_Down;
                 KeyUp += ezcode.KeyInput_Up;
@@ -60,6 +63,14 @@
                 MouseMove += ezcode.MouseInput_Move;
                 MouseDown += ezcode.MouseInput_Down;
                 MouseUp += ezcode.MouseInput_Up;
+                output.MouseWheel += ezcode.MouseInput_Wheel;
+                output.MouseMove += ezcode.MouseInput_Move;
+                output.MouseDown += ezcode.MouseInput_Down;
+                output.MouseUp += ezcode.MouseInput_Up;
+                visualoutput.MouseWheel += ezcode.MouseInput_Wheel;
+                visualoutput.MouseMove += ezcode.MouseInput_Move;
+                visualoutput.MouseDown += ezcode.MouseInput_Down;
+                visualoutput.MouseUp += ezcode.MouseInput_Up;
 
                 Play();
             }
@@ -69,6 +80,7 @@
                 Application.Exit();
             }
         }
+
         private async void Play()
         {
             await ezcode.PlayFromConfig(proj);
@@ -205,7 +217,7 @@
             Send.FlatStyle = FlatStyle.Flat;
             Send.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Send.ForeColor = Color.FromArgb(235, 235, 235);
-            Send.Location = new Point(647, 470);
+            Send.Location = new Point(648, 236);
             Send.Name = "Send";
             Send.Size = new Size(65, 23);
             Send.TabIndex = 3;
@@ -222,7 +234,7 @@
             Clear.FlatStyle = FlatStyle.Flat;
             Clear.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Clear.ForeColor = Color.FromArgb(235, 235, 235);
-            Clear.Location = new Point(715, 470);
+            Clear.Location = new Point(715, 236);
             Clear.Name = "Clear";
             Clear.Size = new Size(65, 23);
             Clear.TabIndex = 2;
@@ -240,7 +252,7 @@
             input.BorderStyle = BorderStyle.None;
             input.Font = new Font("Cascadia Code", 12F, FontStyle.Regular, GraphicsUnit.Point);
             input.ForeColor = Color.FromArgb(235, 235, 235);
-            input.Location = new Point(3, 471);
+            input.Location = new Point(4, 238);
             input.Name = "input";
             input.Size = new Size(641, 19);
             input.TabIndex = 1;
@@ -259,7 +271,7 @@
             output.Location = new Point(0, -2);
             output.Name = "output";
             output.ReadOnly = true;
-            output.Size = new Size(780, 319);
+            output.Size = new Size(780, 234);
             output.TabIndex = 0;
             output.Text = "";
             output.WordWrap = false;
@@ -431,3 +443,48 @@
         public RichTextBox errors;
     } // DESIGNER
 }
+/*
+ private bool BuildApplication(string code)
+        {
+            // Set up the compiler parameters
+            CompilerParameters parameters = new CompilerParameters();
+            parameters.GenerateExecutable = true;
+            parameters.OutputAssembly = Path.Combine(textBox1.Text, titleTextBox.Text + ".exe");
+
+            // Add necessary references
+            parameters.ReferencedAssemblies.Add("System.dll");
+            parameters.ReferencedAssemblies.Add("System.Drawing.dll");
+            parameters.ReferencedAssemblies.Add("System.Windows.Forms.dll");
+            parameters.ReferencedAssemblies.Add("System.IO.dll");
+            parameters.ReferencedAssemblies.Add("System.IO.Compression.dll");
+            //parameters.ReferencedAssemblies.Add("System.Collections.Generic.dll");
+            parameters.ReferencedAssemblies.Add("System.Data.dll");
+            parameters.ReferencedAssemblies.Add("System.Linq.dll");
+            parameters.ReferencedAssemblies.Add("System.Threading.Tasks.dll");
+            parameters.ReferencedAssemblies.Add("System.IO.Compression.FileSystem.dll");
+            parameters.ReferencedAssemblies.Add("System.Xml.dll");
+
+            // Set the compiler options to remove the console window
+            parameters.CompilerOptions = "/target:winexe";
+
+            // Embed the icon file as a resource
+            parameters.EmbeddedResources.Add(iconPath);
+
+            // Compile the code using the C# CodeProvider
+            CSharpCodeProvider provider = new CSharpCodeProvider();
+            CompilerResults results = provider.CompileAssemblyFromSource(parameters, code);
+
+            if (results.Errors.Count > 0)
+            {
+                // Output any compiler errors
+                foreach (CompilerError error in results.Errors)
+                {
+                    MessageBox.Show($"Error: {error.ErrorText} Line: {error.Line}");
+                }
+
+                return false;
+            }
+
+            return true;
+        }
+ */

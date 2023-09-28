@@ -34,7 +34,7 @@ namespace EZCodePlayer
                 }
                 else if (proj.IsVisual)
                 {
-                    d = Height - 25;
+                    d = 300;
                 }
                 else if (!proj.IsVisual)
                 {
@@ -57,6 +57,7 @@ namespace EZCodePlayer
             ezcode.errorColor = Color.FromArgb(255, 20, 20);
             ezcode.normalColor = !window ? output.ForeColor : Color.Black;
 
+            KeyPreview = true;
             AppDomain.CurrentDomain.UnhandledException += ezcode.CurrentDomain_UnhandledException;
             KeyDown += ezcode.KeyInput_Down;
             KeyUp += ezcode.KeyInput_Up;
@@ -64,9 +65,18 @@ namespace EZCodePlayer
             MouseMove += ezcode.MouseInput_Move;
             MouseDown += ezcode.MouseInput_Down;
             MouseUp += ezcode.MouseInput_Up;
+            output.MouseWheel += ezcode.MouseInput_Wheel;
+            output.MouseMove += ezcode.MouseInput_Move;
+            output.MouseDown += ezcode.MouseInput_Down;
+            output.MouseUp += ezcode.MouseInput_Up;
+            visualoutput.MouseWheel += ezcode.MouseInput_Wheel;
+            visualoutput.MouseMove += ezcode.MouseInput_Move;
+            visualoutput.MouseDown += ezcode.MouseInput_Down;
+            visualoutput.MouseUp += ezcode.MouseInput_Up;
 
             Play();
         }
+
         private async void Play()
         {
             if (ProjectType.Script == projectType) await ezcode.Play(File.ReadAllText(file.FullName));

@@ -13,7 +13,7 @@ namespace EzCode_API
             ApplicationConfiguration.Initialize();
             Application.Run(new EZCode_Form());
 
-            //EZCode.EZProj ez = new EZCode.EZProj(@"C:\Users\jlham\OneDrive\Documents\ezcodeTesting\window.ezproj");
+            //EZCode.EZProj ez = new EZCode.EZProj(@"C:\Users\jlham\OneDrive\Documents\ezcodeTesting\input-test.ezproj");
             //Application.Run(new EZCode.EZPlayer.Player(ez));
         }
     }

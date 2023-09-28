@@ -9,7 +9,7 @@ namespace EZCodePlayer
         {
             bool er = false;
             InitializeComponent();
-            
+
             if (args == null || args == "")
             {
                 //Open File Picker

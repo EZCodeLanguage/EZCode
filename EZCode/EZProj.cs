@@ -140,7 +140,7 @@ namespace EZCode
         public string ReadConvert(string? _filecontent = null)
         {
             ClearConsole = true; 
-            IsVisual = true; 
+            IsVisual = false; 
             ShowBuild = false; 
             FileInErrors = true; 
             Window = false;
@@ -229,7 +229,7 @@ namespace EZCode
                                 value = getvar(value);
                             }
                             bool? check = Var.staticReturnBool(insidemarks(value, false));
-                            if (value == @"""default""") check = keyword == "fileinerror" || keyword == "isvisual" || keyword == "clearconsole" || keyword == "closeonend" ? true : false;
+                            if (value == @"""default""") check = keyword == "fileinerror" || keyword == "clearconsole" || keyword == "closeonend" ? true : false;
                             if(check == null) errors.Add($"'{value}' is not a boolean in {EzCode.SegmentSeperator} {lineindex}");
                             switch (keyword)
                             {
