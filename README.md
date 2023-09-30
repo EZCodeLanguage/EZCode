@@ -20,7 +20,7 @@ Welcome to the EzCode source code repository! This repository contains the code 
 
 To get started with EzCode, you can follow these steps:
 
-1. Clone the main repository: `git clone https://github.com/JBrosDevelopment/EZCode-SourceCode.git`
+1. Clone the main repository: `git clone https://github.com/JBrosDevelopment/EZCode.git`
 
 2. Explore the different components of EzCode, including the IDE, Viewer, Packager, and Player.
 
