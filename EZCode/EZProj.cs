@@ -1,5 +1,8 @@
 ﻿using EZCode.Variables;
+using System;
+using System.Drawing;
 using System.Text.RegularExpressions;
+using static EZCode.EzCode;
 
 namespace EZCode
 {
@@ -20,7 +23,7 @@ namespace EZCode
         /// <summary>
         /// any errors that occured during the <see cref="ReadConvert(string?)"/> Process
         /// </summary>
-        public string[] Errors {  get; private set; }
+        public string[] Errors { get; private set; }
         /// <summary>
         /// is the opposite of <see cref="EzCode.InPanel"/>
         /// </summary>
@@ -42,23 +45,63 @@ namespace EZCode
         /// </summary>
         public bool ClearConsole { get; set; }
         /// <summary>
-        /// Clear console before each build
+        /// Name of Project
         /// </summary>
         public string Name { get; set; }
         /// <summary>
-        /// Clear console before each build
+        /// Icon for project
+        /// </summary>
+        public string IconPath { get; set; }
+        /// <summary>
+        /// Icon for project
+        /// </summary>
+        public Icon Icon { get; set; }
+        /// <summary>
+        /// Debugs project
         /// </summary>
         public bool Debug { get; set; }
         /// <summary>
-        /// Clear console before each build
+        /// close the application on end
         /// </summary>
         public bool CloseOnEnd { get; set; }
 
         /// <summary>
+        /// Empty Instance of <see cref="EZProj"/>.
+        /// </summary>
+        public EZProj() { }
+        public EZProj(EzCode code)
+        {
+            string[] lines = code.Code.Split("\n");
+            string[] parts = new string[0];
+            int index = 0;
+            for (int i = 0; i < lines.Length; i++)
+            {
+                if (lines[i].Trim().StartsWith("# project properties :") || lines[i].Trim().StartsWith("#project properties :"))
+                {
+                    if (lines[i].Trim().StartsWith("# project properties :")) index = 4;
+                    else if (lines[i].Trim().StartsWith("#project properties :")) index = 3;
+                    parts = lines[i].Split(" ");
+                }
+            }
+            string file = "";
+            if (parts.Length != 0)
+            {
+                string[] commas = string.Join(" ", parts.Skip(index)).Split(",");
+                foreach (string comma in commas)
+                {
+                    string before = comma.Split(":")[0];
+                    string after = string.Join(":", comma.Split(":").Skip(1));
+                    file += $"{before}:\"{after}\"".Trim() + Environment.NewLine;
+                }
+            }
+            Program = ReadConvert(file);
+            Program += "\n" + code.Code;
+        }
+        /// <summary>
         /// New instanse of <see cref="EZProj"/>. 
         /// </summary>
         /// <param name="file">The ezproj file contents being read as a <seealso cref="string"/></param>
-        public EZProj(string file) 
+        public EZProj(string file)
         {
             FilePath = file;
             FileContents = File.ReadAllText(file);
@@ -139,13 +182,15 @@ namespace EZCode
         /// <returns>string that contains ezcode. <seealso cref="Program"/></returns>
         public string ReadConvert(string? _filecontent = null)
         {
-            ClearConsole = true; 
-            IsVisual = false; 
-            ShowBuild = false; 
-            FileInErrors = true; 
+            ClearConsole = true;
+            IsVisual = false;
+            ShowBuild = false;
+            FileInErrors = true;
             Window = false;
             Debug = false;
             CloseOnEnd = true;
+            Name ??= $"EZCode_v{EzCode.Version}";
+            IconPath ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EZCode", "EZCode", "EZCode_Logo.ico");
 
             string filecontent = FileContents;
             if (_filecontent != null) filecontent = _filecontent;
@@ -199,23 +244,35 @@ namespace EZCode
                                 {
                                     if (keyword == "include") files.Add(value);
                                     else if (keyword == "exclude") files.Remove(value);
-                                    else if (keyword == "startup") {
+                                    else if (keyword == "startup")
+                                    {
                                         //files.Add(value);
                                         startup = value;
                                     }
                                 }
                                 else
                                 {
-                                    errors.Add($"'{value}' does not exist or is not a valid file path in {EzCode.SegmentSeperator} {lineindex}");
+                                    errors.Add($"'{value}' does not exist or is not a valid file path in {SegmentSeperator} {lineindex}");
                                 }
                             }
                             break;
                         case "name":
+                        case "icon":
                             if (isvar(value))
                             {
                                 value = getvar(value);
                             }
-                            Name = insidemarks(value, false);
+                            v = insidemarks(value, false);
+                            if (keyword == "name") Name = v;
+                            else if (keyword == "icon" && validfile(v, true))
+                            {
+                                IconPath = v;
+                                Icon = new Icon(v);
+                            }
+                            else
+                            {
+                                errors.Add($"'{value}' does not exist or is not a valid file path in {SegmentSeperator} {lineindex}");
+                            }
                             break;
                         case "fileinerror":
                         case "showbuild":
@@ -230,7 +287,7 @@ namespace EZCode
                             }
                             bool? check = Var.staticReturnBool(insidemarks(value, false));
                             if (value == @"""default""") check = keyword == "fileinerror" || keyword == "clearconsole" || keyword == "closeonend" ? true : false;
-                            if(check == null) errors.Add($"'{value}' is not a boolean in {EzCode.SegmentSeperator} {lineindex}");
+                            if (check == null) errors.Add($"'{value}' is not a boolean in {SegmentSeperator} {lineindex}");
                             switch (keyword)
                             {
                                 case "fileinerror": FileInErrors = check == true; break;
@@ -246,7 +303,7 @@ namespace EZCode
                             if (keyword.StartsWith("//")) break;
                             v = insidemarks(keyword, false);
                             if (keyword == v)
-                                errors.Add($"'{keyword}' is an unexpected keyword in {EzCode.SegmentSeperator} {lineindex}");
+                                errors.Add($"'{keyword}' is an unexpected keyword in {SegmentSeperator} {lineindex}");
                             else
                             {
                                 string _o = getfile(insidemarks(value, false), false);
@@ -259,16 +316,20 @@ namespace EZCode
                 }
                 catch
                 {
-                    errors.Add($"An error occured in {EzCode.SegmentSeperator} {lineindex}");
+                    errors.Add($"An error occured in {SegmentSeperator} {lineindex}");
                 }
             }
             Errors = errors.ToArray();
 
-            if (startup != "") ezcode += $"#current file {startup}\n{File.ReadAllText(startup)}\n";
+
+            if (startup != "") ezcode += $"#current file {startup}\n\n";
+            ezcode += $"//Project Properties\n#project properties : name:{Name}, icon:{IconPath}, fileinerror:{FileInErrors}, showbuild:{ShowBuild}, window:{Window}, isvisual:{IsVisual}, clearconsole:{ClearConsole}, debug:{Debug}, closeonend:{CloseOnEnd}\n";
+            if (startup != "") ezcode += $"\n//{new FileInfo(startup).Name}\n{File.ReadAllText(startup)}\n";
+
             files.Remove(startup);
             foreach (string file in files)
             {
-                ezcode += $"\n#current file {file}\n{File.ReadAllText(file)}\n";
+                ezcode += $"\n//{new FileInfo(file).Name}\n#current file {file}\n{File.ReadAllText(file)}\n";
             }
 
             return ezcode;
@@ -338,7 +399,7 @@ namespace EZCode
         }
         private string[] getdirectory(string path)
         {
-            if(path == "all" || path == "folder")
+            if (path == "all" || path == "folder")
             {
                 string _p = Path.GetDirectoryName(FilePath);
                 return Directory.GetFiles(_p, "*.ezcode", path == "all" ? SearchOption.AllDirectories : SearchOption.TopDirectoryOnly);
@@ -348,7 +409,7 @@ namespace EZCode
         }
         private string? getvar(string name, bool innermarks = true)
         {
-            if(innermarks) name = insidemarks(name);
+            if (innermarks) name = insidemarks(name);
             return vars.FirstOrDefault(x => x.Name == name, null).Value;
         }
         private string? insidemarks(string text, bool err = true)

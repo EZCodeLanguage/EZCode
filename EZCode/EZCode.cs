@@ -23,7 +23,17 @@ namespace EZCode
         /// <summary>
         /// Directory of the script playing
         /// </summary>
-        public string Version { get; } = "2.0.0";
+        public static string Version { get; } = "2.0.0";
+        /// <summary>
+        /// The Official EZCode Icon
+        /// </summary>
+        public static Icon EZCodeIcon
+        {
+            get
+            {
+                return new Icon(Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EZCode_Logo.ico"));
+            }
+        }
         /// <summary>
         /// Directory of the script playing
         /// </summary>
@@ -174,7 +184,7 @@ namespace EZCode
         /// <summary>
         /// Text to be executed
         /// </summary>
-        string Code { get; set; }
+        public string Code { get; set; }
         /// <summary>
         /// Bool to decide if the script is playing
         /// </summary>
@@ -207,7 +217,7 @@ namespace EZCode
         /// <summary>
         /// string array for naming violations
         /// </summary>
-        public static string[] UnusableNames { get; } = new string[] { "await", "button", "print", "group", "clear", "write", "stop", "DEVPORTAL", "methodend",
+        public static string[] UnusableNames { get; } = new string[] { "await", "button", "print", "group", "clear", "write", "stop", "DEVPORTAL", "endmethod",
             "event", "textbox", "multiLine", "shape", "image", "label", "font", "move", "scale", "color", "intersects", "var", "if", "method",
             "input", "list", "file", "sound", "if", "//", "#create", "#suppress", "#", "system:", "?", "=", "!", ">", "<", "+", "loop", "global",
             "-", "|", "\\", ",", "@", "#", "$", "%", "^", "&", "*", "(", ")", "/", "~", "`", ".", ":", ";", "window", "system", "messagebox" };
@@ -336,7 +346,7 @@ namespace EZCode
                             everythingafter.AddRange(splitcode.Skip(currentindex));
                             everythingafter = everythingafter.Select(x => x.Trim()).ToList();
                             string[] returnned = ExtractContent(everythingafter.ToArray(), parts);
-                            
+
                             int tr = 0;
                             int oldcodeline = codeLine;
                             while (looptime != -1 ? tr < looptime : loop == true && playing)
@@ -370,7 +380,7 @@ namespace EZCode
                         try
                         {
                             bool containscolon = parts[1] == ":";
-                            if(containscolon)
+                            if (containscolon)
                             {
                                 string[] wholearray = parts.ToArray();
                                 string[] after = string.Join(" ", wholearray).Split(" : ");
@@ -489,7 +499,7 @@ namespace EZCode
                             everythingafter.AddRange(splitcode.Skip(currentindex));
                             everythingafter = everythingafter.Select(x => x.Trim()).ToList();
                             string nextline = "";
-                            for (int i = 1; i < everythingafter.Count && nextline == ""; i++) if(everythingafter[i] != "") nextline = everythingafter[i];
+                            for (int i = 1; i < everythingafter.Count && nextline == ""; i++) if (everythingafter[i] != "") nextline = everythingafter[i];
                             bool inline = anythingafter && !startswithbracket;
                             bool onnextline = !inline && !startswithbracket && !nextline.Trim().StartsWith("{") && nextline != "";
                             if (inline) // execute line after if
@@ -538,7 +548,7 @@ namespace EZCode
                         {
                             string[] title = getString_value(parts, 1);
                             string text = getString_value(parts, int.Parse(title[1]))[0];
-                            MessageBox.Show(text, title[0]);                            
+                            MessageBox.Show(text, title[0]);
                         }
                         catch
                         {
@@ -765,7 +775,7 @@ namespace EZCode
                                     }
                                     break;
                                 default:
-                                    ErrorText(parts, ErrorTypes.custom, custom:$"Expected 'var', 'list', 'group', 'textbox', 'label', 'button', or 'shape' after {keyword} in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'var', 'list', 'group', 'textbox', 'label', 'button', or 'shape' after {keyword} in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                         }
@@ -929,10 +939,10 @@ namespace EZCode
                                         code = File.ReadAllText(file_p[0]);
                                         endindex = int.Parse(file_p[1]);
                                         EzCode ezCode = new EzCode();
-                                        ezCode.Initialize(_space:Space, _console: RichConsole, _showStartAndEnd:false);
+                                        ezCode.Initialize(_space: Space, _console: RichConsole, _showStartAndEnd: false);
                                         EZProj eZProj = new EZProj(code, file_p[0]);
                                         eZProj.ShowBuild = false;
-                                        await ezCode.PlayFromConfig(eZProj);
+                                        await ezCode.PlayFromProj(eZProj);
                                     }
                                     break;
                                 case "create":
@@ -968,7 +978,7 @@ namespace EZCode
                         }
                         catch (Exception ex)
                         {
-                            if(ex.Message == $"File not found in {SegmentSeperator} {codeLine}") ErrorText(parts, ErrorTypes.custom, custom: ex.Message);
+                            if (ex.Message == $"File not found in {SegmentSeperator} {codeLine}") ErrorText(parts, ErrorTypes.custom, custom: ex.Message);
                             else ErrorText(parts, ErrorTypes.normal, keyword);
                         } // FILE
                         break;
@@ -1112,12 +1122,12 @@ namespace EZCode
                         {
                             string[] namearray = getString_value(parts, 1, false, false, true, false);
                             string name = namearray[0];
-                            if(name == "stopall")
+                            if (name == "stopall")
                             {
                                 StopAllSounds();
                                 return new string[] { returnOutput, stillInFile.ToString() };
                             }
-                            else if(name == "volume")
+                            else if (name == "volume")
                             {
                                 Player.Volume = find_value(parts, 2, 0)[0];
                                 return new string[] { returnOutput, stillInFile.ToString() };
@@ -1132,7 +1142,7 @@ namespace EZCode
                                     break;
                                 case "play":
                                     Player player = await GetPlayer(name);
-                                    if(player.Name != "")
+                                    if (player.Name != "")
                                     {
                                         player.Play();
                                     }
@@ -1182,14 +1192,14 @@ namespace EZCode
                         }
                         catch
                         {
-                            ErrorText(parts,ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // SOUND
                         break;
                     case "event":
                         try
                         {
                             string name = parts[1];
-                            
+
                             if (getControl(name) != null)
                             {
                                 Control? control = getControl(name);
@@ -1406,8 +1416,8 @@ namespace EZCode
                             {
                                 ErrorText(parts, ErrorTypes.missingControl, keyword, name);
                             }
-                        } 
-                        catch 
+                        }
+                        catch
                         {
                             ErrorText(parts, ErrorTypes.normal, keyword);
                         } // EVENT
@@ -1446,19 +1456,28 @@ namespace EZCode
                     default:
                         try
                         {
-                            if (keyword == "#" || keyword == "#create".ToLower() || keyword == "#suppress".ToLower() || keyword == "#current")
+                            if (keyword == "#" || keyword == "#create".ToLower() || keyword == "#suppress".ToLower() || keyword == "#current" || keyword == "#project")
                             {
-                                int index = keyword == "#create".ToLower() ? 1 :
+                                int index =
                                     keyword == "#" && parts[1] == "create".ToLower() ? 2 :
                                     keyword == "#" && parts[1] == "suppress".ToLower() ? 2 :
+                                    keyword == "#" && parts[1] == "project".ToLower() ? 2 :
                                     keyword == "#" && parts[1] == "current".ToLower() ? 2 :
+                                    keyword == "#create".ToLower() ? 1 :
                                     keyword == "#suppress".ToLower() ? 1 :
                                     keyword == "#current".ToLower() ? 1 :
+                                    keyword == "#project".ToLower() ? 1 :
                                     0;
-                                keyword = keyword == "#create".ToLower() ? keyword.ToLower() :
+                                keyword =
                                     keyword == "#" && parts[1] == "create".ToLower() ? "#create" :
                                     keyword == "#" && parts[1] == "suppress".ToLower() ? "#suppress" :
+                                    keyword == "#" && parts[1] == "suppress".ToLower() ? "#current" :
+                                    keyword == "#" && parts[1] == "suppress".ToLower() ? "#project" :
+                                    keyword == "#create".ToLower() ? keyword.ToLower() :
                                     keyword == "#suppress".ToLower() ? keyword.ToLower() :
+                                    keyword == "#suppress".ToLower() ? keyword.ToLower() :
+                                    keyword == "#current".ToLower() ? keyword.ToLower() :
+                                    keyword == "#project".ToLower() ? keyword.ToLower() :
                                     keyword;
                                 switch (keyword)
                                 {
@@ -1501,6 +1520,74 @@ namespace EZCode
                                             else
                                             {
                                                 ScriptDirectory = strings[0];
+                                            }
+                                        }
+                                        break;
+                                    case "#project":
+                                        if (parts[index] != "properties")
+                                        {
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'properties' keyword after '#project' in {SegmentSeperator} {codeLine}");
+                                        }
+                                        else
+                                        {
+                                            if (parts[index + 1] != ":")
+                                            {
+                                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' after '#project properties' in {SegmentSeperator} {codeLine}");
+                                            }
+                                            else
+                                            {
+                                                string[] commas = string.Join(" ", parts.Skip(index + 2)).Split(",");
+                                                EZProj proj = new EZProj();
+                                                foreach (string comma in commas)
+                                                {
+                                                    string[] values = comma.Split(':');
+                                                    string[] b_before = getString_value(values, 0);
+                                                    string before = b_before[0].Trim();
+                                                    string after = getString_value(values, int.Parse(b_before[1]))[0].Trim();
+                                                    switch (before)
+                                                    {
+                                                        case "showbuild":
+                                                            //proj.ShowBuild = (bool)Var.staticReturnBool(getString_value(b_before, 0)[0]);
+                                                            break;
+                                                        case "isvisual":
+                                                            //proj.IsVisual = (bool)Var.staticReturnBool(getString_value(b_before, 0)[0]);
+                                                            break;
+                                                        case "closeonend":
+                                                            //proj.CloseOnEnd = (bool)Var.staticReturnBool(getString_value(b_before, 0)[0]);
+                                                            break;
+                                                        case "debug":
+                                                            //proj.Debug = (bool)Var.staticReturnBool(getString_value(b_before, 0)[0]);
+                                                            break;
+                                                        case "window":
+                                                            //proj.Window = (bool)Var.staticReturnBool(getString_value(b_before, 0)[0]);
+                                                            break;
+                                                        case "clearconsole":
+                                                            //proj.ClearConsole = (bool)Var.staticReturnBool(getString_value(b_before, 0)[0]);
+                                                            break;
+                                                        case "fileinerror":
+                                                            //proj.FileInErrors = (bool)Var.staticReturnBool(getString_value(b_before, 0)[0]);
+                                                            break;
+                                                        case "name":
+                                                            //proj.Name = getString_value(b_before, 0)[0];
+                                                            break;
+                                                        case "icon":
+                                                            //string[] s = await getFile(parts, index + 1);
+                                                            //proj.IconPath = s[0];
+                                                            break;
+                                                        default:
+                                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected valid property for '#project properties' in {SegmentSeperator} {codeLine}");
+                                                            break;
+                                                    }
+                                                    //InPanel = !proj.Window;
+                                                    //showStartAndEnd = proj.ShowBuild;
+                                                    //showFileInError = proj.FileInErrors;
+                                                    //if (proj.Errors != null)
+                                                    //    foreach (string error in proj.Errors)
+                                                    //    {
+                                                    //        ErrorText(new string[0], ErrorTypes.custom, custom: error);
+                                                    //    }
+                                                }
+
                                             }
                                         }
                                         break;
@@ -1553,7 +1640,7 @@ namespace EZCode
                                                     {
                                                         v = getVar(name);
                                                     }
-                                                    if (!v.isSet) 
+                                                    if (!v.isSet)
                                                     {
                                                         v.set(name);
                                                     }
@@ -1564,7 +1651,7 @@ namespace EZCode
                                             catch
                                             {
                                                 string msg = $"Error setting the parameters for '{method.Name}' in {SegmentSeperator} {codeLine}";
-                                                ErrorText(parts, ErrorTypes.custom, custom:msg);
+                                                ErrorText(parts, ErrorTypes.custom, custom: msg);
                                             }
                                         }
                                         else if (parts[1] == "=>")
@@ -1583,13 +1670,13 @@ namespace EZCode
                                             catch
                                             {
                                                 string msg = $"Error setting the parameters for '{method.Name}' in {SegmentSeperator} {codeLine}";
-                                                ErrorText(parts, ErrorTypes.custom, custom:msg);
+                                                ErrorText(parts, ErrorTypes.custom, custom: msg);
                                             }
                                         }
                                         else
                                         {
                                             string msg = $"Expected ':' or '=>' to set parameters for '{method.Name}' in {SegmentSeperator} {codeLine}";
-                                            ErrorText(parts, ErrorTypes.custom, custom:msg);
+                                            ErrorText(parts, ErrorTypes.custom, custom: msg);
                                         }
                                     }
                                     catch
@@ -1608,7 +1695,7 @@ namespace EZCode
                                     buttons = buttons.Where(v => v.Method == "").ToList();
                                     labels = labels.Where(v => v.Method == "").ToList();
 
-                                    if (method.Paremters != null) 
+                                    if (method.Paremters != null)
                                         vars.AddRange(method.Paremters);
 
                                     //Run Method
@@ -1654,11 +1741,11 @@ namespace EZCode
                                         {
                                             paremeters[i].set(method.Paremters[i].Value);
                                             vars.Remove(method.Paremters[i]);
-                                        } 
+                                        }
                                     }
                                     vars = _vars.ToList();
                                     groups = _groups.ToList();
-                                    foreach(Control c in _allcontrols)
+                                    foreach (Control c in _allcontrols)
                                     {
                                         if (c is GShape) shapes.Add(c as GShape);
                                         else if (c is GTextBox) textboxes.Add(c as GTextBox);
@@ -1671,7 +1758,7 @@ namespace EZCode
                                     ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a Method named '{method}' in {SegmentSeperator} {codeLine}");
                                 }
                             }
-                            else if (!keyword.StartsWith("//") && !keyword.StartsWith("{") && !keyword.StartsWith("}") && keyword != "")
+                            else if (!keyword.StartsWith("//") && !keyword.StartsWith("{") && !keyword.StartsWith("}") && keyword != "method" && keyword != "endmethod" && keyword != "")
                             {
                                 ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a keyword or variable named '{keyword}' in {SegmentSeperator} {codeLine}");
                             }
@@ -1687,7 +1774,7 @@ namespace EZCode
             }
             catch
             {
-                returnOutput += ErrorText(_parts, ErrorTypes.unkown, returnoutput:false) + "\n";
+                returnOutput += ErrorText(_parts, ErrorTypes.unkown, returnoutput: false) + "\n";
                 return new string[] { returnOutput, "true" };
             }
         }
@@ -1704,7 +1791,7 @@ namespace EZCode
         {
             Window? Window = null;
             string name = parts[index];
-            if(methods.Select(x => x.Name).Contains(name))
+            if (methods.Select(x => x.Name).Contains(name))
             {
                 ErrorText(parts, ErrorTypes.methodnamingvoilation, "Window", name);
             }
@@ -1840,11 +1927,11 @@ namespace EZCode
         }
         async Task<Window> changeWindow(Window window, string[] parts, int index)
         {
-            if(parts.Length - 1 >= index)
+            if (parts.Length - 1 >= index)
             {
                 if (parts[index] == ":")
                 {
-                    string[] strings = string.Join(" ", parts.SkipWhile(x=>x !=  ":").Skip(1).ToArray()).Split(",");
+                    string[] strings = string.Join(" ", parts.SkipWhile(x => x != ":").Skip(1).ToArray()).Split(",");
                     foreach (string p in strings)
                     {
                         string[] values = p.Split(':');
@@ -1913,7 +2000,7 @@ namespace EZCode
                             case "opacity":
                                 {
                                     float[] floats = find_value(after, 0, 1);
-                                    if (floats[0] >= 0 && floats[0] <= 1) 
+                                    if (floats[0] >= 0 && floats[0] <= 1)
                                         window.Opacity = floats[0];
                                     else ErrorText(parts, ErrorTypes.custom, custom: $"Expected opacity value to be withen 0 and 1 in {SegmentSeperator} {codeLine}");
                                 }
@@ -2380,11 +2467,11 @@ namespace EZCode
                                 varray.Remove(rem);
                             }
                         }
-                        var_r.set(array:varray.ToArray());
+                        var_r.set(array: varray.ToArray());
                     }
                     else
                     {
-                        ErrorText(parts, ErrorTypes.custom, custom:$"Expected a list variable in {SegmentSeperator} {codeLine}");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable in {SegmentSeperator} {codeLine}");
                     }
                     break;
                 case "destroy":
@@ -2567,7 +2654,7 @@ namespace EZCode
                         if (g.isSet)
                         {
                             groups.Remove(g);
-                            foreach(Control c in g.Controls)
+                            foreach (Control c in g.Controls)
                             {
                                 c.Dispose();
                             }
@@ -2585,7 +2672,7 @@ namespace EZCode
                         bool? _abs = BoolCheck(parts, _index + 2, false);
                         bool abs = false;
                         if (_abs == true) abs = true;
-                        else if(_abs == false) abs = false;
+                        else if (_abs == false) abs = false;
                         else
                         {
                             //ErrorText(parts, ErrorTypes.custom, custom: $"Expected the 'absolute' value for {name} in {SegmentSeperator} {codeLine}");
@@ -2603,7 +2690,7 @@ namespace EZCode
                             };
                             control = await Change(control, parts, _index + ne, true, false, true);
 
-                            if(!abs)
+                            if (!abs)
                                 group1.SetRelativeChenges(control);
                             else
                                 group1.SetAbsoluteChenges(tempc, control);
@@ -2688,7 +2775,7 @@ namespace EZCode
                         {
                             try
                             {
-                                var = await CreateVar(parts, 0, true, allowJump:true);
+                                var = await CreateVar(parts, 0, true, allowJump: true);
                             }
                             catch
                             {
@@ -2724,7 +2811,7 @@ namespace EZCode
                 contype == "textbox" ? controlType.Textbox :
                 contype == "button" ? controlType.GButton :
                 controlType.None;
-            Control control = await createControl(parts, controltype, index, global:global);
+            Control control = await createControl(parts, controltype, index, global: global);
             obj = control is GShape ? control as GShape : null;
             lab = control is GLabel ? control as GLabel : null;
             txb = control is GTextBox ? control as GTextBox : null;
@@ -2739,7 +2826,7 @@ namespace EZCode
         {
             Group group = new Group(name) { isSet = false };
             return groups.FirstOrDefault(x => x.Name == name, group);
-        } 
+        }
         void StopAllSounds()
         {
             for (int i = 0; i < sounds.Count; i++)
@@ -2747,12 +2834,12 @@ namespace EZCode
                 sounds[i].Stop();
             }
         }
-        async Task<Player> GetPlayer(string name) 
+        async Task<Player> GetPlayer(string name)
         {
             Player player = new Player();
             for (int i = 0; i < sounds.Count; i++)
             {
-                if(name == sounds[i].Name)
+                if (name == sounds[i].Name)
                 {
                     player = sounds[i];
                 }
@@ -2930,7 +3017,7 @@ namespace EZCode
                 bool equals = sides[0].Trim() == sides[1].Trim();
                 bool midequal = mid == '=';
                 return equals && midequal ? true :
-                    !equals && !midequal ? true : 
+                    !equals && !midequal ? true :
                     false;
             }
         }
@@ -2978,7 +3065,7 @@ namespace EZCode
                 switchIndex--;
             else if ((parts.Length > switchIndex + 1) && (parts[switchIndex + 1] == "=>" || parts[switchIndex + 1] == ":") && (parts[switchIndex] != "=>" || parts[switchIndex] != ":"))
                 switchIndex++;
-            if ((parts[switchIndex].Contains("\\") || parts[switchIndex].Contains("/") || vars.Select(x=>x.Name).Contains(parts[switchIndex])) && (parts[switchIndex - 1] != "=>" || parts[switchIndex - 1] != ":") && (!parts.Contains(":") && !parts.Contains("=>")))
+            if ((parts[switchIndex].Contains("\\") || parts[switchIndex].Contains("/") || vars.Select(x => x.Name).Contains(parts[switchIndex])) && (parts[switchIndex - 1] != "=>" || parts[switchIndex - 1] != ":") && (!parts.Contains(":") && !parts.Contains("=>")))
                 parts[switchIndex] = "";
             string errorText = "";
             switch (parts.Length - 1 >= switchIndex ? parts[switchIndex] : "")
@@ -3049,7 +3136,7 @@ namespace EZCode
         {
             string name = parts[index].Trim();
 
-            if(UnusableNames.Contains(name) || IsNumericString(name) || UnusableContains.Any(unusable => name.Contains(unusable)) || name.Contains(":") || name.Contains("|") || name.Contains("\\") || name.Trim() == "")
+            if (UnusableNames.Contains(name) || IsNumericString(name) || UnusableContains.Any(unusable => name.Contains(unusable)) || name.Contains(":") || name.Contains("|") || name.Contains("\\") || name.Trim() == "")
             {
                 ErrorText(parts, ErrorTypes.violation, name: name);
             }
@@ -3117,11 +3204,11 @@ namespace EZCode
                 }
                 var.set(intval != null ? intval.ToString() : stringvalue);
             }
-            else if(alreadyarray == null)
+            else if (alreadyarray == null)
             {
                 var.set(alreadyVal);
             }
-            else if(alreadyarray != null)
+            else if (alreadyarray != null)
             {
                 var.set(array: alreadyarray);
             }
@@ -3227,7 +3314,7 @@ namespace EZCode
                         break;
                     case "isnumber":
                         {
-                            string[] strings = getString_value(ind, 2, usecolon:false);
+                            string[] strings = getString_value(ind, 2, usecolon: false);
                             string name = strings[0];
                             Var var = getVar(name);
                             if (var.isSet)
@@ -3380,7 +3467,7 @@ namespace EZCode
                         break;
                     case "point":
                     case "points":
-                        if(control is GShape gs)
+                        if (control is GShape gs)
                             value = string.Join(",", gs.Points);
                         else
                             ErrorText(parts, ErrorTypes.custom, custom: $"Only Shapes have '{ind[1]}' value in {SegmentSeperator} " + codeLine);
@@ -3432,10 +3519,10 @@ namespace EZCode
                         value = GetZIndex(control).ToString();
                         break;
                     case "focused":
-                            value = control.Focused ? "1" : "0";
+                        value = control.Focused ? "1" : "0";
                         break;
                     case "enabled":
-                            value = control.Enabled ? "1" : "0";
+                        value = control.Enabled ? "1" : "0";
                         break;
                     case "readonly":
                         if (control is GTextBox rt)
@@ -3605,10 +3692,10 @@ namespace EZCode
                         value = window.Font.Style.ToString();
                         break;
                     case "focused":
-                            value = window.Focused ? "1" : "0";
+                        value = window.Focused ? "1" : "0";
                         break;
                     case "enabled":
-                            value = window.Enabled ? "1" : "0";
+                        value = window.Enabled ? "1" : "0";
                         break;
                     case "image":
                         {
@@ -3625,14 +3712,14 @@ namespace EZCode
                         break;
                 }
             }
-            else if (vars.Select(x => x.Name).Contains(ind[0]) && ind.Length > 1) 
+            else if (vars.Select(x => x.Name).Contains(ind[0]) && ind.Length > 1)
             {
                 Var var = getVar(ind[0]);
                 switch (ind[1])
                 {
                     case "length":
                         value = var.Description == Types.Array ? var.array.Length.ToString() : var.text.Length.ToString();
-                        if(ind.Length > 2 && var.isArray())
+                        if (ind.Length > 2 && var.isArray())
                         {
                             float _number = find_value(ind, 2, 0)[0];
                             value = var.array[(int)_number].Length.ToString();
@@ -3659,7 +3746,7 @@ namespace EZCode
                         break;
                 }
             }
-            else if (groups.Select(x => x.Name).Contains(ind[0]) && ind.Length > 1) 
+            else if (groups.Select(x => x.Name).Contains(ind[0]) && ind.Length > 1)
             {
                 Group group = getGroup(ind[0]);
                 switch (ind[1])
@@ -3673,7 +3760,7 @@ namespace EZCode
                         break;
                 }
             }
-            else if (ind.Length > 1 && ind[0].Split(",").Length > 1) 
+            else if (ind.Length > 1 && ind[0].Split(",").Length > 1)
             {
                 string[] varray = ind[0].Split(new char[] { ',' });
                 switch (ind[1])
@@ -3723,9 +3810,9 @@ namespace EZCode
             violation = IsNumericString(name) ? 2 : violation;
 
             string type = controltype == controlType.GButton ? "button" :
-                controltype == controlType.Shape ? "shape" : 
-                controltype == controlType.GLabel ? "label" : 
-                controltype == controlType.Textbox ? "textbox" : 
+                controltype == controlType.Shape ? "shape" :
+                controltype == controlType.GLabel ? "label" :
+                controltype == controlType.Textbox ? "textbox" :
                 "AN_INTERNAL_ERROR";
 
             switch (violation)
@@ -3761,7 +3848,7 @@ namespace EZCode
 
                 if (getControl(name) == null && overwrite)
                 {
-                    if(InPanel) Space.Controls.Add(control);
+                    if (InPanel) Space.Controls.Add(control);
                     shapes.Add(control);
                 }
 
@@ -3823,7 +3910,7 @@ namespace EZCode
             {
                 GButton control = new GButton();
                 if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GButton;
-                else if(getControl(name) != null && getControl(name).AccessibleName != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
+                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
                 control.Name = name;
                 control.AccessibleName = type;
                 control.Click += GButtonClick;
@@ -3856,7 +3943,7 @@ namespace EZCode
             float[]? getpoints = null;
             int points = 0;
             control.BringToFront();
-            if(RefreshOnControl) Space.Refresh();
+            if (RefreshOnControl) Space.Refresh();
             if (text)
             {
                 txt = getString_value(parts, 0);
@@ -3864,7 +3951,7 @@ namespace EZCode
                 control.Text = txt[0];
             }
             else if (sides)
-            { 
+            {
                 try
                 {
                     if (control is GShape gs)
@@ -3981,12 +4068,12 @@ namespace EZCode
                     y = control.Top,
                     w = control.Width,
                     h = control.Height;
-                foreach(string p in parts)
+                foreach (string p in parts)
                 {
                     string[] values = p.Split(':');
                     string[] before = getString_value(values, 0);
                     string[] after = getString_value(values, int.Parse(before[1]));
-                    switch(before[0].Trim().ToLower())
+                    switch (before[0].Trim().ToLower())
                     {
                         case "focus":
                             {
@@ -4198,7 +4285,7 @@ namespace EZCode
                         case "poly":
                         case "p":
                             {
-                                if(control is GShape gs)
+                                if (control is GShape gs)
                                 {
                                     float[] floats = find_value(after, 0, 4);
                                     int poly = (int)floats[0];
@@ -4311,7 +4398,7 @@ namespace EZCode
                 bool thing2 = all.StartsWith("[") && all.EndsWith("]#suppresserror".ToLower());
                 if ((all.StartsWith("[") && all.EndsWith("]")) || thing2)
                 {
-                    if(!thing2) all = all.Substring(1, all.Length - 2);
+                    if (!thing2) all = all.Substring(1, all.Length - 2);
                     else all = all.Substring(1, all.Length - 1).Replace("]#suppresserror", "");
                     string[] seperator = all.Split(";");
                     if (seperator.Length == 3)
@@ -4332,7 +4419,7 @@ namespace EZCode
                 {
                     c = Color.Transparent;
                 }
-                else if(parts.Length != 1)
+                else if (parts.Length != 1)
                 {
                     ErrorText(allparts, ErrorTypes.custom, custom: $"Expected '[' and ']' for color value in {SegmentSeperator} {codeLine}");
                 }
@@ -4469,7 +4556,7 @@ namespace EZCode
                         }
                     }
                 }
-                else 
+                else
                 {
                     if (!all)
                     {
@@ -4501,7 +4588,7 @@ namespace EZCode
                             txt.Contains(@"\c") && !txt.Contains(@"\\c") ? txt.Replace(@"\c", ",") : txt.Contains(@"\\c") ? txt.Replace(@"\\c", @"\c") :
                             txt.Contains(@"\e") && !txt.Contains(@"\\e") ? txt.Replace(@"\e", "!") : txt.Contains(@"\\e") ? txt.Replace(@"\\e", @"\e") :
                             txt.Contains(@"\$") && !txt.Contains(@"\\$") ? txt.Replace(@"\$", "|") : txt.Contains(@"\\$") ? txt.Replace(@"\\$", @"\$") :
-                            txt.Contains(@"\&") && !txt.Contains(@"\\&") ? txt.Replace(@"\&", ";") : txt.Contains(@"\\&") ? txt.Replace(@"\\&", @"\&") : 
+                            txt.Contains(@"\&") && !txt.Contains(@"\\&") ? txt.Replace(@"\&", ";") : txt.Contains(@"\\&") ? txt.Replace(@"\\&", @"\&") :
                             txt;
                         txt = txt.Replace(@"\\(", @"\(");
                         txt = txt.Replace(@")\\", @")\");
@@ -4835,7 +4922,7 @@ namespace EZCode
             }
             if (!file.Contains(":")) isfile = false;
             if (isfile) await PlaySwitch(jumpsto: $"file play {file}");
-            else await PlaySwitch(jumpsto:file);
+            else await PlaySwitch(jumpsto: file);
         }
         #endregion
 
@@ -4934,11 +5021,11 @@ namespace EZCode
 
                         }
                     }
-                    else if (parts[0] == "methodend")
+                    else if (parts[0] == "endmethod")
                     {
                         if (!method.IsSet)
                         {
-                            string msg = $"Expected a method for a 'methodend' in around {SegmentSeperator} {i + 1}";
+                            string msg = $"Expected a method for a 'endmethod' in around {SegmentSeperator} {i + 1}";
                             AddText(msg, true);
                             return msg;
                         }
@@ -4995,7 +5082,7 @@ namespace EZCode
         /// <summary>
         /// Play EZCode from an EZProj file (.ezconfig)
         /// </summary>
-        public async Task<string> PlayFromConfig(EZProj proj)
+        public async Task<string> PlayFromProj(EZProj proj)
         {
             if (ClearConsole && RichConsole != null) RichConsole.Clear();
             InPanel = !proj.Window;
@@ -5045,36 +5132,41 @@ namespace EZCode
         /// <summary> 
         /// Sets the Key Input to the inputted key for the keydown
         /// </summary>
-        public void KeyInput_Down(KeyEventArgs e) {
+        public void KeyInput_Down(KeyEventArgs e)
+        {
             Keys.Add(e.KeyCode);
         }
-        public void KeyInput_Down(object sender, KeyEventArgs e) => KeyInput_Down(e); 
+        public void KeyInput_Down(object sender, KeyEventArgs e) => KeyInput_Down(e);
         /// <summary>
         /// Sets the Key Input to the inputted key for the keyup
         /// </summary>
-        public void KeyInput_Up(KeyEventArgs e) {
+        public void KeyInput_Up(KeyEventArgs e)
+        {
             Keys.Remove(e.KeyCode);
         }
-        public void KeyInput_Up(object sender, KeyEventArgs e) => KeyInput_Up(e); 
+        public void KeyInput_Up(object sender, KeyEventArgs e) => KeyInput_Up(e);
         /// <summary>
         /// Gets The Mouse Position
         /// </summary>
-        public void MouseInput_Move(MouseEventArgs e) {
+        public void MouseInput_Move(MouseEventArgs e)
+        {
             MousePosition = Cursor.Position;
         }
-        public void MouseInput_Move(object sender, MouseEventArgs e) => MouseInput_Move(e); 
+        public void MouseInput_Move(object sender, MouseEventArgs e) => MouseInput_Move(e);
         /// <summary>
         /// Sets the Mouse Input to the inputted GButton for the MouseDown
         /// </summary>
-        public void MouseInput_Down(MouseEventArgs e) {
+        public void MouseInput_Down(MouseEventArgs e)
+        {
             mouseButtons.Add(e.Button);
         }
-        public void MouseInput_Down(object sender, MouseEventArgs e) => MouseInput_Down(e); 
+        public void MouseInput_Down(object sender, MouseEventArgs e) => MouseInput_Down(e);
         /// <summary>
         /// Sets the Mouse Input to the inputted GButton for the MouseUp
         /// </summary>
-        public void MouseInput_Up(MouseEventArgs e) { 
-            mouseButtons.Remove(e.Button); 
+        public void MouseInput_Up(MouseEventArgs e)
+        {
+            mouseButtons.Remove(e.Button);
         }
         public void MouseInput_Up(object sender, MouseEventArgs e) => MouseInput_Up(e);
         /// <summary>
@@ -5084,7 +5176,7 @@ namespace EZCode
         {
             mouseWheel = e.Delta;
         }
-        public void MouseInput_Wheel(object sender, MouseEventArgs e) => MouseInput_Wheel(e); 
+        public void MouseInput_Wheel(object sender, MouseEventArgs e) => MouseInput_Wheel(e);
         /// <summary>
         /// Put this in OnTextChange. This decides to scroll to end, sets the Normal/Error Colors, and sets the RichTextbox.
         /// </summary>
@@ -5122,7 +5214,7 @@ namespace EZCode
             if (error) Errors.Add(text);
             if (RichConsole != null)
             {
-                if(RichConsole.Text.Length + 100 > RichConsole.MaxLength)
+                if (RichConsole.Text.Length + 100 > RichConsole.MaxLength)
                 {
                     RichConsole.Text = "";
                 }
@@ -5162,10 +5254,10 @@ namespace EZCode
         /// <param name="custom">cutom error, this makes the 'name' and 'keyword' parameters not needed</param>
         public string ErrorText(string[] parts, ErrorTypes error, string keyword = "keyword", string name = "name", string custom = "An Error Occured", bool returnoutput = true)
         {
-            string text = 
+            string text =
                 error == ErrorTypes.unkown ? $"An error occured in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.normal ? $"An error occured with '{keyword}' in {SegmentSeperator} {codeLine}" :
-                error == ErrorTypes.violation ? $"Naming violation in {SegmentSeperator} {codeLine}. '{name}' can not be used as a name" : 
+                error == ErrorTypes.violation ? $"Naming violation in {SegmentSeperator} {codeLine}. '{name}' can not be used as a name" :
                 error == ErrorTypes.missingControl ? $"Could not find a Control named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.missingVar ? $"Could not find a Variable named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.missingSound ? $"Could not find a Sound Player named '{name}' in {SegmentSeperator} {codeLine}" :
@@ -5179,10 +5271,10 @@ namespace EZCode
             if ((parts.Contains("#suppress") && parts.Contains("error")) || (parts.Contains("#") && parts.Contains("suppress") && parts.Contains("error"))) return "";
             if (showFileInError)
             {
-                string st = ScriptDirectory != "" && currentmethod != null ? $"{ScriptDirectory.Trim()} - '{currentmethod.Name}'" : ScriptDirectory != "" ? ScriptDirectory.Trim() : currentmethod != null ? $"'{currentmethod.Name}'" : "";
+                string st = !(ScriptDirectory == "" || ScriptDirectory == null) && currentmethod != null ? $"{ScriptDirectory.Trim()} - '{currentmethod.Name}'" : !(ScriptDirectory == "" || ScriptDirectory == null) ? ScriptDirectory.Trim() : currentmethod != null ? $"'{currentmethod.Name}'" : "";
                 text = st != "" ? $"{st} : {text}" : text;
             }
-            if (returnoutput) returnOutput += text; 
+            if (returnoutput) returnOutput += text;
             AddText(text, true, RichConsole, true);
             return text;
         }

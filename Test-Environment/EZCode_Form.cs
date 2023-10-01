@@ -30,7 +30,7 @@ namespace EzCode_API
             OutputPanel.MouseMove += ezcode.MouseInput_Move;
             OutputPanel.MouseDown += ezcode.MouseInput_Down;
             OutputPanel.MouseUp += ezcode.MouseInput_Up;
-            version.Text = $"EZCode {ezcode.Version}";
+            version.Text = $"EZCode {EzCode.Version}";
 
             InputText.MouseWheel += InputText_MouseWheel;
             InputText.KeyDown += InputText_KeyDown;
@@ -47,7 +47,7 @@ namespace EzCode_API
                 ezcode.InPanel = checkBox4.Checked;
                 if (!str) MessageBox.Show("Invalid path", "Directory", MessageBoxButtons.OK, MessageBoxIcon.Warning);
                 if (!checkBox5.Checked) await ezcode.Play(InputText.Text);
-                else await ezcode.PlayFromConfig(new EZProj(InputText.Text, directory.Text));
+                else await ezcode.PlayFromProj(new EZProj(InputText.Text, directory.Text));
             }
             catch (Exception ex) 
             {

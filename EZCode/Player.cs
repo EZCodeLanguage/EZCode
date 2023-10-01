@@ -12,20 +12,20 @@
         EZProj proj;
         public bool useConsole = true;
         /// <summary>
-        /// Initiates form. Use this: 'Application.Run(new Player(new FileInfo("filepath")));' in the Program class.
+        /// Initiates form. Use this: 'Application.Run(new Player(new EZProj("code or project file")));' in the Program class.
         /// </summary>
-        public Player(EZProj eZProj, Icon? icon = null)
+        public Player(EZProj eZProj)
         {
             try
             {
-                Icon = icon;
                 proj = eZProj;
+                if (eZProj.IconPath != null) Icon = new Icon(eZProj.IconPath);
                 InitializeComponent();
                 int d = 0;
                 bool window = false;
 
                 WindowProject windowProject = new WindowProject(proj.Name != null ? proj.Name : proj.FilePath, ezcode, proj, this);
-                windowProject.Icon = icon;
+                if (eZProj.IconPath != null) windowProject.Icon = new Icon(eZProj.IconPath);
                 if (proj.Window)
                 {
                     window = true;
@@ -72,18 +72,18 @@
                 visualoutput.MouseDown += ezcode.MouseInput_Down;
                 visualoutput.MouseUp += ezcode.MouseInput_Up;
 
-                Play();
+                PlayFromProj();
             }
-            catch (Exception ex) 
+            catch (Exception ex)
             {
                 MessageBox.Show($"An error occured.\nHere is the C# Exception message:'{ex.Message}'", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 Application.Exit();
             }
         }
 
-        private async void Play()
+        private async void PlayFromProj()
         {
-            await ezcode.PlayFromConfig(proj);
+            await ezcode.PlayFromProj(proj);
         }
 
         private void Player_FormClosed(object sender, FormClosedEventArgs e)
@@ -443,48 +443,3 @@
         public RichTextBox errors;
     } // DESIGNER
 }
-/*
- private bool BuildApplication(string code)
-        {
-            // Set up the compiler parameters
-            CompilerParameters parameters = new CompilerParameters();
-            parameters.GenerateExecutable = true;
-            parameters.OutputAssembly = Path.Combine(textBox1.Text, titleTextBox.Text + ".exe");
-
-            // Add necessary references
-            parameters.ReferencedAssemblies.Add("System.dll");
-            parameters.ReferencedAssemblies.Add("System.Drawing.dll");
-            parameters.ReferencedAssemblies.Add("System.Windows.Forms.dll");
-            parameters.ReferencedAssemblies.Add("System.IO.dll");
-            parameters.ReferencedAssemblies.Add("System.IO.Compression.dll");
-            //parameters.ReferencedAssemblies.Add("System.Collections.Generic.dll");
-            parameters.ReferencedAssemblies.Add("System.Data.dll");
-            parameters.ReferencedAssemblies.Add("System.Linq.dll");
-            parameters.ReferencedAssemblies.Add("System.Threading.Tasks.dll");
-            parameters.ReferencedAssemblies.Add("System.IO.Compression.FileSystem.dll");
-            parameters.ReferencedAssemblies.Add("System.Xml.dll");
-
-            // Set the compiler options to remove the console window
-            parameters.CompilerOptions = "/target:winexe";
-
-            // Embed the icon file as a resource
-            parameters.EmbeddedResources.Add(iconPath);
-
-            // Compile the code using the C# CodeProvider
-            CSharpCodeProvider provider = new CSharpCodeProvider();
-            CompilerResults results = provider.CompileAssemblyFromSource(parameters, code);
-
-            if (results.Errors.Count > 0)
-            {
-                // Output any compiler errors
-                foreach (CompilerError error in results.Errors)
-                {
-                    MessageBox.Show($"Error: {error.ErrorText} Line: {error.Line}");
-                }
-
-                return false;
-            }
-
-            return true;
-        }
- */

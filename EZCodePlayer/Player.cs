@@ -80,7 +80,7 @@ namespace EZCodePlayer
         private async void Play()
         {
             if (ProjectType.Script == projectType) await ezcode.Play(File.ReadAllText(file.FullName));
-            else if (ProjectType.Project == projectType) await ezcode.PlayFromConfig(proj);
+            else if (ProjectType.Project == projectType) await ezcode.PlayFromProj(proj);
         }
 
         private void Player_FormClosed(object sender, FormClosedEventArgs e)

@@ -1,4 +1,6 @@
-namespace EzCode_API
+using System.Text;
+
+namespace EZBuilder
 {
     internal static class Program
     {
@@ -7,11 +9,11 @@ namespace EzCode_API
         /// </summary>
         [STAThread]
         static void Main()
-        {
+        { 
             // To customize application configuration such as set high DPI settings or default font,
             // see https://aka.ms/applicationconfiguration.
             ApplicationConfiguration.Initialize();
-            Application.Run(new EZCode_Form());
+            Application.Run(new BuildingPrompt());
         }
     }
 }
