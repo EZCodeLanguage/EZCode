@@ -13,6 +13,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EZPlayer-WinForms", "EZCode
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EZ_SLN_Builder", "EZ-SLN-Builder\EZ_SLN_Builder.csproj", "{78EFB082-81FA-42B1-A3D1-67F4818D2734}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Installer", "Installer\Installer.csproj", "{8F43107E-FAE2-4E19-A9B9-2D93F06037F5}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -39,6 +41,10 @@ Global
 		{78EFB082-81FA-42B1-A3D1-67F4818D2734}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{78EFB082-81FA-42B1-A3D1-67F4818D2734}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{78EFB082-81FA-42B1-A3D1-67F4818D2734}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8F43107E-FAE2-4E19-A9B9-2D93F06037F5}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8F43107E-FAE2-4E19-A9B9-2D93F06037F5}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8F43107E-FAE2-4E19-A9B9-2D93F06037F5}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8F43107E-FAE2-4E19-A9B9-2D93F06037F5}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
