@@ -1,10 +1,4 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
-using System.Net;
-using System.IO.Compression;
-using System.Net.Http.Headers;
-using System.Reflection.Metadata.Ecma335;
+﻿using IWshRuntimeLibrary;
 
 namespace Installer
 {
@@ -12,6 +6,7 @@ namespace Installer
     { 
         static void Main(string[] args)
         {
+            Console.ResetColor();
             string txt = "Welcome to EZCode Installer! What would you like to do today?\n\nPress space to check or uncheck an option, press enter to submit.";
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine(txt);
@@ -98,6 +93,19 @@ namespace Installer
                         break;
                 }
             }
+
+            Console.ReadKey();
+
+        }
+
+        public static void CreateShortcut(string name, string path)
+        {
+            object shDesktop = (object)"Desktop";
+            WshShell shell = new WshShell();
+            string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\{name}.lnk";
+            IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
+            shortcut.TargetPath = path;
+            shortcut.Save();
         }
     }
 }

@@ -34,7 +34,7 @@ namespace Installer
                 _done = value;
                 if (_done)
                 {
-                    MainText += "Done!";
+                    MainText += " Done!";
                 }
             }
         }
@@ -46,14 +46,14 @@ namespace Installer
             try
             {
                 string githubRepoUrl = "https://github.com/JBrosDevelopment/EZCode";
-                string releaseTag = "v2.0.0_Beta";
+                string realTag = "2.0.0";
+                string releaseTag = $"v{realTag}";
+                string releaseTitle = $"{releaseTag}_Beta";
 
-                Working($"Installing From {githubRepoUrl}.git... This may take a minute or two.");
+                Working($"Installing From {githubRepoUrl}.git... This may take a second.");
 
                 string filepath = "C:\\Program Files\\EZCode\\";
 
-                installcore();
-                ezcodeplayer();
                 foreach (var option in options)
                 {
                     if (!option.Checked) continue;
@@ -75,7 +75,7 @@ namespace Installer
 
                     Directory.CreateDirectory(tempDirectory);
 
-                    string installFile = releaseTag + ".zip";
+                    string installFile = releaseTitle + ".zip";
 
                     string downloadUrl = $"{githubRepoUrl}/archive/refs/tags/{releaseTag}.zip";
 
@@ -83,39 +83,47 @@ namespace Installer
 
                     WebInstaller(installFile, downloadUrl, tempDirectory, true); //$"{githubRepoUrl}/releases/download/{releaseTag}/EzCode.All-Programs.-V1.11.5.msi"
 
-                    string[] d = Directory.GetDirectories(tempDirectory);
+                    string[] d = Directory.GetDirectories(Path.Combine(tempDirectory, $"EZCode-{realTag}"));
                     for (int i = 0; i < d.Length; i++)
                     {
                         DirectoryInfo info = new DirectoryInfo(d[i]);
-                        if (info.Name != "EZCode" && info.Name != "EZCode-WinForms" && info.Name != "packages")
+                        string t_decompress = Path.Combine(decompressDirectory, info.Name); 
+                        if (info.Name.ToLower() == "ezcode" || info.Name.ToLower() == "ezcode-winforms" || info.Name.ToLower() == "packages")
                         {
-                            Directory.Delete(d[i], true);
-                        }
-                        else
-                        {
-                            if (!Directory.Exists(decompressDirectory))
-                                Directory.CreateDirectory(decompressDirectory);
-                            Directory.Move(d[i], decompressDirectory + "\\" + info.Name);
+                            if (Directory.Exists(t_decompress))
+                                Directory.Delete(t_decompress);
+                            Directory.Move(d[i], t_decompress);
                         }
                     }
+                    Directory.Delete(tempDirectory, true);
                 }
 
                 void ezcodeplayer() // Install EZCode Main
                 {
-                    string installFile = $"EZCode_Player_{releaseTag}";
+                    string installFile = $"EZCode_Player_{releaseTitle}.zip";
 
                     string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
 
-                    WebInstaller(installFile, downloadUrl, Path.Combine(filepath, installFile));
+                    string directorypath = Path.Combine(filepath, installFile);
+                    if (!Directory.Exists(directorypath)) Directory.CreateDirectory(directorypath);
+
+                    WebInstaller($"{installFile}.zip", downloadUrl, directorypath, true);
+
+                    Program.CreateShortcut("EZCode", Path.Combine(directorypath, $"EZCode_Player_{releaseTag}", "EZCodePlayer.exe"));
                 }
 
                 void slnbuilder() // Install Sln Builder
                 {
-                    string installFile = $"Sln_Builder_{releaseTag}";
+                    string installFile = $"Sln_Builder_{releaseTitle}.zip";
 
                     string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
 
-                    WebInstaller(installFile, downloadUrl, Path.Combine(filepath, installFile));
+                    string directorypath = Path.Combine(filepath, installFile);
+                    if (!Directory.Exists(directorypath)) Directory.CreateDirectory(directorypath);
+
+                    WebInstaller($"{installFile}.zip", downloadUrl, directorypath, true);
+
+                    Program.CreateShortcut("SLN Builder", Path.Combine(directorypath, $"Sln_Builder", "EZ_SLN_Builder.exe"));
                 }
 
             }
@@ -126,6 +134,7 @@ namespace Installer
         }
         static Option[] Options()
         {
+            Console.ResetColor();
             string txt = "Choose what to Install";
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine(txt);
@@ -180,7 +189,6 @@ namespace Installer
                         options[index].Checked = options[index].Id == 0 ? true : !o;
                         break;
                     case ConsoleKey.Enter:
-
                         break;
                     default:
                         Console.ForegroundColor = ConsoleColor.DarkRed;
@@ -194,6 +202,7 @@ namespace Installer
 
             return options.ToArray();
         }
+
         static void WebInstaller(string installFile, string downloadUrl, string tempDirectory, bool Decompress = false, string decompressDirectory = "")
         {
             try
@@ -265,7 +274,6 @@ namespace Installer
                 //}
                 //Console.Write(per);
                 //Console.ForegroundColor = ConsoleColor.Red;
-                //
                 //Console.Write("|");
                 await Task.Delay(250);
                 Console.ResetColor();
