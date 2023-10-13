@@ -8,6 +8,7 @@ using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using System.Xml.Linq;
 using Group = EZCode.Groups.Group;
 using Player = Sound.Player;
 using Types = EZCode.Variables.Ivar.Types;
@@ -694,7 +695,7 @@ namespace EZCode
                     case "await":
                         try
                         {
-                            if (IsNumericString(parts[1].Trim()))
+                            if (IsNumericString(parts[1].Trim()) || vars.Select(x => x.Name).Contains(parts[1]))
                             {
                                 float[] values = find_value(parts, 1, 0);
                                 await Task.Delay((int)values[0]);
@@ -3225,6 +3226,12 @@ namespace EZCode
                 {
                     case "time":
                         {
+                            if (ind.Length == 2)
+                            {
+                                List<string> list = ind.ToList();
+                                list.Add("now");
+                                ind = list.ToArray();
+                            } 
                             switch (ind[2].ToLower())
                             {
                                 case "today":
@@ -3985,81 +3992,6 @@ namespace EZCode
             }
             try
             {
-                /* Old_Thing
-                parts = parts.Length == 0 || (parts.Length == 1 && parts[0] == "") ? new string[] { "0" } : parts;
-                float[] v = find_value(parts, points != 0 ? (int)getpoints[1] : txt != null ? int.Parse(txt[1]) : 0, 0, overide:0);
-                int x = (int)v[0];
-                float[] v1 = find_value(parts, (int)v[1], 0, overide: 0);
-                int y = (int)v1[0];
-                float[] v2 = find_value(parts, (int)v1[1], allzero ? 0 : nfifty ? 75 : 50, overide: 0);
-                int width = (int)v2[0];
-                float[] v3 = find_value(parts, (int)v2[1], allzero ? 0 : nfifty ? 25 : 50, overide: 0);
-                int height = (int)v3[0];
-                Color bc = control.BackColor;
-                if(parts.Length - 1 >= (int)v3[1]) bc = returncolor(_parts, parts, (int)v3[1], control.BackColor, allzero ? 0 : sides ? 0 : 255);
-                Color fc = control.ForeColor;
-                if(parts.Length - 1 >= (int)v3[1] + 1) fc = returncolor(_parts, parts, (int)v3[1] + 1, control.ForeColor, allzero ? 0 : sides ? 255 : 0);
-                int v9 = (int)v3[1] + 2;
-                if (control is GTextBox con)
-                {
-                    if (parts.Length - 1 >= v9)
-                    {
-                        con.Multiline = (bool)BoolCheck(parts, v9);
-                    }
-                    if (parts.Length - 1 >= v9 + 1)
-                    {
-                        bool tr = (bool)BoolCheck(parts, v9 + 1);
-                        con.WordWrap = tr;
-                        con.AcceptsReturn = !tr;
-                        con.AcceptsTab = !tr;
-                        con.AllowDrop = !tr;
-                    }
-                    if (parts.Length - 1 >= v9 + 2)
-                    {
-                        ScrollBars scroll = con.ScrollBars;
-                        bool tr = (bool)BoolCheck(parts, v9 + 2);
-                        con.ScrollBars = 
-                            scroll == ScrollBars.None && tr ? ScrollBars.Vertical :
-                            scroll == ScrollBars.Horizontal && tr ? ScrollBars.Both :
-                            scroll == ScrollBars.Both && !tr ? ScrollBars.Horizontal:
-                            scroll;
-                    }
-                    if (parts.Length - 1 >= v9 + 3)
-                    {
-                        ScrollBars scroll = con.ScrollBars;
-                        bool tr = (bool)BoolCheck(parts, v9 + 3);
-                        con.ScrollBars =
-                            scroll == ScrollBars.None && tr ? ScrollBars.Horizontal :
-                            scroll == ScrollBars.Vertical && tr ? ScrollBars.Both :
-                            scroll == ScrollBars.Both && !tr ? ScrollBars.Horizontal :
-                            scroll;
-                    }
-                    if (parts.Length - 1 >= v9 + 4)
-                    {
-                        con.PasswordChar = (parts[(int)(v9 + 4)]).Trim().ToCharArray()[0];
-                    }
-                }
-                if (control is GShape gs)
-                {
-                    if (parts.Length - 1 >= v9)
-                    {
-                        gs = custompoints(parts, v9, gs);
-                    }
-                }
-                if (control is GLabel lb)
-                {
-                    if (parts.Length - 1 >= v9)
-                    {
-                        control.AutoSize = (bool)BoolCheck(parts, v9);
-                    }
-                }
-                control.Left = x;
-                control.Top = y;
-                control.Width = width;
-                control.Height = height;
-                control.BackColor = bc;
-                control.ForeColor = fc;
-                */
                 if (!(parts.Length == 0 || (parts.Length == 1 && parts[0] == ""))) throw new Exception();
             }
             catch
@@ -4072,7 +4004,7 @@ namespace EZCode
                 {
                     string[] values = p.Split(':');
                     string[] before = getString_value(values, 0);
-                    string[] after = getString_value(values, int.Parse(before[1]));
+                    string[] after = getString_value(values, int.Parse(before[1]), true);
                     switch (before[0].Trim().ToLower())
                     {
                         case "focus":

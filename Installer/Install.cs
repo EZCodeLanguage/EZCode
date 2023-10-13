@@ -1,10 +1,5 @@
-﻿using System;
-using System.Diagnostics;
-using System.IO;
+﻿using System.IO.Compression;
 using System.Net;
-using System.IO.Compression;
-using System.Net.Http.Headers;
-using System.Reflection.Metadata.Ecma335;
 
 namespace Installer
 {
@@ -23,36 +18,34 @@ namespace Installer
             Checked = check;
         }
     }
-    public static class Download
+    public static class Install
     {
-        static bool _done;
-        static bool done
+        static bool done;
+        static int percentage;
+        public static string appdataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EZCode");
+        public static string tempDirectory = Path.Combine(Path.GetTempPath(), "EZCode");
+        public static string filepath = "C:\\Program Files\\EZCode\\";
+        static string _MainText;
+        static string MainText
         {
-            get => _done;
+            get => _MainText;
             set
             {
-                _done = value;
-                if (_done)
-                {
-                    MainText += " Done!";
-                }
+                _MainText = value;
+                //Console.WriteLine(_MainText);
             }
         }
-        static int percentage;
-        static string MainText;
         public static void DownloadMain()
         {
+            CreateDirs();
             Option[] options = Options();
             try
             {
                 string githubRepoUrl = "https://github.com/JBrosDevelopment/EZCode";
+                string type = "Beta";
                 string realTag = "2.0.0";
-                string releaseTag = $"v{realTag}";
-                string releaseTitle = $"{releaseTag}_Beta";
-
-                Working($"Installing From {githubRepoUrl}.git... This may take a second.");
-
-                string filepath = "C:\\Program Files\\EZCode\\";
+                string releaseTag = type != "" ? $"v{realTag}_{type.ToLower()}" : $"v{realTag}";
+                string releaseTitle = type != "" ? $"v{realTag}_{type}" : $"v{realTag}";
 
                 foreach (var option in options)
                 {
@@ -71,7 +64,7 @@ namespace Installer
 
                 void installcore() // Install Source Start
                 {
-                    string tempDirectory = Path.Combine(Path.GetTempPath(), "EZCode");
+                    Working($"Installing Core From {githubRepoUrl}.git... This may take a second.");
 
                     Directory.CreateDirectory(tempDirectory);
 
@@ -79,19 +72,19 @@ namespace Installer
 
                     string downloadUrl = $"{githubRepoUrl}/archive/refs/tags/{releaseTag}.zip";
 
-                    string decompressDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EZCode");
+                    
 
-                    WebInstaller(installFile, downloadUrl, tempDirectory, true); //$"{githubRepoUrl}/releases/download/{releaseTag}/EzCode.All-Programs.-V1.11.5.msi"
+                    WebInstaller(installFile, downloadUrl, tempDirectory, true);
 
-                    string[] d = Directory.GetDirectories(Path.Combine(tempDirectory, $"EZCode-{realTag}"));
+                    string[] d = Directory.GetDirectories(Path.Combine(tempDirectory, $"EZCode-{(type != "" ? $"{realTag}_{type.ToLower()}" : realTag)}"));
                     for (int i = 0; i < d.Length; i++)
                     {
                         DirectoryInfo info = new DirectoryInfo(d[i]);
-                        string t_decompress = Path.Combine(decompressDirectory, info.Name); 
+                        string t_decompress = Path.Combine(appdataDir, info.Name); 
                         if (info.Name.ToLower() == "ezcode" || info.Name.ToLower() == "ezcode-winforms" || info.Name.ToLower() == "packages")
                         {
                             if (Directory.Exists(t_decompress))
-                                Directory.Delete(t_decompress);
+                                Directory.Delete(t_decompress, true);
                             Directory.Move(d[i], t_decompress);
                         }
                     }
@@ -100,30 +93,56 @@ namespace Installer
 
                 void ezcodeplayer() // Install EZCode Main
                 {
+                    Working($"\n\nInstalling Player From {githubRepoUrl}.git... This may take a second.");
+
+                    Directory.CreateDirectory(tempDirectory);
+
                     string installFile = $"EZCode_Player_{releaseTitle}.zip";
 
                     string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
 
-                    string directorypath = Path.Combine(filepath, installFile);
-                    if (!Directory.Exists(directorypath)) Directory.CreateDirectory(directorypath);
+                    string decompressDirectory = Path.Combine(filepath, $"EZCode-Player {releaseTitle}");
 
-                    WebInstaller($"{installFile}.zip", downloadUrl, directorypath, true);
+                    WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
 
-                    Program.CreateShortcut("EZCode", Path.Combine(directorypath, $"EZCode_Player_{releaseTag}", "EZCodePlayer.exe"));
+                    string[] d = Directory.GetFiles(Path.Combine(tempDirectory, $"EZCode_Player_v{realTag}"));
+                    Directory.CreateDirectory(decompressDirectory);
+                    for (int i = 0; i < d.Length; i++)
+                    {
+                        FileInfo info = new FileInfo(d[i]);
+                        string t_decompress = Path.Combine(decompressDirectory, info.Name);
+                        File.Move(d[i], t_decompress, true);
+                    }
+                    Directory.Delete(tempDirectory, true);
+
+                    Program.CreateShortcut("EZCode", Path.Combine(decompressDirectory, "EZCodePlayer.exe"));
                 }
 
                 void slnbuilder() // Install Sln Builder
                 {
+                    Working($"\n\nInstalling SLN Builder From {githubRepoUrl}.git... This may take a second.");
+
+                    Directory.CreateDirectory(tempDirectory);
+
                     string installFile = $"Sln_Builder_{releaseTitle}.zip";
 
                     string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
 
-                    string directorypath = Path.Combine(filepath, installFile);
-                    if (!Directory.Exists(directorypath)) Directory.CreateDirectory(directorypath);
+                    string decompressDirectory = Path.Combine(filepath, $"SLN_Builder {releaseTitle}");
 
-                    WebInstaller($"{installFile}.zip", downloadUrl, directorypath, true);
+                    WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
 
-                    Program.CreateShortcut("SLN Builder", Path.Combine(directorypath, $"Sln_Builder", "EZ_SLN_Builder.exe"));
+                    string[] d = Directory.GetFiles(Path.Combine(tempDirectory, $"Sln_Builder"));
+                    Directory.CreateDirectory(decompressDirectory);
+                    for (int i = 0; i < d.Length; i++)
+                    {
+                        FileInfo info = new FileInfo(d[i]);
+                        string t_decompress = Path.Combine(decompressDirectory, info.Name);
+                        File.Move(d[i], t_decompress, true);
+                    }
+                    Directory.Delete(tempDirectory, true);
+
+                    Program.CreateShortcut("SLN Builder", Path.Combine(decompressDirectory, "EZ_SLN_Builder.exe"));
                 }
 
             }
@@ -135,7 +154,7 @@ namespace Installer
         static Option[] Options()
         {
             Console.ResetColor();
-            string txt = "Choose what to Install";
+            string txt = "Choose what to Install (Press space to check or uncheck an option, press enter to submit)";
             Console.ForegroundColor = ConsoleColor.Blue;
             Console.WriteLine(txt);
             Console.ResetColor();
@@ -203,7 +222,14 @@ namespace Installer
             return options.ToArray();
         }
 
-        static void WebInstaller(string installFile, string downloadUrl, string tempDirectory, bool Decompress = false, string decompressDirectory = "")
+        public static void CreateDirs()
+        {
+            Directory.CreateDirectory(tempDirectory);
+            Directory.CreateDirectory(filepath);
+            Directory.CreateDirectory(appdataDir);
+        }
+
+        static void WebInstaller(string installFile, string downloadUrl, string tempDirectory, bool Decompress = false, string words = "\nInstallation completed successfully.")
         {
             try
             {
@@ -213,27 +239,27 @@ namespace Installer
 
                     webClient.DownloadProgressChanged += (object sender, DownloadProgressChangedEventArgs e) => percentage = e.ProgressPercentage;
                     webClient.DownloadFile(downloadUrl, downloadFilePath);
-                    done = true;
 
                     if (Decompress)
                     {
-                        Working($"\n\nDecompress... ");
-
-                        ZipFile.ExtractToDirectory(downloadFilePath, decompressDirectory == "" ? tempDirectory : decompressDirectory, true);
-                        done = true;
+                        ZipFile.ExtractToDirectory(downloadFilePath, tempDirectory, true);
 
                         File.Delete(downloadFilePath);
                     }
+
+                    done = true;
                 }
+                Console.Clear();
+                Console.Write(MainText);
                 Console.ForegroundColor = ConsoleColor.Green;
-                Console.WriteLine("\nInstallation completed successfully.");
+                Console.WriteLine($"\n{words}");
                 Console.ResetColor();
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
                 done = true;
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine("\n\n" + e.Message);
+                Console.WriteLine("\n\n" + ex.Message);
             }
         }
 
@@ -246,7 +272,7 @@ namespace Installer
             {
                 Console.Clear();
                 Console.Write(MainText);
-                Console.ForegroundColor = ConsoleColor.Yellow;
+                Console.ForegroundColor = ConsoleColor.Cyan;
                 switch (tick)
                 {
                     case 0:
@@ -262,21 +288,21 @@ namespace Installer
                         tick = 0;
                         break;
                 }
-                //Console.Write($" {percentage}% ");
-                //Console.ForegroundColor = ConsoleColor.Red;
-                //Console.Write("|");
-                //Console.ForegroundColor = ConsoleColor.Blue;
-                //string per = "";
-                //int dashes = percentage / 5;
-                //for (int i = 0; i < 20; i++)
-                //{
-                //    per += i < dashes ? "-" : " ";
-                //}
-                //Console.Write(per);
-                //Console.ForegroundColor = ConsoleColor.Red;
-                //Console.Write("|");
-                await Task.Delay(250);
+                /*Console.Write($" {percentage}% ");
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write("|");
+                Console.ForegroundColor = ConsoleColor.Blue;
+                string per = "";
+                int dashes = percentage / 5;
+                for (int i = 0; i < 20; i++)
+                {
+                    per += i < dashes ? "-" : " ";
+                }
+                Console.Write(per);
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.Write("|");*/
                 Console.ResetColor();
+                await Task.Delay(250);
             }
         }
     }
