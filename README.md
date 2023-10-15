@@ -117,3 +117,5 @@ This is an optional application to install and it creates a Microsoft Visual Stu
 'variable' | writes out the value of the variable | var val Hello \| print 'val' World!
 (equation) | If this is in a place where a number needs to be, it will solve the equation and set the value to it | shape name x:(10 + 5)
 ?(argument)? | If this is in a place where a boolean needs to be, it will solve the equation and set the value to it | loop ?(0 > 5)? : { }
+=> | Works only after some keywords, but creates a variable from the output of the line | input console => consoleOutput 
+: | Similar to '=>', but instead of creating a variable, it sets a variable to the output of the line | var consoleOutput \| input console : consoleOutput
