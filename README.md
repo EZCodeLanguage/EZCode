@@ -13,7 +13,107 @@ This is a **neccessary option** for EZCode and will play any EZCode file (.ezcod
 This is an optional application to install and it creates a Microsoft Visual Studio Project from an EZProject file **(.ezproj)**. Input the project and the desired output directory.
 
 ## Basic Syntax
+### Keywod Syntax
 | Keyword | Syntax | Function |
 |---------|--------|----------|
-| await | await miliseconds | Delays the program |
-| 
+| Await | await miliseconds | Delays the program by miliseconds |
+|       | await argument | Delays program until argument is true |
+| BringTo | bringto front control | Brings a control to the front of the screen |
+|         | bringto back control | Sends cotrolto the back of the screen |
+| Button | button name | Creates a button control |
+|        | button name properties | Creates a button control and sets its properties |
+| Clear | clear | Clears the console |
+|       | clear argument | Clears the console if argument is true |
+| Destroy | destroy control | Destroys the control completely from the program |
+|         | destroy control argument | Destroys the control only if the argument is true |
+| Else | else : | Goes after an 'If' statement and is only executed if the 'If' is false. Only executes the line of code after the colon, whether it is on the same line or not |
+|      | else : { } | Goes after an 'If' statement and is only executed if the 'If' is false. Executes only the code in the brackets |
+| Event | event control_or_window eventType method | Executes the method if event is triggered.
+|       | event control_or_window eventType filepath | Executes the file (assuming ezcode) if event is triggered.
+| File | file read filepath | Reads the file and outputs the text as a var through using ':' or '=>' [see here](#modifier-syntax) |
+|      | file write text_or_var filepath | Writes to the file and outputs successful *1* or unsuccessful **0* using ':' or '=>' [see here](#modifier-syntax) |
+|      | file validpath filepath | Checks if the inputted file is a correct file path and outputs *1* as yes and *0* as no using ':' or '=>' [see here](#modifier-syntax) |
+|      | file play filepath | Plays the file (assuming ezcode) and outputs the output of the program through ':' or '=>' [see here](#modifier-syntax) |
+|      | file playproj filepath | Plays the file (assuming ezproj) and outputs the output of the program through ':' or '=>' [see here](#modifier-syntax) |
+|      | file create filepath | Creates the file and outputs successful *1* or unsuccessful *0* using ':' or '=>' [see here](#modifier-syntax) |
+|      | file exists filepath | Checks if the inputted file exists and outputs *1* as yes and *0* as no using ':' or '=>' [see here](#modifier-syntax) |
+|      | file delete filepath | Deletes the file and outputs successful *1* or unsuccessful *0* using ':' or '=>' [see here](#modifier-syntax) |
+| Global | global var ... | Creates a variable and makes it global, meaning it can be accessed from any method. See 'var' for details |
+|        | global controlType ... | Creates a control and makes it global, meaning it can be accessed from any method See any of the controls (button, label, shape, or textbox) fot details |
+|        | global list ... | Creates a list and makes it global, meaning it can be accessed from any method. See 'list' for details |
+|        | global group ... | Creates a group and makes it global, meaning it can be accessed from any method. See 'group' for details |
+| Group | group name new : controls, ...  | Creates a group that can hold as many controls as needed |
+|       | group name add control | Adds a control to the group |
+|       | group name equals index control | Finds a control by its index and sets it to the inputted control |
+|       | group name remove index_or_name | Removes a control from the group by its index or name |
+|       | group name clear | Clears all controls from the group |
+|       | group name destroy | Destroys the group completely |
+|       | group name destroyall | Destroys the group and all controls in it |
+|       | group name change : properties | Changes all controls in the group relative to the inputted properties (Ex: controls's 'x' value is '5.' the inputted properties are '10' so the new control's properties are '15') |
+|       | group name argument change : properties | If the agrument is true, this changes all controls in the group to the properties, else it changes them relative to the controls properties |
+| If | if argument : | Executes the line if the argument is true. Only executes the line of code after the colon, whether it is on the same line or not |
+|    | if argument : { } | Executes the line if the argument is true. Executes only the code in the brackets |
+| Input | input console |  Waits for the user to input into the console and gives that as output through ':' or '=>' [see here](#modifier-syntax) |
+|       | input key | Outputs the keys pressed as (Key, Key, Key (EX: A, Up)) using ':' or '=>' [see here](#modifier-syntax) |
+|       | input key keyName | Checks if the specified key is beng pressed and outputs *1* as yes and *0* as no using ':' or '=>' [see here](#modifier-syntax) |
+|       | input mouse wheel | Outputs the state of the mouse wheel as (-1, 0, or 1) using ':' or '=>' [see here](#modifier-syntax) |
+|       | input mouse wheel raw | Outputs the state of the mouse wheel as the raw value the computer is getting through ':' or '=>' [see here](#modifier-syntax) |
+|       | input mouse button | Outputs the state of the mouse button as (Button, Button (EX: Left, Middle)) using ':' or '=>' [see here](#modifier-syntax) |
+|       | input mouse button buttonName | Checks if the specified button is beng pressed and outputs *1* as yes and *0* as no using ':' or '=>' [see here](#modifier-syntax) |
+|       | input mouse position | Outputs the position of the mouse as (X:pos, Y:pos (EX: X:840, Y:92)) using ':' or '=>' [see here](#modifier-syntax) |
+|       | input mouse position X_or_Y | Outputs the position of the mouse axis using ':' or '=>' [see here](#modifier-syntax) |
+| Intersects | intersects conntol_1 control_2 | Checks if the specified controls are overlapping and outputs *1* as yes and *0* as no using ':' or '=>' [see here](#modifier-syntax) |
+| Label | label name | Creates a label control |
+|       | label name properties | Creates a label control and sets its properties |
+| list | list name new : value, value  | Creates a list that can hold different values |
+|      | list name add value | Adds a value to the list |
+|      | list name equals index value | Finds a value by its index and sets it to the inputted value |
+|      | list name remove index_or_name | Removes a value from the list by its index or name |
+|      | list name clear | Clears all values from the list |
+|      | list name destroy | Destroys the list completely |
+| Loop | loop loopTimes { } | Loops through the code in the brackets the inputted amount of times |
+|      | loop argument { } | Loops through the code in the brackets the while the argument is true |
+| MessageBox | messagebox title text | Pops up a Windows messagebox with the inputted title and text |
+| Print | print text... | prints all of the text after the keyword |
+| Shape | shape name | Creates a shape control |
+|       | shape name properties | Creates a shape control and sets its properties |
+| Stop | stop all | Quits the entire program |
+|      | stop file | Stops the current file running |
+|      | stop method | Stops the current method running |
+| Textbox | textbox name | Creates a textbox control |
+|         | textbox name properties | Creates a textbox control and sets its properties |
+| Variable | var name | Creates a variable |
+|          | var name value | Creates a variable and gives it the specified value |
+|          | var name : code_output | Creates a variable and sets its output to the output the inpputted code (EZ: var x : input mouse position x)
+| Window | window name new | Creates a window |
+|        | window name new : properties, ...  | Creates a window and sets its properties |
+|        | window name change : properties, ... | Changes the window's properties |
+|        | window name clear | Clears all controls from the window |
+|        | window name open | Opens the window |
+|        | window name close | Closes the window |
+|        | window name display control | Adds a control to the window |
+|        | window name display group | Adds all of the controls in the group to the window |
+|        | window name destroy | Destroys the window completely |
+
+### Modifier Syntax
+
+ Modifier | Use | Example 
+----------|-----|---------
+// | Does not execute any of the code after the double slash | var result (x * 5) // The result is the 'X' variable multiplied by 5!
+\| | Starts the next line of code | var x 10 \| var y 5
+\\! | Value is nothing ('') | var empty \\!
+\\n | Value of newline | print Hello\\nWorld!
+\\_ | Value of space (' ') | file write Hello\_Y'all C:\\path.txt
+~\\ or ~/ | Uses local path | file play ~\\file.ezcode 
+\\; | Value of colon (':') | if \\; = whatever : 
+\\= | Value of equal sign ('=') | if \\= = whatever : 
+\\c | Value of comma (',') | label name text:Hi\\c everybody!
+\\e | Value of exclamation mark ('!') | if \\! ! whatever : 
+\\$ | Value of pipe ('\|') | print Agency \\\| Thing
+\\& | Value of semicolon (';') | shape name bg:[name\\;red;50;50]
+\\( and )\\ | Solves equation inside of the backslashed parenthesis | print Value = \\(10 + 10)\\ // outputs 'Value = 20'
+\\- | Returns a value with the '\\-' taking out the character before it | var val h3 \| val = val-// 
+\\" | Value of single quote (''') | var val hello \| print \\"'hello'\\"
+'variable' | writes out the value of the variable | var val Hello \| print 'val' World!
+(equation) | If this is in a place where a number needs to be, it will solve the equation and set the value to it | shape name x:(10 + 5)
+?(argument)? | If this is in a place where a boolean needs to be, it will solve the equation and set the value to it | loop ?(0 > 5)? : { }
