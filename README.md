@@ -4,6 +4,10 @@
 
 **Welcome to EZCode!** EZCode is a comprehensive programming language built off of Microsoft WinForms. EZCode strives to make it as easy as possible to build a Windows program ranging from a Visual Application to simple console programs.
 
+## Docs
+
+The [Official Docs](https://github.com/JBrosDevelopment/EZCode/wiki/Docs) are on the our [GitHub Wiki Page](https://github.com/JBrosDevelopment/EZCode/wiki). Please refer to this for any detailed instrictions.
+
 ## Example
 
 This is a simple example to create and open a window and display a textbox onto it. Then write a that has a 10 x 10 square using '#' characters. Try to follow it with the comments!
