@@ -1,99 +1,212 @@
-# EzCode
+# EZCode 
 
-Welcome to the EzCode source code repository! This repository contains the code for the EzCode project, which includes the IDE, Viewer, Packager, and Player.
+## Welcome!
 
-## Project Links
+**Welcome to EZCode!** EZCode is a comprehensive programming language built off of Microsoft WinForms. EZCode strives to make it as easy as possible to build a Windows program ranging from a Visual Application to simple console programs.
 
-- [Project Repository](https://github.com/JBrosDevelopment/EZCode-Projects.git): This repository contains various projects created using EzCode. You can explore and contribute to different examples and applications built with EzCode.
+## Docs
 
-## Features
+The [Official Docs](https://github.com/JBrosDevelopment/EZCode/wiki/EZCode-Docs) are on the our [GitHub Wiki Page](https://github.com/JBrosDevelopment/EZCode/wiki). Please refer to this for any detailed instrictions.
 
-- **Integrated Development Environment (IDE)**: The IDE allows you to write, edit, and debug EzCode scripts, providing a user-friendly coding experience.
+## Example
 
-- **Viewer**: The Viewer lets you visualize and interact with EzCode programs, making it easy to see the output and behavior of your code.
+This is a simple example to create and open a window and display a textbox onto it. Then write a that has a 10 x 10 square using '#' characters. Try to follow it with the comments!
 
-- **Packager**: The Packager allows you to bundle your EzCode projects into distributable packages that can be shared and executed independently.
+```ezcode
+// Set dimensions of square
+var x_Scale 10
+var Y_Scale 10
 
-- **Player**: The Player is a standalone runtime environment for EzCode, enabling you to run EzCode programs without the IDE.
+// Character for square
+var char %
 
-## Getting Started
+// Set up elements... Window and Textbox
+window main new : type:fixed3d, text:Square Example!, width:350, height:400, maximizebutton:false
+textbox box x:0, y:0, width:400, height:500, readonly:true, bg:[200;200;200], -> 
+    font:[Cascadia Code;15;regular], multiline:true, wrap:false
 
-To get started with EzCode, you can follow these steps:
+// Open window and display textbox on it
+main display box
+main open
 
-1. Clone the main repository: `git clone https://github.com/JBrosDevelopment/EZCode.git`
+// Create and set the 'txt' var to the correct dimensions
+var txt
+var interval 0
+loop Y_Scale 
+{
+    interval + 1
+    loop x_Scale 
+    {
+        txt + 'char'\_
+    }
+    if interval <= Y_Scale : txt + \n
+}
 
-2. Explore the different components of EzCode, including the IDE, Viewer, Packager, and Player.
+// Display on 'txt' textbox
+box text:'txt'
 
-3. Contribute to the project by fixing bugs, adding new features, or creating example projects.
+// Keep program running to prevent window closing
+await true
 
-## Contribution Guidelines
+// The textbox now displays:
+// % % % % % % % % % % 
+// % % % % % % % % % % 
+// % % % % % % % % % %
+// % % % % % % % % % %
+// % % % % % % % % % %
+// % % % % % % % % % %
+// % % % % % % % % % %
+// % % % % % % % % % %
+```
+You can change the `X_Scale` and `Y_Scale` variables as well as the character being used for the square shape. The textbox takes up the entire window and has a very light grey color [(200, 200, 200)](https://www.colocolors.com/rgb/200,200,200). 
 
-We welcome contributions to the EzCode project! If you would like to contribute, please follow the guidelines in the [CONTRIBUTING.md](CONTRIBUTING.md) file.
+## Community
+
+Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/JBrosDevelopment/EZCode-Projects.git) for the community. Create a pull request and I will accept as soon as I can. There is also the [Discussion Board](https://github.com/JBrosDevelopment/EZCode/discussions) for anybody who has questions or wants to share. If you need any help, you can look over the [Wiki](https://github.com/JBrosDevelopment/EZCode/wiki) which includes instructions and documentation.
 
 ## License
 
 EzCode is released under the [MIT License](LICENSE).
 
-## Contact
+## Overview
 
-If you have any questions or feedback, feel free to reach out to us at [jbrosdevelopment@gmail.com](mailto:jbrosdevelopment@gmail.com).
+EZCode is a multipurpose programming language built off of C# and WinForms. It has simple syntax and is designed to be user friendly. Use it no matter your programming experince. From just getting started to a seasoned developer, EZCode can help you develop your projects with a minimal amount of code. Download the **[Official Installer](https://github.com/JBrosDevelopment/EZCode/releases/latest)** and choose from the options on what to install.
 
-## Documentation
+#### EZCode Player
 
-For detailed documentation, tutorials, and examples, please visit the [EzCode Documentation](https://ez-code.web.app/Docs.html). It contains everything you need to get started, including installation instructions, language syntax, and code samples.
+This is a **neccessary option** for EZCode and will play any EZCode file (.ezcode or .ezproj). It will play the file no matter what type of project it is **(Windows, Console, Console + Visual, or Console + Windows)**.
 
-## Community and Support
+#### SLN Builder
 
-Join the EzCode community to connect with other developers, ask questions, and share your projects:
+This is an optional application to install and it creates a Microsoft Visual Studio Project from an EZProject file **(.ezproj)**. Input the project and the desired output directory.
 
-- **Forums**: Visit our [community forums](https://ez-code.web.app/Forum.html) to engage in discussions, get help, and share your ideas.
+## Basic Syntax
 
-- **News and Updates**: Stay up to date with the latest news, announcements, and updates about EzCode on our [News](https://ez-code.web.app) page.
+### Keywords
 
-## Contributing
+| Keyword | Syntax | Function |
+|---------|--------|----------|
+| Await | await miliseconds | Delays the program by miliseconds |
+|       | await argument | Delays program until argument is true |
+| BringTo | bringto front control | Brings a control to the front of the screen |
+|         | bringto back control | Sends cotrolto the back of the screen |
+| Button | button name | Creates a button control |
+|        | button name properties | Creates a button control and sets its properties |
+| Clear | clear | Clears the console |
+|       | clear argument | Clears the console if argument is true |
+| Destroy | destroy control | Destroys the control completely from the program |
+|         | destroy control argument | Destroys the control only if the argument is true |
+| Else | else : | Goes after an 'If' statement and is only executed if the 'If' is false. Only executes the line of code after the colon, whether it is on the same line or not |
+|      | else : { } | Goes after an 'If' statement and is only executed if the 'If' is false. Executes only the code in the brackets |
+| Event | event control_or_window eventType method | Executes the method if event is triggered.
+|       | event control_or_window eventType filepath | Executes the file (assuming ezcode) if event is triggered.
+| File | file read filepath | Reads the file and outputs the text as a var through using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|      | file write text_or_var filepath | Writes to the file and outputs successful *1* or unsuccessful **0* using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|      | file validpath filepath | Checks if the inputted file is a correct file path and outputs *1* as yes and *0* as no using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|      | file play filepath | Plays the file (assuming ezcode) and outputs the output of the program through ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|      | file playproj filepath | Plays the file (assuming ezproj) and outputs the output of the program through ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|      | file create filepath | Creates the file and outputs successful *1* or unsuccessful *0* using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|      | file exists filepath | Checks if the inputted file exists and outputs *1* as yes and *0* as no using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|      | file delete filepath | Deletes the file and outputs successful *1* or unsuccessful *0* using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+| Global | global var ... | Creates a variable and makes it global, meaning it can be accessed from any method. See 'var' for details |
+|        | global controlType ... | Creates a control and makes it global, meaning it can be accessed from any method See any of the controls (button, label, shape, or textbox) fot details |
+|        | global list ... | Creates a list and makes it global, meaning it can be accessed from any method. See 'list' for details |
+|        | global group ... | Creates a group and makes it global, meaning it can be accessed from any method. See 'group' for details |
+| Group | group name new : controls, ...  | Creates a group that can hold as many controls as needed |
+|       | group name add control | Adds a control to the group |
+|       | group name equals index control | Finds a control by its index and sets it to the inputted control |
+|       | group name remove index_or_name | Removes a control from the group by its index or name |
+|       | group name clear | Clears all controls from the group |
+|       | group name destroy | Destroys the group completely |
+|       | group name destroyall | Destroys the group and all controls in it |
+|       | group name change : properties | Changes all controls in the group relative to the inputted properties (Ex: controls's 'x' value is '5.' the inputted properties are '10' so the new control's properties are '15') |
+|       | group name argument change : properties | If the agrument is true, this changes all controls in the group to the properties, else it changes them relative to the controls properties |
+| If | if argument : | Executes the line if the argument is true. Only executes the line of code after the colon, whether it is on the same line or not |
+|    | if argument : { } | Executes the line if the argument is true. Executes only the code in the brackets |
+| Input | input console |  Waits for the user to input into the console and gives that as output through ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|       | input key | Outputs the keys pressed as (Key, Key, Key (EX: A, Up)) using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|       | input key keyName | Checks if the specified key is beng pressed and outputs *1* as yes and *0* as no using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|       | input mouse wheel | Outputs the state of the mouse wheel as (-1, 0, or 1) using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|       | input mouse wheel raw | Outputs the state of the mouse wheel as the raw value the computer is getting through ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|       | input mouse button | Outputs the state of the mouse button as (Button, Button (EX: Left, Middle)) using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|       | input mouse button buttonName | Checks if the specified button is beng pressed and outputs *1* as yes and *0* as no using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|       | input mouse position | Outputs the position of the mouse as (X:pos, Y:pos (EX: X:840, Y:92)) using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+|       | input mouse position X_or_Y | Outputs the position of the mouse axis using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+| Intersects | intersects conntol_1 control_2 | Checks if the specified controls are overlapping and outputs *1* as yes and *0* as no using ':' or '=>' [see here](#modifier-syntax "Last two rows of the table") |
+| Label | label name | Creates a label control |
+|       | label name properties | Creates a label control and sets its properties |
+| list | list name new : value, value  | Creates a list that can hold different values |
+|      | list name add value | Adds a value to the list |
+|      | list name equals index value | Finds a value by its index and sets it to the inputted value |
+|      | list name remove index_or_name | Removes a value from the list by its index or name |
+|      | list name clear | Clears all values from the list |
+|      | list name destroy | Destroys the list completely |
+| Loop | loop loopTimes { } | Loops through the code in the brackets the inputted amount of times |
+|      | loop argument { } | Loops through the code in the brackets the while the argument is true |
+| MessageBox | messagebox title text | Pops up a Windows messagebox with the inputted title and text |
+| Print | print text... | prints all of the text after the keyword |
+| Shape | shape name | Creates a shape control |
+|       | shape name properties | Creates a shape control and sets its properties |
+| Stop | stop all | Quits the entire program |
+|      | stop file | Stops the current file running |
+|      | stop method | Stops the current method running |
+| Textbox | textbox name | Creates a textbox control |
+|         | textbox name properties | Creates a textbox control and sets its properties |
+| Variable | var name | Creates a variable |
+|          | var name value | Creates a variable and gives it the specified value |
+|          | var name : code_output | Creates a variable and sets its output to the output the inpputted code (EZ: var x : input mouse position x)
+| Window | window name new | Creates a window |
+|        | window name new : properties, ...  | Creates a window and sets its properties |
+|        | window name change : properties, ... | Changes the window's properties |
+|        | window name clear | Clears all controls from the window |
+|        | window name open | Opens the window |
+|        | window name close | Closes the window |
+|        | window name display control | Adds a control to the window |
+|        | window name display group | Adds all of the controls in the group to the window |
+|        | window name destroy | Destroys the window completely |
 
-We welcome contributions from the community to help improve and grow the EzCode programming language. If you have any suggestions, bug reports, or feature requests, please submit them to the [GitHub repository](https://github.com/JBrosDevelopment/EZCode/tree/master).
+### Modifier
 
-If you want to explore some EZCode projects, please go to the [Projects Repository](https://github.com/JBrosDevelopment/EZCode-Projects).
+ Modifier | Use | Example 
+----------|-----|---------
+// | Does not execute any of the code after the double slash | `var result (x * 5) // The result is the 'X' variable multiplied by 5!`
+\| | Starts the next line of code | `var x 10 \| var y 5`
+\\! | Value is nothing ('') | `var empty \\!`
+\\n | Value of newline | `print Hello\\nWorld!`
+\\_ | Value of space (' ') | `file write Hello\_Y'all C:\\path.txt`
+~\\ or ~/ | Uses local path | `file play ~\\file.ezcode`
+\\; | Value of colon (':') | `if \\; = whatever : `
+\\= | Value of equal sign ('=') | `if \\= = whatever : `
+\\c | Value of comma (',') | `label name text:Hi\\c everybody!`
+\\e | Value of exclamation mark ('!') | `if \\! ! whatever : `
+\\$ | Value of pipe ('\|') | `print Agency \\\| Thing`
+\\& | Value of semicolon (';') | `shape name bg:[name\\;red;50;50]`
+\\( and )\\ | Solves equation inside of the backslashed parenthesis | `print Value = \\(10 + 10)\\ // outputs 'Value = 20'`
+\\- | Returns a value with the '\\-' taking out the character before it | `var val h3 \| val = 'val'-// `
+\\" | Value of single quote (''') | `var val hello \| print \\"'hello'\\"`
+'variable' | writes out the value of the variable | `var val Hello \| print 'val' World!`
+(equation) | If this is in a place where a number needs to be, it will solve the equation and set the value to it | `shape name x:(10 + 5)`
+?(argument)? | If this is in a place where a boolean needs to be, it will solve the equation and set the value to it | `loop ?(0 > 5)? : { }`
+=> | Works only after some keywords, but creates a variable from the output of the line | `input console => consoleOutput `
+: | Similar to '=>', but instead of creating a variable, it sets a variable to the output of the line | `var consoleOutput \| input console : consoleOutput`
 
----
+### System and References
 
-# Basic Syntax
-| Keyword               | Syntax                                  | Example                                  |
-|-----------------------|-----------------------------------------|------------------------------------------|
-| Await                 | await miliseconds                       | await 1000                               |
-| Button                | button name text                        | button btn Press\_Me                     |
-| Button Click          | buttonClick btnName fileLocation        | button btn ~\btn_Click.ezcode            |
-| Color                 | color controlName r g b                 | color object1 210 210 210                |
-| Comments              | // comments                             | // this code will not run                |
-| Clear Console         | ClearConsole                            | ClearConsole                             |
-| Creating Errors       | # create error                          | # create error                           |
-| Suppress Errors       | # suppress error                        | # suppress error                         |
-| End Build             | endBuild                                | endBuild                                 |
-| Font                  | font controlName weight size            | font label_1 Bold 14                     |
-| Create Group          | group new name                          | group new groupName                      |
-| Add to Group          | group name add controlType controlName  | group name add Button btn                |
-| Modify Group          | group name change type modifier v1 v2 v3| group name change rel move 20 20         |
-| If Statements         | if value1 mid value2 :                  | if 10 > 9 : print code                   |
-| Image                 | image objectName PathToFile             | image obj ~/image.png                    |
-| Label                 | label labelName                         | label label1                             |
-| New List              | list new name : v1,v2,v3                | list new even_numbers : 2,4,6,8,10       |
-| Add to List           | list add name val                       | list add even__numbers 12                |
-| Modify List Value     | list equals name index val              | list equals even__numbers 3 9            |
-| Clear List            | list clear name                         | list clear even__numbers                 |
-| Loop                  | loop loopTimes (ON DIFFERENT LINE): end | loop 10  (NextLine): end                 |
-| Move                  | move ControlName x y                    | move obj1 10 10                          |
-| Multi-Line            | multiLine textboxName value             | multiLine tb1 true                       |
-| Object                | object name sides                       | object obj1 4                            |
-| playFile              | playFile modifier PathToFile            | playFile await ~/file.ezcode             |
-| Print                 | print text                              | print hello world                        |
-| Scale                 | scale controlName x y                   | scale button1 15 20                      |
-| Play Sound            | sound sound play PathToFile             | sound play ~/sound.mp3                   |
-| Stop Sound            | sound stop                              | sound stop                               |
-| Sound Volume          | sound volume value                      | sound volume 0.8                         |
-| Textbox               | textbox name                            | textbox tb1                              |
-| Declare Varibles      | var name value                          | var variable1 10                         |
-| Set Variable          | varName mid value                       | variable1 + 25                           |
-| Variable Value        | varName modifier                        | variable1 KeyInput                       |
-| Write                 | write controlName text                  | write label1 hello world!                |
-| WriteToFile           | writeToFile value PathToFile            | writeToFile variable1 ~/file.txt         |
+Reference | Use | Example
+:-|:-|:-
+system:time | gets the current time. Has many formats so see the [Wiki](https://github.com/JBrosDevelopment/EZCode/wiki "Wiki contains the official docs") for that. | `print Time: system:time`
+system:random | gets a random number from the inputted minumin and maximum | `print Random Number between 1 and 10: system:random:1:10`
+system:isnumber | returns _0_ or _1_ depending on if the value is a number or not | `input console => number \| var number? system:isnumber:number`
+system:machine | gets infornation about the machine. Has many subreferences so see the [Wiki](https://github.com/JBrosDevelopment/EZCode/wiki "Wiki contains the official docs") for that. | `print User Name: system:machine:username`
+system:currentfile | returns the current file being played... if known. | `print Current file: system:currentfile // only really for debugging`
+system:currentplaydirectory | gets where the executable application that is running the EZCode file is. | `print Executable Directory: system:currentplaydirectory`
+system:space | returns a space. use \\_ instead.
+system:newline | returns a newline. use \\n instead.
+system:nothing | returns a space. use \\! instead.
+system:pipe | returns a space. use \\$ instead.
+controlName:propertyName | returns the property value of the control | `shape player \| print X = player:x`
+windowName:propertyName | returns the property value of the window | `window main new \| print Title = main:text`
+var_or_list_or_group:length | if var, returns the length of the value (ie. 'hello' has length of 5). If list or group, returns how many values are in the list or group. | `var name John \| print Number of Name's letters: name:length \| // or with list \| list names new : John, Sally \| print Number of names in list: names:length \|`
+var_or_list_or_group:index | If var, returns the letter that the index corrosponds to (remember index starts from 0). If list, returns the value of the list that corrosponds with the index. If group, it will return the control's name. | `var a abc \| print a:1 // displays 1 \| list b new : ab, cd \| print b:0 // prints ab \| group c new : label1, shape2, shape3 \| print c:2 // returns shape3`
+var_or_list:contains | returns _0_ or _1_ if the var's value contains the the inputted value or if a list's value is equal to the inputted value | `var v abcdef \| var contains? v:contains:g // returns 0 \| //Or for list \| list v new : abc, def, ghi \| var contains? v:contains:ghi // returns 1`
+value:index_or_length | If there is a value seperated by commas (a,b,c,d), a colon can be put after that and either an index (number), or 'length' and it will return an output | `print 10,20,30:length // outputs 3 \| print 10,20,30:2 // outputs 30 (0 would be 10, 1 would be 20 in this example)`
