@@ -1,11 +1,14 @@
 # EZCode
 
+![Main Image](EZCode/EZCode_Wide_Logo.png)
+
+---
+
 <details open>
 <summary><h2>Welcome!</h2></summary>
 
 **Welcome to EZCode!** EZCode is a comprehensive programming language built off of Microsoft WinForms. EZCode strives to make it as easy as possible to build a Windows program ranging from a Visual Application to simple console programs.
 </details>
-
 
 <details open>
 <summary><h2>Docs</h2></summary>
@@ -16,24 +19,15 @@ The [Official Docs](https://github.com/JBrosDevelopment/EZCode/wiki/EZCode-Docs)
 <details open>
 <summary><h2>Example</h2></summary>
 
-This is a simple example to create and open a window and display a textbox onto it. Then write a that has a 10 x 10 square using '#' characters. Try to follow it with the comments!
+This is a simple example of a program where the `X_Scale` and `Y_Scale` print out a square of `char` characters. It outputs a 12 x 10 square of `%` with spaces between the. Look over this code and see if you can follow along with thte comments.
 
 ```ezcode
 // Set dimensions of square
-var x_Scale 10
+var x_Scale 12
 var Y_Scale 10
 
 // Character for square
 var char %
-
-// Set up elements... Window and Textbox
-window main new : type:fixed3d, text:Square Example!, width:350, height:400, maximizebutton:false
-textbox box x:0, y:0, width:400, height:500, readonly:true, bg:[200;200;200], -> 
-    font:[Cascadia Code;15;regular], multiline:true, wrap:false
-
-// Open window and display textbox on it
-main display box
-main open
 
 // Create and set the 'txt' var to the correct dimensions
 var txt
@@ -45,26 +39,25 @@ loop Y_Scale
     {
         txt + 'char'\_
     }
+
+    // Check if this is the last row before adding a newline
     if interval <= Y_Scale : txt + \n
 }
 
-// Display on 'txt' textbox
-box text:'txt'
+// Print the output
+print 'txt'
 
-// Keep program running to prevent window closing
-await true
-
-// The textbox now displays:
-// % % % % % % % % % % 
-// % % % % % % % % % % 
-// % % % % % % % % % %
-// % % % % % % % % % %
-// % % % % % % % % % %
-// % % % % % % % % % %
-// % % % % % % % % % %
-// % % % % % % % % % %
+// Outputs:
+// % % % % % % % % % % % % 
+// % % % % % % % % % % % % 
+// % % % % % % % % % % % % 
+// % % % % % % % % % % % % 
+// % % % % % % % % % % % % 
+// % % % % % % % % % % % % 
+// % % % % % % % % % % % % 
+// % % % % % % % % % % % % 
 ```
-You can change the `X_Scale` and `Y_Scale` variables as well as the character being used for the square shape. The textbox takes up the entire window and has a very light grey color [(200, 200, 200)](https://www.colocolors.com/rgb/200,200,200). 
+You can change the `X_Scale` and `Y_Scale` variables as well as the character being used for the square shape.
 </details>
 
 <details open>
