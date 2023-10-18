@@ -1,14 +1,20 @@
-# EZCode 
+# EZCode
 
-## Welcome!
+<details open>
+<summary><h2>Welcome!</h2></summary>
 
 **Welcome to EZCode!** EZCode is a comprehensive programming language built off of Microsoft WinForms. EZCode strives to make it as easy as possible to build a Windows program ranging from a Visual Application to simple console programs.
+</details>
 
-## Docs
+
+<details open>
+<summary><h2>Docs</h2></summary>
 
 The [Official Docs](https://github.com/JBrosDevelopment/EZCode/wiki/EZCode-Docs) are on the our [GitHub Wiki Page](https://github.com/JBrosDevelopment/EZCode/wiki). Please refer to this for any detailed instrictions.
+</details>
 
-## Example
+<details open>
+<summary><h2>Example</h2></summary>
 
 This is a simple example to create and open a window and display a textbox onto it. Then write a that has a 10 x 10 square using '#' characters. Try to follow it with the comments!
 
@@ -59,16 +65,22 @@ await true
 // % % % % % % % % % %
 ```
 You can change the `X_Scale` and `Y_Scale` variables as well as the character being used for the square shape. The textbox takes up the entire window and has a very light grey color [(200, 200, 200)](https://www.colocolors.com/rgb/200,200,200). 
+</details>
 
-## Community
+<details open>
+<summary><h2>Community</h2></summary>
 
 Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/JBrosDevelopment/EZCode-Projects.git) for the community. Create a pull request and I will accept as soon as I can. There is also the [Discussion Board](https://github.com/JBrosDevelopment/EZCode/discussions) for anybody who has questions or wants to share. If you need any help, you can look over the [Wiki](https://github.com/JBrosDevelopment/EZCode/wiki) which includes instructions and documentation.
+</details>
 
-## License
+<details open>
+<summary><h2>License</h2></summary>
 
 EzCode is released under the [MIT License](LICENSE).
+</details>
 
-## Overview
+<details open>
+<summary><h2>Overview</h2></summary>
 
 EZCode is a multipurpose programming language built off of C# and WinForms. It has simple syntax and is designed to be user friendly. Use it no matter your programming experince. From just getting started to a seasoned developer, EZCode can help you develop your projects with a minimal amount of code. Download the **[Official Installer](https://github.com/JBrosDevelopment/EZCode/releases/latest)** and choose from the options on what to install.
 
@@ -80,9 +92,13 @@ This is a **neccessary option** for EZCode and will play any EZCode file (.ezcod
 
 This is an optional application to install and it creates a Microsoft Visual Studio Project from an EZProject file **(.ezproj)**. Input the project and the desired output directory.
 
-## Basic Syntax
+</details>
 
-### Keywords
+<details open>
+<summary><h2>Basic Syntax</h2></summary>
+
+<details open>
+<summary><h3>Keywords</h3></summary>
 
 | Keyword | Syntax | Function |
 |---------|--------|----------|
@@ -165,7 +181,10 @@ This is an optional application to install and it creates a Microsoft Visual Stu
 |        | window name display group | Adds all of the controls in the group to the window |
 |        | window name destroy | Destroys the window completely |
 
-### Modifier
+</details>
+
+<details open>
+<summary><h3>Modifier</h3></summary>
 
  Modifier | Use | Example 
 ----------|-----|---------
@@ -190,7 +209,10 @@ This is an optional application to install and it creates a Microsoft Visual Stu
 => | Works only after some keywords, but creates a variable from the output of the line | `input console => consoleOutput `
 : | Similar to '=>', but instead of creating a variable, it sets a variable to the output of the line | `var consoleOutput \| input console : consoleOutput`
 
-### System and References
+</details>
+
+<details open>
+<summary><h3>System and References</h3></summary>
 
 Reference | Use | Example
 :-|:-|:-
@@ -210,3 +232,6 @@ var_or_list_or_group:length | if var, returns the length of the value (ie. 'hell
 var_or_list_or_group:index | If var, returns the letter that the index corrosponds to (remember index starts from 0). If list, returns the value of the list that corrosponds with the index. If group, it will return the control's name. | `var a abc \| print a:1 // displays 1 \| list b new : ab, cd \| print b:0 // prints ab \| group c new : label1, shape2, shape3 \| print c:2 // returns shape3`
 var_or_list:contains | returns _0_ or _1_ if the var's value contains the the inputted value or if a list's value is equal to the inputted value | `var v abcdef \| var contains? v:contains:g // returns 0 \| //Or for list \| list v new : abc, def, ghi \| var contains? v:contains:ghi // returns 1`
 value:index_or_length | If there is a value seperated by commas (a,b,c,d), a colon can be put after that and either an index (number), or 'length' and it will return an output | `print 10,20,30:length // outputs 3 \| print 10,20,30:2 // outputs 30 (0 would be 10, 1 would be 20 in this example)`
+
+</details>
+</details>
