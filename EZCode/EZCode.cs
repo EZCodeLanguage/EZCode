@@ -8,7 +8,6 @@ using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using System.Xml.Linq;
 using Group = EZCode.Groups.Group;
 using Player = Sound.Player;
 using Types = EZCode.Variables.Ivar.Types;
@@ -296,11 +295,12 @@ namespace EZCode
         Method? currentmethod = null;
         string returnOutput = "";
         bool devDisplay = true, lastif = true;
-        int devportal = 0, ifmany = 0, loopmany = 0;
+        int devportal = 0, ifmany = 0, loopmany = 0, aaaaaaa = 0;
         async Task<string[]> PlaySwitch(string[]? _parts = null, string jumpsto = "", string[]? splitcode = null, int currentindex = 0)
         {
             try
             {
+                aaaaaaa++;
                 foreach (GButton button in buttons) button.isclick = 0;
                 if (ifmany > 0 || loopmany > 0)
                 {
@@ -446,7 +446,17 @@ namespace EZCode
                         try
                         {
                             bool check = false;
-                            string[] QMarkValuesArray = getString_value(parts, 1, true, true, false, true);
+
+                            string _ = string.Join(" ", parts);
+                            string[] __ = _.Split(":");
+                            string[] ___ = __[0].Split(" ").Select(x => x.Trim()).ToArray();
+                            string[] ____ = getString_value(___, 1, true, true, false, false);
+                            List<string> _____ = ____[0].Split(" ").Where(x => x != "").ToList();
+                            _____.Add(":");
+                            _____.AddRange(string.Join(":", __.Skip(1)).Split(" ").Where(x => x != "").ToList());
+                            string[] ______ = { string.Join(" ", _____), "0" };
+
+                            string[] QMarkValuesArray = ______;
                             string[] wholearray = QMarkValuesArray[0].Split(" ");
                             string[] arrayed = wholearray.TakeWhile(x => x != ":").ToArray();
                             int number = 0;
@@ -476,7 +486,10 @@ namespace EZCode
                                     }
                                     if (Var.staticReturnBool(arrayed[i]) != null)
                                     {
-                                        arrayed[i] = Var.staticReturnBool(arrayed[i]).ToString();
+                                        string[] s = new string[] { "and", "or", "&" };
+
+                                        if ( (arrayed.Length - 1 == i) || (arrayed.Length > i && s.Contains(arrayed[i + 1])) )  
+                                            arrayed[i] = Var.staticReturnBool(arrayed[i]).ToString();
                                     }
                                 }
                                 string values = string.Join(" ", arrayed).ToLower();
@@ -703,7 +716,7 @@ namespace EZCode
                             else
                             {
                                 bool check = BoolCheck(parts, 1) == true;
-                                while (!check && playing)
+                                while (check && playing)
                                 {
                                     check = BoolCheck(parts, 1) == true;
                                     await Task.Delay(100);
@@ -971,7 +984,7 @@ namespace EZCode
                                     }
                                     break;
                                 default:
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'read' 'write' 'path' or 'play' in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'read', 'write', 'validpath', 'delete', 'exists', 'create', 'playproj', or 'play' in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                             if (jumpTo) return new string[] { output, stillInFile.ToString() };
@@ -2786,7 +2799,7 @@ namespace EZCode
                         break;
                     default:
                         {
-                            if (var.returnBool(var.value()) != null && BoolCheck(parts, index, false) != null)
+                            if (var.returnBool(var.Value) != null && BoolCheck(parts, index, false) != null)
                                 var.set(BoolCheck(parts, index) == true ? "1" : "0");
                             else
                                 ErrorText(parts, ErrorTypes.custom, custom: $"There was an Error with changing '{var.Name}'. Expected '+', '-', '*', '/', '=', or ':' in {SegmentSeperator} {codeLine}");
@@ -3305,7 +3318,14 @@ namespace EZCode
                                         return "0";
                                     }
                                     Random rand = new Random();
-                                    value = rand.Next(v1, v2).ToString();
+                                    try
+                                    {
+                                        value = rand.Next(v1, v2 - 1).ToString();
+                                    }
+                                    catch
+                                    {
+                                        value = rand.Next(v1, v2).ToString();
+                                    }
                                 }
                                 else
                                 {
@@ -3373,7 +3393,7 @@ namespace EZCode
                     case "currentplaydirectory":
                         value = Environment.CurrentDirectory.ToString();
                         break;
-                    case "litteral":
+  /*Does not work*/ case "litteral":
                         if (value.Contains("system:litteral:"))
                         {
                             string[] strings = getString_value(ind, 2, false, false, false, false, "", false);
@@ -3383,7 +3403,7 @@ namespace EZCode
                         {
                             ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' after 'system:litteral' in {SegmentSeperator} {codeLine}");
                         }
-                        break;
+                        break; /*Does not work*/
                     case "space":
                         value = " ";
                         break;
@@ -3740,7 +3760,7 @@ namespace EZCode
                         if (ind.Length > 2)
                         {
                             string v = ind[2];
-                            value = var.value().Contains(v) ? "1" : "0";
+                            value = var.Value.Contains(v) ? "1" : "0";
                         }
                         else
                         {
@@ -4203,12 +4223,14 @@ namespace EZCode
                             }
                             break;
                         case "bc":
+                        case "bg":
                         case "backcolor":
                             {
                                 control.BackColor = returncolor(_parts, after, 0, control.BackColor, allzero ? 0 : sides ? 0 : 255);
                             }
                             break;
                         case "fc":
+                        case "fg":
                         case "forecolor":
                             {
                                 control.ForeColor = returncolor(_parts, after, 0, control.ForeColor, allzero ? 0 : sides ? 255 : 0);
@@ -4511,7 +4533,7 @@ namespace EZCode
                     string sw_t = txt;
                     if (useRaw)
                     {
-                        txt =
+                         txt =
                             txt.Contains(@"\n") && !txt.Contains(@"\\n") ? txt.Replace(@"\n", Environment.NewLine) : txt.Contains(@"\\n") ? txt.Replace(@"\\n", @"\n") :
                             txt.Contains(@"\!") && !txt.Contains(@"\\!") ? txt.Replace(@"\!", string.Empty) : txt.Contains(@"\\!") ? txt.Replace(@"\\!", @"\!") :
                             txt.Contains(@"\_") && !txt.Contains(@"\\_") ? txt.Replace(@"\_", " ") : txt.Contains(@"\\_") ? txt.Replace(@"\\_", @"\_") :
@@ -4567,7 +4589,7 @@ namespace EZCode
                             {
                                 for (int k = 0; k < vars.Count; k++)
                                 {
-                                    if (varray[j] == vars[k].Name) varray[j] = vars[k].value();
+                                    if (varray[j] == vars[k].Name) varray[j] = vars[k].Value;
                                 }
                             }
                         }
@@ -4641,7 +4663,7 @@ namespace EZCode
                         {
                             if (vars[j].Name == parts[next] && vars[j].isNumber())
                             {
-                                s = vars[j].value();
+                                s = vars[j].Value;
                             }
                         }
                     }
@@ -4665,7 +4687,7 @@ namespace EZCode
                 // Replace variables with their values
                 foreach (Var variable in vars)
                 {
-                    equation = equation.Replace(variable.Name, variable.value());
+                    equation = equation.Replace(variable.Name, variable.Value);
                 }
 
                 DataTable dt = new DataTable();
