@@ -6,7 +6,7 @@
 
 ## Docs
 
-The [Official Docs](https://github.com/JBrosDevelopment/EZCode/wiki/Docs) are on the our [GitHub Wiki Page](https://github.com/JBrosDevelopment/EZCode/wiki). Please refer to this for any detailed instrictions.
+The [Official Docs](https://github.com/JBrosDevelopment/EZCode/wiki/EZCode-Docs) are on the our [GitHub Wiki Page](https://github.com/JBrosDevelopment/EZCode/wiki). Please refer to this for any detailed instrictions.
 
 ## Example
 
