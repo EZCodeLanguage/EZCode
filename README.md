@@ -7,13 +7,21 @@
 <details open>
 <summary><h2>Welcome!</h2></summary>
 
-**Welcome to EZCode!** EZCode is a comprehensive programming language built off of Microsoft WinForms. EZCode strives to make it as easy as possible to build a Windows program ranging from a Visual Application to simple console programs.
+**Welcome to EZCode!** EZCode is a comprehensive programming language built off of Microsoft WinForms. EZCode strives to make it as easy as possible to build a Windows program ranging from a Visual Application to simple console programs. Refer to [Community](#community) to learn more on how to contribute and where to join our Discord Server!
 </details>
 
 <details open>
 <summary><h2>Docs</h2></summary>
 
 The [Official Docs](https://github.com/JBrosDevelopment/EZCode/wiki/EZCode-Docs) are on the our [GitHub Wiki Page](https://github.com/JBrosDevelopment/EZCode/wiki). Please refer to this for any detailed instrictions.
+</details>
+
+<details open>
+<summary><h2>Community</h2></summary>
+
+Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/JBrosDevelopment/EZCode-Projects.git) for the community. Create a pull request and I will accept as soon as I can. There is also the [Discussion Board](https://github.com/JBrosDevelopment/EZCode/discussions) for anybody who has questions or wants to share. If you need any help, you can look over the [Wiki](https://github.com/JBrosDevelopment/EZCode/wiki) which includes instructions and documentation.
+
+Please join our [Discord Server](https://discord.gg/DpBrp6Zy) to get closer to the community!
 </details>
 
 <details open>
@@ -58,12 +66,6 @@ print 'txt'
 // % % % % % % % % % % % % 
 ```
 You can change the `X_Scale` and `Y_Scale` variables as well as the character being used for the square shape.
-</details>
-
-<details open>
-<summary><h2>Community</h2></summary>
-
-Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/JBrosDevelopment/EZCode-Projects.git) for the community. Create a pull request and I will accept as soon as I can. There is also the [Discussion Board](https://github.com/JBrosDevelopment/EZCode/discussions) for anybody who has questions or wants to share. If you need any help, you can look over the [Wiki](https://github.com/JBrosDevelopment/EZCode/wiki) which includes instructions and documentation.
 </details>
 
 <details open>
