@@ -161,6 +161,13 @@ This is an optional application to install and it creates a Microsoft Visual Stu
 | Stop | stop all | Quits the entire program |
 |      | stop file | Stops the current file running |
 |      | stop method | Stops the current method running |
+| Sound | sound stopall | Stops all sounds playing |
+|       | sound volume value | Sets the volume of all sounds (0 - 1) |
+|       | sound name new filepath | Creates a new sound instance from the file |
+|       | sound name play | Plays the sound |
+|       | sound name playloop | Plays the sound in a loop |
+|       | sound name stop | Stops the sound |
+|       | sound name destroy | Destroys the sound completely |
 | Textbox | textbox name | Creates a textbox control |
 |         | textbox name properties | Creates a textbox control and sets its properties |
 | Variable | var name | Creates a variable |
