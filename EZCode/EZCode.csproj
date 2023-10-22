@@ -4,7 +4,37 @@
     <TargetFramework>net7.0</TargetFramework>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
+    <Title>EZCode WinForms Programming Language</Title>
+    <Version>1.50.10</Version>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <Description>EZCode is a easy to ue programming language for WinForms and can help speed up your development process. Go to https://ez-code.web.app</Description>
+    <Copyright>Copyright © 2023</Copyright>
+    <PackageProjectUrl>https://github.com/JBrosDevelopment/EZCode.git</PackageProjectUrl>
+    <PackageIcon>EZCode_Logo.png</PackageIcon>
+    <PackageReadmeFile>README.md</PackageReadmeFile>
+    <RepositoryUrl>https://github.com/JBrosDevelopment/EZCode.git</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+    <PackageTags>EZCode;Code;Programming;Language;Windows;Forms;WinForms;WinForm</PackageTags>
+    <PackageReleaseNotes>Version 2.0.0</PackageReleaseNotes>
+    <PackageLicenseFile>LICENSE</PackageLicenseFile>
+    <Company>JBros Development</Company>
+    <Authors>JBros Development;</Authors>
   </PropertyGroup>
+
+  <ItemGroup>
+    <None Include="..\..\..\Users\jlham\OneDrive\Desktop\EZCode_Logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\LICENSE">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+    <None Include="..\README.md">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
+  </ItemGroup>
 
   <ItemGroup>
     <PackageReference Include="NAudio" Version="2.1.0" />
@@ -21,6 +51,13 @@
 
   <ItemGroup>
     <Compile Update="Controls.cs" />
+  </ItemGroup>
+
+  <ItemGroup>
+    <None Update="EZCode_Wide_Logo.png">
+      <Pack>True</Pack>
+      <PackagePath>\</PackagePath>
+    </None>
   </ItemGroup>
 
 </Project>

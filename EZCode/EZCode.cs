@@ -1723,7 +1723,7 @@ namespace EZCode
                                     {
                                         if (!playing) continue;
                                         codeLine = i + 1;
-                                        List<string> a_parts = lines[i].Split(new char[] { ' ' }).ToList();
+                                        List<string> a_parts = lines[i].Split(new char[] { ' ' }).Where(x => x != "").ToList();
                                         for (int j = 0; j < a_parts.Count; j++)
                                         {
                                             if (a_parts[j].Trim() == "->")
@@ -1897,6 +1897,7 @@ namespace EZCode
                             if (control != null)
                             {
                                 Window.Controls.Add(control);
+                                control.BringToFront();
                             }
                             else
                             {
@@ -1987,25 +1988,27 @@ namespace EZCode
                                     window.MaximumSize = new Size(window.MaximumSize.Width, (int)floats[0]);
                                 }
                                 break;
+                            case "w":
                             case "width":
                                 {
                                     float[] floats = find_value(after, 0, 600);
                                     window.Width = (int)floats[0];
                                 }
                                 break;
+                            case "h":
                             case "height":
                                 {
                                     float[] floats = find_value(after, 0, 400);
                                     window.Height = (int)floats[0];
                                 }
                                 break;
-                            case "left":
+                            case "x":
                                 {
                                     float[] floats = find_value(after, 0, window.Left);
                                     window.Left = (int)floats[0];
                                 }
                                 break;
-                            case "top":
+                            case "y":
                                 {
                                     float[] floats = find_value(after, 0, window.Top);
                                     window.Top = (int)floats[0];
@@ -2019,11 +2022,13 @@ namespace EZCode
                                     else ErrorText(parts, ErrorTypes.custom, custom: $"Expected opacity value to be withen 0 and 1 in {SegmentSeperator} {codeLine}");
                                 }
                                 break;
+                            case "t":
                             case "text":
                                 {
                                     window.Text = after[0];
                                 }
                                 break;
+                            case "auto":
                             case "autosize":
                                 {
                                     window.AutoSize = (bool)BoolCheck(after, 0);
@@ -2156,11 +2161,15 @@ namespace EZCode
                                 }
                                 break;
                             case "backcolor":
+                            case "bc":
+                            case "bg":
                                 {
                                     window.BackColor = returncolor(parts, after, 0, window.BackColor);
                                 }
                                 break;
                             case "forecolor":
+                            case "fc":
+                            case "fg":
                                 {
                                     window.ForeColor = returncolor(parts, after, 0, window.ForeColor);
                                 }
@@ -3440,6 +3449,7 @@ namespace EZCode
                         break;
                     case "backcolor":
                     case "bc":
+                    case "bg":
                         value = $"{control.BackColor.R}, {control.BackColor.G}, {control.BackColor.B}";
                         break;
                     case "backcolor-r":
@@ -3459,6 +3469,7 @@ namespace EZCode
                         value = control.Text.ToString();
                         break;
                     case "forecolor":
+                    case "fg":
                     case "fc":
                         value = $"{control.ForeColor.R}, {control.ForeColor.G}, {control.ForeColor.B}";
                         break;
@@ -3580,6 +3591,7 @@ namespace EZCode
                 Window window = getWindow(ind[0]);
                 switch (ind[1])
                 {
+                    case "auto":
                     case "autosize":
                         {
                             value = window.AutoSize ? "1" : "0";
@@ -3645,22 +3657,24 @@ namespace EZCode
                             value = window.MinimumSize.Height.ToString();
                         }
                         break;
+                    case "w":
                     case "width":
                         {
                             value = window.Width.ToString();
                         }
                         break;
+                    case "h":
                     case "height":
                         {
                             value = window.Height.ToString();
                         }
                         break;
-                    case "left":
+                    case "x":
                         {
                             value = window.Left.ToString();
                         }
                         break;
-                    case "top":
+                    case "y":
                         {
                             value = window.Top.ToString();
                         }
@@ -3672,6 +3686,7 @@ namespace EZCode
                         break;
                     case "backcolor":
                     case "bc":
+                    case "bg":
                         value = $"{window.BackColor.R}, {window.BackColor.G}, {window.BackColor.B}";
                         break;
                     case "backcolor-r":
@@ -3691,6 +3706,7 @@ namespace EZCode
                         value = window.Text.ToString();
                         break;
                     case "forecolor":
+                    case "fg":
                     case "fc":
                         value = $"{window.ForeColor.R}, {window.ForeColor.G}, {window.ForeColor.B}";
                         break;
@@ -3969,7 +3985,7 @@ namespace EZCode
             string[]? txt = null;
             float[]? getpoints = null;
             int points = 0;
-            control.BringToFront();
+            //control.BringToFront();
             if (RefreshOnControl) Space.Refresh();
             if (text)
             {
