@@ -4,7 +4,7 @@ namespace EZPlayer_WinForms
 {
     internal static class Program
     {
-        static void Main()
+        [STAThread] static void Main()
         {
             ApplicationConfiguration.Initialize();
             EzCode ez = new EzCode();
