@@ -1,0 +1,28 @@
+﻿<doc>
+	<style name="Comment" color="Green" fontStyle="Regular"/>
+	<rule style="Comment">//.*</rule>
+	
+	<style name="Hashtag" color="Red" fontStyle="Regular"/>
+	<rule style="Hashtag"> #.*|^\s*#.*|\n#.*</rule>
+	
+	<style name="Pink" color="HotPink" fontStyle="Regular"/>
+	<rule style="Pink">\b(if|loop|else|DEVPORTAL|method|endmethod)\b</rule>
+	<style name="Keyword" color="CadetBlue" fontStyle="Regular"></style>
+	
+	<rule style="Keyword">\b(list|group|sound|var|print|await|bringto|clear|destroy|event|file|input|intersects|messagebox|stop|shape|textbox|label|button|window|global)\b</rule>
+	
+	<style name="Loop" color="LightBlue" fontStyle="Regular"/>
+	<rule style="Loop">(?&lt;=\blist\b\s*).*\b(new|add|equals|remove|destroy|clear)\b</rule>
+	
+	<style name="Group" color="LightBlue" fontStyle="Regular"/>
+	<rule style="Group">(?&lt;=\bgroup\b\s*).*\b(new|change|add|equals|remove|destroy|destroyall|clear)\b</rule>
+	
+	<style name="Sound" color="LightBlue" fontStyle="Regular"/>
+	<rule style="Sound">(?&lt;=\bsound\b\s*).*\b(new|play|playall|volume|destroy|stop|playloop)\b</rule>
+	
+	<style name="Window" color="LightBlue" fontStyle="Regular"/>
+	<rule style="Window">(?&lt;=\bwindow\b\s*).*\b(new|display|change|close|open|destroy)\b</rule>
+	
+	<style name="AfterWordText" color="LightBlue" fontStyle="Regular"/>
+	<rule style="AfterWordText">(?&lt;=\b(print|messagebox)\b\s*).*</rule>
+</doc>
