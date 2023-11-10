@@ -72,8 +72,6 @@ namespace Installer
 
                     string downloadUrl = $"{githubRepoUrl}/archive/refs/tags/{releaseTag}.zip";
 
-                    
-
                     WebInstaller(installFile, downloadUrl, tempDirectory, true);
 
                     string[] d = Directory.GetDirectories(Path.Combine(tempDirectory, $"EZCode-{(type != "" ? $"{realTag}_{type.ToLower()}" : realTag)}"));
@@ -116,6 +114,8 @@ namespace Installer
                     Directory.Delete(tempDirectory, true);
 
                     Program.CreateShortcut("EZCode", Path.Combine(decompressDirectory, "EZCodePlayer.exe"));
+
+                    Program.SetUpFile(Path.Combine(decompressDirectory, "EZCodePlayer.exe"), Path.Combine(appdataDir, "EZCode", "EZCode_Logo.ico"));
                 }
 
                 void slnbuilder() // Install Sln Builder
@@ -144,7 +144,6 @@ namespace Installer
 
                     Program.CreateShortcut("SLN Builder", Path.Combine(decompressDirectory, "EZ_SLN_Builder.exe"));
                 }
-
             }
             catch (Exception ex)
             {

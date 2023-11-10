@@ -1,4 +1,6 @@
 ﻿using IWshRuntimeLibrary;
+using Microsoft.Win32;
+using System.Runtime.InteropServices;
 
 namespace Installer
 {
@@ -106,6 +108,76 @@ namespace Installer
             IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
             shortcut.TargetPath = path;
             shortcut.Save();
+        }
+
+        [DllImport("Shell32.dll", CharSet = CharSet.Auto, SetLastError = true)]
+        public static extern void SHChangeNotify(uint wEventId, uint uFlags, IntPtr dwItem1, IntPtr dwItem2);
+
+        [STAThread]
+        public static void SetUpFile(string executablePath, string iconPath)
+        {
+            string fileEnding = ".ezcode";
+            for (int i = 0; i < 2; i++)
+            {
+                if (!IsAssociated(fileEnding, executablePath)) 
+                { 
+                    Associate(executablePath, iconPath, fileEnding);
+                    Associate(executablePath, iconPath, fileEnding);
+                }
+                fileEnding = ".ezproj";
+            }
+        }
+        public static bool IsAssociated(string fileEnding, string programPath)
+        {
+            string associatedProgramPath = GetAssociatedProgram(fileEnding);
+            return string.Equals(associatedProgramPath, programPath, StringComparison.OrdinalIgnoreCase);
+        }
+
+        public static string GetAssociatedProgram(string fileExtension)
+        {
+            string programPath = null;
+
+            using (RegistryKey key = Registry.ClassesRoot.OpenSubKey(fileExtension))
+            {
+                if (key != null)
+                {
+                    object value = key.GetValue(null);
+                    if (value != null)
+                    {
+                        using (RegistryKey progKey = Registry.ClassesRoot.OpenSubKey(value.ToString() + "\\shell\\open\\command"))
+                        {
+                            if (progKey != null)
+                            {
+                                object path = progKey.GetValue(null);
+                                if (path != null)
+                                {
+                                    programPath = path.ToString();
+                                }
+                            }
+                        }
+                    }
+                }
+            }
+
+            return programPath;
+        }
+
+        public static void Associate(string executablePath, string iconPath, string fileEnding)
+        {
+            RegistryKey FileReg = Registry.CurrentUser.CreateSubKey("Software\\Classes\\" + fileEnding);
+            RegistryKey AppReg = Registry.CurrentUser.CreateSubKey("Software\\Classes\\Applications\\EZCodePlayer.exe");
+            RegistryKey AppAssoc = Registry.CurrentUser.CreateSubKey("Software\\Microsoft\\Windows\\CurrentVersion\\Explorer\\FileExts\\" + fileEnding);
+
+            FileReg.CreateSubKey("DefaultIcon").SetValue("", iconPath);
+            FileReg.CreateSubKey("PerceivedType").SetValue("", "Text");
+
+            AppReg.CreateSubKey("shell\\open\\command").SetValue("", "\"" + executablePath + "\"" + "%1");
+            AppReg.CreateSubKey("shell\\edit\\command").SetValue("", "\"" + executablePath + "\"" + "%1");
+            AppReg.CreateSubKey("DefaultIcon").SetValue("", iconPath);
+
+            AppAssoc.CreateSubKey("UserChoice").SetValue("Progid", "Applications\\EZCodePlayer.exe");
+
+            SHChangeNotify(0x08000000, 0x0000, IntPtr.Zero, IntPtr.Zero);
         }
     }
 }
