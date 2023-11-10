@@ -69,8 +69,10 @@ namespace EZCode
         /// Empty Instance of <see cref="EZProj"/>.
         /// </summary>
         public EZProj() { }
-        public EZProj(EzCode code)
+        public EZProj(EzCode code, string _file = "")
         {
+            if (_file != "") FilePath = _file;
+
             string[] lines = code.Code.Split("\n");
             string[] parts = new string[0];
             int index = 0;
@@ -86,7 +88,7 @@ namespace EZCode
             string file = "";
             if (parts.Length != 0)
             {
-                string[] commas = string.Join(" ", parts.Skip(index)).Split(",");
+                string[] commas = string.Join(" ", parts.Skip(index)).Split(",").Select(x=>x.Trim()).ToArray();
                 foreach (string comma in commas)
                 {
                     string before = comma.Split(":")[0];
@@ -176,6 +178,8 @@ namespace EZCode
         /// fileinerror:"boolean"             // sets the 'File In Error' value to specified value
         /// fileinerror:"default"             // sets the 'File In Error' value to defualt (true)
         /// fileinerror:"local var name"      // reads variable and includes the variable's value (assumed boolean)
+        /// 
+        /// ... There are more settings
         /// 
         /// // Commented Text                 // Text that will be ignored by the Converter
         /// ]]>

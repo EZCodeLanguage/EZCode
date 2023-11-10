@@ -1368,7 +1368,7 @@ namespace EZCode
                                     case "scroll":
                                         window.scroll = file;
                                         window.Scroll += G_scroll;
-                                        break;
+                                        break; // not possible
                                     case "focused":
                                         window.focused = file;
                                         window.GotFocus += G_focused;
@@ -2725,7 +2725,7 @@ namespace EZCode
                     }
                     break;
                 default:
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'add', 'equals', 'remove', 'change', or 'clear' in {SegmentSeperator} {codeLine}");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'add', 'equals', 'remove', 'change', 'clear', 'destroy', or 'destroyall' in {SegmentSeperator} {codeLine}");
                     break;
             }
             group.Method = currentmethod != null && !global ? currentmethod.Name : "";

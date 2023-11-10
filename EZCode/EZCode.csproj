@@ -22,7 +22,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <None Include="..\..\..\Users\jlham\OneDrive\Desktop\EZCode_Logo.png">
+    <None Include="..\EZCodePlayer\EZCode_Logo.png">
       <Pack>True</Pack>
       <PackagePath>\</PackagePath>
     </None>

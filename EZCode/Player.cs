@@ -305,7 +305,7 @@
         private Panel visualoutput;
     } // DESIGNER
 
-    partial class WindowProject : Form
+    public partial class WindowProject : Form
     {
         EzCode EzCode;
         Player player;
