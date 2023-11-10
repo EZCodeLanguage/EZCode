@@ -11,92 +11,135 @@ namespace EZ_IDE
     public static class Settings
     {
         public static string keyName = @"JBrosDevelopment\EZCode\IDE";
-        private static bool _save_folder;
-        public static bool Save_folder 
+        public static bool Save_Folder 
         {
-            get { return _save_folder; }
-            set { _save_folder = value; Save(); }
+            get => BoolParse(GetKey(nameof(Save_Folder))) == true; 
+            set => SetKey(nameof(Save_Folder), value); 
+        }
+        public static string Open_Folder_Path 
+        {
+            get
+            {
+                string? val = GetKey(nameof(Open_Folder_Path));
+                return val != null ? val : string.Empty;
+            }
+            set 
+            {
+                if (Save_Folder == true)
+                    SetKey(nameof(Open_Folder_Path), value); 
+            }
+        }
+        public static bool? First_Open
+        {
+            get => BoolParse(GetKey(nameof(First_Open))); 
+            set => SetKey(nameof(First_Open), value);
+        }
+        public static bool Auto_Save
+        {
+            get => BoolParse(GetKey(nameof(Auto_Save))) == true; 
+            set => SetKey(nameof(Auto_Save), value);
+        }
+
+        private static bool? BoolParse(string? value)
+        {
+            if (value == null) 
+                return null;
+
+            if(value.ToLower() == "true")
+            {
+                return true;
+            }
+            else if(value.ToLower() == "false")
+            {
+                return false;
+            }
+            else
+            {
+                return null;
+            }
         }
 
         public static void Reset()
         {
-            Save_folder = true;
+            First_Open = false;
+            Save_Folder = true;
+            Auto_Save = false;
+            Open_Folder_Path = "";
         }
 
         public static void StartUp()
         {
-            string? val = GetKey(AddedKeys.FirstOpen);
-            if (bool.Parse(val != null ? val : "false"))
+            if (First_Open != null ? First_Open == true : false)
             {
                 Reset();
             }
-            else if (val == null)
+            else if (First_Open == null)
             {
-                SetKey(AddedKeys.FirstOpen, "true");
                 Reset();
             }
         }
 
-        public static void Open()
-        {
-            using (var key = Registry.CurrentUser.OpenSubKey(keyName))
-            {
-                if (key != null)
-                {
-                    bool retrievedData = bool.Parse(key.GetValue("save_folder") as string);
-                    if (retrievedData != null)
-                    {
-                        Save_folder = retrievedData;
-                    }
-                }
-            }
-        }
-
-        public static void Save()
-        {
-            using (var key = Registry.CurrentUser.CreateSubKey(keyName))
-            {
-                key.SetValue("save_folder", Save_folder.ToString());
-            }
-        }
-
-        public enum AddedKeys
-        {
-            OpenFolderPath,
-            FirstOpen
-        }
-
-        public static void SetKey(AddedKeys key, string value)
+        public static void SetKey(string key, object value)
         {
             using (var v = Registry.CurrentUser.CreateSubKey(keyName))
             {
-                switch (key)
-                {
-                    case AddedKeys.OpenFolderPath:
-                        v.SetValue("open_folder_path", value);
-                        break;
-                }
+                v.SetValue(key, value);
             }
         }
-        public static string? GetKey(AddedKeys key)
+        public static string? GetKey(string key, bool create_if_null = true)
         {
-            using (var v = Registry.CurrentUser.OpenSubKey(keyName))
+            try
             {
-                if (v != null)
+                using (var v = Registry.CurrentUser.OpenSubKey(keyName))
                 {
-                    switch (key)
+                    if (v != null)
                     {
-                        case AddedKeys.OpenFolderPath:
-                            string retrievedData = v.GetValue("open_folder_path") as string;
-                            if (retrievedData != null)
-                            {
-                                return retrievedData;
-                            }
-                            break;
+                        string retrievedData = v.GetValue(key) as string;
+                        if (retrievedData != null)
+                        {
+                            return retrievedData;
+                        }
+                    }
+                    else if (create_if_null)
+                    {
+                        using (var _v = Registry.CurrentUser.CreateSubKey(keyName))
+                        {
+                            _v.SetValue(key, "");
+                            return "";
+                        }
                     }
                 }
             }
+            catch
+            {
+
+            }
             return null;
+        }
+        public static void Exit(IDE ide)
+        {
+            string path = ide.FileURLTextBox.Text;
+            string contents = ide.fctb.Text;
+            string oldContents = File.ReadAllText(path);
+            if (oldContents != contents)
+            {
+                DialogResult result = MessageBox.Show("There are unsaved changes, do you want to save them?", "Unsaved changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                if (result == DialogResult.Yes)
+                {
+                    TreeManager.SaveFile(ide);
+                    Application.Exit();
+                }
+                else if (result == DialogResult.No)
+                {
+                    Application.Exit();
+                }
+            }
+        }
+        public static void Exit()
+        {
+            DialogResult result = MessageBox.Show("Are you sure you want to quit?", "Exit", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+            if (result == DialogResult.Yes)
+                Application.Exit();
         }
     }
 }

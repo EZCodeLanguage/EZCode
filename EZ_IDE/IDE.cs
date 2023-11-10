@@ -280,7 +280,7 @@ namespace EZ_IDE
 
         TreeManager Manager;
 
-        public IDE()
+        public IDE(string path = "")
         {
             InitializeComponent();
 
@@ -300,7 +300,8 @@ namespace EZ_IDE
 
             Manager = new TreeManager(this);
 
-            Manager.SetTreeNodes();
+            if (path == "") Manager.SetTreeNodes();
+            else Manager.OpenPath(path);
 
             Settings.StartUp();
         }
@@ -312,17 +313,18 @@ namespace EZ_IDE
                 if (keyData == (Keys.Control | Keys.O))
                 {
                     // open folder
+                    folderToolStripMenuItem1.PerformClick();
+                }
+                else if (keyData == (Keys.Control | Keys.S))
+                {
+                    // save file
+                    saveToolStripMenuItem.PerformClick();
                 }
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
         #region events
-        private void IDE_FormClosing(object sender, FormClosingEventArgs e)
-        {
-            Manager.SaveTreeViewData();
-        }
-
         private void folderToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             // open folder
@@ -333,11 +335,6 @@ namespace EZ_IDE
         {
             // open file
             Manager.OpenFile();
-        }
-        private void projectToolStripMenuItem1_Click(object sender, EventArgs e)
-        {
-            // open project
-            Manager.OpenProject();
         }
 
         private void playProjectToolStripMenuItem_Click(object sender, EventArgs e)
@@ -350,17 +347,158 @@ namespace EZ_IDE
             // play file
         }
 
-        private void Tree_AfterSelect(object sender, TreeViewEventArgs e)
+        private void exitToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Manager.SelectedNode(e);
+            // exit
+            Settings.Exit(this);
         }
 
+        private void saveToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // save file
+            Manager.SaveFile();
+        }
+
+        private void Tree_AfterSelect(object sender, TreeViewEventArgs e)
+        {
+            // after selected file
+            Manager.SelectedNode(e);
+            changeTime = 0;
+        }
+        private void Tree_BeforeSelect(object sender, TreeViewCancelEventArgs e)
+        {
+            // before selected file
+            try
+            {
+                if (fctb.Text != File.ReadAllText(FileURLTextBox.Text))
+                {
+                    bool @continue = Manager.SaveFile(!Settings.Auto_Save);
+                    if (!@continue)
+                    {
+                        e.Cancel = true;
+                    }
+                }
+            }
+            catch
+            {
+                Manager.SelectedCatchCheck(FileURLTextBox.Text);
+            }
+        }
         private void settingsPreferencesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             Settings_Preferences settings_Preferences = new Settings_Preferences();
             settings_Preferences.ShowDialog();
         }
 
+
+        public int changeTime = 0;
+        private void fctb_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                if (Settings.Auto_Save)
+                {
+
+                    changeTime++;
+                    if (changeTime > 10)
+                    {
+                        Manager.SaveFile();
+                        changeTime = 0;
+                    }
+                }
+            }
+            catch
+            {
+                // nothing
+            }
+        }
+
+        private void fileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // new file
+        }
+
+        private void folderToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // new folder
+        }
+
+        private void projectToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // new project
+        }
+
+        private void fileToolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            // create file
+        }
+
+        private void folderToolStripMenuItem2_Click(object sender, EventArgs e)
+        {
+            // create folder
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // delete
+        }
+
+        private void projectSettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // project settings
+        }
+
+        private void includeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // include
+        }
+
+        private void excludeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // exclude
+        }
+
+        private void docsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // help/docs
+        }
+
+        private void insertBreakpointToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // inset breakpoint
+        }
+
+        private void startDebugSessionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // start debug session
+        }
+
+        private void nextSegmentToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // next segment
+        }
+
+        private void continueToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // continue
+        }
+
+        private void endDebugSessionToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // end debug session
+        }
+
+        private void debugSettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // debug settings
+        }
+        private void clearTreeViewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // clear tree view
+            Tree.Nodes.Clear();
+            Settings.Open_Folder_Path = "";
+        }
         #endregion
+
     }
 }

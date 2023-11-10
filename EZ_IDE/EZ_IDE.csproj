@@ -44,7 +44,10 @@
   </ItemGroup>
 
   <ItemGroup>
-    <None Update="Syntax.xml">
+    <None Update="EZCode_Syntax.xml">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+    <None Update="EZProj_Syntax.xml">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </None>
   </ItemGroup>

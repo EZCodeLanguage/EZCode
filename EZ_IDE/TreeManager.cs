@@ -1,7 +1,9 @@
 ﻿using Microsoft.Win32;
+using NAudio.Wave;
 using System.IO;
 using System.Text.Json;
 using System.Xml;
+using System.Xml.Linq;
 using System.Xml.Serialization;
 using static EZ_IDE.Settings;
 
@@ -27,112 +29,91 @@ namespace EZ_IDE
 
         public void SetTreeNodes()
         {
-            var value = GetKey(AddedKeys.OpenFolderPath);
+            var value = Open_Folder_Path;
             if (value != null)
                 BuildTree(value, ide.Tree.Nodes);
-            LoadTreeViewData();
+        }
+        public static bool SaveFile(IDE ide, bool dialog = false)
+        {
+            string path = ide.FileURLTextBox.Text;
+            string contents = ide.fctb.Text;
+
+            if (File.ReadAllText(path) != contents && dialog)
+            {
+                DialogResult result = MessageBox.Show("There are unsaved changes, do you want to save them?", "Unsaved changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                if (result == DialogResult.Yes)
+                {
+                    SaveFile(ide);
+                }
+                else if (result == DialogResult.No)
+                {
+                    // nothing
+                }
+                else if (result == DialogResult.Cancel)
+                {
+                    return false;
+                }
+            }
+
+            File.WriteAllText(path, contents);
+
+            return true;
+        }
+        public bool SaveFile(bool dialog = false)
+        {
+            return SaveFile(ide, dialog);
         }
 
-        public void OpenFolder()
+        public void OpenFolder(string path = "")
         {
-            FolderBrowserDialog dialog = new FolderBrowserDialog();
-            dialog.ShowDialog();
-            BuildTree(dialog.SelectedPath, ide.Tree.Nodes);
-
-            if (Save_folder)
+            if(path == "")
             {
-                SetKey(AddedKeys.OpenFolderPath, dialog.SelectedPath);
+                FolderBrowserDialog dialog = new FolderBrowserDialog();
+                dialog.ShowDialog();
+                path = dialog.SelectedPath;
+            }
+            ide.Tree.Nodes.Clear();
+            BuildTree(path, ide.Tree.Nodes);
+
+            Open_Folder_Path = path;
+        }
+        public void OpenFile(string path = "")
+        {
+            if(path == "")
+            {
+                OpenFileDialog dialog = new OpenFileDialog();
+                dialog.ShowDialog();
+                path = dialog.FileName;
+            }
+
+            DialogResult result = MessageBox.Show("Do you want to open the directory of this file?", "Open Folder", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Question);
+            if (result == DialogResult.Yes)
+            {
+                OpenFolder(new FileInfo(path).Directory.FullName);
+            }
+            else if (result == DialogResult.No)
+            {
+                ide.Tree.Nodes.Add(new TreeNode(path) { Name = path });
+            }
+            else if (result == DialogResult.Cancel)
+            {
+                return;
             }
         }
-        public void OpenFile()
+        public void OpenPath(string path)
         {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Multiselect = true;
-            dialog.ShowDialog();
-            string[] files = dialog.FileNames;
-            List<TreeNode> nodes = new List<TreeNode>();
-            foreach (string file in files)
-            {
-                TreeNode node = new TreeNode(file) { Name = file };
-                nodes.Add(node);
-            }
-
-            ide.Tree.Nodes.AddRange(nodes.ToArray());
-        }
-        public void OpenProject()
-        {
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Filter = "EZProject|*.ezproj";
-            dialog.ShowDialog();
-
-            string code = File.ReadAllText(dialog.FileName);
-            string[] lines = code.Split(new char[] { '\n', '|' });
-            HashSet<string> hashFiles = new HashSet<string>();
-            FileInfo fileI = new FileInfo(dialog.FileName);
-            DirectoryInfo dirI = new DirectoryInfo(fileI.Directory.ToString());
-            string rootDir = "";
-            string name = fileI.Name;
-
-            for (int i = 0; i < lines.Length; i++)
-            {
-                string[] parts = lines[i].Split(":");
-                string before = parts[0];
-                string after = string.Join(":", parts.Skip(1)).Replace("\"", "");
-                rootDir = dirI.FullName;
-                if (before == "startup")
-                {
-                    hashFiles.Add(after);
-                }
-                if (before == "include")
-                {
-                    if(after != "all")
-                    {
-                        hashFiles.Add(after);
-                    }
-                    else
-                    {
-                        foreach(FileInfo file in dirI.GetFiles("*", SearchOption.AllDirectories))
-                        {
-                            hashFiles.Add(file.FullName); 
-                        }
-                    }
-                }
-                if (before == "exclude")
-                {
-                    if(after != "all")
-                    {
-                        hashFiles.Remove(after);
-                    }
-                    else
-                    {
-                        foreach(FileInfo file in dirI.GetFiles("*", SearchOption.AllDirectories))
-                        {
-                            hashFiles.Remove(file.FullName); 
-                        }
-                    }
-                }
-                if(before == "name")
-                {
-                    name = after;
-                }
-            }
-            string[] files = hashFiles.ToArray();
-            for (int i = 0; i < files.Length; i++)
-            {
-                files[i] = files[i].Replace("~/", "").Replace("~\\", "").Trim();
-                files[i] = Path.Combine(rootDir, files[i]);
-            }
-
-            List<TreeNode> nodes = new List<TreeNode>();
-            TreeNode main = new TreeNode(name);
+            if (!File.Exists(path)) return;
             
-            foreach(string f in files)
-            {
-                nodes.Add(new TreeNode(f) { Name = f });
-            }
-            main.Nodes.AddRange(nodes.ToArray());
+            FileAttributes attr = File.GetAttributes(path);
 
-            ide.Tree.Nodes.Add(main);
+            if (!attr.HasFlag(FileAttributes.Directory))
+            {
+                OpenFolder(path);
+            }
+            else
+            {
+                OpenFile(path);
+            }
         }
 
         private TreeNodeCollection BuildTree(string path, TreeNodeCollection addInMe)
@@ -159,55 +140,44 @@ namespace EZ_IDE
             return addInMe;
         }
 
-        public void SaveTreeViewData()
-        {
-            TreeNodeCollection nodes = ide.Tree.Nodes;
-
-            foreach (TreeNode node in nodes)
-            {
-                WriteDataToFile(node);
-            }
-
-            StreamWriter stream = new StreamWriter(TreeViewDataFilePath);
-            stream.Write(FileData);
-            stream.Close();
-        }
-        string FileData = "";
-        private void WriteDataToFile(TreeNode node)
-        {
-            FileData += node.Name + Environment.NewLine;
-            foreach (TreeNode child in node.Nodes)
-            {
-                WriteDataToFile(child);
-            }
-        }
-
-        private void LoadTreeViewData()
-        {
-
-        }
-
         public void SelectedNode(TreeViewEventArgs args)
         {
             var name = args.Node.Name;
             try
             {
-                ide.fctb.ResetText();
+                if (name.EndsWith(".ezcode"))
+                {
+                    ide.fctb.DescriptionFile = "./EZCode_Syntax.xml";
+                }
+                else if (name.EndsWith(".ezproj"))
+                {
+                    ide.fctb.DescriptionFile = "./EZProj_Syntax.xml";
+                }
+                else
+                {
+                    ide.fctb.DescriptionFile = "";
+                }
+
                 StreamReader reader = new StreamReader(name);
+                ide.fctb.ResetText();
                 ide.fctb.Text = reader.ReadToEnd();
                 reader.Close();
                 ide.FileURLTextBox.Text = name;
             }
             catch
             {
-                if (name != "")
-                {
-                    FileAttributes attr = File.GetAttributes(name);
+                SelectedCatchCheck(name);
+            }
+        }
+        public void SelectedCatchCheck(string path)
+        {
+            if (path != "")
+            {
+                FileAttributes attr = File.GetAttributes(path);
 
-                    if (!attr.HasFlag(FileAttributes.Directory))
-                    {
-                        MessageBox.Show("Could not open the selected file", "error", MessageBoxButtons.OK, MessageBoxIcon.Error);
-                    }
+                if (!attr.HasFlag(FileAttributes.Directory))
+                {
+                    MessageBox.Show("Could not open the selected file", "error", MessageBoxButtons.OK, MessageBoxIcon.Error);
                 }
             }
         }
