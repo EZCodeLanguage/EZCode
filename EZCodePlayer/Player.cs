@@ -21,7 +21,9 @@ namespace EZCodePlayer
             InitializeComponent();
             int d = 0;
             bool window = false;
-            proj = new EZProj(_file, _file.FullName);
+            EzCode e = new EzCode();
+            e.Code = File.ReadAllText(_file.FullName);
+            proj = new EZProj(e, _file.FullName);
             projectType = _projectType;
             file = _file;
             WindowProject windowProject = new WindowProject(proj.Name != null ? proj.Name : file.FullName, ezcode, proj, this);
@@ -32,14 +34,14 @@ namespace EZCodePlayer
                     window = true;
                     if (proj.Debug) windowProject.Show();
                 }
-                else if (proj.IsVisual)
-                {
-                    d = 300;
-                }
-                else if (!proj.IsVisual)
-                {
-                    d = 5;
-                }
+            }
+            if (proj.IsVisual)
+            {
+                d = 300;
+            }
+            else if (!proj.IsVisual)
+            {
+                d = 5;
             }
             if (!window)
             {

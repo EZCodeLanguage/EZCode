@@ -4,7 +4,7 @@ namespace EZCodePlayer
 {
     public partial class FileFinder : Form
     {
-        string keyName = @"JBrosDevelopment\EZCode\EZCodePlayer";
+        public static string keyName = @"JBrosDevelopment\EZCode\EZCodePlayer";
         public FileFinder(string? args)
         {
             bool er = false;
@@ -65,12 +65,18 @@ namespace EZCodePlayer
                 FileInfo fileInfo = new FileInfo(path.Text);
                 if (fileInfo.Extension == ".ezproj")
                 {
-                    new Player(fileInfo, Player.ProjectType.Project);
+                    EZProj proj = new EZProj(path.Text);
+                    new EZCode.EZPlayer.Player(proj);
                     Hide();
                 }
                 else if (fileInfo.Extension == ".ezcode")
                 {
-                    new Player(fileInfo, Player.ProjectType.Script);
+                    EzCode ez = new EzCode();
+                    string code = File.ReadAllText(path.Text);
+                    ez.Code = code;
+                    EZProj proj = new EZProj(ez, path.Text);
+                    new EZCode.EZPlayer.Player(proj);
+
                     Hide();
                 }
                 else

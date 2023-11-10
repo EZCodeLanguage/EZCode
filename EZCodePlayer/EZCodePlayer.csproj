@@ -13,6 +13,7 @@
     <RepositoryUrl>https://github.com/JBrosDevelopment/EZCode-SourceCode.git</RepositoryUrl>
     <RepositoryType>git</RepositoryType>
     <AssemblyVersion></AssemblyVersion>
+    <StartupObject>EZCodePlayer.Program</StartupObject>
   </PropertyGroup>
 
   <ItemGroup>
