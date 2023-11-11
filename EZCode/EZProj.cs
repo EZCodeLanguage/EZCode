@@ -171,14 +171,6 @@ namespace EZCode
         /// window:"default"                  // sets the 'In Panel' value to the opposite of defualt (true)
         /// window:"local var name"           // reads variable and includes the variable's value (assumed boolean)
         /// 
-        /// showbuild:"boolean"               // sets the 'Show Start and End' value to specified value
-        /// showbuild:"default"               // sets the 'Show Start and End' value to defualt (true)
-        /// showbuild:"local var name"        // reads variable and includes the variable's value (assumed boolean)
-        /// 
-        /// fileinerror:"boolean"             // sets the 'File In Error' value to specified value
-        /// fileinerror:"default"             // sets the 'File In Error' value to defualt (true)
-        /// fileinerror:"local var name"      // reads variable and includes the variable's value (assumed boolean)
-        /// 
         /// ... There are more settings
         /// 
         /// // Commented Text                 // Text that will be ignored by the Converter
@@ -250,7 +242,6 @@ namespace EZCode
                                     else if (keyword == "exclude") files.Remove(value);
                                     else if (keyword == "startup")
                                     {
-                                        //files.Add(value);
                                         startup = value;
                                     }
                                 }
