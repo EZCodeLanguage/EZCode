@@ -6,11 +6,11 @@
     <Nullable>enable</Nullable>
     <UseWindowsForms>true</UseWindowsForms>
     <ImplicitUsings>enable</ImplicitUsings>
-    <ApplicationIcon>EZCode_Logo.ico</ApplicationIcon>
+    <ApplicationIcon>EZCode_Logo_Purple.ico</ApplicationIcon>
   </PropertyGroup>
 
   <ItemGroup>
-    <Content Include="EZCode_Logo.ico" />
+    <Content Include="EZCode_Logo_Purple.ico" />
   </ItemGroup>
 
   <ItemGroup>
