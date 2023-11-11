@@ -392,7 +392,7 @@ namespace EZCode
             }
             return path;
         }
-        private string[] getdirectory(string path)
+        public string[] getdirectory(string path)
         {
             if (path == "all" || path == "folder")
             {
