@@ -1,4 +1,13 @@
 ﻿<doc>
+	<style name="Character" color="Yellow" fontStyle="Regular"/>
+	<rule style="Character">\|</rule>
+	
 	<style name="Comment" color="Green" fontStyle="Regular"/>
 	<rule style="Comment">//.*</rule>
+	
+	<style name="Before" color="CadetBlue" fontStyle="Regular"/>
+	<rule style="Before">startup:|name:|closeonend:|fileinerror:|showbuild:|isvisual:|closeonend:|debug:|clearconsole:|window:|icon:|"(([^\"]+))":</rule>
+	
+	<style name="After" color="LightBlue" fontStyle="Regular"/>
+	<rule style="After">:.*</rule>
 </doc>

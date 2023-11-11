@@ -7,8 +7,8 @@
 	
 	<style name="Pink" color="HotPink" fontStyle="Regular"/>
 	<rule style="Pink">\b(if|loop|else|DEVPORTAL|method|endmethod)\b</rule>
-	<style name="Keyword" color="CadetBlue" fontStyle="Regular"></style>
 	
+	<style name="Keyword" color="CadetBlue" fontStyle="Regular"></style>
 	<rule style="Keyword">\b(list|group|sound|var|print|await|bringto|clear|destroy|event|file|input|intersects|messagebox|stop|shape|textbox|label|button|window|global)\b</rule>
 	
 	<style name="Loop" color="LightBlue" fontStyle="Regular"/>
@@ -22,7 +22,10 @@
 	
 	<style name="Window" color="LightBlue" fontStyle="Regular"/>
 	<rule style="Window">(?&lt;=\bwindow\b\s*).*\b(new|display|change|close|open|destroy)\b</rule>
-	
+
+	<style name="Characters" color="Yellow" fontStyle="Regular"/>
+	<rule style="Characters">\\n|\\!|\\_|\\;|\\=|\\c|\\e|\\|\\\$|\\&amp;|\\\(|\\\)|\\-|\\"|\&#63;\(|\)\&#63;|\||</rule>
+
 	<style name="AfterWordText" color="LightBlue" fontStyle="Regular"/>
 	<rule style="AfterWordText">(?&lt;=\b(print|messagebox)\b\s*).*</rule>
 </doc>

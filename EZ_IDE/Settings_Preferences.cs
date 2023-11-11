@@ -12,9 +12,15 @@ namespace EZ_IDE
 {
     public partial class Settings_Preferences : Form
     {
-        public Settings_Preferences()
+        public enum Tab
+        {
+            settings, debug
+        }
+        public Settings_Preferences(Tab tab)
         {
             InitializeComponent();
+
+            tabControl1.SelectedIndex = tab == Tab.settings ? 0 : 1;
 
             Save_Folder.Checked = Settings.Save_Folder;
             Auto_Save.Checked = Settings.Auto_Save;
@@ -29,5 +35,6 @@ namespace EZ_IDE
         {
             Settings.Auto_Save = Auto_Save.Checked;
         }
+
     }
 }

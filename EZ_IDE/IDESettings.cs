@@ -29,6 +29,15 @@ namespace EZ_IDE
                     SetKey(nameof(Open_Folder_Path), value); 
             }
         }
+        public static string Current_Project_File 
+        {
+            get
+            {
+                string? val = GetKey(nameof(Current_Project_File));
+                return val != null ? val : string.Empty;
+            }
+            set => SetKey(nameof(Current_Project_File), value); 
+        }
         public static bool? First_Open
         {
             get => BoolParse(GetKey(nameof(First_Open))); 
@@ -119,8 +128,12 @@ namespace EZ_IDE
         public static void Exit(IDE ide)
         {
             string path = ide.FileURLTextBox.Text;
+
+            if (path == "") Application.Exit();
+
             string contents = ide.fctb.Text;
             string oldContents = File.ReadAllText(path);
+
             if (oldContents != contents)
             {
                 DialogResult result = MessageBox.Show("There are unsaved changes, do you want to save them?", "Unsaved changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);

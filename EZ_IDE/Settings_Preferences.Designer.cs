@@ -28,26 +28,25 @@
         /// </summary>
         private void InitializeComponent()
         {
-            tabControl1 = new TabControl();
+            tabPage3 = new TabPage();
             tabPage1 = new TabPage();
             Auto_Save = new CheckBox();
             label1 = new Label();
             Save_Folder = new CheckBox();
-            tabPage2 = new TabPage();
-            tabControl1.SuspendLayout();
+            tabControl1 = new TabControl();
             tabPage1.SuspendLayout();
+            tabControl1.SuspendLayout();
             SuspendLayout();
             // 
-            // tabControl1
+            // tabPage3
             // 
-            tabControl1.Controls.Add(tabPage1);
-            tabControl1.Controls.Add(tabPage2);
-            tabControl1.Dock = DockStyle.Fill;
-            tabControl1.Location = new Point(0, 0);
-            tabControl1.Name = "tabControl1";
-            tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(526, 419);
-            tabControl1.TabIndex = 0;
+            tabPage3.Location = new Point(4, 24);
+            tabPage3.Name = "tabPage3";
+            tabPage3.Padding = new Padding(3);
+            tabPage3.Size = new Size(518, 391);
+            tabPage3.TabIndex = 3;
+            tabPage3.Text = "Debug";
+            tabPage3.UseVisualStyleBackColor = true;
             // 
             // tabPage1
             // 
@@ -66,7 +65,7 @@
             // 
             Auto_Save.AutoSize = true;
             Auto_Save.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            Auto_Save.Location = new Point(11, 71);
+            Auto_Save.Location = new Point(11, 73);
             Auto_Save.Name = "Auto_Save";
             Auto_Save.Size = new Size(125, 24);
             Auto_Save.TabIndex = 3;
@@ -89,7 +88,7 @@
             // 
             Save_Folder.AutoSize = true;
             Save_Folder.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            Save_Folder.Location = new Point(11, 41);
+            Save_Folder.Location = new Point(11, 43);
             Save_Folder.Name = "Save_Folder";
             Save_Folder.Size = new Size(286, 24);
             Save_Folder.TabIndex = 1;
@@ -97,15 +96,16 @@
             Save_Folder.UseVisualStyleBackColor = true;
             Save_Folder.CheckedChanged += checkBox1_CheckedChanged;
             // 
-            // tabPage2
+            // tabControl1
             // 
-            tabPage2.Location = new Point(4, 24);
-            tabPage2.Name = "tabPage2";
-            tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(518, 391);
-            tabPage2.TabIndex = 1;
-            tabPage2.Text = "Preferences";
-            tabPage2.UseVisualStyleBackColor = true;
+            tabControl1.Controls.Add(tabPage1);
+            tabControl1.Controls.Add(tabPage3);
+            tabControl1.Dock = DockStyle.Fill;
+            tabControl1.Location = new Point(0, 0);
+            tabControl1.Name = "tabControl1";
+            tabControl1.SelectedIndex = 0;
+            tabControl1.Size = new Size(526, 419);
+            tabControl1.TabIndex = 0;
             // 
             // Settings_Preferences
             // 
@@ -116,20 +116,21 @@
             FormBorderStyle = FormBorderStyle.FixedToolWindow;
             MinimumSize = new Size(542, 456);
             Name = "Settings_Preferences";
-            Text = "Settings_Preferences";
-            tabControl1.ResumeLayout(false);
+            StartPosition = FormStartPosition.CenterParent;
+            Text = "Settings";
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
+            tabControl1.ResumeLayout(false);
             ResumeLayout(false);
         }
 
         #endregion
 
-        private TabControl tabControl1;
+        private TabPage tabPage3;
         private TabPage tabPage1;
-        private TabPage tabPage2;
+        private CheckBox Auto_Save;
         private Label label1;
         private CheckBox Save_Folder;
-        private CheckBox Auto_Save;
+        private TabControl tabControl1;
     }
 }

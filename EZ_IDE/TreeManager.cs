@@ -1,4 +1,5 @@
-﻿using Microsoft.Win32;
+﻿using EZCode.Variables;
+using Microsoft.Win32;
 using NAudio.Wave;
 using System.IO;
 using System.Text.Json;
@@ -145,6 +146,12 @@ namespace EZ_IDE
             var name = args.Node.Name;
             try
             {
+                StreamReader reader = new StreamReader(name);
+                ide.fctb.ResetText();
+                string s = reader.ReadToEnd();
+                reader.Close();
+                ide.FileURLTextBox.Text = name;
+
                 if (name.EndsWith(".ezcode"))
                 {
                     ide.fctb.DescriptionFile = "./EZCode_Syntax.xml";
@@ -153,16 +160,15 @@ namespace EZ_IDE
                 {
                     ide.fctb.DescriptionFile = "./EZProj_Syntax.xml";
                 }
-                else
+                else if (name != "")
                 {
                     ide.fctb.DescriptionFile = "";
                 }
-
-                StreamReader reader = new StreamReader(name);
-                ide.fctb.ResetText();
-                ide.fctb.Text = reader.ReadToEnd();
-                reader.Close();
-                ide.FileURLTextBox.Text = name;
+                else if (name == "")
+                {
+                    ide.fctb.DescriptionFile = "./EZCode_Syntax.xml";
+                }
+                ide.fctb.Text = s;
             }
             catch
             {
@@ -171,14 +177,21 @@ namespace EZ_IDE
         }
         public void SelectedCatchCheck(string path)
         {
-            if (path != "")
+            try
             {
-                FileAttributes attr = File.GetAttributes(path);
-
-                if (!attr.HasFlag(FileAttributes.Directory))
+                if (path != "")
                 {
-                    MessageBox.Show("Could not open the selected file", "error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    FileAttributes attr = File.GetAttributes(path);
+
+                    if (!attr.HasFlag(FileAttributes.Directory))
+                    {
+                        MessageBox.Show("Could not open the selected file", "error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
                 }
+            }
+            catch
+            {
+
             }
         }
     }

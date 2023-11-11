@@ -1,5 +1,7 @@
 ﻿using EZCode;
 using FastColoredTextBoxNS;
+using System.Diagnostics;
+using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
 
@@ -177,7 +179,7 @@ namespace EZ_IDE
         }
         public void Start(FileInfo _file, ProjectType _projectType = ProjectType.None)
         {
-            ProjectSettings.Initialize(ref ezcode);
+            project.Initialize(ref ezcode);
             int d = 0;
             bool window = false;
             proj = new EZProj(_file, _file.FullName);
@@ -279,6 +281,7 @@ namespace EZ_IDE
         #endregion
 
         TreeManager Manager;
+        ProjectSettings project;
 
         public IDE(string path = "")
         {
@@ -299,6 +302,7 @@ namespace EZ_IDE
             BuildAutocompleteMenu();
 
             Manager = new TreeManager(this);
+            project = new ProjectSettings();
 
             if (path == "") Manager.SetTreeNodes();
             else Manager.OpenPath(path);
@@ -310,6 +314,53 @@ namespace EZ_IDE
         {
             if (msg.Msg == 256)
             {
+                switch (keyData)
+                {
+                    case Keys.Control | Keys.O:
+                        folderToolStripMenuItem1.PerformClick(); break;
+                    case Keys.Control | Keys.S:
+                        saveToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.N:
+                        fileToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.K:
+                        projectToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.Shift | Keys.Q:
+                        exitToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.Q:
+                        clearTreeViewToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.T:
+                        settingsPreferencesToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.Shift | Keys.P:
+                        projectSettingsToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.Shift | Keys.I:
+                        includeToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.Shift | Keys.E:
+                        excludeToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.P:
+                        excludeToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.F5:
+                        playProjectToolStripMenuItem.PerformClick(); break;
+                    case Keys.Alt | Keys.P:
+                        playFileToolStripMenuItem.PerformClick(); break;
+                    case Keys.F1:
+                        docsToolStripMenuItem.PerformClick(); break;
+                    case Keys.F9:
+                        insertBreakpointToolStripMenuItem.PerformClick(); break;
+                    case Keys.F5:
+                        startDebugSessionToolStripMenuItem.PerformClick(); break;
+                    case Keys.Alt | Keys.D:
+                        startDebugSessionToolStripMenuItem.PerformClick(); break;
+                    case Keys.F11:
+                        nextSegmentToolStripMenuItem.PerformClick(); break;
+                    case Keys.F10:
+                        continueToolStripMenuItem.PerformClick(); break;
+                    case Keys.F12:
+                        endDebugSessionToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.Shift | Keys.D:
+                        debugSettingsToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.R:
+                        refreshTreeViewToolStripMenuItem.PerformClick(); break;
+                }
                 if (keyData == (Keys.Control | Keys.O))
                 {
                     // open folder
@@ -386,7 +437,8 @@ namespace EZ_IDE
         }
         private void settingsPreferencesToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            Settings_Preferences settings_Preferences = new Settings_Preferences();
+            // settings
+            Settings_Preferences settings_Preferences = new Settings_Preferences(Settings_Preferences.Tab.settings);
             settings_Preferences.ShowDialog();
         }
 
@@ -416,26 +468,40 @@ namespace EZ_IDE
         private void fileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // new file
-        }
+            SaveFileDialog saveFileDialog = new SaveFileDialog();
+            saveFileDialog.Filter = "EZCode|*.ezcode|EZProj|*.ezproj|All Files|*|Text Document|*.txt";
+            saveFileDialog.ShowDialog();
 
-        private void folderToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // new folder
+            string filePath = saveFileDialog.FileName;
+
+            File.Create(filePath).Close();
+
+            FileInfo file = new FileInfo(filePath);
+
+            try
+            {
+                if (file.Directory.FullName.StartsWith(Settings.Open_Folder_Path, StringComparison.OrdinalIgnoreCase))
+                {
+                    refreshTreeViewToolStripMenuItem.PerformClick();
+                    Tree.SelectedNode = Tree.Nodes.Find(file.FullName, true).First();
+                }
+                else
+                {
+                    Manager.OpenFile(file.FullName);
+                }
+            }
+            catch
+            {
+
+            }
         }
 
         private void projectToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // new project
-        }
-
-        private void fileToolStripMenuItem2_Click(object sender, EventArgs e)
-        {
-            // create file
-        }
-
-        private void folderToolStripMenuItem2_Click(object sender, EventArgs e)
-        {
-            // create folder
+            NewProject newProject = new NewProject();
+            newProject.ShowDialog();
+            //Manager.OpenFolder(newProject.project.Directory);
         }
 
         private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
@@ -461,6 +527,12 @@ namespace EZ_IDE
         private void docsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // help/docs
+            var psi = new ProcessStartInfo
+            {
+                FileName = "https://github.com/JBrosDevelopment/EZCode/wiki/IDE-Docs",
+                UseShellExecute = true
+            };
+            Process.Start(psi);
         }
 
         private void insertBreakpointToolStripMenuItem_Click(object sender, EventArgs e)
@@ -491,6 +563,9 @@ namespace EZ_IDE
         private void debugSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // debug settings
+
+            Settings_Preferences settings_Preferences = new Settings_Preferences(Settings_Preferences.Tab.debug);
+            settings_Preferences.ShowDialog();
         }
         private void clearTreeViewToolStripMenuItem_Click(object sender, EventArgs e)
         {
@@ -498,7 +573,12 @@ namespace EZ_IDE
             Tree.Nodes.Clear();
             Settings.Open_Folder_Path = "";
         }
-        #endregion
+        private void refreshTreeViewToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // refresh
+            Manager.OpenFolder(Settings.Open_Folder_Path);
+        }
 
+        #endregion
     }
 }

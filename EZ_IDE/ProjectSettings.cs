@@ -1,4 +1,5 @@
 ﻿using EZCode;
+using FastColoredTextBoxNS;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -7,10 +8,10 @@ using System.Threading.Tasks;
 
 namespace EZ_IDE
 {
-    public static class ProjectSettings
+    public partial class ProjectSettings
     {
-        static bool _FileInError = true;
-        public static bool FileInError
+        bool _FileInError = true;
+        public bool FileInError
         {
             get
             {
@@ -21,8 +22,8 @@ namespace EZ_IDE
                 _FileInError = value;
             }
         }
-        static bool _ShowBuild = false;
-        public static bool ShowBuild
+        bool _ShowBuild = false;
+        public bool ShowBuild
         {
             get
             {
@@ -33,8 +34,8 @@ namespace EZ_IDE
                 _ShowBuild = value;
             }
         }
-        static bool _IsVisual = false;
-        public static bool IsVisual
+        bool _IsVisual = false;
+        public bool IsVisual
         {
             get
             {
@@ -45,8 +46,8 @@ namespace EZ_IDE
                 _IsVisual = value;
             }
         }
-        static bool _CloseOnEnd = true;
-        public static bool CloseOnEnd
+        bool _CloseOnEnd = true;
+        public bool CloseOnEnd
         {
             get
             {
@@ -57,8 +58,8 @@ namespace EZ_IDE
                 _CloseOnEnd = value;
             }
         }
-        static bool _Debug = false;
-        public static bool Debug
+        bool _Debug = false;
+        public bool Debug
         {
             get
             {
@@ -69,8 +70,8 @@ namespace EZ_IDE
                 _Debug = value;
             }
         }
-        static bool _ClearConsole = true;
-        public static bool ClearConsole
+        bool _ClearConsole = true;
+        public bool ClearConsole
         {
             get
             {
@@ -81,8 +82,8 @@ namespace EZ_IDE
                 _ClearConsole = value;
             }
         }
-        static bool _Window = false;
-        public static bool Window
+        bool _Window = false;
+        public bool Window
         {
             get
             {
@@ -93,21 +94,9 @@ namespace EZ_IDE
                 _Window = value;
             }
         }
-        static bool _EZProj = false;
-        public static bool EZProj
-        {
-            get
-            {
-                return _EZProj;
-            }
-            set
-            {
-                _EZProj = value;
-            }
-        }
-        public static string Name = "";
-        static string _Icon = "";
-        public static string Icon 
+        public string Name { get; set; }
+        string _Icon = "";
+        public string Icon 
         {
             get
             {
@@ -119,10 +108,10 @@ namespace EZ_IDE
                 RawIcon = new Icon(value);
             }
         }
-        public static Icon RawIcon;
+        public Icon RawIcon;
 
-        public static string _Directory = "";
-        public static string Directory
+        string _Directory = "";
+        public string Directory
         {
             get
             {
@@ -134,11 +123,49 @@ namespace EZ_IDE
                 DirectoryInfo = new DirectoryInfo(value);
             }
         }
-        public static DirectoryInfo DirectoryInfo;
+        public DirectoryInfo DirectoryInfo;
+        public string StartUp { get; set; }
+        public string[] Files_Code { get; set; }
+        public ProjectSettings() { }
 
-        public static void Initialize(ref EzCode code, Panel? visualoutput = null, RichTextBox? output = null)
+        public void Initialize(ref EzCode code, Panel? visualoutput = null, RichTextBox? output = null)
         {
             code.Initialize(!Window, Directory, visualoutput != null ? visualoutput : new Panel(), output != null ? output : new RichTextBox(), FileInError, ShowBuild, ClearConsole);
+        }
+
+        public string ConverToCode()
+        {
+            string code = $"name:\"{Name}\"\nstartup:\"{StartUp}\"\nfileinerror:\"{FileInError}\"\nshowbuild:\"{ShowBuild}\"\nisvisual:\"{IsVisual}\"\ncloseonend:\"{CloseOnEnd}\"\ndebug:\"{Debug}\"\nclearconsole:\"{ClearConsole}\"\nwindow:\"{Window}\"{(Icon != "" || Icon != null ? $"\nicon:\"{Icon}\"" : "")}";
+            foreach (var file in Files_Code)
+            {
+                code += file + "\n";
+            }
+
+            return code;
+        }
+        public void ConvertFromCode(string code)
+        {
+            EZProj e = new EZProj(new EzCode() { Code = code });
+            FileInError = e.FileInErrors;
+            ShowBuild = e.ShowBuild;
+            IsVisual = e.IsVisual;
+            CloseOnEnd = e.CloseOnEnd;
+            Debug = e.Debug;
+            ClearConsole = e.ClearConsole;
+            Window = e.Window;
+            Icon = e.IconPath;
+
+            string[] lines = code.Split(new[] { '|', '\n' });
+            List<string> files_code = new List<string>();
+            foreach (var line in lines)
+            {
+                string before = line.Split(":")[0];
+                string after = string.Join(":", line.Split(":").Skip(1));
+                if (before == "startup") StartUp = after;
+                if (before == "include" || before == "exclude")
+                    files_code.Add(line);
+            }
+            Files_Code = files_code.ToArray();
         }
     }
 }

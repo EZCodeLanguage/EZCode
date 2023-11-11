@@ -43,7 +43,6 @@
             toolStripDropDownButton1 = new ToolStripDropDownButton();
             newToolStripMenuItem = new ToolStripMenuItem();
             fileToolStripMenuItem = new ToolStripMenuItem();
-            folderToolStripMenuItem = new ToolStripMenuItem();
             projectToolStripMenuItem = new ToolStripMenuItem();
             openToolStripMenuItem = new ToolStripMenuItem();
             fileToolStripMenuItem1 = new ToolStripMenuItem();
@@ -52,10 +51,9 @@
             exitToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripDropDownButton3 = new ToolStripDropDownButton();
-            createToolStripMenuItem = new ToolStripMenuItem();
-            fileToolStripMenuItem2 = new ToolStripMenuItem();
-            folderToolStripMenuItem2 = new ToolStripMenuItem();
             deleteToolStripMenuItem = new ToolStripMenuItem();
+            clearTreeViewToolStripMenuItem = new ToolStripMenuItem();
+            refreshTreeViewToolStripMenuItem = new ToolStripMenuItem();
             settingsPreferencesToolStripMenuItem = new ToolStripMenuItem();
             toolStripDropDownButton2 = new ToolStripDropDownButton();
             projectSettingsToolStripMenuItem = new ToolStripMenuItem();
@@ -80,7 +78,6 @@
             fctb = new FastColoredTextBoxNS.FastColoredTextBox();
             splitContainer2 = new SplitContainer();
             imageList1 = new ImageList(components);
-            clearTreeViewToolStripMenuItem = new ToolStripMenuItem();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
@@ -254,32 +251,24 @@
             // 
             // newToolStripMenuItem
             // 
-            newToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem, folderToolStripMenuItem, projectToolStripMenuItem });
+            newToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem, projectToolStripMenuItem });
             newToolStripMenuItem.Name = "newToolStripMenuItem";
-            newToolStripMenuItem.Size = new Size(147, 22);
+            newToolStripMenuItem.Size = new Size(177, 22);
             newToolStripMenuItem.Text = "New";
             // 
             // fileToolStripMenuItem
             // 
             fileToolStripMenuItem.Name = "fileToolStripMenuItem";
             fileToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+N";
-            fileToolStripMenuItem.Size = new Size(194, 22);
+            fileToolStripMenuItem.Size = new Size(161, 22);
             fileToolStripMenuItem.Text = "File";
             fileToolStripMenuItem.Click += fileToolStripMenuItem_Click;
-            // 
-            // folderToolStripMenuItem
-            // 
-            folderToolStripMenuItem.Name = "folderToolStripMenuItem";
-            folderToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+N";
-            folderToolStripMenuItem.Size = new Size(194, 22);
-            folderToolStripMenuItem.Text = "Folder";
-            folderToolStripMenuItem.Click += folderToolStripMenuItem_Click;
             // 
             // projectToolStripMenuItem
             // 
             projectToolStripMenuItem.Name = "projectToolStripMenuItem";
             projectToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+K";
-            projectToolStripMenuItem.Size = new Size(194, 22);
+            projectToolStripMenuItem.Size = new Size(161, 22);
             projectToolStripMenuItem.Text = "Project";
             projectToolStripMenuItem.Click += projectToolStripMenuItem_Click;
             // 
@@ -287,14 +276,14 @@
             // 
             openToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem1, folderToolStripMenuItem1 });
             openToolStripMenuItem.Name = "openToolStripMenuItem";
-            openToolStripMenuItem.Size = new Size(147, 22);
+            openToolStripMenuItem.Size = new Size(177, 22);
             openToolStripMenuItem.Text = "Open";
             // 
             // fileToolStripMenuItem1
             // 
             fileToolStripMenuItem1.Name = "fileToolStripMenuItem1";
             fileToolStripMenuItem1.ShortcutKeyDisplayString = "Ctrl+Shift+O";
-            fileToolStripMenuItem1.Size = new Size(180, 22);
+            fileToolStripMenuItem1.Size = new Size(176, 22);
             fileToolStripMenuItem1.Text = "File";
             fileToolStripMenuItem1.Click += fileToolStripMenuItem1_Click;
             // 
@@ -302,7 +291,7 @@
             // 
             folderToolStripMenuItem1.Name = "folderToolStripMenuItem1";
             folderToolStripMenuItem1.ShortcutKeyDisplayString = "Ctrl+O";
-            folderToolStripMenuItem1.Size = new Size(180, 22);
+            folderToolStripMenuItem1.Size = new Size(176, 22);
             folderToolStripMenuItem1.Text = "Folder";
             folderToolStripMenuItem1.Click += folderToolStripMenuItem1_Click;
             // 
@@ -310,15 +299,15 @@
             // 
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             saveToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+S";
-            saveToolStripMenuItem.Size = new Size(147, 22);
+            saveToolStripMenuItem.Size = new Size(177, 22);
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
             // 
             // exitToolStripMenuItem
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
-            exitToolStripMenuItem.ShortcutKeyDisplayString = "";
-            exitToolStripMenuItem.Size = new Size(147, 22);
+            exitToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+Q";
+            exitToolStripMenuItem.Size = new Size(177, 22);
             exitToolStripMenuItem.Text = "Exit";
             exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
@@ -345,7 +334,7 @@
             // 
             toolStripDropDownButton3.BackColor = Color.FromArgb(64, 64, 64);
             toolStripDropDownButton3.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton3.DropDownItems.AddRange(new ToolStripItem[] { createToolStripMenuItem, deleteToolStripMenuItem, clearTreeViewToolStripMenuItem, settingsPreferencesToolStripMenuItem });
+            toolStripDropDownButton3.DropDownItems.AddRange(new ToolStripItem[] { deleteToolStripMenuItem, clearTreeViewToolStripMenuItem, refreshTreeViewToolStripMenuItem, settingsPreferencesToolStripMenuItem });
             toolStripDropDownButton3.ForeColor = SystemColors.ButtonFace;
             toolStripDropDownButton3.Image = (Image)resources.GetObject("toolStripDropDownButton3.Image");
             toolStripDropDownButton3.ImageTransparentColor = Color.Magenta;
@@ -355,29 +344,6 @@
             toolStripDropDownButton3.Size = new Size(83, 22);
             toolStripDropDownButton3.Text = "Edit";
             // 
-            // createToolStripMenuItem
-            // 
-            createToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem2, folderToolStripMenuItem2 });
-            createToolStripMenuItem.Name = "createToolStripMenuItem";
-            createToolStripMenuItem.Size = new Size(239, 22);
-            createToolStripMenuItem.Text = "Create";
-            // 
-            // fileToolStripMenuItem2
-            // 
-            fileToolStripMenuItem2.Name = "fileToolStripMenuItem2";
-            fileToolStripMenuItem2.ShortcutKeyDisplayString = "Alt+Ctrl+N";
-            fileToolStripMenuItem2.Size = new Size(189, 22);
-            fileToolStripMenuItem2.Text = "File";
-            fileToolStripMenuItem2.Click += fileToolStripMenuItem2_Click;
-            // 
-            // folderToolStripMenuItem2
-            // 
-            folderToolStripMenuItem2.Name = "folderToolStripMenuItem2";
-            folderToolStripMenuItem2.ShortcutKeyDisplayString = "Alt+Shift+N";
-            folderToolStripMenuItem2.Size = new Size(189, 22);
-            folderToolStripMenuItem2.Text = "Folder";
-            folderToolStripMenuItem2.Click += folderToolStripMenuItem2_Click;
-            // 
             // deleteToolStripMenuItem
             // 
             deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
@@ -385,6 +351,22 @@
             deleteToolStripMenuItem.Size = new Size(239, 22);
             deleteToolStripMenuItem.Text = "Delete";
             deleteToolStripMenuItem.Click += deleteToolStripMenuItem_Click;
+            // 
+            // clearTreeViewToolStripMenuItem
+            // 
+            clearTreeViewToolStripMenuItem.Name = "clearTreeViewToolStripMenuItem";
+            clearTreeViewToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Q";
+            clearTreeViewToolStripMenuItem.Size = new Size(239, 22);
+            clearTreeViewToolStripMenuItem.Text = "Clear Tree View";
+            clearTreeViewToolStripMenuItem.Click += clearTreeViewToolStripMenuItem_Click;
+            // 
+            // refreshTreeViewToolStripMenuItem
+            // 
+            refreshTreeViewToolStripMenuItem.Name = "refreshTreeViewToolStripMenuItem";
+            refreshTreeViewToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+R";
+            refreshTreeViewToolStripMenuItem.Size = new Size(239, 22);
+            refreshTreeViewToolStripMenuItem.Text = "Refresh Tree View";
+            refreshTreeViewToolStripMenuItem.Click += refreshTreeViewToolStripMenuItem_Click;
             // 
             // settingsPreferencesToolStripMenuItem
             // 
@@ -449,8 +431,8 @@
             // playProjectToolStripMenuItem
             // 
             playProjectToolStripMenuItem.Name = "playProjectToolStripMenuItem";
-            playProjectToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+P";
-            playProjectToolStripMenuItem.Size = new Size(187, 22);
+            playProjectToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+P or Ctrl+F5";
+            playProjectToolStripMenuItem.Size = new Size(250, 22);
             playProjectToolStripMenuItem.Text = "Play Project";
             playProjectToolStripMenuItem.Click += playProjectToolStripMenuItem_Click;
             // 
@@ -458,7 +440,7 @@
             // 
             playFileToolStripMenuItem.Name = "playFileToolStripMenuItem";
             playFileToolStripMenuItem.ShortcutKeyDisplayString = "Alt+P";
-            playFileToolStripMenuItem.Size = new Size(187, 22);
+            playFileToolStripMenuItem.Size = new Size(250, 22);
             playFileToolStripMenuItem.Text = "Play File";
             playFileToolStripMenuItem.Click += playFileToolStripMenuItem_Click;
             // 
@@ -480,15 +462,15 @@
             // 
             insertBreakpointToolStripMenuItem.Name = "insertBreakpointToolStripMenuItem";
             insertBreakpointToolStripMenuItem.ShortcutKeyDisplayString = "F9";
-            insertBreakpointToolStripMenuItem.Size = new Size(245, 22);
+            insertBreakpointToolStripMenuItem.Size = new Size(269, 22);
             insertBreakpointToolStripMenuItem.Text = "Insert Breakpoint";
             insertBreakpointToolStripMenuItem.Click += insertBreakpointToolStripMenuItem_Click;
             // 
             // startDebugSessionToolStripMenuItem
             // 
             startDebugSessionToolStripMenuItem.Name = "startDebugSessionToolStripMenuItem";
-            startDebugSessionToolStripMenuItem.ShortcutKeyDisplayString = "Alt+D";
-            startDebugSessionToolStripMenuItem.Size = new Size(245, 22);
+            startDebugSessionToolStripMenuItem.ShortcutKeyDisplayString = "F5 or Alt+D";
+            startDebugSessionToolStripMenuItem.Size = new Size(269, 22);
             startDebugSessionToolStripMenuItem.Text = "Start Debug Session";
             startDebugSessionToolStripMenuItem.Click += startDebugSessionToolStripMenuItem_Click;
             // 
@@ -496,7 +478,7 @@
             // 
             nextSegmentToolStripMenuItem.Name = "nextSegmentToolStripMenuItem";
             nextSegmentToolStripMenuItem.ShortcutKeyDisplayString = "F11";
-            nextSegmentToolStripMenuItem.Size = new Size(245, 22);
+            nextSegmentToolStripMenuItem.Size = new Size(269, 22);
             nextSegmentToolStripMenuItem.Text = "Next Segment";
             nextSegmentToolStripMenuItem.Click += nextSegmentToolStripMenuItem_Click;
             // 
@@ -504,7 +486,7 @@
             // 
             continueToolStripMenuItem.Name = "continueToolStripMenuItem";
             continueToolStripMenuItem.ShortcutKeyDisplayString = "F10";
-            continueToolStripMenuItem.Size = new Size(245, 22);
+            continueToolStripMenuItem.Size = new Size(269, 22);
             continueToolStripMenuItem.Text = "Next Breakpoint";
             continueToolStripMenuItem.Click += continueToolStripMenuItem_Click;
             // 
@@ -512,7 +494,7 @@
             // 
             endDebugSessionToolStripMenuItem.Name = "endDebugSessionToolStripMenuItem";
             endDebugSessionToolStripMenuItem.ShortcutKeyDisplayString = "F12";
-            endDebugSessionToolStripMenuItem.Size = new Size(245, 22);
+            endDebugSessionToolStripMenuItem.Size = new Size(269, 22);
             endDebugSessionToolStripMenuItem.Text = "End Debug Session";
             endDebugSessionToolStripMenuItem.Click += endDebugSessionToolStripMenuItem_Click;
             // 
@@ -520,7 +502,7 @@
             // 
             debugSettingsToolStripMenuItem.Name = "debugSettingsToolStripMenuItem";
             debugSettingsToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+D";
-            debugSettingsToolStripMenuItem.Size = new Size(245, 22);
+            debugSettingsToolStripMenuItem.Size = new Size(269, 22);
             debugSettingsToolStripMenuItem.Text = "Debug Settings";
             debugSettingsToolStripMenuItem.Click += debugSettingsToolStripMenuItem_Click;
             // 
@@ -659,13 +641,6 @@
             imageList1.Images.SetKeyName(1, "app_16x16.png");
             imageList1.Images.SetKeyName(2, "1302166543_virtualbox.png");
             // 
-            // clearTreeViewToolStripMenuItem
-            // 
-            clearTreeViewToolStripMenuItem.Name = "clearTreeViewToolStripMenuItem";
-            clearTreeViewToolStripMenuItem.Size = new Size(239, 22);
-            clearTreeViewToolStripMenuItem.Text = "Clear Tree View";
-            clearTreeViewToolStripMenuItem.Click += clearTreeViewToolStripMenuItem_Click;
-            // 
             // IDE
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -677,7 +652,7 @@
             Icon = (Icon)resources.GetObject("$this.Icon");
             MinimumSize = new Size(890, 499);
             Name = "IDE";
-            Text = "Player";
+            Text = "EZCode IDE";
             WindowState = FormWindowState.Maximized;
             FormClosed += Player_FormClosed;
             tabControl1.ResumeLayout(false);
@@ -722,13 +697,9 @@
         private ToolStripMenuItem newToolStripMenuItem;
         private ToolStripMenuItem projectToolStripMenuItem;
         private ToolStripMenuItem fileToolStripMenuItem;
-        private ToolStripMenuItem folderToolStripMenuItem;
         private ToolStripMenuItem openToolStripMenuItem;
         private ToolStripMenuItem fileToolStripMenuItem1;
         private ToolStripMenuItem folderToolStripMenuItem1;
-        private ToolStripMenuItem createToolStripMenuItem;
-        private ToolStripMenuItem fileToolStripMenuItem2;
-        private ToolStripMenuItem folderToolStripMenuItem2;
         private ToolStripMenuItem deleteToolStripMenuItem;
         private ToolStripMenuItem settingsPreferencesToolStripMenuItem;
         private ToolStripMenuItem projectSettingsToolStripMenuItem;
@@ -751,5 +722,6 @@
         private ToolStripMenuItem exitToolStripMenuItem;
         public ToolStripTextBox FileURLTextBox;
         private ToolStripMenuItem clearTreeViewToolStripMenuItem;
+        private ToolStripMenuItem refreshTreeViewToolStripMenuItem;
     }
 }
