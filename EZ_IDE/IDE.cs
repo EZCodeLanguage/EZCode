@@ -170,7 +170,6 @@ namespace EZ_IDE
         EzCode ezcode = new EzCode();
         FileInfo file;
         EZProj ezproj;
-        public bool useConsole = true;
         ProjectType projectType;
         public enum ProjectType
         {
@@ -180,7 +179,7 @@ namespace EZ_IDE
         }
         public void Start(FileInfo _file, ProjectType _projectType = ProjectType.None)
         {
-            project.Initialize(ref ezcode);
+            project.Initialize(ref ezcode, visualoutput, output);
             int d = 0;
             bool window = false;
             ezproj = new EZProj(_file, _file.FullName);
@@ -205,16 +204,8 @@ namespace EZ_IDE
                     d = 2;
                 }
             }
-            if (!window)
-            {
-                tabControl1.SelectedIndex = d;
-            }
-            else
-            {
-                useConsole = false;
-            }
-            if (ezproj.Name != null) Text = ezproj.Name;
-            else Text = _file.FullName;
+            tabControl1.SelectedIndex = d;
+
             ezcode.errorColor = Color.FromArgb(255, 20, 20);
             ezcode.normalColor = !window ? output.ForeColor : Color.Black;
 
@@ -243,11 +234,6 @@ namespace EZ_IDE
             else if (ProjectType.Project == projectType) await ezcode.PlayFromProj(ezproj);
         }
 
-        private void Player_FormClosed(object sender, FormClosedEventArgs e)
-        {
-            Application.Exit();
-        }
-
         private void Clear_Click(object sender, EventArgs e)
         {
             output.Clear();
@@ -270,14 +256,6 @@ namespace EZ_IDE
         private void output_TextChanged(object sender, EventArgs e)
         {
             ezcode.ScrollToEnd(true, output.ForeColor, Color.FromArgb(255, 20, 20));
-        }
-
-        private void fastColoredTextBox1_KeyPressing(object sender, KeyPressEventArgs e)
-        {
-            if (e.KeyChar == char.Parse("\b") && ModifierKeys.HasFlag(Keys.Control) && fctb.Text == "")
-            {
-                e.Handled = true;
-            }
         }
         #endregion
 
@@ -559,11 +537,27 @@ namespace EZ_IDE
         private void playProjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // play project
+            try
+            {
+                Start(new FileInfo(Settings.Current_Project_File), ProjectType.Project);
+            }
+            catch
+            {
+                MessageBox.Show("Could not play project", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void playFileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // play file
+            try
+            {
+                Start(new FileInfo(FileURLTextBox.Text), ProjectType.Script);
+            }
+            catch
+            {
+                MessageBox.Show("Could not play script", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void docsToolStripMenuItem_Click(object sender, EventArgs e)
