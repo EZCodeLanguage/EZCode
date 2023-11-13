@@ -47,18 +47,15 @@
             openToolStripMenuItem = new ToolStripMenuItem();
             fileToolStripMenuItem1 = new ToolStripMenuItem();
             folderToolStripMenuItem1 = new ToolStripMenuItem();
+            projectToolStripMenuItem1 = new ToolStripMenuItem();
             saveToolStripMenuItem = new ToolStripMenuItem();
             exitToolStripMenuItem = new ToolStripMenuItem();
             toolStrip1 = new ToolStrip();
             toolStripDropDownButton3 = new ToolStripDropDownButton();
-            deleteToolStripMenuItem = new ToolStripMenuItem();
             clearTreeViewToolStripMenuItem = new ToolStripMenuItem();
             refreshTreeViewToolStripMenuItem = new ToolStripMenuItem();
-            settingsPreferencesToolStripMenuItem = new ToolStripMenuItem();
-            toolStripDropDownButton2 = new ToolStripDropDownButton();
             projectSettingsToolStripMenuItem = new ToolStripMenuItem();
-            includeToolStripMenuItem = new ToolStripMenuItem();
-            excludeToolStripMenuItem = new ToolStripMenuItem();
+            settingsPreferencesToolStripMenuItem = new ToolStripMenuItem();
             toolStripDropDownButton6 = new ToolStripDropDownButton();
             playProjectToolStripMenuItem = new ToolStripMenuItem();
             playFileToolStripMenuItem = new ToolStripMenuItem();
@@ -72,7 +69,7 @@
             toolStripDropDownButton5 = new ToolStripDropDownButton();
             docsToolStripMenuItem = new ToolStripMenuItem();
             toolStripTextBox2 = new ToolStripTextBox();
-            FileURLTextBox = new ToolStripTextBox();
+            FileURLTextBox = new ToolStripLabel();
             splitContainer1 = new SplitContainer();
             Tree = new TreeView();
             fctb = new FastColoredTextBoxNS.FastColoredTextBox();
@@ -253,7 +250,7 @@
             // 
             newToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem, projectToolStripMenuItem });
             newToolStripMenuItem.Name = "newToolStripMenuItem";
-            newToolStripMenuItem.Size = new Size(177, 22);
+            newToolStripMenuItem.Size = new Size(180, 22);
             newToolStripMenuItem.Text = "New";
             // 
             // fileToolStripMenuItem
@@ -274,16 +271,16 @@
             // 
             // openToolStripMenuItem
             // 
-            openToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem1, folderToolStripMenuItem1 });
+            openToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem1, folderToolStripMenuItem1, projectToolStripMenuItem1 });
             openToolStripMenuItem.Name = "openToolStripMenuItem";
-            openToolStripMenuItem.Size = new Size(177, 22);
+            openToolStripMenuItem.Size = new Size(180, 22);
             openToolStripMenuItem.Text = "Open";
             // 
             // fileToolStripMenuItem1
             // 
             fileToolStripMenuItem1.Name = "fileToolStripMenuItem1";
             fileToolStripMenuItem1.ShortcutKeyDisplayString = "Ctrl+Shift+O";
-            fileToolStripMenuItem1.Size = new Size(176, 22);
+            fileToolStripMenuItem1.Size = new Size(195, 22);
             fileToolStripMenuItem1.Text = "File";
             fileToolStripMenuItem1.Click += fileToolStripMenuItem1_Click;
             // 
@@ -291,15 +288,23 @@
             // 
             folderToolStripMenuItem1.Name = "folderToolStripMenuItem1";
             folderToolStripMenuItem1.ShortcutKeyDisplayString = "Ctrl+O";
-            folderToolStripMenuItem1.Size = new Size(176, 22);
+            folderToolStripMenuItem1.Size = new Size(195, 22);
             folderToolStripMenuItem1.Text = "Folder";
             folderToolStripMenuItem1.Click += folderToolStripMenuItem1_Click;
+            // 
+            // projectToolStripMenuItem1
+            // 
+            projectToolStripMenuItem1.Name = "projectToolStripMenuItem1";
+            projectToolStripMenuItem1.ShortcutKeyDisplayString = "Ctrl+Shift+K";
+            projectToolStripMenuItem1.Size = new Size(195, 22);
+            projectToolStripMenuItem1.Text = "Project";
+            projectToolStripMenuItem1.Click += projectToolStripMenuItem1_Click;
             // 
             // saveToolStripMenuItem
             // 
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             saveToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+S";
-            saveToolStripMenuItem.Size = new Size(177, 22);
+            saveToolStripMenuItem.Size = new Size(180, 22);
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
             // 
@@ -307,7 +312,7 @@
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             exitToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+Q";
-            exitToolStripMenuItem.Size = new Size(177, 22);
+            exitToolStripMenuItem.Size = new Size(180, 22);
             exitToolStripMenuItem.Text = "Exit";
             exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
@@ -318,7 +323,7 @@
             toolStrip1.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             toolStrip1.GripStyle = ToolStripGripStyle.Hidden;
             toolStrip1.ImageScalingSize = new Size(20, 20);
-            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripDropDownButton1, toolStripDropDownButton3, toolStripDropDownButton2, toolStripDropDownButton6, toolStripDropDownButton4, toolStripDropDownButton5, FileURLTextBox });
+            toolStrip1.Items.AddRange(new ToolStripItem[] { toolStripDropDownButton1, toolStripDropDownButton3, toolStripDropDownButton6, toolStripDropDownButton4, toolStripDropDownButton5, FileURLTextBox });
             toolStrip1.Location = new Point(0, 0);
             toolStrip1.Margin = new Padding(10);
             toolStrip1.Name = "toolStrip1";
@@ -334,7 +339,7 @@
             // 
             toolStripDropDownButton3.BackColor = Color.FromArgb(64, 64, 64);
             toolStripDropDownButton3.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton3.DropDownItems.AddRange(new ToolStripItem[] { deleteToolStripMenuItem, clearTreeViewToolStripMenuItem, refreshTreeViewToolStripMenuItem, settingsPreferencesToolStripMenuItem });
+            toolStripDropDownButton3.DropDownItems.AddRange(new ToolStripItem[] { clearTreeViewToolStripMenuItem, refreshTreeViewToolStripMenuItem, projectSettingsToolStripMenuItem, settingsPreferencesToolStripMenuItem });
             toolStripDropDownButton3.ForeColor = SystemColors.ButtonFace;
             toolStripDropDownButton3.Image = (Image)resources.GetObject("toolStripDropDownButton3.Image");
             toolStripDropDownButton3.ImageTransparentColor = Color.Magenta;
@@ -344,19 +349,11 @@
             toolStripDropDownButton3.Size = new Size(83, 22);
             toolStripDropDownButton3.Text = "Edit";
             // 
-            // deleteToolStripMenuItem
-            // 
-            deleteToolStripMenuItem.Name = "deleteToolStripMenuItem";
-            deleteToolStripMenuItem.ShortcutKeyDisplayString = "Alt+Ctrl+X";
-            deleteToolStripMenuItem.Size = new Size(239, 22);
-            deleteToolStripMenuItem.Text = "Delete";
-            deleteToolStripMenuItem.Click += deleteToolStripMenuItem_Click;
-            // 
             // clearTreeViewToolStripMenuItem
             // 
             clearTreeViewToolStripMenuItem.Name = "clearTreeViewToolStripMenuItem";
             clearTreeViewToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Q";
-            clearTreeViewToolStripMenuItem.Size = new Size(239, 22);
+            clearTreeViewToolStripMenuItem.Size = new Size(244, 22);
             clearTreeViewToolStripMenuItem.Text = "Clear Tree View";
             clearTreeViewToolStripMenuItem.Click += clearTreeViewToolStripMenuItem_Click;
             // 
@@ -364,31 +361,9 @@
             // 
             refreshTreeViewToolStripMenuItem.Name = "refreshTreeViewToolStripMenuItem";
             refreshTreeViewToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+R";
-            refreshTreeViewToolStripMenuItem.Size = new Size(239, 22);
+            refreshTreeViewToolStripMenuItem.Size = new Size(244, 22);
             refreshTreeViewToolStripMenuItem.Text = "Refresh Tree View";
             refreshTreeViewToolStripMenuItem.Click += refreshTreeViewToolStripMenuItem_Click;
-            // 
-            // settingsPreferencesToolStripMenuItem
-            // 
-            settingsPreferencesToolStripMenuItem.Name = "settingsPreferencesToolStripMenuItem";
-            settingsPreferencesToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+T";
-            settingsPreferencesToolStripMenuItem.Size = new Size(239, 22);
-            settingsPreferencesToolStripMenuItem.Text = "Settings/Preferences";
-            settingsPreferencesToolStripMenuItem.Click += settingsPreferencesToolStripMenuItem_Click;
-            // 
-            // toolStripDropDownButton2
-            // 
-            toolStripDropDownButton2.BackColor = Color.FromArgb(64, 64, 64);
-            toolStripDropDownButton2.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton2.DropDownItems.AddRange(new ToolStripItem[] { projectSettingsToolStripMenuItem, includeToolStripMenuItem, excludeToolStripMenuItem });
-            toolStripDropDownButton2.ForeColor = SystemColors.ButtonFace;
-            toolStripDropDownButton2.Image = (Image)resources.GetObject("toolStripDropDownButton2.Image");
-            toolStripDropDownButton2.ImageTransparentColor = Color.Magenta;
-            toolStripDropDownButton2.Margin = new Padding(0, 1, 10, 2);
-            toolStripDropDownButton2.Name = "toolStripDropDownButton2";
-            toolStripDropDownButton2.Padding = new Padding(20, 10, 20, 10);
-            toolStripDropDownButton2.Size = new Size(101, 22);
-            toolStripDropDownButton2.Text = "Project";
             // 
             // projectSettingsToolStripMenuItem
             // 
@@ -398,21 +373,13 @@
             projectSettingsToolStripMenuItem.Text = "Project Settings";
             projectSettingsToolStripMenuItem.Click += projectSettingsToolStripMenuItem_Click;
             // 
-            // includeToolStripMenuItem
+            // settingsPreferencesToolStripMenuItem
             // 
-            includeToolStripMenuItem.Name = "includeToolStripMenuItem";
-            includeToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+I";
-            includeToolStripMenuItem.Size = new Size(244, 22);
-            includeToolStripMenuItem.Text = "Include";
-            includeToolStripMenuItem.Click += includeToolStripMenuItem_Click;
-            // 
-            // excludeToolStripMenuItem
-            // 
-            excludeToolStripMenuItem.Name = "excludeToolStripMenuItem";
-            excludeToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+E";
-            excludeToolStripMenuItem.Size = new Size(244, 22);
-            excludeToolStripMenuItem.Text = "Exclude";
-            excludeToolStripMenuItem.Click += excludeToolStripMenuItem_Click;
+            settingsPreferencesToolStripMenuItem.Name = "settingsPreferencesToolStripMenuItem";
+            settingsPreferencesToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+T";
+            settingsPreferencesToolStripMenuItem.Size = new Size(244, 22);
+            settingsPreferencesToolStripMenuItem.Text = "Settings/Preferences";
+            settingsPreferencesToolStripMenuItem.Click += settingsPreferencesToolStripMenuItem_Click;
             // 
             // toolStripDropDownButton6
             // 
@@ -537,14 +504,9 @@
             // 
             // FileURLTextBox
             // 
-            FileURLTextBox.AutoSize = false;
-            FileURLTextBox.BackColor = Color.FromArgb(80, 80, 80);
-            FileURLTextBox.BorderStyle = BorderStyle.FixedSingle;
-            FileURLTextBox.ForeColor = Color.White;
+            FileURLTextBox.ForeColor = SystemColors.ControlLight;
             FileURLTextBox.Name = "FileURLTextBox";
-            FileURLTextBox.ReadOnly = true;
-            FileURLTextBox.Size = new Size(400, 23);
-            FileURLTextBox.ToolTipText = "File URL of open file";
+            FileURLTextBox.Size = new Size(0, 22);
             // 
             // splitContainer1
             // 
@@ -562,7 +524,7 @@
             splitContainer1.Panel2.Controls.Add(fctb);
             splitContainer1.Panel2MinSize = 50;
             splitContainer1.Size = new Size(1086, 461);
-            splitContainer1.SplitterDistance = 282;
+            splitContainer1.SplitterDistance = 226;
             splitContainer1.TabIndex = 6;
             // 
             // Tree
@@ -574,7 +536,7 @@
             Tree.ItemHeight = 24;
             Tree.Location = new Point(0, 0);
             Tree.Name = "Tree";
-            Tree.Size = new Size(282, 461);
+            Tree.Size = new Size(226, 461);
             Tree.TabIndex = 0;
             Tree.BeforeSelect += Tree_BeforeSelect;
             Tree.AfterSelect += Tree_AfterSelect;
@@ -608,10 +570,11 @@
             fctb.SelectionColor = Color.FromArgb(90, 110, 110, 255);
             fctb.ServiceColors = null;
             fctb.ShowLineNumbers = false;
-            fctb.Size = new Size(800, 461);
+            fctb.Size = new Size(856, 461);
             fctb.TabIndex = 1;
             fctb.Zoom = 100;
             fctb.TextChanged += fctb_TextChanged;
+            fctb.ZoomChanged += fctb_ZoomChanged;
             // 
             // splitContainer2
             // 
@@ -654,7 +617,7 @@
             Name = "IDE";
             Text = "EZCode IDE";
             WindowState = FormWindowState.Maximized;
-            FormClosed += Player_FormClosed;
+            FormClosing += IDE_FormClosing;
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
@@ -687,7 +650,6 @@
         private ListBox DebugList;
         private ToolStripDropDownButton toolStripDropDownButton1;
         private ToolStrip toolStrip1;
-        private ToolStripDropDownButton toolStripDropDownButton2;
         private SplitContainer splitContainer1;
         private ToolStripDropDownButton toolStripDropDownButton3;
         private ToolStripDropDownButton toolStripDropDownButton4;
@@ -700,11 +662,7 @@
         private ToolStripMenuItem openToolStripMenuItem;
         private ToolStripMenuItem fileToolStripMenuItem1;
         private ToolStripMenuItem folderToolStripMenuItem1;
-        private ToolStripMenuItem deleteToolStripMenuItem;
         private ToolStripMenuItem settingsPreferencesToolStripMenuItem;
-        private ToolStripMenuItem projectSettingsToolStripMenuItem;
-        private ToolStripMenuItem includeToolStripMenuItem;
-        private ToolStripMenuItem excludeToolStripMenuItem;
         private ToolStripMenuItem insertBreakpointToolStripMenuItem;
         private ToolStripMenuItem startDebugSessionToolStripMenuItem;
         private ToolStripMenuItem nextSegmentToolStripMenuItem;
@@ -720,8 +678,10 @@
         public FastColoredTextBoxNS.FastColoredTextBox fctb;
         private ToolStripMenuItem saveToolStripMenuItem;
         private ToolStripMenuItem exitToolStripMenuItem;
-        public ToolStripTextBox FileURLTextBox;
         private ToolStripMenuItem clearTreeViewToolStripMenuItem;
         private ToolStripMenuItem refreshTreeViewToolStripMenuItem;
+        private ToolStripMenuItem projectSettingsToolStripMenuItem;
+        private ToolStripMenuItem projectToolStripMenuItem1;
+        public ToolStripLabel FileURLTextBox;
     }
 }

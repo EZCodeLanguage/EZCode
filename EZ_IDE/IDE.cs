@@ -1,6 +1,7 @@
 ﻿using EZCode;
 using FastColoredTextBoxNS;
 using System.Diagnostics;
+using System.IO;
 using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
@@ -168,7 +169,7 @@ namespace EZ_IDE
 
         EzCode ezcode = new EzCode();
         FileInfo file;
-        EZProj proj;
+        EZProj ezproj;
         public bool useConsole = true;
         ProjectType projectType;
         public enum ProjectType
@@ -182,24 +183,24 @@ namespace EZ_IDE
             project.Initialize(ref ezcode);
             int d = 0;
             bool window = false;
-            proj = new EZProj(_file, _file.FullName);
+            ezproj = new EZProj(_file, _file.FullName);
             projectType = _projectType;
             file = _file;
             if (_projectType == ProjectType.Project)
             {
-                if (proj.Window)
+                if (ezproj.Window)
                 {
                     window = true;
                 }
-                else if (proj.IsVisual)
+                else if (ezproj.IsVisual)
                 {
                     d = 1;
                 }
-                else if (!proj.IsVisual)
+                else if (!ezproj.IsVisual)
                 {
                     d = 0;
                 }
-                if (proj.Debug)
+                if (ezproj.Debug)
                 {
                     d = 2;
                 }
@@ -212,7 +213,7 @@ namespace EZ_IDE
             {
                 useConsole = false;
             }
-            if (proj.Name != null) Text = proj.Name;
+            if (ezproj.Name != null) Text = ezproj.Name;
             else Text = _file.FullName;
             ezcode.errorColor = Color.FromArgb(255, 20, 20);
             ezcode.normalColor = !window ? output.ForeColor : Color.Black;
@@ -239,7 +240,7 @@ namespace EZ_IDE
         private async void Play()
         {
             if (ProjectType.Script == projectType) await ezcode.Play(File.ReadAllText(file.FullName));
-            else if (ProjectType.Project == projectType) await ezcode.PlayFromProj(proj);
+            else if (ProjectType.Project == projectType) await ezcode.PlayFromProj(ezproj);
         }
 
         private void Player_FormClosed(object sender, FormClosedEventArgs e)
@@ -308,6 +309,8 @@ namespace EZ_IDE
             else Manager.OpenPath(path);
 
             Settings.StartUp();
+
+            fctb.Zoom = Settings.Default_Zoom;
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -318,6 +321,10 @@ namespace EZ_IDE
                 {
                     case Keys.Control | Keys.O:
                         folderToolStripMenuItem1.PerformClick(); break;
+                    case Keys.Control | Keys.Shift | Keys.O:
+                        fileToolStripMenuItem1.PerformClick(); break;
+                    case Keys.Control | Keys.Shift | Keys.K:
+                        projectToolStripMenuItem1.PerformClick(); break;
                     case Keys.Control | Keys.S:
                         saveToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.N:
@@ -332,12 +339,8 @@ namespace EZ_IDE
                         settingsPreferencesToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.Shift | Keys.P:
                         projectSettingsToolStripMenuItem.PerformClick(); break;
-                    case Keys.Control | Keys.Shift | Keys.I:
-                        includeToolStripMenuItem.PerformClick(); break;
-                    case Keys.Control | Keys.Shift | Keys.E:
-                        excludeToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.P:
-                        excludeToolStripMenuItem.PerformClick(); break;
+                        playProjectToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.F5:
                         playProjectToolStripMenuItem.PerformClick(); break;
                     case Keys.Alt | Keys.P:
@@ -376,6 +379,13 @@ namespace EZ_IDE
         }
 
         #region events
+
+        private void IDE_FormClosing(object sender, FormClosingEventArgs e)
+        {
+            // closing
+            Settings.Exit(this);
+        }
+
         private void folderToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             // open folder
@@ -386,16 +396,6 @@ namespace EZ_IDE
         {
             // open file
             Manager.OpenFile();
-        }
-
-        private void playProjectToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // play project
-        }
-
-        private void playFileToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // play file
         }
 
         private void exitToolStripMenuItem_Click(object sender, EventArgs e)
@@ -438,10 +438,9 @@ namespace EZ_IDE
         private void settingsPreferencesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // settings
-            Settings_Preferences settings_Preferences = new Settings_Preferences(Settings_Preferences.Tab.settings);
+            Settings_Preferences settings_Preferences = new Settings_Preferences(this, Settings_Preferences.Tab.settings);
             settings_Preferences.ShowDialog();
         }
-
 
         public int changeTime = 0;
         private void fctb_TextChanged(object sender, TextChangedEventArgs e)
@@ -468,26 +467,33 @@ namespace EZ_IDE
         private void fileToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // new file
-            SaveFileDialog saveFileDialog = new SaveFileDialog();
-            saveFileDialog.Filter = "EZCode|*.ezcode|EZProj|*.ezproj|All Files|*|Text Document|*.txt";
-            saveFileDialog.ShowDialog();
-
-            string filePath = saveFileDialog.FileName;
-
-            File.Create(filePath).Close();
-
-            FileInfo file = new FileInfo(filePath);
-
             try
             {
-                if (file.Directory.FullName.StartsWith(Settings.Open_Folder_Path, StringComparison.OrdinalIgnoreCase))
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "EZCode|*.ezcode|EZProj|*.ezproj|Text Document|*.txt|All Files|*";
+                saveFileDialog.ShowDialog();
+
+                string filePath = saveFileDialog.FileName;
+
+                File.Create(filePath).Close();
+
+                FileInfo file = new FileInfo(filePath);
+
+                try
                 {
-                    refreshTreeViewToolStripMenuItem.PerformClick();
-                    Tree.SelectedNode = Tree.Nodes.Find(file.FullName, true).First();
+                    if (file.Directory.FullName.StartsWith(Settings.Open_Folder_Path, StringComparison.OrdinalIgnoreCase))
+                    {
+                        refreshTreeViewToolStripMenuItem.PerformClick();
+                        Tree.SelectedNode = Tree.Nodes.Find(file.FullName, true).First();
+                    }
+                    else
+                    {
+                        Manager.OpenFile(file.FullName);
+                    }
                 }
-                else
+                catch
                 {
-                    Manager.OpenFile(file.FullName);
+
                 }
             }
             catch
@@ -501,27 +507,63 @@ namespace EZ_IDE
             // new project
             NewProject newProject = new NewProject();
             newProject.ShowDialog();
-            //Manager.OpenFolder(newProject.project.Directory);
-        }
 
-        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
-        {
-            // delete
+            if (newProject.DONE)
+                Manager.OpenFolder(Settings.New_Project_Default_Directory);
         }
 
         private void projectSettingsToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // project settings
+            try
+            {
+                if (Settings.Current_Project_File != "" && !File.Exists(Settings.Current_Project_File))
+                    throw new Exception();
+
+                if (Settings.Current_Project_File != "")
+                {
+                    project.ConvertFromCode(FileURLTextBox.Text == Settings.Current_Project_File ? fctb.Text : File.ReadAllText(Settings.Current_Project_File));
+                    project.Directory = new FileInfo(Settings.Current_Project_File).DirectoryName;
+                    Project_Settings_Form project_Settings_Form = new Project_Settings_Form(project);
+                    project_Settings_Form.ShowDialog();
+                    DialogResult result = MessageBox.Show("Introduce changes to project file", "Change File", MessageBoxButtons.OKCancel);
+                    if (result == DialogResult.OK)
+                    {
+                        project = project_Settings_Form.projectSettings;
+                        File.WriteAllText(Settings.Current_Project_File, project.ConverToCode());
+                        if (FileURLTextBox.Text == Settings.Current_Project_File)
+                            fctb.Text = project.ConverToCode();
+                    }
+                }
+                else
+                {
+                    MessageBox.Show("Please open a project", "No Project", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+            }
+            catch
+            {
+                MessageBox.Show("The Project no longer exists", "No Project", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
-        private void includeToolStripMenuItem_Click(object sender, EventArgs e)
+        private void projectToolStripMenuItem1_Click(object sender, EventArgs e)
         {
-            // include
+            // open project
+            OpenFileDialog dialog = new OpenFileDialog();
+            dialog.Filter = "EZProj|*.ezproj";
+            dialog.ShowDialog();
+            Settings.Current_Project_File = dialog.FileName;
+            Manager.OpenFolder(new FileInfo(dialog.FileName).Directory.ToString());
         }
 
-        private void excludeToolStripMenuItem_Click(object sender, EventArgs e)
+        private void playProjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // exclude
+            // play project
+        }
+
+        private void playFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // play file
         }
 
         private void docsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -564,19 +606,27 @@ namespace EZ_IDE
         {
             // debug settings
 
-            Settings_Preferences settings_Preferences = new Settings_Preferences(Settings_Preferences.Tab.debug);
+            Settings_Preferences settings_Preferences = new Settings_Preferences(this, Settings_Preferences.Tab.debug);
             settings_Preferences.ShowDialog();
         }
+
         private void clearTreeViewToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // clear tree view
             Tree.Nodes.Clear();
             Settings.Open_Folder_Path = "";
         }
+
         private void refreshTreeViewToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // refresh
             Manager.OpenFolder(Settings.Open_Folder_Path);
+        }
+
+        private void fctb_ZoomChanged(object sender, EventArgs e)
+        {
+            // zoom change
+            Settings.Default_Zoom = fctb.Zoom;
         }
 
         #endregion

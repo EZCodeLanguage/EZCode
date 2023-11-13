@@ -6,7 +6,7 @@
 	<rule style="Comment">//.*</rule>
 	
 	<style name="Before" color="CadetBlue" fontStyle="Regular"/>
-	<rule style="Before">startup:|name:|closeonend:|fileinerror:|showbuild:|isvisual:|closeonend:|debug:|clearconsole:|window:|icon:|"(([^\"]+))":</rule>
+	<rule style="Before">include:|exclude:|startup:|name:|closeonend:|fileinerror:|showbuild:|isvisual:|closeonend:|debug:|clearconsole:|window:|icon:|"(([^\"]+))":</rule>
 	
 	<style name="After" color="LightBlue" fontStyle="Regular"/>
 	<rule style="After">:.*</rule>

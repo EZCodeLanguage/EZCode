@@ -38,6 +38,25 @@ namespace EZ_IDE
             }
             set => SetKey(nameof(Current_Project_File), value); 
         }
+        public static int Default_Zoom 
+        {
+            get
+            {
+                string? rval = GetKey(nameof(Default_Zoom), "_ 100");
+                int? val = int.Parse(rval.Replace("_ ", ""));
+                return val != null ? (int)val : 100;
+            }
+            set => SetKey(nameof(Default_Zoom), "_ " + value); 
+        }
+        public static string New_Project_Default_Directory 
+        {
+            get
+            {
+                string? val = GetKey(nameof(New_Project_Default_Directory));
+                return val != null ? val : string.Empty;
+            }
+            set => SetKey(nameof(New_Project_Default_Directory), value); 
+        }
         public static bool? First_Open
         {
             get => BoolParse(GetKey(nameof(First_Open))); 
@@ -74,6 +93,7 @@ namespace EZ_IDE
             Save_Folder = true;
             Auto_Save = false;
             Open_Folder_Path = "";
+            Default_Zoom = 100;
         }
 
         public static void StartUp()
@@ -95,7 +115,7 @@ namespace EZ_IDE
                 v.SetValue(key, value);
             }
         }
-        public static string? GetKey(string key, bool create_if_null = true)
+        public static string? GetKey(string key, string defaultValue = "", bool create_if_null = true)
         {
             try
             {
@@ -108,13 +128,13 @@ namespace EZ_IDE
                         {
                             return retrievedData;
                         }
-                    }
-                    else if (create_if_null)
-                    {
-                        using (var _v = Registry.CurrentUser.CreateSubKey(keyName))
+                        else if (create_if_null)
                         {
-                            _v.SetValue(key, "");
-                            return "";
+                            using (var _v = Registry.CurrentUser.CreateSubKey(keyName))
+                            {
+                                _v.SetValue(key, defaultValue);
+                                return GetKey(key);
+                            }
                         }
                     }
                 }
@@ -127,25 +147,32 @@ namespace EZ_IDE
         }
         public static void Exit(IDE ide)
         {
-            string path = ide.FileURLTextBox.Text;
-
-            if (path == "") Application.Exit();
-
-            string contents = ide.fctb.Text;
-            string oldContents = File.ReadAllText(path);
-
-            if (oldContents != contents)
+            try
             {
-                DialogResult result = MessageBox.Show("There are unsaved changes, do you want to save them?", "Unsaved changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
-                if (result == DialogResult.Yes)
+                string path = ide.FileURLTextBox.Text;
+
+                if (path == "") Application.Exit();
+
+                string contents = ide.fctb.Text;
+                string oldContents = File.ReadAllText(path);
+
+                if (oldContents != contents)
                 {
-                    TreeManager.SaveFile(ide);
-                    Application.Exit();
+                    DialogResult result = MessageBox.Show("There are unsaved changes, do you want to save them?", "Unsaved changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
+                    if (result == DialogResult.Yes)
+                    {
+                        TreeManager.SaveFile(ide);
+                        Application.Exit();
+                    }
+                    else if (result == DialogResult.No)
+                    {
+                        Application.Exit();
+                    }
                 }
-                else if (result == DialogResult.No)
-                {
-                    Application.Exit();
-                }
+            }
+            catch
+            {
+
             }
         }
         public static void Exit()

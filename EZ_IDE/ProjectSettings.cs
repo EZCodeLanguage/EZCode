@@ -94,7 +94,7 @@ namespace EZ_IDE
                 _Window = value;
             }
         }
-        public string Name { get; set; }
+        public string Name { get; set; } = "";
         string _Icon = "";
         public string Icon 
         {
@@ -105,7 +105,14 @@ namespace EZ_IDE
             set
             {
                 _Icon = value;
-                RawIcon = new Icon(value);
+                try
+                {
+                    RawIcon = new Icon(value);
+                }
+                catch
+                {
+
+                }
             }
         }
         public Icon RawIcon;
@@ -120,12 +127,19 @@ namespace EZ_IDE
             set
             {
                 _Directory = value;
-                DirectoryInfo = new DirectoryInfo(value);
+                try
+                {
+                    DirectoryInfo = new DirectoryInfo(value);
+                }
+                catch
+                {
+
+                }
             }
         }
         public DirectoryInfo DirectoryInfo;
-        public string StartUp { get; set; }
-        public string[] Files_Code { get; set; }
+        public string StartUp { get; set; } = "";
+        public string[] Files_Code { get; set; } = new string[0];
         public ProjectSettings() { }
 
         public void Initialize(ref EzCode code, Panel? visualoutput = null, RichTextBox? output = null)
@@ -135,16 +149,27 @@ namespace EZ_IDE
 
         public string ConverToCode()
         {
-            string code = $"name:\"{Name}\"\nstartup:\"{StartUp}\"\nfileinerror:\"{FileInError}\"\nshowbuild:\"{ShowBuild}\"\nisvisual:\"{IsVisual}\"\ncloseonend:\"{CloseOnEnd}\"\ndebug:\"{Debug}\"\nclearconsole:\"{ClearConsole}\"\nwindow:\"{Window}\"{(Icon != "" || Icon != null ? $"\nicon:\"{Icon}\"" : "")}";
+            string startup = StartUp.Replace("\"", "").Trim();
+            string code = $"{(Name != "" ? $"name:\"{Name}\"{Environment.NewLine}" : "")}fileinerror:\"{FileInError}\"{Environment.NewLine}showbuild:\"{ShowBuild}\"{Environment.NewLine}isvisual:\"{IsVisual}\"{Environment.NewLine}closeonend:\"{CloseOnEnd}\"{Environment.NewLine}debug:\"{Debug}\"{Environment.NewLine}clearconsole:\"{ClearConsole}\"{Environment.NewLine}window:\"{Window}\"{(Icon != "" ? $"{Environment.NewLine}icon:\"{Icon}\"" : "")}{(startup != "" ? $"{Environment.NewLine}startup:\"{startup}\"" : "")}";
             foreach (var file in Files_Code)
             {
-                code += file + "\n";
+                code += Environment.NewLine + file;
             }
 
             return code;
         }
-        public void ConvertFromCode(string code)
+        public ProjectSettings ConvertFromCode(string projcode)
         {
+            string code = "# project properties : ";
+            string[] code_lines = projcode.Split(new[] { '|', '\n' }).Select(x => x.Trim()).Where(y=>y != "").ToArray();
+            for (int i = 0; i < code_lines.Length; i++)
+            {
+                if (code_lines[i].StartsWith("include:") || code_lines[i].StartsWith("exclude:") || code_lines[i].StartsWith("startup:"))
+                    continue;
+
+                string property = code_lines[i].Replace("\"", "");
+                code += property + (i != code_lines.Length - 1 ? ", " : "");
+            }
             EZProj e = new EZProj(new EzCode() { Code = code });
             FileInError = e.FileInErrors;
             ShowBuild = e.ShowBuild;
@@ -154,8 +179,9 @@ namespace EZ_IDE
             ClearConsole = e.ClearConsole;
             Window = e.Window;
             Icon = e.IconPath;
+            Name = e.Name;
 
-            string[] lines = code.Split(new[] { '|', '\n' });
+            string[] lines = projcode.Split(new[] { '|', '\n' });
             List<string> files_code = new List<string>();
             foreach (var line in lines)
             {
@@ -166,6 +192,7 @@ namespace EZ_IDE
                     files_code.Add(line);
             }
             Files_Code = files_code.ToArray();
+            return this;
         }
     }
 }

@@ -16,7 +16,8 @@ namespace EZ_IDE
         {
             settings, debug
         }
-        public Settings_Preferences(Tab tab)
+        IDE ide = new IDE();
+        public Settings_Preferences(IDE ide, Tab tab)
         {
             InitializeComponent();
 
@@ -24,6 +25,9 @@ namespace EZ_IDE
 
             Save_Folder.Checked = Settings.Save_Folder;
             Auto_Save.Checked = Settings.Auto_Save;
+            current_project.Text = Settings.Current_Project_File;
+            DefaultZoom.Value = Settings.Default_Zoom;
+            this.ide = ide;
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -36,5 +40,15 @@ namespace EZ_IDE
             Settings.Auto_Save = Auto_Save.Checked;
         }
 
+        private void current_project_TextChanged(object sender, EventArgs e)
+        {
+            Settings.Current_Project_File = current_project.Text;
+        }
+
+        private void numericUpDown1_ValueChanged(object sender, EventArgs e)
+        {
+            Settings.Default_Zoom = (int)DefaultZoom.Value;
+            ide.fctb.Zoom = Settings.Default_Zoom;
+        }
     }
 }

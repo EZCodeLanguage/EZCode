@@ -30,11 +30,16 @@
         {
             tabPage3 = new TabPage();
             tabPage1 = new TabPage();
+            label3 = new Label();
+            DefaultZoom = new NumericUpDown();
+            current_project = new TextBox();
+            label2 = new Label();
             Auto_Save = new CheckBox();
             label1 = new Label();
             Save_Folder = new CheckBox();
             tabControl1 = new TabControl();
             tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)DefaultZoom).BeginInit();
             tabControl1.SuspendLayout();
             SuspendLayout();
             // 
@@ -50,6 +55,10 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(label3);
+            tabPage1.Controls.Add(DefaultZoom);
+            tabPage1.Controls.Add(current_project);
+            tabPage1.Controls.Add(label2);
             tabPage1.Controls.Add(Auto_Save);
             tabPage1.Controls.Add(label1);
             tabPage1.Controls.Add(Save_Folder);
@@ -60,6 +69,46 @@
             tabPage1.TabIndex = 2;
             tabPage1.Text = "Settings";
             tabPage1.UseVisualStyleBackColor = true;
+            // 
+            // label3
+            // 
+            label3.AutoSize = true;
+            label3.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
+            label3.Location = new Point(11, 142);
+            label3.Name = "label3";
+            label3.Size = new Size(107, 20);
+            label3.TabIndex = 7;
+            label3.Text = "Default Zoom:";
+            // 
+            // DefaultZoom
+            // 
+            DefaultZoom.Font = new Font("Segoe UI Semibold", 10.75F, FontStyle.Bold, GraphicsUnit.Point);
+            DefaultZoom.Location = new Point(124, 140);
+            DefaultZoom.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            DefaultZoom.Name = "DefaultZoom";
+            DefaultZoom.Size = new Size(386, 27);
+            DefaultZoom.TabIndex = 6;
+            DefaultZoom.Value = new decimal(new int[] { 100, 0, 0, 0 });
+            DefaultZoom.ValueChanged += numericUpDown1_ValueChanged;
+            // 
+            // current_project
+            // 
+            current_project.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
+            current_project.Location = new Point(134, 101);
+            current_project.Name = "current_project";
+            current_project.Size = new Size(376, 27);
+            current_project.TabIndex = 5;
+            current_project.TextChanged += current_project_TextChanged;
+            // 
+            // label2
+            // 
+            label2.AutoSize = true;
+            label2.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
+            label2.Location = new Point(11, 104);
+            label2.Name = "label2";
+            label2.Size = new Size(117, 20);
+            label2.TabIndex = 4;
+            label2.Text = "Current Project:";
             // 
             // Auto_Save
             // 
@@ -120,6 +169,7 @@
             Text = "Settings";
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)DefaultZoom).EndInit();
             tabControl1.ResumeLayout(false);
             ResumeLayout(false);
         }
@@ -132,5 +182,9 @@
         private Label label1;
         private CheckBox Save_Folder;
         private TabControl tabControl1;
+        private Label label2;
+        private TextBox current_project;
+        private Label label3;
+        private NumericUpDown DefaultZoom;
     }
 }

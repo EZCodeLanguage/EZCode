@@ -42,14 +42,14 @@
             textBox1.Name = "textBox1";
             textBox1.ReadOnly = true;
             textBox1.Size = new Size(330, 23);
-            textBox1.TabIndex = 0;
+            textBox1.TabIndex = 1;
             // 
             // button1
             // 
             button1.Location = new Point(12, 12);
             button1.Name = "button1";
             button1.Size = new Size(126, 23);
-            button1.TabIndex = 1;
+            button1.TabIndex = 0;
             button1.Text = "Project Directory";
             button1.UseVisualStyleBackColor = true;
             button1.Click += button1_Click;
@@ -59,14 +59,14 @@
             textBox2.Location = new Point(144, 42);
             textBox2.Name = "textBox2";
             textBox2.Size = new Size(330, 23);
-            textBox2.TabIndex = 2;
+            textBox2.TabIndex = 3;
             // 
             // button2
             // 
             button2.Location = new Point(12, 71);
             button2.Name = "button2";
             button2.Size = new Size(461, 23);
-            button2.TabIndex = 6;
+            button2.TabIndex = 4;
             button2.Text = "Project Settings";
             button2.UseVisualStyleBackColor = true;
             button2.Click += button2_Click;
@@ -76,7 +76,7 @@
             button3.Location = new Point(312, 100);
             button3.Name = "button3";
             button3.Size = new Size(162, 23);
-            button3.TabIndex = 7;
+            button3.TabIndex = 5;
             button3.Text = "Create Project";
             button3.UseVisualStyleBackColor = true;
             button3.Click += button3_Click;
@@ -87,7 +87,7 @@
             textBox3.Name = "textBox3";
             textBox3.ReadOnly = true;
             textBox3.Size = new Size(126, 23);
-            textBox3.TabIndex = 8;
+            textBox3.TabIndex = 2;
             textBox3.Text = "Project Name";
             // 
             // NewProject
