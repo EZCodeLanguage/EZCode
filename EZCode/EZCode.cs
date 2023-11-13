@@ -295,12 +295,11 @@ namespace EZCode
         Method? currentmethod = null;
         string returnOutput = "";
         bool devDisplay = true, lastif = true;
-        int devportal = 0, ifmany = 0, loopmany = 0, aaaaaaa = 0;
+        int devportal = 0, ifmany = 0, loopmany = 0;
         async Task<string[]> PlaySwitch(string[]? _parts = null, string jumpsto = "", string[]? splitcode = null, int currentindex = 0)
         {
             try
             {
-                aaaaaaa++;
                 foreach (GButton button in buttons) button.isclick = 0;
                 if (ifmany > 0 || loopmany > 0)
                 {
