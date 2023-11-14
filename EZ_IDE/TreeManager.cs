@@ -44,11 +44,11 @@ namespace EZ_IDE
                 DialogResult result = MessageBox.Show("There are unsaved changes, do you want to save them?", "Unsaved changes", MessageBoxButtons.YesNoCancel, MessageBoxIcon.Warning);
                 if (result == DialogResult.Yes)
                 {
-                    SaveFile(ide);
+                    // nothing
                 }
                 else if (result == DialogResult.No)
                 {
-                    // nothing
+                    return true;
                 }
                 else if (result == DialogResult.Cancel)
                 {

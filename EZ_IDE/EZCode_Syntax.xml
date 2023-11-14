@@ -2,7 +2,7 @@
 	<style name="Comment" color="Green" fontStyle="Regular"/>
 	<rule style="Comment">//.*</rule>
 	
-	<style name="Hashtag" color="Red" fontStyle="Regular"/>
+	<style name="Hashtag" color="Orange" fontStyle="Regular"/>
 	<rule style="Hashtag"> #.*|^\s*#.*|\n#.*</rule>
 	
 	<style name="Pink" color="HotPink" fontStyle="Regular"/>

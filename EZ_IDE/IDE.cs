@@ -1,10 +1,13 @@
 ﻿using EZCode;
 using FastColoredTextBoxNS;
+using Microsoft.VisualBasic;
 using System.Diagnostics;
+using System.Diagnostics.CodeAnalysis;
 using System.IO;
 using System.Security.Policy;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using System.Xml.Linq;
 
 namespace EZ_IDE
 {
@@ -341,6 +344,16 @@ namespace EZ_IDE
                         debugSettingsToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.R:
                         refreshTreeViewToolStripMenuItem.PerformClick(); break;
+                    case Keys.F2:
+                        renameToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.Shift | Keys.Delete:
+                        deleteToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.Shift | Keys.X:
+                        deleteToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.Shift | Keys.N:
+                        newToolStripMenuItem1.PerformClick(); break;
+                    case Keys.Control | Keys.Shift | Keys.A:
+                        newToolStripMenuItem1.PerformClick(); break;
                 }
                 if (keyData == (Keys.Control | Keys.O))
                 {
@@ -394,6 +407,7 @@ namespace EZ_IDE
             Manager.SelectedNode(e);
             changeTime = 0;
         }
+
         private void Tree_BeforeSelect(object sender, TreeViewCancelEventArgs e)
         {
             // before selected file
@@ -413,6 +427,7 @@ namespace EZ_IDE
                 Manager.SelectedCatchCheck(FileURLTextBox.Text);
             }
         }
+
         private void settingsPreferencesToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // settings
@@ -573,7 +588,7 @@ namespace EZ_IDE
 
         private void insertBreakpointToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // inset breakpoint
+            // insert breakpoint
         }
 
         private void startDebugSessionToolStripMenuItem_Click(object sender, EventArgs e)
@@ -621,6 +636,150 @@ namespace EZ_IDE
         {
             // zoom change
             Settings.Default_Zoom = fctb.Zoom;
+        }
+
+        private void newToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            // tree context menu click - new
+
+            try
+            {
+                string name = Interaction.InputBox("Enter the Name of the file:", "New File", ".ezcode");
+                string dir = new FileInfo(Tree.SelectedNode.Name).DirectoryName;
+                string path = Path.Combine(dir, name);
+                int go = 1;
+                while (File.Exists(path))
+                {
+                    FileInfo fileInfo = new FileInfo(path);
+                    string extension = fileInfo.Extension;
+                    string newName = name.Replace(extension, $" ({go}){extension}");
+                    path = Path.Combine(dir, newName);
+                    go++;
+                    if (!File.Exists(path))
+                        name = newName;
+                }
+                File.Create(path).Close();
+                TreeNode node = new TreeNode(path) { Text = name };
+                try
+                {
+                    refreshTreeViewToolStripMenuItem.PerformClick();
+                    Tree.SelectedNode = Tree.Nodes.Find(path, true).FirstOrDefault(node);
+                }
+                catch
+                {
+                    Manager.OpenFile(path);
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
+        private void deleteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // tree context menu click - delete
+
+            try
+            {
+                DialogResult result = MessageBox.Show("Are you sure you want to delete this file?", "Delete", MessageBoxButtons.YesNo, MessageBoxIcon.Question);
+                if (result == DialogResult.Yes)
+                {
+                    try
+                    {
+                        string path = FileURLTextBox.Text;
+                        File.Delete(path);
+                        Tree.Nodes.Remove(Tree.SelectedNode);
+                    }
+                    catch
+                    {
+                        MessageBox.Show("Could not delete file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+                    }
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
+        private void renameToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // tree context menu click - rename
+
+            try
+            {
+                string name = Interaction.InputBox("Enter the new Name of the file:", "Rename File", Tree.SelectedNode.Text);
+                string dir = new FileInfo(Tree.SelectedNode.Name).DirectoryName;
+                string path = Path.Combine(dir, name);
+                int go = 1;
+                while (File.Exists(path))
+                {
+                    FileInfo fileInfo = new FileInfo(path);
+                    string extension = fileInfo.Extension;
+                    string newName = name.Replace(extension, $" ({go}){extension}");
+                    path = Path.Combine(dir, newName);
+                    go++;
+                    if (!File.Exists(path))
+                        name = newName;
+                }
+                if (FileURLTextBox.Text == Tree.SelectedNode.Name && File.ReadAllText(Tree.SelectedNode.Name) != fctb.Text)
+                {
+                    Manager.SaveFile(true);
+                }
+                File.WriteAllText(path, File.ReadAllText(Tree.SelectedNode.Name));
+                File.Delete(Tree.SelectedNode.Name);
+                TreeNode node = new TreeNode(path) { Text = name };
+                try
+                {
+                    refreshTreeViewToolStripMenuItem.PerformClick();
+                    Tree.SelectedNode = Tree.Nodes.Find(path, true).FirstOrDefault(node);
+                }
+                catch
+                {
+                    Manager.OpenFile(path);
+                }
+            }
+            catch
+            {
+
+            }
+        }
+
+        private void copyToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // copy
+            fctb.Copy();
+        }
+
+        private void pasteToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // paste
+            fctb.Paste();
+        }
+
+        private void cutToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // cut
+            fctb.Cut();
+        }
+
+        private void deleteToolStripMenuItem1_Click(object sender, EventArgs e)
+        {
+            // delete
+            fctb.SelectedText = "";
+        }
+
+        private void undoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // undo
+            fctb.Undo();
+        }
+
+        private void redoToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // redo
+            fctb.Redo();
         }
 
         #endregion

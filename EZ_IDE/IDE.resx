@@ -166,15 +166,21 @@
         AAAAAElFTkSuQmCC
 </value>
   </data>
+  <metadata name="treeMenuSelect.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>233, 17</value>
+  </metadata>
+  <metadata name="Menu_Fctb.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
+    <value>369, 17</value>
+  </metadata>
   <metadata name="imageList1.TrayLocation" type="System.Drawing.Point, System.Drawing, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
-    <value>17, 17</value>
+    <value>122, 17</value>
   </metadata>
   <data name="imageList1.ImageStream" mimetype="application/x-microsoft.net.object.binary.base64">
     <value>
         AAEAAAD/////AQAAAAAAAAAMAgAAAEZTeXN0ZW0uV2luZG93cy5Gb3JtcywgQ3VsdHVyZT1uZXV0cmFs
         LCBQdWJsaWNLZXlUb2tlbj1iNzdhNWM1NjE5MzRlMDg5BQEAAAAmU3lzdGVtLldpbmRvd3MuRm9ybXMu
         SW1hZ2VMaXN0U3RyZWFtZXIBAAAABERhdGEHAgIAAAAJAwAAAA8DAAAACAgAAAJNU0Z0AUkBTAIBAQMB
-        AAGAAQMBgAEDARABAAEQAQAE/wEZAQAI/wFCAU0BNgcAATYDAAEoAwABQAMAARADAAEBAQABGAYAAQwh
+        AAHQAQMB0AEDARABAAEQAQAE/wEZAQAI/wFCAU0BNgcAATYDAAEoAwABQAMAARADAAEBAQABGAYAAQwh
         AAP/A/QD/jkAA/8DAAP/FQAD/gP7A/cD9gP5A/1RAAO9AbMBsgGxA+0zAAP5AbwBuwG8A88DvwP9DwAD
         /gP1A+AD0gHMAcsBzALTAdQD6gP8A/9LAAP+Ac8CzgHLAcoByAO7A/QqAAP9A8EC7wHwA+kD6APdA/8J
         AAP+A/UB2gLYAckCxQHBArwBtAGzAbQBrwGsAa4BwAG/AcAD5wP8SwAD7gHxAvAC7gHtAecB5QHkAcIB
