@@ -1,6 +1,6 @@
 ﻿namespace EZ_IDE
 {
-    partial class NewProject
+    partial class New_Project
     {
         /// <summary>
         /// Required designer variable.

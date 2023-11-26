@@ -1,13 +1,10 @@
 ﻿using EZCode;
+using EZCode.Debug;
 using FastColoredTextBoxNS;
 using Microsoft.VisualBasic;
 using System.Diagnostics;
-using System.Diagnostics.CodeAnalysis;
-using System.IO;
-using System.Security.Policy;
 using System.Text.RegularExpressions;
-using System.Windows.Forms;
-using System.Xml.Linq;
+using Debugger = EZCode.Debug.Debugger;
 
 namespace EZ_IDE
 {
@@ -19,8 +16,6 @@ namespace EZ_IDE
         readonly string[] methods = { /*"new", "change", "add", "equals", "remove", "destroy", "destroyall", "clear", "close", "open", "play", "playall", "volume", "stop", "playloop"*/ };
         readonly string[] snippets = { "if ^ : ", "if ^ : \n{\n\n}", "loop ^ {\n\n\n\n}", "var ^ : input console" };
         readonly string[] declarationSnippets = { "method ^\n\n\n\nendmethod", "method ^ : \n\n\n\nendmethod" };
-
-
 
         private void BuildAutocompleteMenu()
         {
@@ -34,6 +29,8 @@ namespace EZ_IDE
                 items.Add(new MethodAutocompleteItem(item) { ImageIndex = 2 });
             foreach (var item in keywords)
                 items.Add(new AutocompleteItem(item));
+            foreach (var item in sources)
+                items.Add(new MethodAutocompleteItem2(item));
 
             items.Add(new InsertSpaceSnippet());
             items.Add(new InsertSpaceSnippet(@"^(\w+)([=<>!:]+)(\w+)$"));
@@ -166,6 +163,82 @@ namespace EZ_IDE
             }
         }
 
+        private string[] sources
+        {
+            get
+            {
+                return fctb.Text.Split(new[] { '|', '\n', ' ' }).Distinct().ToArray();
+            }
+        }
+        /// <summary>
+        /// This autocomplete item appears after dot
+        /// </summary>
+        public class MethodAutocompleteItem2 : MethodAutocompleteItem
+        {
+            readonly string firstPart;
+            readonly string lastPart;
+
+            public MethodAutocompleteItem2(string text)
+                : base(text)
+            {
+                var i = text.LastIndexOf('.');
+                if (i < 0)
+                    firstPart = text;
+                else
+                {
+                    firstPart = text[..i];
+                    lastPart = text[(i + 1)..];
+                }
+            }
+
+            public override CompareResult Compare(string fragmentText)
+            {
+                int i = fragmentText.LastIndexOf('.');
+
+                if (i < 0)
+                {
+                    if (firstPart.StartsWith(fragmentText) && string.IsNullOrEmpty(lastPart))
+                        return CompareResult.VisibleAndSelected;
+                    //if (firstPart.ToLower().Contains(fragmentText.ToLower()))
+                    //  return CompareResult.Visible;
+                }
+                else
+                {
+                    var fragmentFirstPart = fragmentText[..i];
+                    var fragmentLastPart = fragmentText[(i + 1)..];
+
+
+                    if (firstPart != fragmentFirstPart)
+                        return CompareResult.Hidden;
+
+                    if (lastPart != null && lastPart.StartsWith(fragmentLastPart))
+                        return CompareResult.VisibleAndSelected;
+
+                    if (lastPart != null && lastPart.ToLower().Contains(fragmentLastPart.ToLower()))
+                        return CompareResult.Visible;
+
+                }
+
+                return CompareResult.Hidden;
+            }
+
+            public override string GetTextForReplace()
+            {
+                if (lastPart == null)
+                    return firstPart;
+
+                return firstPart + "." + lastPart;
+            }
+
+            public override string ToString()
+            {
+                if (lastPart == null)
+                    return firstPart;
+
+                return lastPart;
+            }
+        }
+
         #endregion
 
         #region EZCode
@@ -180,33 +253,37 @@ namespace EZ_IDE
             Script,
             None
         }
-        public void Start(FileInfo _file, ProjectType _projectType = ProjectType.None)
+        public void Start(FileInfo _file, ProjectType _projectType = ProjectType.None, bool debug = false)
         {
+            switch (_projectType)
+            {
+                case ProjectType.Script: project.Directory = FileURLTextBox.Text; break;
+                case ProjectType.Project: project.Directory = Settings.Current_Project_File; break;
+            }
             project.Initialize(ref ezcode, visualoutput, output);
             int d = 0;
             bool window = false;
             ezproj = new EZProj(_file, _file.FullName);
             projectType = _projectType;
             file = _file;
-            if (_projectType == ProjectType.Project)
+
+            if (ezproj.Window)
             {
-                if (ezproj.Window)
-                {
-                    window = true;
-                }
-                else if (ezproj.IsVisual)
-                {
-                    d = 1;
-                }
-                else if (!ezproj.IsVisual)
-                {
-                    d = 0;
-                }
-                if (ezproj.Debug)
-                {
-                    d = 2;
-                }
+                window = true;
             }
+            else if (ezproj.IsVisual)
+            {
+                d = 1;
+            }
+            else if (!ezproj.IsVisual)
+            {
+                d = 0;
+            }
+            if (debug || ezproj.Debug)
+            {
+                d = 2;
+            }
+
             tabControl1.SelectedIndex = d;
 
             ezcode.errorColor = Color.FromArgb(255, 20, 20);
@@ -228,7 +305,8 @@ namespace EZ_IDE
             visualoutput.MouseDown += ezcode.MouseInput_Down;
             visualoutput.MouseUp += ezcode.MouseInput_Up;
 
-            Play();
+            if (!debug)
+                Play();
         }
 
         private async void Play()
@@ -262,8 +340,27 @@ namespace EZ_IDE
         }
         #endregion
 
-        TreeManager Manager;
-        ProjectSettings project;
+        public TreeManager Manager;
+        public ProjectSettings project;
+        public Debugger Debug;
+        public DebugSettings debugSettings;
+
+        TextBox _FCTB_Highlight;
+        public TextBox FCTB_Highlight
+        {
+            get
+            {
+                _FCTB_Highlight = new TextBox() { Text = fctb.Text };
+                return _FCTB_Highlight;
+            }
+            set
+            {
+                _FCTB_Highlight = value;
+                fctb.SelectionStart = _FCTB_Highlight.SelectionStart;
+                fctb.SelectionLength = _FCTB_Highlight.SelectionLength;
+            }
+        }
+        System.Windows.Forms.Timer higlight_timer = new System.Windows.Forms.Timer();
 
         public IDE(string path = "")
         {
@@ -290,8 +387,20 @@ namespace EZ_IDE
             else Manager.OpenPath(path);
 
             Settings.StartUp();
-
             fctb.Zoom = Settings.Default_Zoom;
+
+            debugSettings = new DebugSettings();
+            DebugSave.StartUp(this);
+
+            higlight_timer.Interval = 100;
+            higlight_timer.Enabled = true;
+            higlight_timer.Tick += Higlight_timer_Tick;
+        }
+
+        private void IDE_Load(object sender, EventArgs e)
+        {
+            splitContainer1.SplitterDistance = Settings.Left_Splitter_Distance;
+            splitContainer2.SplitterDistance = Settings.Bottom_Splitter_Distance;
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -326,6 +435,8 @@ namespace EZ_IDE
                         playProjectToolStripMenuItem.PerformClick(); break;
                     case Keys.Alt | Keys.P:
                         playFileToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.F6:
+                        playFileToolStripMenuItem.PerformClick(); break;
                     case Keys.F1:
                         docsToolStripMenuItem.PerformClick(); break;
                     case Keys.F9:
@@ -334,14 +445,18 @@ namespace EZ_IDE
                         startDebugSessionToolStripMenuItem.PerformClick(); break;
                     case Keys.Alt | Keys.D:
                         startDebugSessionToolStripMenuItem.PerformClick(); break;
+                    case Keys.F6:
+                        debugFileToolStripMenuItem.PerformClick(); break;
+                    case Keys.Alt | Keys.Shift | Keys.D:
+                        debugFileToolStripMenuItem.PerformClick(); break;
                     case Keys.F11:
                         nextSegmentToolStripMenuItem.PerformClick(); break;
                     case Keys.F10:
-                        continueToolStripMenuItem.PerformClick(); break;
+                        nextbreakpointToolStripMenuItem.PerformClick(); break;
                     case Keys.F12:
                         endDebugSessionToolStripMenuItem.PerformClick(); break;
-                    case Keys.Control | Keys.Shift | Keys.D:
-                        debugSettingsToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.F9:
+                        allBreakpointsToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.R:
                         refreshTreeViewToolStripMenuItem.PerformClick(); break;
                     case Keys.F2:
@@ -354,22 +469,39 @@ namespace EZ_IDE
                         newToolStripMenuItem1.PerformClick(); break;
                     case Keys.Control | Keys.Shift | Keys.A:
                         newToolStripMenuItem1.PerformClick(); break;
+                    case Keys.Alt | Keys.T:
+                        textToCodeToolStripMenuItem.PerformClick(); break;
                 }
-                if (keyData == (Keys.Control | Keys.O))
+            }
+            else if (msg.Msg == 260)
+            {
+                switch (keyData)
                 {
-                    // open folder
-                    folderToolStripMenuItem1.PerformClick();
-                }
-                else if (keyData == (Keys.Control | Keys.S))
-                {
-                    // save file
-                    saveToolStripMenuItem.PerformClick();
+                    case Keys.F10:
+                        fctb.Focus();
+                        nextbreakpointToolStripMenuItem.PerformClick();
+                        break;
+                    case Keys.Alt | Keys.T:
+                        textToCodeToolStripMenuItem.PerformClick(); break;
                 }
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
         #region events
+
+        private void Higlight_timer_Tick(object? sender, EventArgs e)
+        {
+            if (Debug != null ? Debug.IsPlaying : false)
+            {
+                FCTB_Highlight = Debug.HighlightTextbox;
+                fctb.ReadOnly = true;
+            }
+            else
+            {
+                fctb.ReadOnly = false;
+            }
+        }
 
         private void IDE_FormClosing(object sender, FormClosingEventArgs e)
         {
@@ -398,7 +530,14 @@ namespace EZ_IDE
         private void saveToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // save file
-            Manager.SaveFile();
+            try
+            {
+                Manager.SaveFile();
+            }
+            catch
+            {
+                MessageBox.Show("Could not save file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void Tree_AfterSelect(object sender, TreeViewEventArgs e)
@@ -440,15 +579,16 @@ namespace EZ_IDE
         {
             try
             {
-                if (Settings.Auto_Save)
+                changeTime++;
+                if (changeTime > 10)
                 {
+                    // IntelliSense
+                    BuildAutocompleteMenu();
 
-                    changeTime++;
-                    if (changeTime > 10)
-                    {
+                    // auto save
+                    if (Settings.Auto_Save && FileURLTextBox.Text != "")
                         Manager.SaveFile();
-                        changeTime = 0;
-                    }
+                    changeTime = 0;
                 }
             }
             catch
@@ -498,7 +638,7 @@ namespace EZ_IDE
         private void projectToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // new project
-            NewProject newProject = new NewProject();
+            New_Project newProject = new New_Project();
             newProject.ShowDialog();
 
             if (newProject.DONE)
@@ -554,6 +694,10 @@ namespace EZ_IDE
             // play project
             try
             {
+                if (Settings.Save_On_Play && FileURLTextBox.Text != "")
+                {
+                    Manager.SaveFile();
+                }
                 Start(new FileInfo(Settings.Current_Project_File), ProjectType.Project);
             }
             catch
@@ -567,12 +711,23 @@ namespace EZ_IDE
             // play file
             try
             {
+                if (Settings.Save_On_Play)
+                {
+                    Manager.SaveFile();
+                }
                 Start(new FileInfo(FileURLTextBox.Text), ProjectType.Script);
             }
             catch
             {
                 MessageBox.Show("Could not play script", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
             }
+        }
+
+        private void quitToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            ezcode ??= new EzCode();
+
+            ezcode.Stop();
         }
 
         private void docsToolStripMenuItem_Click(object sender, EventArgs e)
@@ -589,34 +744,125 @@ namespace EZ_IDE
         private void insertBreakpointToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // insert breakpoint
+            new Insert_Breakpoint(this, fctb.Text, fctb.SelectionStart, FileURLTextBox.Text);
         }
 
         private void startDebugSessionToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // start debug session
+            // debug project
+            try
+            {
+                if (Debug != null ? Debug.IsPlaying : false)
+                {
+                    MessageBox.Show("A debug session is already open", "Already Debugging", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
+                if (Settings.Always_Show_Highlight_Warning)
+                {
+                    DialogResult d = MessageBox.Show("The Highlighted text that shows when debugging a line may not always be correct. Please refer to the 'Debug' tab. Do you want to see this warning again", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    if (d == DialogResult.No)
+                    {
+                        Settings.Always_Show_Highlight_Warning = false;
+                    }
+                }
+
+                if (Settings.Save_On_Play && FileURLTextBox.Text != "")
+                {
+                    Manager.SaveFile();
+                }
+                Start(new FileInfo(Settings.Current_Project_File), ProjectType.Project, true);
+
+                Debug = new Debugger(ezcode, DebugSave.Breakpoints, FCTB_Highlight);
+                higlight_timer.Start();
+                Debug.StartDebugSession(File.ReadAllText(Settings.Current_Project_File));
+            }
+            catch
+            {
+                MessageBox.Show("Could not start debugging project", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
+        }
+
+        private void debugFileToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // debug file
+            try
+            {
+                if (Debug != null ? Debug.IsPlaying : false)
+                {
+                    MessageBox.Show("A debug session is already open", "Already Debugging", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+                }
+
+                if (Settings.Always_Show_Highlight_Warning)
+                {
+                    DialogResult d = MessageBox.Show("The Highlighted text that shows when debugging a line may not always be correct. Please refer to the 'Debug' tab. Do you want to see this warning again", "Warning", MessageBoxButtons.YesNo, MessageBoxIcon.Warning);
+                    if (d == DialogResult.No)
+                    {
+                        Settings.Always_Show_Highlight_Warning = false;
+                    }
+                }
+
+                if (Settings.Save_On_Play)
+                {
+                    Manager.SaveFile();
+                }
+                Start(new FileInfo(FileURLTextBox.Text), ProjectType.Script, true);
+
+                Debug = new Debugger(ezcode, DebugSave.Breakpoints, FCTB_Highlight);
+                higlight_timer.Start();
+                Debug.StartDebugSession(File.ReadAllText(FileURLTextBox.Text));
+                project.Directory = Settings.Current_Project_File;
+            }
+            catch
+            {
+                MessageBox.Show("Could not start debugging file", "Error", MessageBoxButtons.OK, MessageBoxIcon.Error);
+            }
         }
 
         private void nextSegmentToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // next segment
+            try
+            {
+                Debug.NextSegment(Settings.Debug_Pause);
+            }
+            catch
+            {
+
+            }
         }
 
-        private void continueToolStripMenuItem_Click(object sender, EventArgs e)
+        private void nextbreakpointToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // continue
+            // next breakpoint
+            try
+            {
+                Debug.NextBreakpoint();
+            }
+            catch
+            {
+
+            }
         }
 
         private void endDebugSessionToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // end debug session
+            try
+            {
+                Debug.StopDebugSession();
+            }
+            catch
+            {
+
+            }
         }
 
-        private void debugSettingsToolStripMenuItem_Click(object sender, EventArgs e)
+        private void allBreakpointsToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // debug settings
-
-            Settings_Preferences settings_Preferences = new Settings_Preferences(this, Settings_Preferences.Tab.debug);
-            settings_Preferences.ShowDialog();
+            // all breakpoints
+            Breakpoints_Form form = new Breakpoints_Form();
+            form.ShowDialog();
+            debugSettings = form.debugSettings;
         }
 
         private void clearTreeViewToolStripMenuItem_Click(object sender, EventArgs e)
@@ -645,6 +891,7 @@ namespace EZ_IDE
             try
             {
                 string name = Interaction.InputBox("Enter the Name of the file:", "New File", ".ezcode");
+                if (new FileInfo(name).Extension == "") name += ".ezcode";
                 string dir = new FileInfo(Tree.SelectedNode.Name).DirectoryName;
                 string path = Path.Combine(dir, name);
                 int go = 1;
@@ -780,6 +1027,25 @@ namespace EZ_IDE
         {
             // redo
             fctb.Redo();
+        }
+
+        private void splitContainer2_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+            // bottom splitter moved
+            Settings.Bottom_Splitter_Distance = splitContainer2.SplitterDistance;
+        }
+
+        private void splitContainer1_SplitterMoved(object sender, SplitterEventArgs e)
+        {
+            // left splitter moved
+            Settings.Left_Splitter_Distance = splitContainer1.SplitterDistance;
+        }
+
+        private void textToCodeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // text to code
+            Text_To_Code text_to_code = new Text_To_Code();
+            text_to_code.ShowDialog();
         }
 
         #endregion

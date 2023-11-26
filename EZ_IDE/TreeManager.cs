@@ -1,4 +1,5 @@
-﻿using EZCode.Variables;
+﻿using Antlr.Runtime.Tree;
+using EZCode.Variables;
 using Microsoft.Win32;
 using NAudio.Wave;
 using System.IO;
@@ -10,7 +11,7 @@ using static EZ_IDE.Settings;
 
 namespace EZ_IDE
 {
-    internal class TreeManager
+    public class TreeManager
     {
         public IDE ide;
         public TreeManager(IDE ide) => this.ide = ide;
@@ -38,6 +39,28 @@ namespace EZ_IDE
         {
             string path = ide.FileURLTextBox.Text;
             string contents = ide.fctb.Text;
+
+            if (path == "")
+            {
+                SaveFileDialog saveFileDialog = new SaveFileDialog();
+                saveFileDialog.Filter = "EZCode|*.ezcode|EZProj|*.ezproj|Text Document|*.txt|All Files|*";
+                saveFileDialog.ShowDialog();
+                path = saveFileDialog.FileName;
+
+                File.WriteAllText(path, contents);
+                File.Create(path).Close();
+
+                TreeNode node = new TreeNode(path);
+                try
+                {
+                    ide.refreshTreeViewToolStripMenuItem.PerformClick();
+                    ide.Tree.SelectedNode = ide.Tree.Nodes.Find(path, true).FirstOrDefault(node);
+                }
+                catch
+                {
+                    ide.Manager.OpenFile();
+                }
+            }
 
             if (File.ReadAllText(path) != contents && dialog)
             {

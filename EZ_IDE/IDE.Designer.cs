@@ -39,7 +39,6 @@
             tabPage1 = new TabPage();
             tabPage2 = new TabPage();
             tabPage3 = new TabPage();
-            DebugList = new ListBox();
             toolStripDropDownButton1 = new ToolStripDropDownButton();
             newToolStripMenuItem = new ToolStripMenuItem();
             fileToolStripMenuItem = new ToolStripMenuItem();
@@ -66,13 +65,16 @@
             toolStripDropDownButton6 = new ToolStripDropDownButton();
             playProjectToolStripMenuItem = new ToolStripMenuItem();
             playFileToolStripMenuItem = new ToolStripMenuItem();
+            quitToolStripMenuItem = new ToolStripMenuItem();
             toolStripDropDownButton4 = new ToolStripDropDownButton();
-            insertBreakpointToolStripMenuItem = new ToolStripMenuItem();
+            startToolStripMenuItem = new ToolStripMenuItem();
             startDebugSessionToolStripMenuItem = new ToolStripMenuItem();
+            debugFileToolStripMenuItem = new ToolStripMenuItem();
             nextSegmentToolStripMenuItem = new ToolStripMenuItem();
-            continueToolStripMenuItem = new ToolStripMenuItem();
+            nextbreakpointToolStripMenuItem = new ToolStripMenuItem();
             endDebugSessionToolStripMenuItem = new ToolStripMenuItem();
-            debugSettingsToolStripMenuItem = new ToolStripMenuItem();
+            insertBreakpointToolStripMenuItem = new ToolStripMenuItem();
+            allBreakpointsToolStripMenuItem = new ToolStripMenuItem();
             toolStripDropDownButton5 = new ToolStripDropDownButton();
             docsToolStripMenuItem = new ToolStripMenuItem();
             toolStripTextBox2 = new ToolStripTextBox();
@@ -84,8 +86,6 @@
             deleteToolStripMenuItem = new ToolStripMenuItem();
             renameToolStripMenuItem = new ToolStripMenuItem();
             fctb = new FastColoredTextBoxNS.FastColoredTextBox();
-            splitContainer2 = new SplitContainer();
-            imageList1 = new ImageList(components);
             Menu_Fctb = new ContextMenuStrip(components);
             copyToolStripMenuItem = new ToolStripMenuItem();
             cutToolStripMenuItem1 = new ToolStripMenuItem();
@@ -93,10 +93,12 @@
             deleteToolStripMenuItem1 = new ToolStripMenuItem();
             undoToolStripMenuItem = new ToolStripMenuItem();
             redoToolStripMenuItem = new ToolStripMenuItem();
+            splitContainer2 = new SplitContainer();
+            imageList1 = new ImageList(components);
+            textToCodeToolStripMenuItem = new ToolStripMenuItem();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
-            tabPage3.SuspendLayout();
             toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -104,11 +106,11 @@
             splitContainer1.SuspendLayout();
             treeMenuSelect.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)fctb).BeginInit();
+            Menu_Fctb.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer2).BeginInit();
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
             splitContainer2.SuspendLayout();
-            Menu_Fctb.SuspendLayout();
             SuspendLayout();
             // 
             // visualoutput
@@ -231,26 +233,12 @@
             // tabPage3
             // 
             tabPage3.BackColor = Color.Black;
-            tabPage3.Controls.Add(DebugList);
             tabPage3.Location = new Point(4, 24);
             tabPage3.Name = "tabPage3";
             tabPage3.Padding = new Padding(3);
             tabPage3.Size = new Size(1078, 159);
             tabPage3.TabIndex = 2;
             tabPage3.Text = "Debug";
-            // 
-            // DebugList
-            // 
-            DebugList.BackColor = SystemColors.WindowFrame;
-            DebugList.Dock = DockStyle.Left;
-            DebugList.Font = new Font("Segoe UI", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
-            DebugList.ForeColor = SystemColors.Info;
-            DebugList.FormattingEnabled = true;
-            DebugList.ItemHeight = 17;
-            DebugList.Location = new Point(3, 3);
-            DebugList.Name = "DebugList";
-            DebugList.Size = new Size(539, 153);
-            DebugList.TabIndex = 0;
             // 
             // toolStripDropDownButton1
             // 
@@ -270,7 +258,7 @@
             // 
             newToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem, projectToolStripMenuItem });
             newToolStripMenuItem.Name = "newToolStripMenuItem";
-            newToolStripMenuItem.Size = new Size(177, 22);
+            newToolStripMenuItem.Size = new Size(180, 22);
             newToolStripMenuItem.Text = "New";
             // 
             // fileToolStripMenuItem
@@ -293,7 +281,7 @@
             // 
             openToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem1, folderToolStripMenuItem1, projectToolStripMenuItem1 });
             openToolStripMenuItem.Name = "openToolStripMenuItem";
-            openToolStripMenuItem.Size = new Size(177, 22);
+            openToolStripMenuItem.Size = new Size(180, 22);
             openToolStripMenuItem.Text = "Open";
             // 
             // fileToolStripMenuItem1
@@ -324,7 +312,7 @@
             // 
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             saveToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+S";
-            saveToolStripMenuItem.Size = new Size(177, 22);
+            saveToolStripMenuItem.Size = new Size(180, 22);
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
             // 
@@ -332,7 +320,7 @@
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             exitToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+Q";
-            exitToolStripMenuItem.Size = new Size(177, 22);
+            exitToolStripMenuItem.Size = new Size(180, 22);
             exitToolStripMenuItem.Text = "Exit";
             exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
@@ -359,7 +347,7 @@
             // 
             toolStripDropDownButton3.BackColor = Color.FromArgb(64, 64, 64);
             toolStripDropDownButton3.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton3.DropDownItems.AddRange(new ToolStripItem[] { editToolStripMenuItem, clearTreeViewToolStripMenuItem, refreshTreeViewToolStripMenuItem, projectSettingsToolStripMenuItem, settingsPreferencesToolStripMenuItem });
+            toolStripDropDownButton3.DropDownItems.AddRange(new ToolStripItem[] { editToolStripMenuItem, clearTreeViewToolStripMenuItem, refreshTreeViewToolStripMenuItem, textToCodeToolStripMenuItem, projectSettingsToolStripMenuItem, settingsPreferencesToolStripMenuItem });
             toolStripDropDownButton3.ForeColor = SystemColors.ButtonFace;
             toolStripDropDownButton3.Image = (Image)resources.GetObject("toolStripDropDownButton3.Image");
             toolStripDropDownButton3.ImageTransparentColor = Color.Magenta;
@@ -460,7 +448,7 @@
             // 
             toolStripDropDownButton6.BackColor = Color.FromArgb(64, 64, 64);
             toolStripDropDownButton6.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton6.DropDownItems.AddRange(new ToolStripItem[] { playProjectToolStripMenuItem, playFileToolStripMenuItem });
+            toolStripDropDownButton6.DropDownItems.AddRange(new ToolStripItem[] { playProjectToolStripMenuItem, playFileToolStripMenuItem, quitToolStripMenuItem });
             toolStripDropDownButton6.ForeColor = SystemColors.ButtonFace;
             toolStripDropDownButton6.Image = (Image)resources.GetObject("toolStripDropDownButton6.Image");
             toolStripDropDownButton6.ImageTransparentColor = Color.Magenta;
@@ -481,16 +469,24 @@
             // playFileToolStripMenuItem
             // 
             playFileToolStripMenuItem.Name = "playFileToolStripMenuItem";
-            playFileToolStripMenuItem.ShortcutKeyDisplayString = "Alt+P";
+            playFileToolStripMenuItem.ShortcutKeyDisplayString = "Alt+P or Ctrl+F6";
             playFileToolStripMenuItem.Size = new Size(250, 22);
             playFileToolStripMenuItem.Text = "Play File";
             playFileToolStripMenuItem.Click += playFileToolStripMenuItem_Click;
+            // 
+            // quitToolStripMenuItem
+            // 
+            quitToolStripMenuItem.Name = "quitToolStripMenuItem";
+            quitToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Q";
+            quitToolStripMenuItem.Size = new Size(250, 22);
+            quitToolStripMenuItem.Text = "Quit";
+            quitToolStripMenuItem.Click += quitToolStripMenuItem_Click;
             // 
             // toolStripDropDownButton4
             // 
             toolStripDropDownButton4.BackColor = Color.FromArgb(64, 64, 64);
             toolStripDropDownButton4.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton4.DropDownItems.AddRange(new ToolStripItem[] { insertBreakpointToolStripMenuItem, startDebugSessionToolStripMenuItem, nextSegmentToolStripMenuItem, continueToolStripMenuItem, endDebugSessionToolStripMenuItem, debugSettingsToolStripMenuItem });
+            toolStripDropDownButton4.DropDownItems.AddRange(new ToolStripItem[] { startToolStripMenuItem, nextSegmentToolStripMenuItem, nextbreakpointToolStripMenuItem, endDebugSessionToolStripMenuItem, insertBreakpointToolStripMenuItem, allBreakpointsToolStripMenuItem });
             toolStripDropDownButton4.ForeColor = SystemColors.ButtonFace;
             toolStripDropDownButton4.Image = (Image)resources.GetObject("toolStripDropDownButton4.Image");
             toolStripDropDownButton4.ImageTransparentColor = Color.Magenta;
@@ -500,53 +496,68 @@
             toolStripDropDownButton4.Size = new Size(100, 22);
             toolStripDropDownButton4.Text = "Debug";
             // 
-            // insertBreakpointToolStripMenuItem
+            // startToolStripMenuItem
             // 
-            insertBreakpointToolStripMenuItem.Name = "insertBreakpointToolStripMenuItem";
-            insertBreakpointToolStripMenuItem.ShortcutKeyDisplayString = "F9";
-            insertBreakpointToolStripMenuItem.Size = new Size(269, 22);
-            insertBreakpointToolStripMenuItem.Text = "Insert Breakpoint";
-            insertBreakpointToolStripMenuItem.Click += insertBreakpointToolStripMenuItem_Click;
+            startToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { startDebugSessionToolStripMenuItem, debugFileToolStripMenuItem });
+            startToolStripMenuItem.Name = "startToolStripMenuItem";
+            startToolStripMenuItem.Size = new Size(217, 22);
+            startToolStripMenuItem.Text = "Start";
             // 
             // startDebugSessionToolStripMenuItem
             // 
             startDebugSessionToolStripMenuItem.Name = "startDebugSessionToolStripMenuItem";
             startDebugSessionToolStripMenuItem.ShortcutKeyDisplayString = "F5 or Alt+D";
-            startDebugSessionToolStripMenuItem.Size = new Size(269, 22);
-            startDebugSessionToolStripMenuItem.Text = "Start Debug Session";
+            startDebugSessionToolStripMenuItem.Size = new Size(247, 22);
+            startDebugSessionToolStripMenuItem.Text = "Debug Project";
             startDebugSessionToolStripMenuItem.Click += startDebugSessionToolStripMenuItem_Click;
+            // 
+            // debugFileToolStripMenuItem
+            // 
+            debugFileToolStripMenuItem.Name = "debugFileToolStripMenuItem";
+            debugFileToolStripMenuItem.ShortcutKeyDisplayString = "F6 or Alt+Shift+D";
+            debugFileToolStripMenuItem.Size = new Size(247, 22);
+            debugFileToolStripMenuItem.Text = "Debug File";
+            debugFileToolStripMenuItem.Click += debugFileToolStripMenuItem_Click;
             // 
             // nextSegmentToolStripMenuItem
             // 
             nextSegmentToolStripMenuItem.Name = "nextSegmentToolStripMenuItem";
             nextSegmentToolStripMenuItem.ShortcutKeyDisplayString = "F11";
-            nextSegmentToolStripMenuItem.Size = new Size(269, 22);
+            nextSegmentToolStripMenuItem.Size = new Size(217, 22);
             nextSegmentToolStripMenuItem.Text = "Next Segment";
             nextSegmentToolStripMenuItem.Click += nextSegmentToolStripMenuItem_Click;
             // 
-            // continueToolStripMenuItem
+            // nextbreakpointToolStripMenuItem
             // 
-            continueToolStripMenuItem.Name = "continueToolStripMenuItem";
-            continueToolStripMenuItem.ShortcutKeyDisplayString = "F10";
-            continueToolStripMenuItem.Size = new Size(269, 22);
-            continueToolStripMenuItem.Text = "Next Breakpoint";
-            continueToolStripMenuItem.Click += continueToolStripMenuItem_Click;
+            nextbreakpointToolStripMenuItem.Name = "nextbreakpointToolStripMenuItem";
+            nextbreakpointToolStripMenuItem.ShortcutKeyDisplayString = "F10";
+            nextbreakpointToolStripMenuItem.Size = new Size(217, 22);
+            nextbreakpointToolStripMenuItem.Text = "Next Breakpoint";
+            nextbreakpointToolStripMenuItem.Click += nextbreakpointToolStripMenuItem_Click;
             // 
             // endDebugSessionToolStripMenuItem
             // 
             endDebugSessionToolStripMenuItem.Name = "endDebugSessionToolStripMenuItem";
             endDebugSessionToolStripMenuItem.ShortcutKeyDisplayString = "F12";
-            endDebugSessionToolStripMenuItem.Size = new Size(269, 22);
+            endDebugSessionToolStripMenuItem.Size = new Size(217, 22);
             endDebugSessionToolStripMenuItem.Text = "End Debug Session";
             endDebugSessionToolStripMenuItem.Click += endDebugSessionToolStripMenuItem_Click;
             // 
-            // debugSettingsToolStripMenuItem
+            // insertBreakpointToolStripMenuItem
             // 
-            debugSettingsToolStripMenuItem.Name = "debugSettingsToolStripMenuItem";
-            debugSettingsToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+D";
-            debugSettingsToolStripMenuItem.Size = new Size(269, 22);
-            debugSettingsToolStripMenuItem.Text = "Debug Settings";
-            debugSettingsToolStripMenuItem.Click += debugSettingsToolStripMenuItem_Click;
+            insertBreakpointToolStripMenuItem.Name = "insertBreakpointToolStripMenuItem";
+            insertBreakpointToolStripMenuItem.ShortcutKeyDisplayString = "F9";
+            insertBreakpointToolStripMenuItem.Size = new Size(217, 22);
+            insertBreakpointToolStripMenuItem.Text = "Insert Breakpoint";
+            insertBreakpointToolStripMenuItem.Click += insertBreakpointToolStripMenuItem_Click;
+            // 
+            // allBreakpointsToolStripMenuItem
+            // 
+            allBreakpointsToolStripMenuItem.Name = "allBreakpointsToolStripMenuItem";
+            allBreakpointsToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+F9";
+            allBreakpointsToolStripMenuItem.Size = new Size(217, 22);
+            allBreakpointsToolStripMenuItem.Text = "All Breakpoints";
+            allBreakpointsToolStripMenuItem.Click += allBreakpointsToolStripMenuItem_Click;
             // 
             // toolStripDropDownButton5
             // 
@@ -601,6 +612,7 @@
             splitContainer1.Size = new Size(1086, 461);
             splitContainer1.SplitterDistance = 226;
             splitContainer1.TabIndex = 6;
+            splitContainer1.SplitterMoved += splitContainer1_SplitterMoved;
             // 
             // Tree
             // 
@@ -656,6 +668,7 @@
             fctb.AutoScrollMinSize = new Size(2, 31);
             fctb.BackBrush = null;
             fctb.BackColor = Color.FromArgb(30, 30, 30);
+            fctb.BookmarkColor = Color.FromArgb(0, 0, 0, 0);
             fctb.CharHeight = 31;
             fctb.CharWidth = 16;
             fctb.ContextMenuStrip = Menu_Fctb;
@@ -666,6 +679,7 @@
             fctb.Font = new Font("Cascadia Code", 20.3860855F, FontStyle.Regular, GraphicsUnit.Point);
             fctb.ForeColor = Color.FromArgb(250, 250, 250);
             fctb.HighlightingRangeType = FastColoredTextBoxNS.HighlightingRangeType.VisibleRange;
+            fctb.Hotkeys = resources.GetString("fctb.Hotkeys");
             fctb.IsReplaceMode = false;
             fctb.LeftBracket = '(';
             fctb.LeftBracket2 = '{';
@@ -682,34 +696,6 @@
             fctb.Zoom = 100;
             fctb.TextChanged += fctb_TextChanged;
             fctb.ZoomChanged += fctb_ZoomChanged;
-            // 
-            // splitContainer2
-            // 
-            splitContainer2.Dock = DockStyle.Fill;
-            splitContainer2.Location = new Point(0, 25);
-            splitContainer2.Name = "splitContainer2";
-            splitContainer2.Orientation = Orientation.Horizontal;
-            // 
-            // splitContainer2.Panel1
-            // 
-            splitContainer2.Panel1.Controls.Add(splitContainer1);
-            // 
-            // splitContainer2.Panel2
-            // 
-            splitContainer2.Panel2.Controls.Add(tabControl1);
-            splitContainer2.Panel2MinSize = 0;
-            splitContainer2.Size = new Size(1086, 652);
-            splitContainer2.SplitterDistance = 461;
-            splitContainer2.TabIndex = 0;
-            // 
-            // imageList1
-            // 
-            imageList1.ColorDepth = ColorDepth.Depth24Bit;
-            imageList1.ImageStream = (ImageListStreamer)resources.GetObject("imageList1.ImageStream");
-            imageList1.TransparentColor = Color.Transparent;
-            imageList1.Images.SetKeyName(0, "script_16x16.png");
-            imageList1.Images.SetKeyName(1, "app_16x16.png");
-            imageList1.Images.SetKeyName(2, "1302166543_virtualbox.png");
             // 
             // Menu_Fctb
             // 
@@ -765,6 +751,43 @@
             redoToolStripMenuItem.Text = "Redo";
             redoToolStripMenuItem.Click += redoToolStripMenuItem_Click;
             // 
+            // splitContainer2
+            // 
+            splitContainer2.Dock = DockStyle.Fill;
+            splitContainer2.Location = new Point(0, 25);
+            splitContainer2.Name = "splitContainer2";
+            splitContainer2.Orientation = Orientation.Horizontal;
+            // 
+            // splitContainer2.Panel1
+            // 
+            splitContainer2.Panel1.Controls.Add(splitContainer1);
+            // 
+            // splitContainer2.Panel2
+            // 
+            splitContainer2.Panel2.Controls.Add(tabControl1);
+            splitContainer2.Panel2MinSize = 0;
+            splitContainer2.Size = new Size(1086, 652);
+            splitContainer2.SplitterDistance = 461;
+            splitContainer2.TabIndex = 0;
+            splitContainer2.SplitterMoved += splitContainer2_SplitterMoved;
+            // 
+            // imageList1
+            // 
+            imageList1.ColorDepth = ColorDepth.Depth24Bit;
+            imageList1.ImageStream = (ImageListStreamer)resources.GetObject("imageList1.ImageStream");
+            imageList1.TransparentColor = Color.Transparent;
+            imageList1.Images.SetKeyName(0, "script_16x16.png");
+            imageList1.Images.SetKeyName(1, "app_16x16.png");
+            imageList1.Images.SetKeyName(2, "1302166543_virtualbox.png");
+            // 
+            // textToCodeToolStripMenuItem
+            // 
+            textToCodeToolStripMenuItem.Name = "textToCodeToolStripMenuItem";
+            textToCodeToolStripMenuItem.ShortcutKeyDisplayString = "Alt+T";
+            textToCodeToolStripMenuItem.Size = new Size(244, 22);
+            textToCodeToolStripMenuItem.Text = "Text to Code";
+            textToCodeToolStripMenuItem.Click += textToCodeToolStripMenuItem_Click;
+            // 
             // IDE
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -779,11 +802,11 @@
             Text = "EZCode IDE";
             WindowState = FormWindowState.Maximized;
             FormClosing += IDE_FormClosing;
+            Load += IDE_Load;
             tabControl1.ResumeLayout(false);
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
             tabPage2.ResumeLayout(false);
-            tabPage3.ResumeLayout(false);
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
             splitContainer1.Panel1.ResumeLayout(false);
@@ -792,11 +815,11 @@
             splitContainer1.ResumeLayout(false);
             treeMenuSelect.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)fctb).EndInit();
+            Menu_Fctb.ResumeLayout(false);
             splitContainer2.Panel1.ResumeLayout(false);
             splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
             splitContainer2.ResumeLayout(false);
-            Menu_Fctb.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -810,7 +833,6 @@
         private TabPage tabPage1;
         private TabPage tabPage2;
         private TabPage tabPage3;
-        private ListBox DebugList;
         private ToolStripDropDownButton toolStripDropDownButton1;
         private ToolStrip toolStrip1;
         private SplitContainer splitContainer1;
@@ -827,11 +849,9 @@
         private ToolStripMenuItem folderToolStripMenuItem1;
         private ToolStripMenuItem settingsPreferencesToolStripMenuItem;
         private ToolStripMenuItem insertBreakpointToolStripMenuItem;
-        private ToolStripMenuItem startDebugSessionToolStripMenuItem;
         private ToolStripMenuItem nextSegmentToolStripMenuItem;
-        private ToolStripMenuItem continueToolStripMenuItem;
+        private ToolStripMenuItem nextbreakpointToolStripMenuItem;
         private ToolStripMenuItem endDebugSessionToolStripMenuItem;
-        private ToolStripMenuItem debugSettingsToolStripMenuItem;
         private ToolStripMenuItem docsToolStripMenuItem;
         private ToolStripTextBox toolStripTextBox2;
         private ToolStripDropDownButton toolStripDropDownButton6;
@@ -842,7 +862,6 @@
         private ToolStripMenuItem saveToolStripMenuItem;
         private ToolStripMenuItem exitToolStripMenuItem;
         private ToolStripMenuItem clearTreeViewToolStripMenuItem;
-        private ToolStripMenuItem refreshTreeViewToolStripMenuItem;
         private ToolStripMenuItem projectSettingsToolStripMenuItem;
         private ToolStripMenuItem projectToolStripMenuItem1;
         public ToolStripLabel FileURLTextBox;
@@ -864,5 +883,12 @@
         private ToolStripMenuItem cutToolStripMenuItem;
         private ToolStripMenuItem deleteToolStripMenuItem2;
         private ToolStripMenuItem cutToolStripMenuItem1;
+        public ToolStripMenuItem refreshTreeViewToolStripMenuItem;
+        private ToolStripMenuItem startToolStripMenuItem;
+        private ToolStripMenuItem startDebugSessionToolStripMenuItem;
+        private ToolStripMenuItem debugFileToolStripMenuItem;
+        private ToolStripMenuItem quitToolStripMenuItem;
+        private ToolStripMenuItem allBreakpointsToolStripMenuItem;
+        private ToolStripMenuItem textToCodeToolStripMenuItem;
     }
 }

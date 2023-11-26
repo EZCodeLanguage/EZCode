@@ -29,7 +29,13 @@
         private void InitializeComponent()
         {
             tabPage3 = new TabPage();
+            HighLight_Line = new CheckBox();
+            Pause_Debug = new CheckBox();
+            label4 = new Label();
+            Breakpoint_button = new Button();
             tabPage1 = new TabPage();
+            button1 = new Button();
+            Save_On_Play = new CheckBox();
             label3 = new Label();
             DefaultZoom = new NumericUpDown();
             current_project = new TextBox();
@@ -38,6 +44,7 @@
             label1 = new Label();
             Save_Folder = new CheckBox();
             tabControl1 = new TabControl();
+            tabPage3.SuspendLayout();
             tabPage1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)DefaultZoom).BeginInit();
             tabControl1.SuspendLayout();
@@ -45,6 +52,10 @@
             // 
             // tabPage3
             // 
+            tabPage3.Controls.Add(HighLight_Line);
+            tabPage3.Controls.Add(Pause_Debug);
+            tabPage3.Controls.Add(label4);
+            tabPage3.Controls.Add(Breakpoint_button);
             tabPage3.Location = new Point(4, 24);
             tabPage3.Name = "tabPage3";
             tabPage3.Padding = new Padding(3);
@@ -53,8 +64,56 @@
             tabPage3.Text = "Debug";
             tabPage3.UseVisualStyleBackColor = true;
             // 
+            // HighLight_Line
+            // 
+            HighLight_Line.AutoSize = true;
+            HighLight_Line.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
+            HighLight_Line.Location = new Point(11, 114);
+            HighLight_Line.Name = "HighLight_Line";
+            HighLight_Line.Size = new Size(325, 24);
+            HighLight_Line.TabIndex = 5;
+            HighLight_Line.Text = "Highlight Current Line (Not Always Correct)";
+            HighLight_Line.UseVisualStyleBackColor = true;
+            HighLight_Line.CheckedChanged += checkBox1_CheckedChanged_2;
+            // 
+            // Pause_Debug
+            // 
+            Pause_Debug.AutoSize = true;
+            Pause_Debug.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
+            Pause_Debug.Location = new Point(11, 84);
+            Pause_Debug.Name = "Pause_Debug";
+            Pause_Debug.Size = new Size(362, 24);
+            Pause_Debug.TabIndex = 4;
+            Pause_Debug.Text = "Allow Pausing Debug Session with Next Segment";
+            Pause_Debug.UseVisualStyleBackColor = true;
+            Pause_Debug.CheckedChanged += Pause_Debug_CheckedChanged;
+            // 
+            // label4
+            // 
+            label4.AutoSize = true;
+            label4.Font = new Font("Segoe UI", 15.75F, FontStyle.Bold, GraphicsUnit.Point);
+            label4.Location = new Point(11, 8);
+            label4.Name = "label4";
+            label4.Size = new Size(164, 30);
+            label4.TabIndex = 3;
+            label4.Text = "Debug Settings";
+            label4.TextAlign = ContentAlignment.MiddleLeft;
+            // 
+            // Breakpoint_button
+            // 
+            Breakpoint_button.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
+            Breakpoint_button.Location = new Point(10, 50);
+            Breakpoint_button.Name = "Breakpoint_button";
+            Breakpoint_button.Size = new Size(499, 28);
+            Breakpoint_button.TabIndex = 0;
+            Breakpoint_button.Text = "Breakpoints";
+            Breakpoint_button.UseVisualStyleBackColor = true;
+            Breakpoint_button.Click += button1_Click;
+            // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(button1);
+            tabPage1.Controls.Add(Save_On_Play);
             tabPage1.Controls.Add(label3);
             tabPage1.Controls.Add(DefaultZoom);
             tabPage1.Controls.Add(current_project);
@@ -70,11 +129,35 @@
             tabPage1.Text = "Settings";
             tabPage1.UseVisualStyleBackColor = true;
             // 
+            // button1
+            // 
+            button1.AutoSize = true;
+            button1.Font = new Font("Segoe UI Semibold", 10.25F, FontStyle.Bold, GraphicsUnit.Point);
+            button1.Location = new Point(11, 41);
+            button1.Name = "button1";
+            button1.Size = new Size(113, 29);
+            button1.TabIndex = 9;
+            button1.Text = "Reset IDE";
+            button1.UseVisualStyleBackColor = true;
+            button1.Click += button1_Click_1;
+            // 
+            // Save_On_Play
+            // 
+            Save_On_Play.AutoSize = true;
+            Save_On_Play.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
+            Save_On_Play.Location = new Point(11, 209);
+            Save_On_Play.Name = "Save_On_Play";
+            Save_On_Play.Size = new Size(219, 24);
+            Save_On_Play.TabIndex = 8;
+            Save_On_Play.Text = "Save File When Start Paying";
+            Save_On_Play.UseVisualStyleBackColor = true;
+            Save_On_Play.CheckedChanged += Save_On_Play_CheckedChanged;
+            // 
             // label3
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            label3.Location = new Point(11, 142);
+            label3.Location = new Point(11, 175);
             label3.Name = "label3";
             label3.Size = new Size(107, 20);
             label3.TabIndex = 7;
@@ -83,7 +166,7 @@
             // DefaultZoom
             // 
             DefaultZoom.Font = new Font("Segoe UI Semibold", 10.75F, FontStyle.Bold, GraphicsUnit.Point);
-            DefaultZoom.Location = new Point(124, 140);
+            DefaultZoom.Location = new Point(124, 173);
             DefaultZoom.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
             DefaultZoom.Name = "DefaultZoom";
             DefaultZoom.Size = new Size(386, 27);
@@ -94,7 +177,7 @@
             // current_project
             // 
             current_project.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            current_project.Location = new Point(134, 101);
+            current_project.Location = new Point(134, 134);
             current_project.Name = "current_project";
             current_project.Size = new Size(376, 27);
             current_project.TabIndex = 5;
@@ -104,7 +187,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            label2.Location = new Point(11, 104);
+            label2.Location = new Point(11, 137);
             label2.Name = "label2";
             label2.Size = new Size(117, 20);
             label2.TabIndex = 4;
@@ -114,7 +197,7 @@
             // 
             Auto_Save.AutoSize = true;
             Auto_Save.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            Auto_Save.Location = new Point(11, 73);
+            Auto_Save.Location = new Point(11, 106);
             Auto_Save.Name = "Auto_Save";
             Auto_Save.Size = new Size(125, 24);
             Auto_Save.TabIndex = 3;
@@ -128,16 +211,16 @@
             label1.Font = new Font("Segoe UI", 15.75F, FontStyle.Bold, GraphicsUnit.Point);
             label1.Location = new Point(11, 8);
             label1.Name = "label1";
-            label1.Size = new Size(93, 30);
+            label1.Size = new Size(132, 30);
             label1.TabIndex = 2;
-            label1.Text = "Settings";
+            label1.Text = "IDE Settings";
             label1.TextAlign = ContentAlignment.MiddleLeft;
             // 
             // Save_Folder
             // 
             Save_Folder.AutoSize = true;
             Save_Folder.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            Save_Folder.Location = new Point(11, 43);
+            Save_Folder.Location = new Point(11, 76);
             Save_Folder.Name = "Save_Folder";
             Save_Folder.Size = new Size(286, 24);
             Save_Folder.TabIndex = 1;
@@ -167,6 +250,8 @@
             Name = "Settings_Preferences";
             StartPosition = FormStartPosition.CenterParent;
             Text = "Settings";
+            tabPage3.ResumeLayout(false);
+            tabPage3.PerformLayout();
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
             ((System.ComponentModel.ISupportInitialize)DefaultZoom).EndInit();
@@ -178,13 +263,19 @@
 
         private TabPage tabPage3;
         private TabPage tabPage1;
+        private CheckBox Save_On_Play;
+        private Label label3;
+        private NumericUpDown DefaultZoom;
+        private TextBox current_project;
+        private Label label2;
         private CheckBox Auto_Save;
         private Label label1;
         private CheckBox Save_Folder;
         private TabControl tabControl1;
-        private Label label2;
-        private TextBox current_project;
-        private Label label3;
-        private NumericUpDown DefaultZoom;
+        private Button Breakpoint_button;
+        private Label label4;
+        private CheckBox Pause_Debug;
+        private CheckBox HighLight_Line;
+        private Button button1;
     }
 }

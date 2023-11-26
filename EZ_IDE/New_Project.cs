@@ -10,10 +10,10 @@ using System.Windows.Forms;
 
 namespace EZ_IDE
 {
-    public partial class NewProject : Form
+    public partial class New_Project : Form
     {
         public bool DONE = false;
-        public NewProject()
+        public New_Project()
         {
             InitializeComponent();
 
