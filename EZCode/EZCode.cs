@@ -1,4 +1,5 @@
 ﻿using EZCode.GControls;
+using EZCode.Debug;
 using EZCode.Methods;
 using EZCode.Variables;
 using EZCode.Windows;
@@ -296,10 +297,16 @@ namespace EZCode
         string returnOutput = "";
         bool devDisplay = true, lastif = true;
         int devportal = 0, ifmany = 0, loopmany = 0;
-        async Task<string[]> PlaySwitch(string[]? _parts = null, string jumpsto = "", string[]? splitcode = null, int currentindex = 0)
+        async Task<string[]> PlaySwitch(string[]? _parts = null, string jumpsto = "", string[]? splitcode = null, int currentindex = 0, Debugger? debugger = null)
         {
             try
             {
+                debugger ??= new Debugger(this);
+                debugger.Hit(string.Join(" ", _parts ?? new string[0]));
+                while (debugger.Stopped)
+                {
+                    await Task.Delay(100);
+                }
                 foreach (GButton button in buttons) button.isclick = 0;
                 if (ifmany > 0 || loopmany > 0)
                 {
@@ -361,7 +368,7 @@ namespace EZCode
                                     if (!playing) { i = lines.Length; continue; };
                                     changeable = oldcodeline + i;
                                     codeLine = changeable;
-                                    string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }), "", lines, i);
+                                    string[] task = await PlaySwitch(lines[i].Split(new char[] { ' ' }), "", lines, i, debugger);
                                     if (bool.Parse(task[1]) == false) i = lines.Length - 1;
                                 }
 
@@ -399,7 +406,7 @@ namespace EZCode
                                 {
                                     if (!lastif) //TRUE
                                     {
-                                        string[] result = await PlaySwitch(code.Split(" "));
+                                        string[] result = await PlaySwitch(code.Split(" "), debugger: debugger);
                                     }
                                     else //FALSE
                                     {
@@ -519,7 +526,7 @@ namespace EZCode
                             {
                                 if (check) //TRUE
                                 {
-                                    string[] result = await PlaySwitch(code.Split(" "));
+                                    string[] result = await PlaySwitch(code.Split(" "), debugger:debugger);
                                 }
                                 else //FALSE
                                 {
@@ -934,7 +941,7 @@ namespace EZCode
                                                 }
                                             }
                                         }
-                                        string[] task = await PlaySwitch(a_parts.ToArray(), "", lines.ToArray(), 0);
+                                        string[] task = await PlaySwitch(a_parts.ToArray(), "", lines.ToArray(), 0, debugger);
                                         if (bool.Parse(task[1]) == false) i = lines.Count - 1;
                                         output += output == "" ? task[0] : "\n" + task[0];
                                     }
@@ -1739,7 +1746,7 @@ namespace EZCode
                                                 }
                                             }
                                         }
-                                        string[] task = await PlaySwitch(a_parts.ToArray(), "", lines.ToArray(), i);
+                                        string[] task = await PlaySwitch(a_parts.ToArray(), "", lines.ToArray(), i, debugger);
                                         if (bool.Parse(task[1]) == false) i = lines.Count - 1;
                                         output += task[0];
                                         ConsoleText = output;
@@ -4548,17 +4555,15 @@ namespace EZCode
                     string sw_t = txt;
                     if (useRaw)
                     {
-                         txt =
-                            txt.Contains(@"\n") && !txt.Contains(@"\\n") ? txt.Replace(@"\n", Environment.NewLine) : txt.Contains(@"\\n") ? txt.Replace(@"\\n", @"\n") :
-                            txt.Contains(@"\!") && !txt.Contains(@"\\!") ? txt.Replace(@"\!", string.Empty) : txt.Contains(@"\\!") ? txt.Replace(@"\\!", @"\!") :
-                            txt.Contains(@"\_") && !txt.Contains(@"\\_") ? txt.Replace(@"\_", " ") : txt.Contains(@"\\_") ? txt.Replace(@"\\_", @"\_") :
-                            txt.Contains(@"\;") && !txt.Contains(@"\\;") ? txt.Replace(@"\;", ":") : txt.Contains(@"\\;") ? txt.Replace(@"\\;", @"\;") :
-                            txt.Contains(@"\=") && !txt.Contains(@"\\=") ? txt.Replace(@"\=", "=") : txt.Contains(@"\\=") ? txt.Replace(@"\\=", @"\=") :
-                            txt.Contains(@"\c") && !txt.Contains(@"\\c") ? txt.Replace(@"\c", ",") : txt.Contains(@"\\c") ? txt.Replace(@"\\c", @"\c") :
-                            txt.Contains(@"\e") && !txt.Contains(@"\\e") ? txt.Replace(@"\e", "!") : txt.Contains(@"\\e") ? txt.Replace(@"\\e", @"\e") :
-                            txt.Contains(@"\$") && !txt.Contains(@"\\$") ? txt.Replace(@"\$", "|") : txt.Contains(@"\\$") ? txt.Replace(@"\\$", @"\$") :
-                            txt.Contains(@"\&") && !txt.Contains(@"\\&") ? txt.Replace(@"\&", ";") : txt.Contains(@"\\&") ? txt.Replace(@"\\&", @"\&") :
-                            txt;
+                        txt = txt.Contains(@"\n") && !txt.Contains(@"\\n") ? txt.Replace(@"\n", Environment.NewLine) : txt.Contains(@"\\n") ? txt.Replace(@"\\n", @"\n") : txt;
+                        txt = txt.Contains(@"\!") && !txt.Contains(@"\\!") ? txt.Replace(@"\!", string.Empty) : txt.Contains(@"\\!") ? txt.Replace(@"\\!", @"\!") : txt;
+                        txt = txt.Contains(@"\_") && !txt.Contains(@"\\_") ? txt.Replace(@"\_", " ") : txt.Contains(@"\\_") ? txt.Replace(@"\\_", @"\_") : txt;
+                        txt = txt.Contains(@"\;") && !txt.Contains(@"\\;") ? txt.Replace(@"\;", ":") : txt.Contains(@"\\;") ? txt.Replace(@"\\;", @"\;") : txt;
+                        txt = txt.Contains(@"\=") && !txt.Contains(@"\\=") ? txt.Replace(@"\=", "=") : txt.Contains(@"\\=") ? txt.Replace(@"\\=", @"\=") : txt;
+                        txt = txt.Contains(@"\c") && !txt.Contains(@"\\c") ? txt.Replace(@"\c", ",") : txt.Contains(@"\\c") ? txt.Replace(@"\\c", @"\c") : txt;
+                        txt = txt.Contains(@"\e") && !txt.Contains(@"\\e") ? txt.Replace(@"\e", "!") : txt.Contains(@"\\e") ? txt.Replace(@"\\e", @"\e") : txt;
+                        txt = txt.Contains(@"\$") && !txt.Contains(@"\\$") ? txt.Replace(@"\$", "|") : txt.Contains(@"\\$") ? txt.Replace(@"\\$", @"\$") : txt;
+                        txt = txt.Contains(@"\&") && !txt.Contains(@"\\&") ? txt.Replace(@"\&", ";") : txt.Contains(@"\\&") ? txt.Replace(@"\\&", @"\&") : txt;
                         txt = txt.Replace(@"\\(", @"\(");
                         txt = txt.Replace(@")\\", @")\");
 
@@ -4902,9 +4907,11 @@ namespace EZCode
         /// </summary>
         /// <param name="code">The string representing the EZCode content to be played.</param>
         /// <param name="clearsconsole">does not clear console if false</param>
-        public async Task<string> Play(string code, bool clearsconsole = true)
+        /// <param name="debugger">Initiates Debugging Instance</param>
+        public async Task<string> Play(string code, bool clearsconsole = true, Debugger? debugger = null)
         {
             if (playing) return "";
+            debugger ??= new Debugger(this);
             AllControls.Clear();
             Space.Controls.Clear();
             vars.Clear();
@@ -5038,7 +5045,7 @@ namespace EZCode
                         }
                     }
                 }
-                string[] task = await PlaySwitch(parts.ToArray(), "", lines.ToArray(), i);
+                string[] task = await PlaySwitch(parts.ToArray(), "", lines.ToArray(), i, debugger);
                 if (bool.Parse(task[1]) == false) i = lines.Count - 1;
                 output += task[0];
                 ConsoleText = output;
@@ -5069,7 +5076,6 @@ namespace EZCode
         /// </summary>
         public void Stop()
         {
-            AddText("Build Ended");
             _pplaying = false;
             returnOutput = "";
             devDisplay = true;
