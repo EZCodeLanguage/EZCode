@@ -39,6 +39,16 @@
             tabPage1 = new TabPage();
             tabPage2 = new TabPage();
             tabPage3 = new TabPage();
+            VarListView = new ListBox();
+            BreakpointsPropertyGridDebug = new PropertyGrid();
+            InputDebug = new TextBox();
+            SendDebug = new Button();
+            QuitDebug = new Button();
+            NextBreakpointDebug = new Button();
+            nextSegmentDebug = new Button();
+            CurrentLine = new TextBox();
+            MiniConsole = new RichTextBox();
+            ControlsPropertyGrid = new PropertyGrid();
             toolStripDropDownButton1 = new ToolStripDropDownButton();
             newToolStripMenuItem = new ToolStripMenuItem();
             fileToolStripMenuItem = new ToolStripMenuItem();
@@ -60,12 +70,14 @@
             redoToolStripMenuItem1 = new ToolStripMenuItem();
             clearTreeViewToolStripMenuItem = new ToolStripMenuItem();
             refreshTreeViewToolStripMenuItem = new ToolStripMenuItem();
+            textToCodeToolStripMenuItem = new ToolStripMenuItem();
             projectSettingsToolStripMenuItem = new ToolStripMenuItem();
             settingsPreferencesToolStripMenuItem = new ToolStripMenuItem();
             toolStripDropDownButton6 = new ToolStripDropDownButton();
             playProjectToolStripMenuItem = new ToolStripMenuItem();
             playFileToolStripMenuItem = new ToolStripMenuItem();
             quitToolStripMenuItem = new ToolStripMenuItem();
+            playInDedicatedWindowToolStripMenuItem = new ToolStripMenuItem();
             toolStripDropDownButton4 = new ToolStripDropDownButton();
             startToolStripMenuItem = new ToolStripMenuItem();
             startDebugSessionToolStripMenuItem = new ToolStripMenuItem();
@@ -95,10 +107,10 @@
             redoToolStripMenuItem = new ToolStripMenuItem();
             splitContainer2 = new SplitContainer();
             imageList1 = new ImageList(components);
-            textToCodeToolStripMenuItem = new ToolStripMenuItem();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
+            tabPage3.SuspendLayout();
             toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -119,7 +131,7 @@
             visualoutput.Dock = DockStyle.Fill;
             visualoutput.Location = new Point(3, 3);
             visualoutput.Name = "visualoutput";
-            visualoutput.Size = new Size(1072, 153);
+            visualoutput.Size = new Size(1040, 218);
             visualoutput.TabIndex = 0;
             // 
             // Send
@@ -131,7 +143,7 @@
             Send.FlatStyle = FlatStyle.Flat;
             Send.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Send.ForeColor = Color.FromArgb(235, 235, 235);
-            Send.Location = new Point(915, 136);
+            Send.Location = new Point(889, 196);
             Send.Name = "Send";
             Send.Size = new Size(75, 23);
             Send.TabIndex = 3;
@@ -148,7 +160,7 @@
             Clear.FlatStyle = FlatStyle.Flat;
             Clear.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Clear.ForeColor = Color.FromArgb(235, 235, 235);
-            Clear.Location = new Point(996, 136);
+            Clear.Location = new Point(967, 195);
             Clear.Name = "Clear";
             Clear.Size = new Size(76, 23);
             Clear.TabIndex = 2;
@@ -166,9 +178,9 @@
             input.BorderStyle = BorderStyle.None;
             input.Font = new Font("Cascadia Code", 12F, FontStyle.Regular, GraphicsUnit.Point);
             input.ForeColor = Color.FromArgb(235, 235, 235);
-            input.Location = new Point(3, 138);
+            input.Location = new Point(3, 196);
             input.Name = "input";
-            input.Size = new Size(907, 19);
+            input.Size = new Size(883, 19);
             input.TabIndex = 1;
             input.KeyDown += input_KeyDown;
             // 
@@ -185,7 +197,7 @@
             output.Location = new Point(3, 3);
             output.Name = "output";
             output.ReadOnly = true;
-            output.Size = new Size(1076, 129);
+            output.Size = new Size(1040, 189);
             output.TabIndex = 0;
             output.Text = "";
             output.WordWrap = false;
@@ -202,7 +214,7 @@
             tabControl1.Multiline = true;
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1086, 187);
+            tabControl1.Size = new Size(1054, 252);
             tabControl1.TabIndex = 4;
             // 
             // tabPage1
@@ -215,7 +227,7 @@
             tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1078, 159);
+            tabPage1.Size = new Size(1046, 224);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Console";
             // 
@@ -226,19 +238,188 @@
             tabPage2.Location = new Point(4, 24);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1078, 159);
+            tabPage2.Size = new Size(1046, 224);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Visual Output";
             // 
             // tabPage3
             // 
             tabPage3.BackColor = Color.Black;
+            tabPage3.Controls.Add(VarListView);
+            tabPage3.Controls.Add(BreakpointsPropertyGridDebug);
+            tabPage3.Controls.Add(InputDebug);
+            tabPage3.Controls.Add(SendDebug);
+            tabPage3.Controls.Add(QuitDebug);
+            tabPage3.Controls.Add(NextBreakpointDebug);
+            tabPage3.Controls.Add(nextSegmentDebug);
+            tabPage3.Controls.Add(CurrentLine);
+            tabPage3.Controls.Add(MiniConsole);
+            tabPage3.Controls.Add(ControlsPropertyGrid);
             tabPage3.Location = new Point(4, 24);
             tabPage3.Name = "tabPage3";
             tabPage3.Padding = new Padding(3);
-            tabPage3.Size = new Size(1078, 159);
+            tabPage3.Size = new Size(1046, 224);
             tabPage3.TabIndex = 2;
             tabPage3.Text = "Debug";
+            // 
+            // VarListView
+            // 
+            VarListView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            VarListView.BackColor = Color.FromArgb(50, 50, 50);
+            VarListView.BorderStyle = BorderStyle.None;
+            VarListView.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            VarListView.ForeColor = Color.White;
+            VarListView.FormattingEnabled = true;
+            VarListView.ItemHeight = 17;
+            VarListView.Location = new Point(241, -1);
+            VarListView.Name = "VarListView";
+            VarListView.Size = new Size(248, 221);
+            VarListView.TabIndex = 12;
+            // 
+            // BreakpointsPropertyGridDebug
+            // 
+            BreakpointsPropertyGridDebug.BackColor = Color.Black;
+            BreakpointsPropertyGridDebug.CategoryForeColor = Color.Cornsilk;
+            BreakpointsPropertyGridDebug.CategorySplitterColor = SystemColors.ControlLight;
+            BreakpointsPropertyGridDebug.CommandsBackColor = Color.FromArgb(50, 50, 50);
+            BreakpointsPropertyGridDebug.CommandsDisabledLinkColor = Color.FromArgb(50, 50, 50);
+            BreakpointsPropertyGridDebug.CommandsForeColor = Color.Cornsilk;
+            BreakpointsPropertyGridDebug.DisabledItemForeColor = Color.FromArgb(127, 255, 255, 255);
+            BreakpointsPropertyGridDebug.HelpBackColor = SystemColors.ControlDarkDark;
+            BreakpointsPropertyGridDebug.HelpVisible = false;
+            BreakpointsPropertyGridDebug.LineColor = Color.FromArgb(30, 30, 30);
+            BreakpointsPropertyGridDebug.Location = new Point(0, 0);
+            BreakpointsPropertyGridDebug.Name = "BreakpointsPropertyGridDebug";
+            BreakpointsPropertyGridDebug.Size = new Size(236, 108);
+            BreakpointsPropertyGridDebug.TabIndex = 11;
+            BreakpointsPropertyGridDebug.ViewBackColor = SystemColors.ControlDarkDark;
+            BreakpointsPropertyGridDebug.ViewForeColor = SystemColors.Window;
+            // 
+            // InputDebug
+            // 
+            InputDebug.AcceptsReturn = true;
+            InputDebug.AcceptsTab = true;
+            InputDebug.AllowDrop = true;
+            InputDebug.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            InputDebug.BackColor = Color.FromArgb(15, 15, 15);
+            InputDebug.BorderStyle = BorderStyle.None;
+            InputDebug.Font = new Font("Cascadia Code", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            InputDebug.ForeColor = Color.FromArgb(235, 235, 235);
+            InputDebug.Location = new Point(494, 168);
+            InputDebug.Name = "InputDebug";
+            InputDebug.Size = new Size(463, 19);
+            InputDebug.TabIndex = 8;
+            InputDebug.KeyDown += input_KeyDown;
+            // 
+            // SendDebug
+            // 
+            SendDebug.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            SendDebug.BackColor = Color.FromArgb(25, 25, 25);
+            SendDebug.FlatAppearance.BorderColor = Color.Gray;
+            SendDebug.FlatAppearance.BorderSize = 0;
+            SendDebug.FlatStyle = FlatStyle.Flat;
+            SendDebug.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
+            SendDebug.ForeColor = Color.FromArgb(235, 235, 235);
+            SendDebug.Location = new Point(963, 167);
+            SendDebug.Name = "SendDebug";
+            SendDebug.Size = new Size(75, 23);
+            SendDebug.TabIndex = 10;
+            SendDebug.Text = "Send";
+            SendDebug.UseVisualStyleBackColor = false;
+            SendDebug.Click += Send_Click;
+            // 
+            // QuitDebug
+            // 
+            QuitDebug.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            QuitDebug.BackColor = SystemColors.ControlDark;
+            QuitDebug.FlatStyle = FlatStyle.Popup;
+            QuitDebug.ForeColor = SystemColors.ControlText;
+            QuitDebug.Location = new Point(942, 196);
+            QuitDebug.Name = "QuitDebug";
+            QuitDebug.Size = new Size(96, 23);
+            QuitDebug.TabIndex = 6;
+            QuitDebug.Text = "Quit (F12)";
+            QuitDebug.UseVisualStyleBackColor = false;
+            QuitDebug.Click += endDebugSessionToolStripMenuItem_Click;
+            // 
+            // NextBreakpointDebug
+            // 
+            NextBreakpointDebug.Anchor = AnchorStyles.Bottom | AnchorStyles.Right;
+            NextBreakpointDebug.BackColor = SystemColors.ControlDark;
+            NextBreakpointDebug.FlatStyle = FlatStyle.Popup;
+            NextBreakpointDebug.ForeColor = SystemColors.ControlText;
+            NextBreakpointDebug.Location = new Point(718, 195);
+            NextBreakpointDebug.Name = "NextBreakpointDebug";
+            NextBreakpointDebug.Size = new Size(218, 23);
+            NextBreakpointDebug.TabIndex = 5;
+            NextBreakpointDebug.Text = "Next Breakpoint (F10)";
+            NextBreakpointDebug.UseVisualStyleBackColor = false;
+            NextBreakpointDebug.Click += nextbreakpointToolStripMenuItem_Click;
+            // 
+            // nextSegmentDebug
+            // 
+            nextSegmentDebug.Anchor = AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            nextSegmentDebug.BackColor = SystemColors.ControlDark;
+            nextSegmentDebug.FlatStyle = FlatStyle.Popup;
+            nextSegmentDebug.ForeColor = SystemColors.ControlText;
+            nextSegmentDebug.Location = new Point(494, 195);
+            nextSegmentDebug.Name = "nextSegmentDebug";
+            nextSegmentDebug.Size = new Size(218, 23);
+            nextSegmentDebug.TabIndex = 4;
+            nextSegmentDebug.Text = "Next Segment (F11)";
+            nextSegmentDebug.UseVisualStyleBackColor = false;
+            nextSegmentDebug.Click += nextSegmentToolStripMenuItem_Click;
+            // 
+            // CurrentLine
+            // 
+            CurrentLine.Anchor = AnchorStyles.Top | AnchorStyles.Left | AnchorStyles.Right;
+            CurrentLine.BackColor = Color.FromArgb(50, 50, 50);
+            CurrentLine.BorderStyle = BorderStyle.FixedSingle;
+            CurrentLine.Font = new Font("Cascadia Code", 11.5F, FontStyle.Regular, GraphicsUnit.Point);
+            CurrentLine.ForeColor = Color.FromArgb(230, 230, 230);
+            CurrentLine.Location = new Point(494, 6);
+            CurrentLine.Name = "CurrentLine";
+            CurrentLine.ReadOnly = true;
+            CurrentLine.Size = new Size(547, 25);
+            CurrentLine.TabIndex = 3;
+            // 
+            // MiniConsole
+            // 
+            MiniConsole.AcceptsTab = true;
+            MiniConsole.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            MiniConsole.AutoWordSelection = true;
+            MiniConsole.BackColor = Color.FromArgb(15, 15, 15);
+            MiniConsole.BorderStyle = BorderStyle.None;
+            MiniConsole.Font = new Font("Cascadia Code", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            MiniConsole.ForeColor = Color.FromArgb(235, 235, 235);
+            MiniConsole.HideSelection = false;
+            MiniConsole.Location = new Point(494, 37);
+            MiniConsole.Name = "MiniConsole";
+            MiniConsole.ReadOnly = true;
+            MiniConsole.Size = new Size(544, 125);
+            MiniConsole.TabIndex = 1;
+            MiniConsole.Text = "";
+            MiniConsole.WordWrap = false;
+            // 
+            // ControlsPropertyGrid
+            // 
+            ControlsPropertyGrid.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            ControlsPropertyGrid.BackColor = Color.Black;
+            ControlsPropertyGrid.CategoryForeColor = Color.Cornsilk;
+            ControlsPropertyGrid.CategorySplitterColor = SystemColors.ControlLight;
+            ControlsPropertyGrid.CommandsBackColor = Color.FromArgb(50, 50, 50);
+            ControlsPropertyGrid.CommandsDisabledLinkColor = Color.FromArgb(50, 50, 50);
+            ControlsPropertyGrid.CommandsForeColor = Color.Cornsilk;
+            ControlsPropertyGrid.DisabledItemForeColor = Color.FromArgb(127, 255, 255, 255);
+            ControlsPropertyGrid.HelpBackColor = SystemColors.ControlDarkDark;
+            ControlsPropertyGrid.HelpVisible = false;
+            ControlsPropertyGrid.LineColor = Color.FromArgb(30, 30, 30);
+            ControlsPropertyGrid.Location = new Point(0, 114);
+            ControlsPropertyGrid.Name = "ControlsPropertyGrid";
+            ControlsPropertyGrid.Size = new Size(236, 111);
+            ControlsPropertyGrid.TabIndex = 0;
+            ControlsPropertyGrid.ViewBackColor = SystemColors.ControlDarkDark;
+            ControlsPropertyGrid.ViewForeColor = SystemColors.Window;
             // 
             // toolStripDropDownButton1
             // 
@@ -258,7 +439,7 @@
             // 
             newToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem, projectToolStripMenuItem });
             newToolStripMenuItem.Name = "newToolStripMenuItem";
-            newToolStripMenuItem.Size = new Size(180, 22);
+            newToolStripMenuItem.Size = new Size(177, 22);
             newToolStripMenuItem.Text = "New";
             // 
             // fileToolStripMenuItem
@@ -281,7 +462,7 @@
             // 
             openToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem1, folderToolStripMenuItem1, projectToolStripMenuItem1 });
             openToolStripMenuItem.Name = "openToolStripMenuItem";
-            openToolStripMenuItem.Size = new Size(180, 22);
+            openToolStripMenuItem.Size = new Size(177, 22);
             openToolStripMenuItem.Text = "Open";
             // 
             // fileToolStripMenuItem1
@@ -312,7 +493,7 @@
             // 
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             saveToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+S";
-            saveToolStripMenuItem.Size = new Size(180, 22);
+            saveToolStripMenuItem.Size = new Size(177, 22);
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
             // 
@@ -320,7 +501,7 @@
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             exitToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+Q";
-            exitToolStripMenuItem.Size = new Size(180, 22);
+            exitToolStripMenuItem.Size = new Size(177, 22);
             exitToolStripMenuItem.Text = "Exit";
             exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
@@ -338,7 +519,7 @@
             toolStrip1.Padding = new Padding(0);
             toolStrip1.RenderMode = ToolStripRenderMode.System;
             toolStrip1.ShowItemToolTips = false;
-            toolStrip1.Size = new Size(1086, 25);
+            toolStrip1.Size = new Size(1054, 25);
             toolStrip1.Stretch = true;
             toolStrip1.TabIndex = 5;
             toolStrip1.Text = "toolStrip1";
@@ -428,6 +609,14 @@
             refreshTreeViewToolStripMenuItem.Text = "Refresh Tree View";
             refreshTreeViewToolStripMenuItem.Click += refreshTreeViewToolStripMenuItem_Click;
             // 
+            // textToCodeToolStripMenuItem
+            // 
+            textToCodeToolStripMenuItem.Name = "textToCodeToolStripMenuItem";
+            textToCodeToolStripMenuItem.ShortcutKeyDisplayString = "Alt+T";
+            textToCodeToolStripMenuItem.Size = new Size(244, 22);
+            textToCodeToolStripMenuItem.Text = "Text to Code";
+            textToCodeToolStripMenuItem.Click += textToCodeToolStripMenuItem_Click;
+            // 
             // projectSettingsToolStripMenuItem
             // 
             projectSettingsToolStripMenuItem.Name = "projectSettingsToolStripMenuItem";
@@ -448,7 +637,7 @@
             // 
             toolStripDropDownButton6.BackColor = Color.FromArgb(64, 64, 64);
             toolStripDropDownButton6.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton6.DropDownItems.AddRange(new ToolStripItem[] { playProjectToolStripMenuItem, playFileToolStripMenuItem, quitToolStripMenuItem });
+            toolStripDropDownButton6.DropDownItems.AddRange(new ToolStripItem[] { playProjectToolStripMenuItem, playFileToolStripMenuItem, quitToolStripMenuItem, playInDedicatedWindowToolStripMenuItem });
             toolStripDropDownButton6.ForeColor = SystemColors.ButtonFace;
             toolStripDropDownButton6.Image = (Image)resources.GetObject("toolStripDropDownButton6.Image");
             toolStripDropDownButton6.ImageTransparentColor = Color.Magenta;
@@ -462,7 +651,7 @@
             // 
             playProjectToolStripMenuItem.Name = "playProjectToolStripMenuItem";
             playProjectToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+P or Ctrl+F5";
-            playProjectToolStripMenuItem.Size = new Size(250, 22);
+            playProjectToolStripMenuItem.Size = new Size(276, 22);
             playProjectToolStripMenuItem.Text = "Play Project";
             playProjectToolStripMenuItem.Click += playProjectToolStripMenuItem_Click;
             // 
@@ -470,7 +659,7 @@
             // 
             playFileToolStripMenuItem.Name = "playFileToolStripMenuItem";
             playFileToolStripMenuItem.ShortcutKeyDisplayString = "Alt+P or Ctrl+F6";
-            playFileToolStripMenuItem.Size = new Size(250, 22);
+            playFileToolStripMenuItem.Size = new Size(276, 22);
             playFileToolStripMenuItem.Text = "Play File";
             playFileToolStripMenuItem.Click += playFileToolStripMenuItem_Click;
             // 
@@ -478,9 +667,18 @@
             // 
             quitToolStripMenuItem.Name = "quitToolStripMenuItem";
             quitToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Q";
-            quitToolStripMenuItem.Size = new Size(250, 22);
+            quitToolStripMenuItem.Size = new Size(276, 22);
             quitToolStripMenuItem.Text = "Quit";
             quitToolStripMenuItem.Click += quitToolStripMenuItem_Click;
+            // 
+            // playInDedicatedWindowToolStripMenuItem
+            // 
+            playInDedicatedWindowToolStripMenuItem.CheckOnClick = true;
+            playInDedicatedWindowToolStripMenuItem.Name = "playInDedicatedWindowToolStripMenuItem";
+            playInDedicatedWindowToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+W";
+            playInDedicatedWindowToolStripMenuItem.Size = new Size(276, 22);
+            playInDedicatedWindowToolStripMenuItem.Text = "Play In Dedicated Window";
+            playInDedicatedWindowToolStripMenuItem.Click += playInDedicatedWindowToolStripMenuItem_Click;
             // 
             // toolStripDropDownButton4
             // 
@@ -603,14 +801,14 @@
             // splitContainer1.Panel1
             // 
             splitContainer1.Panel1.Controls.Add(Tree);
-            splitContainer1.Panel1MinSize = 0;
+            splitContainer1.Panel1MinSize = 100;
             // 
             // splitContainer1.Panel2
             // 
             splitContainer1.Panel2.Controls.Add(fctb);
-            splitContainer1.Panel2MinSize = 50;
-            splitContainer1.Size = new Size(1086, 461);
-            splitContainer1.SplitterDistance = 226;
+            splitContainer1.Panel2MinSize = 100;
+            splitContainer1.Size = new Size(1054, 403);
+            splitContainer1.SplitterDistance = 219;
             splitContainer1.TabIndex = 6;
             splitContainer1.SplitterMoved += splitContainer1_SplitterMoved;
             // 
@@ -624,7 +822,7 @@
             Tree.ItemHeight = 24;
             Tree.Location = new Point(0, 0);
             Tree.Name = "Tree";
-            Tree.Size = new Size(226, 461);
+            Tree.Size = new Size(219, 403);
             Tree.TabIndex = 0;
             Tree.BeforeSelect += Tree_BeforeSelect;
             Tree.AfterSelect += Tree_AfterSelect;
@@ -691,7 +889,7 @@
             fctb.SelectionColor = Color.FromArgb(90, 110, 110, 255);
             fctb.ServiceColors = null;
             fctb.ShowLineNumbers = false;
-            fctb.Size = new Size(856, 461);
+            fctb.Size = new Size(831, 403);
             fctb.TabIndex = 1;
             fctb.Zoom = 100;
             fctb.TextChanged += fctb_TextChanged;
@@ -761,13 +959,14 @@
             // splitContainer2.Panel1
             // 
             splitContainer2.Panel1.Controls.Add(splitContainer1);
+            splitContainer2.Panel1MinSize = 100;
             // 
             // splitContainer2.Panel2
             // 
             splitContainer2.Panel2.Controls.Add(tabControl1);
-            splitContainer2.Panel2MinSize = 0;
-            splitContainer2.Size = new Size(1086, 652);
-            splitContainer2.SplitterDistance = 461;
+            splitContainer2.Panel2MinSize = 100;
+            splitContainer2.Size = new Size(1054, 659);
+            splitContainer2.SplitterDistance = 403;
             splitContainer2.TabIndex = 0;
             splitContainer2.SplitterMoved += splitContainer2_SplitterMoved;
             // 
@@ -780,20 +979,12 @@
             imageList1.Images.SetKeyName(1, "app_16x16.png");
             imageList1.Images.SetKeyName(2, "1302166543_virtualbox.png");
             // 
-            // textToCodeToolStripMenuItem
-            // 
-            textToCodeToolStripMenuItem.Name = "textToCodeToolStripMenuItem";
-            textToCodeToolStripMenuItem.ShortcutKeyDisplayString = "Alt+T";
-            textToCodeToolStripMenuItem.Size = new Size(244, 22);
-            textToCodeToolStripMenuItem.Text = "Text to Code";
-            textToCodeToolStripMenuItem.Click += textToCodeToolStripMenuItem_Click;
-            // 
             // IDE
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(10, 10, 10);
-            ClientSize = new Size(1086, 677);
+            ClientSize = new Size(1054, 684);
             Controls.Add(splitContainer2);
             Controls.Add(toolStrip1);
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -807,6 +998,8 @@
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
             tabPage2.ResumeLayout(false);
+            tabPage3.ResumeLayout(false);
+            tabPage3.PerformLayout();
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
             splitContainer1.Panel1.ResumeLayout(false);
@@ -890,5 +1083,16 @@
         private ToolStripMenuItem quitToolStripMenuItem;
         private ToolStripMenuItem allBreakpointsToolStripMenuItem;
         private ToolStripMenuItem textToCodeToolStripMenuItem;
+        private PropertyGrid ControlsPropertyGrid;
+        private RichTextBox MiniConsole;
+        private TextBox CurrentLine;
+        private Button nextSegmentDebug;
+        private Button NextBreakpointDebug;
+        private Button QuitDebug;
+        private TextBox InputDebug;
+        private Button SendDebug;
+        private PropertyGrid BreakpointsPropertyGridDebug;
+        private ListBox VarListView;
+        private ToolStripMenuItem playInDedicatedWindowToolStripMenuItem;
     }
 }

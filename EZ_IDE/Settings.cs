@@ -72,7 +72,7 @@ namespace EZ_IDE
         {
             get
             {
-                int @default = 450;
+                int @default = 550;
                 int? val = int.Parse(GetKey(nameof(Bottom_Splitter_Distance), @default));
                 return val != null ? (int)val : @default;
             }
@@ -95,6 +95,15 @@ namespace EZ_IDE
                 return val != null ? val : string.Empty;
             }
             set => SetKey(nameof(TtC_Input_Text), value); 
+        }
+        public static string Current_File 
+        {
+            get
+            {
+                string? val = GetKey(nameof(Current_File));
+                return val != null ? val : string.Empty;
+            }
+            set => SetKey(nameof(Current_File), value); 
         }
         public static bool First_Open
         {
@@ -140,6 +149,12 @@ namespace EZ_IDE
             get => BoolParse(GetKey(nameof(TtC_Use_Wrap), false)) == true; 
             set => SetKey(nameof(TtC_Use_Wrap), value);
         }
+        
+        public static bool Play_In_Dedicated_Window
+        {
+            get => BoolParse(GetKey(nameof(Play_In_Dedicated_Window), false)) == true; 
+            set => SetKey(nameof(Play_In_Dedicated_Window), value);
+        }
 
         public static bool? BoolParse(string? value)
         {
@@ -181,7 +196,7 @@ namespace EZ_IDE
             Open_Folder_Path = "";
             Current_Project_File = "";
             Left_Splitter_Distance = 300;
-            Bottom_Splitter_Distance = 450;
+            Bottom_Splitter_Distance = 550;
             New_Project_Default_Directory = "";
             Default_Zoom = 100;
             Save_On_Play = true;
@@ -191,6 +206,8 @@ namespace EZ_IDE
             TtC_Allow_Spaces = true;
             TtC_Use_Wrap = false;
             TtC_Input_Text = "";
+            Play_In_Dedicated_Window = false;
+            Current_File = "";
         }
 
         public static void StartUp()

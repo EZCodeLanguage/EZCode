@@ -122,9 +122,9 @@ namespace EZCode
         /// Initiats and fills out all of the variables: <see cref="FileContents"/>, <see cref="Program"/>, and <see cref="Errors"/>
         /// </summary>
         /// <param name="file">The ezproj file contents being read as a <seealso cref="FileInfo"/></param>
-        public EZProj(FileInfo file, string filepath = "")
+        public EZProj(FileInfo file)
         {
-            FilePath = filepath;
+            FilePath = file.FullName;
             FileContents = File.ReadAllText(file.FullName);
             Program = ReadConvert();
         }

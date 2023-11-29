@@ -34,6 +34,16 @@ namespace EZ_IDE
             var value = Open_Folder_Path;
             if (value != null)
                 BuildTree(value, ide.Tree.Nodes);
+
+            if (File.Exists(Current_File))
+            {
+                    TreeNodeCollection selectedNode = ide.Tree.Nodes.Cast<TreeNode>().Select(w => w.Nodes).FirstOrDefault(x => x.ContainsKey(Current_File));
+                    if (selectedNode != null)
+                        ide.Tree.SelectedNode = selectedNode.Cast<TreeNode>().FirstOrDefault(x => x.Name == Current_File, ide.Tree.SelectedNode);            }
+            else
+            {
+                Current_File = "";
+            }
         }
         public static bool SaveFile(IDE ide, bool dialog = false)
         {
@@ -174,6 +184,7 @@ namespace EZ_IDE
                 string s = reader.ReadToEnd();
                 reader.Close();
                 ide.FileURLTextBox.Text = name;
+                Current_File = ide.FileURLTextBox.Text;
 
                 if (name.EndsWith(".ezcode"))
                 {

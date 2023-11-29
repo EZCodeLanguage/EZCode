@@ -1,7 +1,9 @@
 ﻿using EZCode;
 using EZCode.Debug;
+using EZCode.EZPlayer;
 using FastColoredTextBoxNS;
 using Microsoft.VisualBasic;
+using System.ComponentModel;
 using System.Diagnostics;
 using System.Text.RegularExpressions;
 using Debugger = EZCode.Debug.Debugger;
@@ -247,6 +249,7 @@ namespace EZ_IDE
         FileInfo file;
         EZProj ezproj;
         ProjectType projectType;
+        Player dedicated_player;
         public enum ProjectType
         {
             Project,
@@ -257,56 +260,70 @@ namespace EZ_IDE
         {
             switch (_projectType)
             {
-                case ProjectType.Script: project.Directory = FileURLTextBox.Text; break;
-                case ProjectType.Project: project.Directory = Settings.Current_Project_File; break;
+                case ProjectType.Script:
+                    project.Directory = FileURLTextBox.Text;
+                    ezproj = new EZProj(new EzCode() { Code = File.ReadAllText(_file.FullName) }, _file.FullName);
+                    break;
+                case ProjectType.Project:
+                    project.Directory = Settings.Current_Project_File;
+                    ezproj = new EZProj(_file);
+                    break;
             }
             project.Initialize(ref ezcode, visualoutput, output);
-            int d = 0;
-            bool window = false;
-            ezproj = new EZProj(_file, _file.FullName);
-            projectType = _projectType;
-            file = _file;
 
-            if (ezproj.Window)
+            if (!debug && Settings.Play_In_Dedicated_Window)
             {
-                window = true;
+                dedicated_player = new Player(ezproj, false);
+                dedicated_player.Show();
             }
-            else if (ezproj.IsVisual)
+            else
             {
-                d = 1;
+                int d = 0;
+                bool window = false;
+                projectType = _projectType;
+                file = _file;
+
+                if (ezproj.Window)
+                {
+                    window = true;
+                }
+                else if (ezproj.IsVisual)
+                {
+                    d = 1;
+                }
+                else if (!ezproj.IsVisual)
+                {
+                    d = 0;
+                }
+                if (debug || ezproj.Debug)
+                {
+                    d = 2;
+                }
+
+                tabControl1.SelectedIndex = d;
+
+                ezcode.errorColor = Color.FromArgb(255, 20, 20);
+                ezcode.normalColor = !window ? output.ForeColor : Color.Black;
+
+                AppDomain.CurrentDomain.UnhandledException += ezcode.CurrentDomain_UnhandledException;
+                KeyDown += ezcode.KeyInput_Down;
+                KeyUp += ezcode.KeyInput_Up;
+                MouseWheel += ezcode.MouseInput_Wheel;
+                MouseMove += ezcode.MouseInput_Move;
+                MouseDown += ezcode.MouseInput_Down;
+                MouseUp += ezcode.MouseInput_Up;
+                output.MouseWheel += ezcode.MouseInput_Wheel;
+                output.MouseMove += ezcode.MouseInput_Move;
+                output.MouseDown += ezcode.MouseInput_Down;
+                output.MouseUp += ezcode.MouseInput_Up;
+                visualoutput.MouseWheel += ezcode.MouseInput_Wheel;
+                visualoutput.MouseMove += ezcode.MouseInput_Move;
+                visualoutput.MouseDown += ezcode.MouseInput_Down;
+                visualoutput.MouseUp += ezcode.MouseInput_Up;
+
+                if (!debug)
+                    Play();
             }
-            else if (!ezproj.IsVisual)
-            {
-                d = 0;
-            }
-            if (debug || ezproj.Debug)
-            {
-                d = 2;
-            }
-
-            tabControl1.SelectedIndex = d;
-
-            ezcode.errorColor = Color.FromArgb(255, 20, 20);
-            ezcode.normalColor = !window ? output.ForeColor : Color.Black;
-
-            AppDomain.CurrentDomain.UnhandledException += ezcode.CurrentDomain_UnhandledException;
-            KeyDown += ezcode.KeyInput_Down;
-            KeyUp += ezcode.KeyInput_Up;
-            MouseWheel += ezcode.MouseInput_Wheel;
-            MouseMove += ezcode.MouseInput_Move;
-            MouseDown += ezcode.MouseInput_Down;
-            MouseUp += ezcode.MouseInput_Up;
-            output.MouseWheel += ezcode.MouseInput_Wheel;
-            output.MouseMove += ezcode.MouseInput_Move;
-            output.MouseDown += ezcode.MouseInput_Down;
-            output.MouseUp += ezcode.MouseInput_Up;
-            visualoutput.MouseWheel += ezcode.MouseInput_Wheel;
-            visualoutput.MouseMove += ezcode.MouseInput_Move;
-            visualoutput.MouseDown += ezcode.MouseInput_Down;
-            visualoutput.MouseUp += ezcode.MouseInput_Up;
-
-            if (!debug)
-                Play();
         }
 
         private async void Play()
@@ -323,6 +340,7 @@ namespace EZ_IDE
         private void Send_Click(object sender, EventArgs e)
         {
             ezcode.ConsoleInput(input.Text);
+            InputDebug.Clear();
             input.Clear();
         }
 
@@ -337,13 +355,76 @@ namespace EZ_IDE
         private void output_TextChanged(object sender, EventArgs e)
         {
             ezcode.ScrollToEnd(true, output.ForeColor, Color.FromArgb(255, 20, 20));
+            MiniConsole.Text = output.Text;
         }
         #endregion
+
+        #region Property Grids
+        class PropertyGridControls
+        {
+            public PropertyGridControls(EzCode ez) => ezcode = ez;
+            public EzCode ezcode = new EzCode();
+            [Category("Controls")]
+            [Description("The controls program contains")]
+            public Control[] Controls
+            {
+                get
+                {
+                    Control[] controls = new Control[0];
+                    try
+                    {
+                        controls = ezcode.AllControls.ToArray();
+                    }
+                    catch
+                    {
+
+                    }
+                    return controls;
+                }
+                set
+                {
+                    try
+                    {
+                        ezcode.AllControls = value.ToList();
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            }
+        }
+
+        class PropertyGridBreakPoints
+        {
+            public PropertyGridBreakPoints(IDE ide) => this.ide = ide;
+            public IDE ide = new IDE();
+
+            [Category("Breakpoints")]
+            [Description("Accessible with Ctrl+F9")]
+            public Breakpoint[] Breakpoints
+            {
+                get
+                {
+                    return ide.debugSettings.Breakpoints;
+                }
+                set
+                {
+                    ide.debugSettings.Breakpoints = value;
+                    ide.debugSettings.Save();
+                }
+            }
+        }
+
+        #endregion
+
+        #region IDE_Main
 
         public TreeManager Manager;
         public ProjectSettings project;
         public Debugger Debug;
         public DebugSettings debugSettings;
+        bool loaded = false;
 
         TextBox _FCTB_Highlight;
         public TextBox FCTB_Highlight
@@ -401,6 +482,13 @@ namespace EZ_IDE
         {
             splitContainer1.SplitterDistance = Settings.Left_Splitter_Distance;
             splitContainer2.SplitterDistance = Settings.Bottom_Splitter_Distance;
+
+            ezcode ??= new EzCode();
+            project.Initialize(ref ezcode, visualoutput, output);
+
+            ControlsPropertyGrid.SelectedObject = new PropertyGridControls(ezcode);
+            BreakpointsPropertyGridDebug.SelectedObject = new PropertyGridBreakPoints(this);
+            loaded = true;
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -471,6 +559,8 @@ namespace EZ_IDE
                         newToolStripMenuItem1.PerformClick(); break;
                     case Keys.Alt | Keys.T:
                         textToCodeToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.W:
+                        playInDedicatedWindowToolStripMenuItem.PerformClick(); break;
                 }
             }
             else if (msg.Msg == 260)
@@ -483,24 +573,44 @@ namespace EZ_IDE
                         break;
                     case Keys.Alt | Keys.T:
                         textToCodeToolStripMenuItem.PerformClick(); break;
+                    case Keys.Alt | Keys.P:
+                        playFileToolStripMenuItem.PerformClick(); break;
                 }
             }
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
+        #endregion
+
         #region events
 
+        public int changeTime = 0;
+
+        string[] varListItems = new string[0];
         private void Higlight_timer_Tick(object? sender, EventArgs e)
         {
             if (Debug != null ? Debug.IsPlaying : false)
             {
                 FCTB_Highlight = Debug.HighlightTextbox;
+                CurrentLine.Text = Debug.CurrentLineTextbox.Text;
                 fctb.ReadOnly = true;
+                string[] vars = ezcode.vars.Select(x => $"'{x.Name}' = '{x.Value}'").ToArray();
+                if (!varListItems.SequenceEqual(vars))
+                {
+                    VarListView.Items.Clear();
+                    VarListView.Items.AddRange(vars);
+                    varListItems = VarListView.Items.OfType<string>().ToArray();
+                }
             }
             else
             {
                 fctb.ReadOnly = false;
             }
+            if (dedicated_player != null && dedicated_player.isClosing)
+            {
+                dedicated_player.Dispose();
+            }
+            playInDedicatedWindowToolStripMenuItem.Checked = Settings.Play_In_Dedicated_Window;
         }
 
         private void IDE_FormClosing(object sender, FormClosingEventArgs e)
@@ -574,7 +684,6 @@ namespace EZ_IDE
             settings_Preferences.ShowDialog();
         }
 
-        public int changeTime = 0;
         private void fctb_TextChanged(object sender, TextChangedEventArgs e)
         {
             try
@@ -772,7 +881,7 @@ namespace EZ_IDE
                 }
                 Start(new FileInfo(Settings.Current_Project_File), ProjectType.Project, true);
 
-                Debug = new Debugger(ezcode, DebugSave.Breakpoints, FCTB_Highlight);
+                Debug = new Debugger(ezcode, DebugSave.Breakpoints, FCTB_Highlight, CurrentLine);
                 higlight_timer.Start();
                 Debug.StartDebugSession(File.ReadAllText(Settings.Current_Project_File));
             }
@@ -1032,13 +1141,13 @@ namespace EZ_IDE
         private void splitContainer2_SplitterMoved(object sender, SplitterEventArgs e)
         {
             // bottom splitter moved
-            Settings.Bottom_Splitter_Distance = splitContainer2.SplitterDistance;
+            if (loaded) Settings.Bottom_Splitter_Distance = splitContainer2.SplitterDistance;
         }
 
         private void splitContainer1_SplitterMoved(object sender, SplitterEventArgs e)
         {
             // left splitter moved
-            Settings.Left_Splitter_Distance = splitContainer1.SplitterDistance;
+            if (loaded) Settings.Left_Splitter_Distance = splitContainer1.SplitterDistance;
         }
 
         private void textToCodeToolStripMenuItem_Click(object sender, EventArgs e)
@@ -1046,6 +1155,11 @@ namespace EZ_IDE
             // text to code
             Text_To_Code text_to_code = new Text_To_Code();
             text_to_code.ShowDialog();
+        }
+
+        private void playInDedicatedWindowToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            Settings.Play_In_Dedicated_Window = playInDedicatedWindowToolStripMenuItem.Checked;
         }
 
         #endregion

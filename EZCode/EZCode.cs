@@ -107,7 +107,7 @@ namespace EZCode
         /// <summary>
         /// List for variables
         /// </summary>
-        private List<Var> vars;
+        public List<Var> vars;
         /// <summary>
         /// List of Groups
         /// </summary>
@@ -125,6 +125,16 @@ namespace EZCode
                 c.AddRange(labels);
                 c.AddRange(textboxes);
                 return c;
+            }
+            set
+            {
+                foreach (Control c in value)
+                {
+                    if (c is GShape s) shapes.Add(s);
+                    else if (c is GButton b) buttons.Add(b);
+                    else if (c is GLabel l) labels.Add(l);
+                    else if (c is GTextBox t) textboxes.Add(t);
+                }
             }
         }
         /// <summary>

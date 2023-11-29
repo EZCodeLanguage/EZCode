@@ -1,5 +1,6 @@
 ﻿namespace EZCode.EZPlayer
 {
+    using System.ComponentModel;
     using System.Drawing;
     using System.Windows.Forms;
 
@@ -10,21 +11,31 @@
     {
         EzCode ezcode = new EzCode();
         EZProj proj;
+        WindowProject windowProject;
+        /// <summary>
+        /// If the window is closing
+        /// </summary>
+        public bool isClosing = false;
         public bool useConsole = true;
         /// <summary>
-        /// Initiates form. Use this: 'Application.Run(new Player(new EZProj("code or project file")));' in the Program class.
+        /// Boolean for closing the Application <seealso cref="Application.Exit()"/> (true) or <seealso cref="Form.Close()"/> (false)
         /// </summary>
-        public Player(EZProj eZProj)
+        public bool CloseAppOnQuit { get; private set; } = true;
+        /// <summary>
+        /// Initiates form. Use this: 'Application.Run(new Player(new EZProj(new EzCode() { Code = "print Hello World!" } )));' in the Program class.
+        /// </summary>
+        public Player(EZProj eZProj, bool closeAppOnQuit = true)
         {
             try
             {
+                CloseAppOnQuit = closeAppOnQuit;
                 proj = eZProj;
                 if (eZProj.IconPath != null) Icon = new Icon(eZProj.IconPath);
                 InitializeComponent();
                 int d = 0;
                 bool window = false;
 
-                WindowProject windowProject = new WindowProject(proj.Name != null ? proj.Name : proj.FilePath, ezcode, proj, this);
+                windowProject = new WindowProject(proj.Name != null ? proj.Name : proj.FilePath, ezcode, proj, this, closeAppOnQuit);
                 if (eZProj.IconPath != null) windowProject.Icon = new Icon(eZProj.IconPath);
                 if (proj.Window)
                 {
@@ -88,7 +99,17 @@
 
         private void Player_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Application.Exit();
+            if (CloseAppOnQuit && !isClosing)
+            {
+                isClosing = true;
+                Application.Exit();
+            }
+            else if (!isClosing)
+            {
+                isClosing = true;
+                if (!windowProject.isClosing)
+                    windowProject.Close();
+            }
         }
 
         private void Clear_Click(object sender, EventArgs e)
@@ -108,25 +129,6 @@
             {
                 Send.PerformClick();
             }
-        }
-
-        protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
-        {
-            if (msg.Msg == 256)
-            {
-                if (keyData == (Keys.Control | Keys.Alt | Keys.H))
-                {
-                    //BackColor = Color.FromArgb(255 - BackColor.R, 255 - BackColor.G, 255 - BackColor.B);
-                    Control[] c = new Control[] { input, output, splitContainer, Clear, Send };
-                    foreach (Control control in c)
-                    {
-                        int am = 255;
-                        control.BackColor = Color.FromArgb(am - control.BackColor.R, am - control.BackColor.G, am - control.BackColor.B);
-                        control.ForeColor = Color.FromArgb(am - control.ForeColor.R, am - control.ForeColor.G, am - control.ForeColor.B);
-                    }
-                }
-            }
-            return base.ProcessCmdKey(ref msg, keyData);
         }
 
         private void output_TextChanged(object sender, EventArgs e)
@@ -311,23 +313,47 @@
         Player player;
         EZProj EZProj;
         bool started = false;
-        public WindowProject(string name, EzCode ez, EZProj ezProj, Player p)
+        bool closeOnQuit = true;
+        public bool isClosing = false;
+        public WindowProject(string name, EzCode ez, EZProj ezProj, Player p, bool closeAppOnQuit = true)
         {
             InitializeComponent();
             Name = name;
             EzCode = ez;
             EZProj = ezProj;
             player = p;
+            closeOnQuit = closeAppOnQuit;
         }
 
         private void WindowProject_FormClosed(object sender, FormClosedEventArgs e)
         {
-            Application.Exit();
+            if (closeOnQuit && !isClosing)
+            {
+                isClosing = true;
+                Application.Exit();
+            }
+            else if(!isClosing)
+            {
+                isClosing = true;
+                if (!player.isClosing)
+                    player.Close();
+            }
         }
 
         private void button1_Click(object sender, EventArgs e)
         {
-            Application.Exit();
+            if (closeOnQuit && !isClosing)
+            {
+                isClosing = true;
+                Application.Exit();
+            }
+            else if (!isClosing)
+            {
+                isClosing = true;
+                if (!player.isClosing)
+                    player.Close();
+                Close();
+            }
         }
         bool t = false;
         private void timer1_Tick(object sender, EventArgs e)
@@ -335,7 +361,18 @@
             if (!player.useConsole && !t) { player.Hide(); t = true; }
             if (started && !EzCode.playing && EZProj.CloseOnEnd)
             {
-                Application.Exit();
+                if (closeOnQuit && !isClosing)
+                {
+                    isClosing = true;
+                    Application.Exit();
+                }
+                else if (!isClosing)
+                {
+                    isClosing = true;
+                    if (!player.isClosing)
+                        player.Close();
+                    Close();
+                }
             }
             else if (!started && EzCode.playing)
             {

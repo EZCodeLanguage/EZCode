@@ -35,15 +35,21 @@ namespace EZCode.Debug
         /// Textbox for highlighting
         /// </summary>
         public TextBox HighlightTextbox;
+        /// <summary>
+        /// Textbox for the current line
+        /// </summary>
+        public TextBox CurrentLineTextbox;
         public bool IsPlaying { get => ezcode != null ? ezcode.playing : false; }
         /// <summary>
         /// Debug Manager for EZCode
         /// </summary>
         /// <param name="ezcode">EZCode Instance</param>
-        /// <param name="textBox">Textbox for highlighting (optional)</param>
-        public Debugger(EzCode ezcode, TextBox? textBox = null)
+        /// <param name="highlightTextBox">Textbox for highlighting (optional)</param>
+        /// <param name="currentLineTextbox">Textbox for current line (optional)</param>
+        public Debugger(EzCode ezcode, TextBox? highlightTextBox = null, TextBox? currentLineTextbox = null)
         {
-            HighlightTextbox = textBox ?? new TextBox();
+            HighlightTextbox = highlightTextBox ?? new TextBox();
+            CurrentLineTextbox = currentLineTextbox ?? new TextBox();
             this.ezcode = ezcode;
         }
         /// <summary>
@@ -51,10 +57,12 @@ namespace EZCode.Debug
         /// </summary>
         /// <param name="ezcode">EZCode Instance</param>
         /// <param name="breakpoints">Breakpoint Array</param>
-        /// <param name="textBox">Textbox for highlighting (optional)</param>
-        public Debugger(EzCode ezcode, Breakpoint[] breakpoints, TextBox? textBox = null)
+        /// <param name="highlightTextBox">Textbox for highlighting (optional)</param>
+        /// <param name="currentLineTextbox">Textbox for current line (optional)</param>
+        public Debugger(EzCode ezcode, Breakpoint[] breakpoints, TextBox? highlightTextBox = null, TextBox? currentLineTextbox = null)
         {
-            HighlightTextbox = textBox ?? new TextBox();
+            HighlightTextbox = highlightTextBox ?? new TextBox();
+            CurrentLineTextbox = currentLineTextbox ?? new TextBox();
             this.ezcode = ezcode;
             Breakpoints = breakpoints;
         }
@@ -86,6 +94,8 @@ namespace EZCode.Debug
             }
             catch
             {
+                CurrentLineTextbox ??= new TextBox();
+                CurrentLineTextbox.Text = Line;
                 if (Stopped)
                 {
                     HighlightTextbox = TextboxHighlight();
