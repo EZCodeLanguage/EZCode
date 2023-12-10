@@ -128,8 +128,8 @@ namespace EZCode.Debug
         {
             textBox ??= HighlightTextbox;
             textBox ??= new TextBox();
-            
-            string[] tb_lines = textBox.Text.Split(Environment.NewLine);
+
+            string[] tb_lines = textBox.Text.Split(Environment.NewLine).Select(x => x.Trim()).ToArray();
 
             int occurrences = CountOccurrences(tb_lines, Line);
 

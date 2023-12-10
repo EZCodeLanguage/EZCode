@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using Group = EZCode.Groups.Group;
 using Player = Sound.Player;
 using Types = EZCode.Variables.Ivar.Types;
+using System.Linq;
 
 namespace EZCode
 {
@@ -297,8 +298,8 @@ namespace EZCode
             None,
             Shape,
             Textbox,
-            GLabel,
-            GButton
+            Label,
+            Button
         }
         #endregion
 
@@ -696,8 +697,7 @@ namespace EZCode
                             {
                                 return new string[] { returnOutput, "true" };
                             }
-                            control.Dispose();
-                            switch (control.AccessibleName)
+                            switch (control.AccessibleDescription)
                             {
                                 case "shape":
                                     shapes.Remove(control as GShape);
@@ -715,6 +715,7 @@ namespace EZCode
                                     ErrorText(parts, ErrorTypes.missingControl, keyword, name);
                                     break;
                             }
+                            control.Dispose();
                         }
                         catch
                         {
@@ -834,7 +835,7 @@ namespace EZCode
                             Rectangle rect1 = new Rectangle();
                             Rectangle rect2 = new Rectangle();
 
-                            switch (get_1.AccessibleName)
+                            switch (get_1.AccessibleDescription)
                             {
                                 case "shape":
                                     rect1 = get_1.Bounds;
@@ -852,7 +853,7 @@ namespace EZCode
                                     ErrorText(parts, ErrorTypes.missingControl, keyword, parts[1]);
                                     break;
                             }
-                            switch (get_2.AccessibleName)
+                            switch (get_2.AccessibleDescription)
                             {
                                 case "shape":
                                     rect2 = get_2.Bounds;
@@ -1237,7 +1238,7 @@ namespace EZCode
                                 GLabel gLabel = new GLabel();
                                 GButton gButton = new GButton();
                                 GTextBox gTextBox = new GTextBox();
-                                switch (control.AccessibleName)
+                                switch (control.AccessibleDescription)
                                 {
                                     case "shape":
                                         gShape = (control as GShape);
@@ -1542,7 +1543,7 @@ namespace EZCode
                                         }
                                         else
                                         {
-                                            string[] strings = await getFile(parts, index + 1);
+                                            string[] strings = await getFile(parts, index);
                                             if (!EZProj.validfile(strings[0]))
                                             {
                                                 ErrorText(parts, ErrorTypes.custom, custom: $"Expected a valid file after '#current' in {SegmentSeperator} {codeLine}");
@@ -1629,10 +1630,44 @@ namespace EZCode
                                 if (!var.isArray()) var = await VarManipulation(var, parts, 1);
                                 else var = DoList(parts, 0, keyword);
                             }
-                            else if (AllControls.Select(x => x.Name).Contains(keyword))
+                            else if (getControl(keyword) != null)
                             {
-                                Control control = getControl(keyword);
-                                control = await DoControl(parts, control.AccessibleName, 0);
+                                Control? control = getControl(keyword);
+                                if (parts[1] != "=")
+                                {
+                                    control = await DoControl(parts, control.AccessibleDescription, 0);
+                                }
+                                else
+                                {
+                                    GShape? s = null; GButton? b = null; GLabel? l = null; GTextBox? t = null;
+                                    switch (control.AccessibleDescription)
+                                    {
+                                        case "shape":
+                                            s = control as GShape;
+                                            s = parts[2] != "newcontrol" ? getControl(parts[2], controlType.Shape) as GShape : new GShape();
+                                            s.Name = control.Name;
+                                            break;
+                                        case "button":
+                                            b = control as GButton;
+                                            b = parts[2] != "newcontrol" ? getControl(parts[2], controlType.Button) as GButton : new GButton();
+                                            b.Name = control.Name;
+                                            break;
+                                        case "label":
+                                            l = control as GLabel;
+                                            l = parts[2] != "newcontrol" ? getControl(parts[2], controlType.Label) as GLabel : new GLabel();
+                                            l.Name = control.Name;
+                                            break;
+                                        case "textbox":
+                                            t = control as GTextBox;
+                                            t = parts[2] != "newcontrol" ? getControl(parts[2], controlType.Textbox) as GTextBox : new GTextBox();
+                                            t.Name = control.Name;
+                                            break;
+                                    }
+                                    if (control == null || (s == null && b == null && l == null && t == null))
+                                    {
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"An error occured when setting '{control.Name}' to '{parts[2]}' in {SegmentSeperator} {codeLine}");
+                                    }
+                                }
                             }
                             else if (groups.Select(x => x.Name).Contains(keyword))
                             {
@@ -1692,7 +1727,7 @@ namespace EZCode
                                                 for (int i = 0; i < allvalues.Length; i++)
                                                 {
                                                     string name = allvalues[i].Trim();
-                                                    Var v = await CreateVar(allvalues, i, false, "");
+                                                    Var v = await CreateVar(allvalues, i, true, "");
                                                     paremeters.Add(v);
                                                     vars.Add(v);
                                                 }
@@ -1737,7 +1772,7 @@ namespace EZCode
                                     string output = "";
                                     for (int i = 1; i < method.Length - 1; i++)
                                     {
-                                        if (!playing) continue;
+                                        if (!playing) break;
                                         codeLine = i + 1;
                                         List<string> a_parts = lines[i].Split(new char[] { ' ' }).Where(x => x != "").ToList();
                                         for (int j = 0; j < a_parts.Count; j++)
@@ -2696,6 +2731,7 @@ namespace EZCode
                             foreach (Control c in g.Controls)
                             {
                                 c.Dispose();
+                                AllControls.Remove(c);
                             }
                         }
                         else
@@ -2846,9 +2882,9 @@ namespace EZCode
             GButton? btn = new GButton();
             controlType controltype =
                 contype == "shape" ? controlType.Shape :
-                contype == "label" ? controlType.GLabel :
+                contype == "label" ? controlType.Label :
                 contype == "textbox" ? controlType.Textbox :
-                contype == "button" ? controlType.GButton :
+                contype == "button" ? controlType.Button :
                 controlType.None;
             Control control = await createControl(parts, controltype, index, global: global);
             obj = control is GShape ? control as GShape : null;
@@ -3444,11 +3480,14 @@ namespace EZCode
                     default: break;
                 }
             }
-            else if (AllControls.Select(x => x.Name).Contains(ind[0]) && ind.Length > 1)
+            else if (getControl(ind[0]) != null && ind.Length > 1)
             {
-                Control control = AllControls.FirstOrDefault(x => x.Name == ind[0]);
+                Control control = getControl(ind[0]);
                 switch (ind[1].ToLower())
                 {
+                    case "id":
+                        value = control.AccessibleName;
+                        break;
                     case "x":
                         value = control.Left.ToString();
                         break;
@@ -3801,7 +3840,7 @@ namespace EZCode
                         break;
                     default:
                         float number = find_value(ind, 1, 0)[0];
-                        value = var.array[(int)number];
+                        value = var.array != null ? var.array[(int)number] : "";
                         break;
                 }
             }
@@ -3816,6 +3855,10 @@ namespace EZCode
                     default:
                         float number = find_value(ind, 1, 0)[0];
                         value = group.Controls[(int)number].Name;
+                        if (ind[2] == "id")
+                        {
+                            value = group.Controls[(int)number].AccessibleName;
+                        }
                         break;
                 }
             }
@@ -3833,29 +3876,45 @@ namespace EZCode
                         break;
                 }
             }
-
+            
             return value;
         }
         Control? getControl(string name, controlType controltype = controlType.None)
         {
-            Control? control = new Control();
+            Control? control = null;
+
+            if (name.Contains(":"))
+            {
+                string[] ind = name.Split(":");
+                string n = "";
+                n = ColonResponse(name);
+                if (n != "")
+                {
+                    name = n;
+                }
+            }
 
             switch (controltype)
             {
                 case controlType.None:
                     control = AllControls.FirstOrDefault(x => x.Name == name);
+                    if (control == null) control = AllControls.FirstOrDefault(x => (x.AccessibleName != "" ? x.AccessibleName : "false false|none") == name);
                     break;
                 case controlType.Shape:
                     control = shapes.FirstOrDefault(x => x.Name == name);
+                    if (control == null) control = shapes.FirstOrDefault(x => (x.AccessibleName != "" ? x.AccessibleName : "false false|none") == name);
                     break;
-                case controlType.GLabel:
+                case controlType.Label:
                     control = labels.FirstOrDefault(x => x.Name == name);
+                    if (control == null) control = labels.FirstOrDefault(x => (x.AccessibleName != "" ? x.AccessibleName : "false false: |none") == name);
                     break;
                 case controlType.Textbox:
                     control = textboxes.FirstOrDefault(x => x.Name == name);
+                    if (control == null) control = textboxes.FirstOrDefault(x => (x.AccessibleName != "" ? x.AccessibleName : "false false|none") == name);
                     break;
-                case controlType.GButton:
+                case controlType.Button:
                     control = buttons.FirstOrDefault(x => x.Name == name);
+                    if (control == null) control = buttons.FirstOrDefault(x => (x.AccessibleName != "" ? x.AccessibleName : "false false|none") == name);
                     break;
             }
 
@@ -3868,9 +3927,9 @@ namespace EZCode
             int violation = methods.Select(x => x.Name).Contains(name) == true ? 3 : overwrite ? 0 : AllControls.Select(x => x.Name).Contains(name) == true ? 1 : UnusableNames.Contains(name) ? 2 : UnusableContains.Any(unusable => name.Contains(unusable)) ? 2 : 0;
             violation = IsNumericString(name) ? 2 : violation;
 
-            string type = controltype == controlType.GButton ? "button" :
+            string type = controltype == controlType.Button ? "button" :
                 controltype == controlType.Shape ? "shape" :
-                controltype == controlType.GLabel ? "label" :
+                controltype == controlType.Label ? "label" :
                 controltype == controlType.Textbox ? "textbox" :
                 "AN_INTERNAL_ERROR";
 
@@ -3890,15 +3949,15 @@ namespace EZCode
             if (controltype == controlType.Shape)
             {
                 GShape control = new GShape();
-                if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GShape;
-                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
+                if (getControl(name) != null && getControl(name).AccessibleDescription == type && overwrite) control = getControl(name) as GShape;
+                else if (getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}' in {SegmentSeperator} {codeLine}");
                 try
                 {
                     control.Name = name;
                     control.BackColor = Color.Black;
                     control = await Change(control, parts, index + 1, false, false, true) as GShape;
                     control.Name = name;
-                    control.AccessibleName = type;
+                    control.AccessibleDescription = type;
                 }
                 catch
                 {
@@ -3914,13 +3973,13 @@ namespace EZCode
                 control.Method = currentmethod != null && !global ? currentmethod.Name : "";
                 return control;
             }
-            else if (controltype == controlType.GLabel)
+            else if (controltype == controlType.Label)
             {
                 GLabel control = new GLabel();
-                if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GLabel;
-                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
+                if (getControl(name) != null && getControl(name).AccessibleDescription == type && overwrite) control = getControl(name) as GLabel;
+                else if (getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}' in {SegmentSeperator} {codeLine}");
                 control.Name = name;
-                control.AccessibleName = type;
+                control.AccessibleDescription = type;
 
                 try
                 {
@@ -3942,10 +4001,10 @@ namespace EZCode
             else if (controltype == controlType.Textbox)
             {
                 GTextBox control = new GTextBox();
-                if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GTextBox;
-                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
+                if (getControl(name) != null && getControl(name).AccessibleDescription == type && overwrite) control = getControl(name) as GTextBox;
+                else if (getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}' in {SegmentSeperator} {codeLine}");
                 control.Name = name;
-                control.AccessibleName = type;
+                control.AccessibleDescription = type;
 
                 try
                 {
@@ -3965,13 +4024,13 @@ namespace EZCode
                 control.Method = currentmethod != null && !global ? currentmethod.Name : "";
                 return control;
             }
-            else if (controltype == controlType.GButton)
+            else if (controltype == controlType.Button)
             {
                 GButton control = new GButton();
-                if (getControl(name) != null && getControl(name).AccessibleName == type && overwrite) control = getControl(name) as GButton;
-                else if (getControl(name) != null && getControl(name).AccessibleName != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleName}' in {SegmentSeperator} {codeLine}");
+                if (getControl(name) != null && getControl(name).AccessibleDescription == type && overwrite) control = getControl(name) as GButton;
+                else if (getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}' in {SegmentSeperator} {codeLine}");
                 control.Name = name;
-                control.AccessibleName = type;
+                control.AccessibleDescription = type;
                 control.Click += GButtonClick;
 
                 try
@@ -4059,6 +4118,13 @@ namespace EZCode
                     string[] after = getString_value(values, int.Parse(before[1]), true);
                     switch (before[0].Trim().ToLower())
                     {
+                        case "id":
+                            {
+                                if (!AllControls.Any(x => x.AccessibleName == after[0]))
+                                    control.AccessibleName = after[0];
+                                else ErrorText(_parts, ErrorTypes.custom, custom: $"A control already has the id: '{after[0].Trim()}'. For control '{control.Name}' in {SegmentSeperator} {codeLine}");
+                            }
+                            break;
                         case "focus":
                             {
                                 if ((bool)BoolCheck(after, 0)) control.Focus();
@@ -5031,14 +5097,32 @@ namespace EZCode
                 ErrorText(new string[0], ErrorTypes.custom, custom: msg);
                 return msg;
             }
+            string[] oldLines = lines.Select(x => x.Trim()).Where(y => y != "").ToArray();
             lines = lines.Skip(methodstart == null ? 0 : 1).Take(methodend == null ? lines.Count : (int)methodend).ToList();
+            string[] hashtag = new string[0];
+            if (methods != null && methods.Count > 0)
+            {
+                for (int i = 0; i < oldLines.Length; i++)
+                {
+                    if (i > methods.First().Line) continue;
+                    if (oldLines[i].Trim().StartsWith("#"))
+                    {
+                        hashtag = hashtag.Append(oldLines[i]).ToArray();
+                    }
+                }
+                for (int i = hashtag.Length - 1; i >= 0; i--)
+                {
+                    lines = lines.Prepend(hashtag[i]).ToList();
+                }
+            }
+
             playing = true;
 
             for (int i = 0; i < lines.Count; i++)
             {
                 if (!playing) return output;
                 codeLine = i + 1;
-                List<string> parts = lines[i].Split(new char[] { ' ' }).ToList();
+                List<string> parts = lines[i].Split(new char[] { ' ' }).Where(x => x != "").ToList();
                 for (int j = 0; j < parts.Count; j++)
                 {
                     if (parts[j].Trim() == "->")
