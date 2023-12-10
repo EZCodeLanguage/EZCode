@@ -34,6 +34,8 @@
             label4 = new Label();
             Breakpoint_button = new Button();
             tabPage1 = new TabPage();
+            label5 = new Label();
+            Intellisense_refresh = new NumericUpDown();
             In_Dedicated_Window = new CheckBox();
             button1 = new Button();
             Save_On_Play = new CheckBox();
@@ -47,6 +49,7 @@
             tabControl1 = new TabControl();
             tabPage3.SuspendLayout();
             tabPage1.SuspendLayout();
+            ((System.ComponentModel.ISupportInitialize)Intellisense_refresh).BeginInit();
             ((System.ComponentModel.ISupportInitialize)DefaultZoom).BeginInit();
             tabControl1.SuspendLayout();
             SuspendLayout();
@@ -117,6 +120,8 @@
             // 
             // tabPage1
             // 
+            tabPage1.Controls.Add(label5);
+            tabPage1.Controls.Add(Intellisense_refresh);
             tabPage1.Controls.Add(In_Dedicated_Window);
             tabPage1.Controls.Add(button1);
             tabPage1.Controls.Add(Save_On_Play);
@@ -136,11 +141,34 @@
             tabPage1.Text = "Settings";
             tabPage1.UseVisualStyleBackColor = true;
             // 
+            // label5
+            // 
+            label5.AutoSize = true;
+            label5.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
+            label5.Location = new Point(12, 319);
+            label5.Name = "label5";
+            label5.Size = new Size(347, 25);
+            label5.TabIndex = 12;
+            label5.Text = "Key Presses Before Intellisense Refresh:";
+            // 
+            // Intellisense_refresh
+            // 
+            Intellisense_refresh.Font = new Font("Segoe UI Semibold", 10.75F, FontStyle.Bold, GraphicsUnit.Point);
+            Intellisense_refresh.Location = new Point(365, 317);
+            Intellisense_refresh.Margin = new Padding(3, 4, 3, 4);
+            Intellisense_refresh.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            Intellisense_refresh.Minimum = new decimal(new int[] { 1, 0, 0, 0 });
+            Intellisense_refresh.Name = "Intellisense_refresh";
+            Intellisense_refresh.Size = new Size(217, 31);
+            Intellisense_refresh.TabIndex = 11;
+            Intellisense_refresh.Value = new decimal(new int[] { 10, 0, 0, 0 });
+            Intellisense_refresh.ValueChanged += numericUpDown1_ValueChanged_1;
+            // 
             // In_Dedicated_Window
             // 
             In_Dedicated_Window.AutoSize = true;
             In_Dedicated_Window.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            In_Dedicated_Window.Location = new Point(13, 319);
+            In_Dedicated_Window.Location = new Point(13, 280);
             In_Dedicated_Window.Margin = new Padding(3, 4, 3, 4);
             In_Dedicated_Window.Name = "In_Dedicated_Window";
             In_Dedicated_Window.Size = new Size(338, 29);
@@ -166,7 +194,7 @@
             // 
             Save_On_Play.AutoSize = true;
             Save_On_Play.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            Save_On_Play.Location = new Point(13, 279);
+            Save_On_Play.Location = new Point(13, 240);
             Save_On_Play.Margin = new Padding(3, 4, 3, 4);
             Save_On_Play.Name = "Save_On_Play";
             Save_On_Play.Size = new Size(272, 29);
@@ -179,7 +207,7 @@
             // 
             label3.AutoSize = true;
             label3.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            label3.Location = new Point(13, 233);
+            label3.Location = new Point(13, 194);
             label3.Name = "label3";
             label3.Size = new Size(136, 25);
             label3.TabIndex = 7;
@@ -188,9 +216,9 @@
             // DefaultZoom
             // 
             DefaultZoom.Font = new Font("Segoe UI Semibold", 10.75F, FontStyle.Bold, GraphicsUnit.Point);
-            DefaultZoom.Location = new Point(155, 231);
+            DefaultZoom.Location = new Point(155, 192);
             DefaultZoom.Margin = new Padding(3, 4, 3, 4);
-            DefaultZoom.Maximum = new decimal(new int[] { 1000, 0, 0, 0 });
+            DefaultZoom.Maximum = new decimal(new int[] { 10000, 0, 0, 0 });
             DefaultZoom.Name = "DefaultZoom";
             DefaultZoom.Size = new Size(428, 31);
             DefaultZoom.TabIndex = 6;
@@ -200,10 +228,10 @@
             // current_project
             // 
             current_project.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            current_project.Location = new Point(155, 179);
+            current_project.Location = new Point(166, 140);
             current_project.Margin = new Padding(3, 4, 3, 4);
             current_project.Name = "current_project";
-            current_project.Size = new Size(427, 32);
+            current_project.Size = new Size(416, 32);
             current_project.TabIndex = 5;
             current_project.TextChanged += current_project_TextChanged;
             // 
@@ -211,7 +239,7 @@
             // 
             label2.AutoSize = true;
             label2.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            label2.Location = new Point(13, 183);
+            label2.Location = new Point(13, 144);
             label2.Name = "label2";
             label2.Size = new Size(147, 25);
             label2.TabIndex = 4;
@@ -220,14 +248,16 @@
             // Auto_Save
             // 
             Auto_Save.AutoSize = true;
+            Auto_Save.Enabled = false;
             Auto_Save.Font = new Font("Segoe UI Semibold", 11.25F, FontStyle.Bold, GraphicsUnit.Point);
-            Auto_Save.Location = new Point(13, 141);
+            Auto_Save.Location = new Point(8, 489);
             Auto_Save.Margin = new Padding(3, 4, 3, 4);
             Auto_Save.Name = "Auto_Save";
             Auto_Save.Size = new Size(156, 29);
             Auto_Save.TabIndex = 3;
             Auto_Save.Text = "Auto Save File";
             Auto_Save.UseVisualStyleBackColor = true;
+            Auto_Save.Visible = false;
             Auto_Save.CheckedChanged += checkBox1_CheckedChanged_1;
             // 
             // label1
@@ -282,6 +312,7 @@
             tabPage3.PerformLayout();
             tabPage1.ResumeLayout(false);
             tabPage1.PerformLayout();
+            ((System.ComponentModel.ISupportInitialize)Intellisense_refresh).EndInit();
             ((System.ComponentModel.ISupportInitialize)DefaultZoom).EndInit();
             tabControl1.ResumeLayout(false);
             ResumeLayout(false);
@@ -306,5 +337,7 @@
         private CheckBox HighLight_Line;
         private Button button1;
         private CheckBox In_Dedicated_Window;
+        private Label label5;
+        private NumericUpDown Intellisense_refresh;
     }
 }

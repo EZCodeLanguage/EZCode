@@ -78,6 +78,16 @@ namespace EZ_IDE
             }
             set => SetKey(nameof(Bottom_Splitter_Distance), value); 
         }
+        public static int IntelliSense_Refresh 
+        {
+            get
+            {
+                int @default = 5;
+                int? val = int.Parse(GetKey(nameof(IntelliSense_Refresh), @default));
+                return val != null ? (int)val : @default;
+            }
+            set => SetKey(nameof(IntelliSense_Refresh), value); 
+        }
         public static string New_Project_Default_Directory 
         {
             get
@@ -208,6 +218,8 @@ namespace EZ_IDE
             TtC_Input_Text = "";
             Play_In_Dedicated_Window = false;
             Current_File = "";
+            IntelliSense_Refresh = 5;
+            DebugSave.Breakpoints = new EZCode.Debug.Breakpoint[0];
         }
 
         public static void StartUp()

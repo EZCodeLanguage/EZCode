@@ -35,7 +35,6 @@ namespace EZ_IDE
                 items.Add(new MethodAutocompleteItem2(item));
 
             items.Add(new InsertSpaceSnippet());
-            items.Add(new InsertSpaceSnippet(@"^(\w+)([=<>!:]+)(\w+)$"));
             items.Add(new InsertEnterSnippet());
 
             //set as autocomplete source
@@ -169,7 +168,7 @@ namespace EZ_IDE
         {
             get
             {
-                return fctb.Text.Split(new[] { '|', '\n', ' ' }).Distinct().ToArray();
+                return fctb.Text.Split(new[] { '|', '\n', ' ' }).Select(x => x.Trim()).Where(y => !keywords.Contains(y)).Distinct().ToArray();
             }
         }
         /// <summary>
@@ -619,6 +618,28 @@ namespace EZ_IDE
             Settings.Exit(this);
         }
 
+        private void fctb_TextChanged(object sender, TextChangedEventArgs e)
+        {
+            try
+            {
+                changeTime++;
+                if (changeTime > Settings.IntelliSense_Refresh)
+                {
+                    // IntelliSense
+                    BuildAutocompleteMenu();
+
+                    // auto save
+                    if (Settings.Auto_Save && FileURLTextBox.Text != "")
+                        Manager.SaveFile();
+                    changeTime = 0;
+                }
+            }
+            catch
+            {
+                // nothing
+            }
+        }
+
         private void folderToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             // open folder
@@ -682,28 +703,6 @@ namespace EZ_IDE
             // settings
             Settings_Preferences settings_Preferences = new Settings_Preferences(this, Settings_Preferences.Tab.settings);
             settings_Preferences.ShowDialog();
-        }
-
-        private void fctb_TextChanged(object sender, TextChangedEventArgs e)
-        {
-            try
-            {
-                changeTime++;
-                if (changeTime > 10)
-                {
-                    // IntelliSense
-                    BuildAutocompleteMenu();
-
-                    // auto save
-                    if (Settings.Auto_Save && FileURLTextBox.Text != "")
-                        Manager.SaveFile();
-                    changeTime = 0;
-                }
-            }
-            catch
-            {
-                // nothing
-            }
         }
 
         private void fileToolStripMenuItem_Click(object sender, EventArgs e)
@@ -856,7 +855,7 @@ namespace EZ_IDE
             new Insert_Breakpoint(this, fctb.Text, fctb.SelectionStart, FileURLTextBox.Text);
         }
 
-        private void startDebugSessionToolStripMenuItem_Click(object sender, EventArgs e)
+        private void debugProjectToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // debug project
             try
@@ -883,7 +882,7 @@ namespace EZ_IDE
 
                 Debug = new Debugger(ezcode, DebugSave.Breakpoints, FCTB_Highlight, CurrentLine);
                 higlight_timer.Start();
-                Debug.StartDebugSession(File.ReadAllText(Settings.Current_Project_File));
+                Debug.StartDebugSession(ezproj.Program);
             }
             catch
             {

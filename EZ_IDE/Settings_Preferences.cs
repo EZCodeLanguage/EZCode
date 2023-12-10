@@ -32,6 +32,7 @@ namespace EZ_IDE
             Pause_Debug.Checked = Settings.Debug_Pause;
             HighLight_Line.Checked = Settings.Higlight_Line;
             In_Dedicated_Window.Checked = Settings.Play_In_Dedicated_Window;
+            Intellisense_refresh.Value = Settings.IntelliSense_Refresh;
         }
 
         private void checkBox1_CheckedChanged(object sender, EventArgs e)
@@ -85,6 +86,11 @@ namespace EZ_IDE
         private void checkBox1_CheckedChanged_3(object sender, EventArgs e)
         {
             Settings.Play_In_Dedicated_Window = In_Dedicated_Window.Checked;
+        }
+
+        private void numericUpDown1_ValueChanged_1(object sender, EventArgs e)
+        {
+            Settings.IntelliSense_Refresh = (int)Intellisense_refresh.Value;
         }
     }
 }
