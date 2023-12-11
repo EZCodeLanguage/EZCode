@@ -59,6 +59,9 @@ namespace Installer
                         case 1: // Install SLN
                             slnbuilder();
                             break;
+                        case 2: // Install IDE
+                            ez_ide();
+                            break;
                     }
                 }
 
@@ -144,6 +147,33 @@ namespace Installer
 
                     Program.CreateShortcut("SLN Builder", Path.Combine(decompressDirectory, "EZ_SLN_Builder.exe"));
                 }
+
+                void ez_ide() // Install IDE
+                {
+                    Working($"\n\nInstalling SLN Builder From {githubRepoUrl}.git... This may take a second.");
+
+                    Directory.CreateDirectory(tempDirectory);
+
+                    string installFile = $"EZ_IDE_{releaseTitle}.zip";
+
+                    string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
+
+                    string decompressDirectory = Path.Combine(filepath, $"EZ_IDE {releaseTitle}");
+
+                    WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
+
+                    string[] d = Directory.GetFiles(Path.Combine(tempDirectory, $"EZ_IDE"));
+                    Directory.CreateDirectory(decompressDirectory);
+                    for (int i = 0; i < d.Length; i++)
+                    {
+                        FileInfo info = new FileInfo(d[i]);
+                        string t_decompress = Path.Combine(decompressDirectory, info.Name);
+                        File.Move(d[i], t_decompress, true);
+                    }
+                    Directory.Delete(tempDirectory, true);
+
+                    Program.CreateShortcut("EZCode IDE", Path.Combine(decompressDirectory, "EZ_IDE.exe"));
+                }
             }
             catch (Exception ex)
             {
@@ -161,7 +191,8 @@ namespace Installer
             List<Option> options = new List<Option>()
             {
                 new Option("EZCode Core and Player", 0, true),
-                new Option("EZCode SLN (Microsoft Visual Studio Project) Builder", 1, false)
+                new Option("EZ_IDE (Development platform for EZCode)", 2, true),
+                new Option("EZCode SLN (Microsoft Visual Studio Project) Builder", 1, false),
             };
 
             int index = 0;
