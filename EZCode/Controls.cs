@@ -202,7 +202,7 @@ namespace EZCode.GControls
             this.Width = 75;
             this.Height = 25;
             this.AutoSize = true;
-            this.BackColor = Color.Transparent;
+            this.BackColor = Color.White;
         }
     }
 }
