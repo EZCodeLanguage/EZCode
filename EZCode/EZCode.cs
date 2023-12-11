@@ -12,7 +12,6 @@ using System.Windows.Forms;
 using Group = EZCode.Groups.Group;
 using Player = Sound.Player;
 using Types = EZCode.Variables.Ivar.Types;
-using System.Linq;
 
 namespace EZCode
 {
