@@ -42,7 +42,7 @@ namespace Installer
             try
             {
                 string githubRepoUrl = "https://github.com/JBrosDevelopment/EZCode";
-                string type = "Beta";
+                string type = "Beta_3";
                 string realTag = "2.0.0";
                 string releaseTag = type != "" ? $"v{realTag}_{type.ToLower()}" : $"v{realTag}";
                 string releaseTitle = type != "" ? $"v{realTag}_{type}" : $"v{realTag}";
@@ -98,7 +98,7 @@ namespace Installer
 
                     Directory.CreateDirectory(tempDirectory);
 
-                    string installFile = $"EZCode_Player_{releaseTitle}.zip";
+                    string installFile = $"EZCode_Player_v{realTag}.zip";
 
                     string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
 
@@ -127,7 +127,7 @@ namespace Installer
 
                     Directory.CreateDirectory(tempDirectory);
 
-                    string installFile = $"Sln_Builder_{releaseTitle}.zip";
+                    string installFile = $"Sln_Builder_v{realTag}.zip";
 
                     string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
 
@@ -154,7 +154,7 @@ namespace Installer
 
                     Directory.CreateDirectory(tempDirectory);
 
-                    string installFile = $"EZ_IDE_{releaseTitle}.zip";
+                    string installFile = $"EZ_IDE_v{realTag}.zip";
 
                     string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
 
