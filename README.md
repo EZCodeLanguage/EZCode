@@ -192,19 +192,19 @@ This is an optional application to install and it creates a Microsoft Visual Stu
 ----------|-----|---------
 // | Does not execute any of the code after the double slash | `var result (x * 5) // The result is the 'X' variable multiplied by 5!`
 \| | Starts the next line of code | `var x 10 \| var y 5`
-\\! | Value is nothing ('') | `var empty \\!`
-\\n | Value of newline | `print Hello\\nWorld!`
-\\_ | Value of space (' ') | `file write Hello\_Y'all C:\\path.txt`
-~\\ or ~/ | Uses local path | `file play ~\\file.ezcode`
-\\; | Value of colon (':') | `if \\; = whatever : `
-\\= | Value of equal sign ('=') | `if \\= = whatever : `
-\\c | Value of comma (',') | `label name text:Hi\\c everybody!`
-\\e | Value of exclamation mark ('!') | `if \\! ! whatever : `
-\\$ | Value of pipe ('\|') | `print Agency \\\| Thing`
-\\& | Value of semicolon (';') | `shape name bg:[name\\;red;50;50]`
-\\( and )\\ | Solves equation inside of the backslashed parenthesis | `print Value = \\(10 + 10)\\ // outputs 'Value = 20'`
-\\- | Returns a value with the '\\-' taking out the character before it | `var val h3 \| val = 'val'-// `
-\\" | Value of single quote (''') | `var val hello \| print \\"'hello'\\"`
+\\! | Value is nothing ('') | `var empty \!`
+\\n | Value of newline | `print Hello\nWorld!`
+\\_ | Value of space (' ') | `file write Hello\_Y'all C:/path.txt`
+~\\ or ~/ | Uses local path | `file play ~\file.ezcode`
+\\; | Value of colon (':') | `if \; = whatever : `
+\\= | Value of equal sign ('=') | `if \= = whatever : `
+\\c | Value of comma (',') | `label name text:Hi\c everybody!`
+\\e | Value of exclamation mark ('!') | `if \! ! whatever : `
+\\$ | Value of pipe ('\|') | `print Agency \& Thing`
+\\& | Value of semicolon (';') | `shape name bg:[name\;red;50;50]`
+\\( and )\\ | Solves equation inside of the backslashed parenthesis | `print Value = \(10 + 10)\ // outputs 'Value = 20'`
+\\- | Returns a value with the '\\-' taking out the character before it | `var val h3 \| val = 'val'-/ `
+\\" | Value of single quote (''') | `var val hello \| print \"'hello'\"`
 'variable' | writes out the value of the variable | `var val Hello \| print 'val' World!`
 (equation) | If this is in a place where a number needs to be, it will solve the equation and set the value to it | `shape name x:(10 + 5)`
 ?(argument)? | If this is in a place where a boolean needs to be, it will solve the equation and set the value to it | `loop ?(0 > 5)? : { }`
