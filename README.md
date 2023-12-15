@@ -201,7 +201,7 @@ This is an optional application to install and it creates a Microsoft Visual Stu
 \\c | Value of comma (',') | `label name text:Hi\c everybody!`
 \\e | Value of exclamation mark ('!') | `if \e ! whatever : `
 \\$ | Value of pipe ('\|') | `print Agency \& Thing`
-\\& | Value of semicolon (';') | `shape name bg:[name\;red;50;50]`
+\\& | Value of semicolon (';') | `shape name bg:[name\&red;50;50]`
 \\( and )\\ | Solves equation inside of the backslashed parenthesis | `print Value = \(10 + 10)\ // outputs 'Value = 20'`
 \\- | Returns a value with the '\\-' taking out the character before it | `var val h3 \| val = 'val'\-`
 \\" | Value of single quote (''') | `var val hello \| print \"'hello'\"`
