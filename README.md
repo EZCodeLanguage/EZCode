@@ -197,7 +197,7 @@ This is an optional application to install and it creates a Microsoft Visual Stu
 \\_ | Value of space (' ') | `file write Hello\_Y'all C:/path.txt`
 ~\\ or ~/ | Uses local path | `file play ~\file.ezcode`
 \\; | Value of colon (':') | `if \; = whatever : `
-\\= | Value of equal sign ('=') | `if \= = whatever : `
+\\q | Value of equal sign ('=') | `if \q = whatever : `
 \\c | Value of comma (',') | `label name text:Hi\c everybody!`
 \\e | Value of exclamation mark ('!') | `if \! ! whatever : `
 \\$ | Value of pipe ('\|') | `print Agency \& Thing`
