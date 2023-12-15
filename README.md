@@ -199,7 +199,7 @@ This is an optional application to install and it creates a Microsoft Visual Stu
 \\; | Value of colon (':') | `if \; = whatever : `
 \\q | Value of equal sign ('=') | `if \q = whatever : `
 \\c | Value of comma (',') | `label name text:Hi\c everybody!`
-\\e | Value of exclamation mark ('!') | `if \! ! whatever : `
+\\e | Value of exclamation mark ('!') | `if \e ! whatever : `
 \\$ | Value of pipe ('\|') | `print Agency \& Thing`
 \\& | Value of semicolon (';') | `shape name bg:[name\;red;50;50]`
 \\( and )\\ | Solves equation inside of the backslashed parenthesis | `print Value = \(10 + 10)\ // outputs 'Value = 20'`
