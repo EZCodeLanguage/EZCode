@@ -3335,16 +3335,16 @@ namespace EZCode
                                     value = DateTime.Now.Millisecond.ToString("000");
                                     break;
                                 case "nownormal":
-                                    value = DateTime.Now.ToString("yyyy/MM/dd h:mm tt");
+                                    value = DateTime.Now.ToString("MM/dd/yyyy h:mm tt");
                                     break;
                                 case "now24":
-                                    value = DateTime.Now.ToString("yyyy/MM/dd HH:mm:ss");
+                                    value = DateTime.Now.ToString("MM/dd/yyyy HH:mm:ss");
                                     break;
                                 case "date":
-                                    value = DateTime.Now.ToString("yyyy/MM/dd");
+                                    value = DateTime.Now.ToString("MM/dd/yyyy");
                                     break;
                                 case "datedash":
-                                    value = DateTime.Now.ToString("yyyy-MM-dd");
+                                    value = DateTime.Now.ToString("MM-dd-yyyy");
                                     break;
                                 case "month":
                                     value = DateTime.Now.ToString("MMMM");
@@ -3354,6 +3354,9 @@ namespace EZCode
                                     break;
                                 case "day":
                                     value = DateTime.Now.Day.ToString();
+                                    break;
+                                case "dayname":
+                                    value = DateTime.Now.DayOfWeek.ToString();
                                     break;
                                 default:
                                     value = DateTime.Now.ToString();
@@ -4634,7 +4637,7 @@ namespace EZCode
                         txt = txt.Contains(@"\!") && !txt.Contains(@"\\!") ? txt.Replace(@"\!", string.Empty) : txt.Contains(@"\\!") ? txt.Replace(@"\\!", @"\!") : txt;
                         txt = txt.Contains(@"\_") && !txt.Contains(@"\\_") ? txt.Replace(@"\_", " ") : txt.Contains(@"\\_") ? txt.Replace(@"\\_", @"\_") : txt;
                         txt = txt.Contains(@"\;") && !txt.Contains(@"\\;") ? txt.Replace(@"\;", ":") : txt.Contains(@"\\;") ? txt.Replace(@"\\;", @"\;") : txt;
-                        txt = txt.Contains(@"\=") && !txt.Contains(@"\\=") ? txt.Replace(@"\=", "=") : txt.Contains(@"\\=") ? txt.Replace(@"\\=", @"\=") : txt;
+                        txt = txt.Contains(@"\q") && !txt.Contains(@"\\q") ? txt.Replace(@"\q", "=") : txt.Contains(@"\\q") ? txt.Replace(@"\\q", @"\q") : txt;
                         txt = txt.Contains(@"\c") && !txt.Contains(@"\\c") ? txt.Replace(@"\c", ",") : txt.Contains(@"\\c") ? txt.Replace(@"\\c", @"\c") : txt;
                         txt = txt.Contains(@"\e") && !txt.Contains(@"\\e") ? txt.Replace(@"\e", "!") : txt.Contains(@"\\e") ? txt.Replace(@"\\e", @"\e") : txt;
                         txt = txt.Contains(@"\$") && !txt.Contains(@"\\$") ? txt.Replace(@"\$", "|") : txt.Contains(@"\\$") ? txt.Replace(@"\\$", @"\$") : txt;
