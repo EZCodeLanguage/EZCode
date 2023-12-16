@@ -650,24 +650,24 @@
             // playProjectToolStripMenuItem
             // 
             playProjectToolStripMenuItem.Name = "playProjectToolStripMenuItem";
-            playProjectToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+P or Ctrl+F5";
-            playProjectToolStripMenuItem.Size = new Size(276, 22);
+            playProjectToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+F5";
+            playProjectToolStripMenuItem.Size = new Size(326, 22);
             playProjectToolStripMenuItem.Text = "Play Project";
             playProjectToolStripMenuItem.Click += playProjectToolStripMenuItem_Click;
             // 
             // playFileToolStripMenuItem
             // 
             playFileToolStripMenuItem.Name = "playFileToolStripMenuItem";
-            playFileToolStripMenuItem.ShortcutKeyDisplayString = "Alt+P or Ctrl+F6";
-            playFileToolStripMenuItem.Size = new Size(276, 22);
+            playFileToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+F6";
+            playFileToolStripMenuItem.Size = new Size(326, 22);
             playFileToolStripMenuItem.Text = "Play File";
             playFileToolStripMenuItem.Click += playFileToolStripMenuItem_Click;
             // 
             // quitToolStripMenuItem
             // 
             quitToolStripMenuItem.Name = "quitToolStripMenuItem";
-            quitToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Q";
-            quitToolStripMenuItem.Size = new Size(276, 22);
+            quitToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+F4";
+            quitToolStripMenuItem.Size = new Size(326, 22);
             quitToolStripMenuItem.Text = "Quit";
             quitToolStripMenuItem.Click += quitToolStripMenuItem_Click;
             // 
@@ -676,8 +676,8 @@
             playInDedicatedWindowToolStripMenuItem.CheckOnClick = true;
             playInDedicatedWindowToolStripMenuItem.Name = "playInDedicatedWindowToolStripMenuItem";
             playInDedicatedWindowToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+W";
-            playInDedicatedWindowToolStripMenuItem.Size = new Size(276, 22);
-            playInDedicatedWindowToolStripMenuItem.Text = "Play In Dedicated Window";
+            playInDedicatedWindowToolStripMenuItem.Size = new Size(326, 22);
+            playInDedicatedWindowToolStripMenuItem.Text = "Play In Dedicated Window (toggle)";
             playInDedicatedWindowToolStripMenuItem.Click += playInDedicatedWindowToolStripMenuItem_Click;
             // 
             // toolStripDropDownButton4

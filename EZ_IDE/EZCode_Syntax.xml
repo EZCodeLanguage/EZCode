@@ -33,7 +33,7 @@
 	<rule style="Window">(?&lt;=\bwindow\b\s*).*\b(new|display|change|close|open|destroy)\b</rule>
 
 	<style name="Characters" color="Yellow" fontStyle="Regular"/>
-	<rule style="Characters">\\n|\\!|\\_|\\;|\\=|\\c|\\e|\\|\\\$|\\&amp;|\\\(|\\\)|\\-|\\"|\&#63;\(|\)\&#63;|\||</rule>
+	<rule style="Characters">\\n|\\!|\\_|\\;|\\q|\\c|\\e|\\|\\\$|\\&amp;|\\\(|\\\)|\\-|\\"|\&#63;\(|\)\&#63;|\||</rule>
 
 	<style name="AfterWordText" color="LightBlue" fontStyle="Regular"/>
 	<rule style="AfterWordText">(?&lt;=\b(print|messagebox|DEVPORTAL)\b\s*).*</rule>

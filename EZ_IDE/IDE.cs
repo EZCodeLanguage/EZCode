@@ -516,14 +516,12 @@ namespace EZ_IDE
                         settingsPreferencesToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.Shift | Keys.P:
                         projectSettingsToolStripMenuItem.PerformClick(); break;
-                    case Keys.Control | Keys.P:
-                        playProjectToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.F5:
                         playProjectToolStripMenuItem.PerformClick(); break;
-                    case Keys.Alt | Keys.P:
-                        playFileToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.F6:
                         playFileToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.F4:
+                        quitToolStripMenuItem.PerformClick(); break;
                     case Keys.F1:
                         docsToolStripMenuItem.PerformClick(); break;
                     case Keys.F9:
