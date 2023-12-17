@@ -1,6 +1,6 @@
 # EZCode
 
-![Main Image](EZCode/EZCode_Wide_Logo.png)
+![Main Image](Docs/Images/EZCode_Wide_Logo.png)
 
 ---
 
