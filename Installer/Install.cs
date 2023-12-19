@@ -42,7 +42,7 @@ namespace Installer
             try
             {
                 string githubRepoUrl = "https://github.com/JBrosDevelopment/EZCode";
-                string type = "Beta_3";
+                string type = "Official";
                 string realTag = "2.0.0";
                 string releaseTag = type != "" ? $"v{realTag}_{type.ToLower()}" : $"v{realTag}";
                 string releaseTitle = type != "" ? $"v{realTag}_{type}" : $"v{realTag}";

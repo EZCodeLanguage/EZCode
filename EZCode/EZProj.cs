@@ -146,8 +146,8 @@ namespace EZCode
         /// </summary>
         /// <param name="_filecontent">The ezproj file contents being read as a <seealso cref="string"/></param>. Not needed if <see cref="FileContents"/> is filled out.
         /// <![CDATA[
-        /// "name":"C:/complete/file.path"    // reads file and sets a local proj var to value
-        /// "name":value                      // sets var to specific var
+        /// "varName":C:/complete/file.path   // reads file and sets a local proj var to value
+        /// "varName":"value "                // sets var to specific var
         /// 
         /// startup:"C:/complete/file.path"   // sets the start up file to the specified path
         /// startup:"~/local/file.path"       // sets the start up file to the local specified path
@@ -302,7 +302,7 @@ namespace EZCode
                             else
                             {
                                 string _o = getfile(insidemarks(value, false), false);
-                                string a = !value.StartsWith(@"""") ? value : File.ReadAllText(_o);
+                                string a = value.StartsWith("\"") ? value : File.ReadAllText(_o);
                                 Var var = new Var(v, a);
                                 vars.Add(var);
                             }

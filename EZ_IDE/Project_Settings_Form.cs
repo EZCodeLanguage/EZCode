@@ -283,10 +283,10 @@ namespace EZ_IDE
                     if (indir.Count - (startupFullPath != "" ? 1 : 0) > notfiles.Count / 2)
                     {
                         file_code.Add("include:\"all\"");
-                        for (int i = 0; i < notfiles.Count; i++)
-                        {
-                            file_code.Add($"exclude:\"{notfiles[i]}\"{(i == startupInt ? " // Excludes because already included in 'Startup' property" : "")}");
-                        }
+                        //for (int i = 0; i < notfiles.Count; i++)
+                        //{
+                        //    file_code.Add($"exclude:\"{notfiles[i]}\"{(i == startupInt ? " // Excludes because already included in 'Startup' property" : "")}");
+                        //}
                     }
                     else
                     {

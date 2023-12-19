@@ -1501,10 +1501,9 @@ namespace EZCode
                                 keyword =
                                     keyword == "#" && parts[1] == "create".ToLower() ? "#create" :
                                     keyword == "#" && parts[1] == "suppress".ToLower() ? "#suppress" :
-                                    keyword == "#" && parts[1] == "suppress".ToLower() ? "#current" :
-                                    keyword == "#" && parts[1] == "suppress".ToLower() ? "#project" :
+                                    keyword == "#" && parts[1] == "current".ToLower() ? "#current" :
+                                    keyword == "#" && parts[1] == "project".ToLower() ? "#project" :
                                     keyword == "#create".ToLower() ? keyword.ToLower() :
-                                    keyword == "#suppress".ToLower() ? keyword.ToLower() :
                                     keyword == "#suppress".ToLower() ? keyword.ToLower() :
                                     keyword == "#current".ToLower() ? keyword.ToLower() :
                                     keyword == "#project".ToLower() ? keyword.ToLower() :
