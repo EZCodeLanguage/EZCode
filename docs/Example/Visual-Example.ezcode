@@ -1,0 +1,8 @@
+# project properties : isvisual:true
+
+shape arrow x:150, y:150, w:200, h:200, bg:[200;50;50], ->
+    points:[(10*30);(25*0);(100*25);(125*0);(175*80);(70*95);(80*65)]
+    
+shape ball x:365, y:235, bg:[75;75;255], poly:15
+    
+label text t:Ball!, x:345, y:175, bg:[0;0;0], fg:[200;200;50], font:[Maiandra GD;25;Bold]

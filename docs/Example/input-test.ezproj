@@ -1,0 +1,4 @@
+name:"EZCode Input Test"
+window:"true"
+debug:"true"
+include:"~/input-window.ezcode"

@@ -1,0 +1,24 @@
+method start
+    // Create a new window with quit event
+    window mainWindow new : text: Hello EZCode!, width: 300, height: 200
+    event mainWindow close Quit
+    
+    // Create a button with click event and display it in the window
+    button btnClickMe text: Click Me, width: 100, height: 30
+    event btnClickMe click BtnClick
+    window mainWindow display btnClickMe
+    
+    // Open the window and keep it open
+    window mainWindow open
+    await true
+endmethod
+
+// Method for the button click event
+method BtnClick
+    print Hello from EZCode!
+endmethod
+
+// Method to quit program when window closes
+method Quit
+    stop all
+endmethod

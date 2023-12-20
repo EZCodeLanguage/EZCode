@@ -1,0 +1,6 @@
+loop true {
+    clear
+    var keys : input key
+    print 'keys'
+    await 50
+}

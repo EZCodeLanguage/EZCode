@@ -1,0 +1,16 @@
+method start
+    window w new : text:Input Test! Move the mouse., width:400, height:190, startposition:center
+    label l 
+    w display l
+    w open 
+    event w close quit
+    loop 999 {
+        var mouse : input mouse position
+        l text:'mouse'
+        await 50
+    }
+endmethod
+
+method quit
+    stop all
+endmethod
