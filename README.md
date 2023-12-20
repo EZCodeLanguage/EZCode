@@ -19,7 +19,7 @@ The [Official Docs](https://github.com/JBrosDevelopment/EZCode/wiki/EZCode-Docs)
 <details open>
 <summary><h2>Community</h2></summary>
 
-Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/JBrosDevelopment/EZCode-Projects.git) for the community. Create a pull request and I will accept as soon as I can. There is also the [Discussion Board](https://github.com/JBrosDevelopment/EZCode/discussions) for anybody who has questions or wants to share. If you need any help, you can look over the [Wiki](https://github.com/JBrosDevelopment/EZCode/wiki) which includes instructions and documentation.
+Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/JBrosDevelopment/EZCode-Projects.git). Create a pull request and it will be accepted as soon as possible. There is also the [Discussion Board](https://github.com/JBrosDevelopment/EZCode/discussions) for anybody who has questions or wants to share. If you need any help, you can look over the [Wiki](https://github.com/JBrosDevelopment/EZCode/wiki) which includes instructions and documentation.
 
 Please join our [Discord Server](https://discord.gg/DpBrp6Zy) to get closer to the community!
 </details>
@@ -27,45 +27,35 @@ Please join our [Discord Server](https://discord.gg/DpBrp6Zy) to get closer to t
 <details open>
 <summary><h2>Example</h2></summary>
 
-This is a simple example of a program where the `X_Scale` and `Y_Scale` print out a square of `char` characters. It outputs a 12 x 10 square of `%` with spaces between the. Look over this code and see if you can follow along with thte comments.
+Here's a simple example of an EZCode program that creates a window with a button. When the button is clicked, it displays a message in the console.
 
-```ezcode
-// Set dimensions of square
-var x_Scale 12
-var Y_Scale 10
-
-// Character for square
-var char %
-
-// Create and set the 'txt' var to the correct dimensions
-var txt
-var interval 0
-loop Y_Scale 
-{
-    interval + 1
-    loop x_Scale 
-    {
-        txt + 'char'\_
-    }
-
-    // Check if this is the last row before adding a newline
-    if interval <= Y_Scale : txt + \n
-}
-
-// Print the output
-print 'txt'
-
-// Outputs:
-// % % % % % % % % % % % % 
-// % % % % % % % % % % % % 
-// % % % % % % % % % % % % 
-// % % % % % % % % % % % % 
-// % % % % % % % % % % % % 
-// % % % % % % % % % % % % 
-// % % % % % % % % % % % % 
-// % % % % % % % % % % % % 
 ```
-You can change the `X_Scale` and `Y_Scale` variables as well as the character being used for the square shape.
+method start
+    // Create a new window with quit event
+    window mainWindow new : text: Hello EZCode!, width: 300, height: 200
+    event mainWindow close Quit
+    
+    // Create a button with click event and display it in the window
+    button btnClickMe text: Click Me, width: 100, height: 30
+    event btnClickMe click BtnClick
+    window mainWindow display btnClickMe
+    
+    // Open the window and keep it open
+    window mainWindow open
+    await true
+endmethod
+
+// Method for the button click event
+method BtnClick
+    print Hello from EZCode!
+endmethod
+
+// Method to quit program when window closes
+method Quit
+    stop all
+endmethod
+```
+This program creates a window with a button. When you click the button, it prints "Hello from EZCode!" to the console. When the Window closes, the program ends.
 </details>
 
 <details open>
@@ -77,15 +67,19 @@ EzCode is released under the [MIT License](LICENSE).
 <details open>
 <summary><h2>Overview</h2></summary>
 
-EZCode is a multipurpose programming language built off of C# and WinForms. It has simple syntax and is designed to be user friendly. Use it no matter your programming experince. From just getting started to a seasoned developer, EZCode can help you develop your projects with a minimal amount of code. Download the **[Official Installer](https://github.com/JBrosDevelopment/EZCode/releases/latest)** and choose from the options on what to install.
+EZCode is a multipurpose programming language built off of C# and WinForms. It has simple syntax and is designed to be user friendly. Use it no matter your programming experince. From just getting started to a seasoned developer, EZCode can help you develop your projects with a minimal amount of code. Download the **[Official Installer](https://github.com/JBrosDevelopment/EZCode/releases/latest)** and choose from the options on what to install. This is a brief overview, but to go indepth, go to the [Programs Docs](https://github.com/JBrosDevelopment/EZCode/wiki/programs).
 
 #### EZCode Player
 
-This is a **neccessary option** for EZCode and will play any EZCode file (.ezcode or .ezproj). It will play the file no matter what type of project it is **(Windows, Console, Console + Visual, or Console + Windows)**.
+This is a **neccessary option** for EZCode and will play any EZCode file (.ezcode or .ezproj). It will play the file no matter what type of project it is **(Windows, Console, Console + Visual, or Console + Windows)**. Go to the [Player](https://github.com/JBrosDevelopment/EZCode/wiki/programs#player) in the wiki to learn more.
 
 #### SLN Builder
 
-This is an optional application to install and it creates a Microsoft Visual Studio Project from an EZProject file **(.ezproj)**. Input the project and the desired output directory.
+This is an optional application to install and it creates a Microsoft Visual Studio Project from an EZProject file **(.ezproj)**. Input the project and the desired output directory. Go to the [SLB Builder](https://github.com/JBrosDevelopment/EZCode/wiki/programs#sln-builder) in the wiki to learn more.
+
+#### EZ IDE
+
+This is the official IDE (Integrated Development Environment) for EZCode. This is the best way to develop with EZCode. It has features including Debugging, Project settings, and more. Go to the [EZ IDE Docs](https://github.com/JBrosDevelopment/EZCode/wiki/ide-docs) to learn more.
 
 </details>
 
