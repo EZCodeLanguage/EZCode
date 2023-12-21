@@ -1,1 +1,0 @@
-**EZCode** is an Open Source Project started by [JBros Development](https://github.com/JBrosDevelopment).
