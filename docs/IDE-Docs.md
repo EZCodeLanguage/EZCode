@@ -1,6 +1,6 @@
 # IDE Docs
 
-The EZ IDE is the easiest way to develop with EZCode. It has a [Debugger](#debugger-view), [Console](console), and [Visual Output](visual-output) built into the IDE. It has a [project explorer](project-explorer), and many [settings](#settings) to customize your experience. There is a [Keyword Highlighting Textbox](#keyword-highlighting-textbox) to type in the code. 
+The EZ IDE is the easiest way to develop with EZCode. It has a [Debugger](#debugger-view), [Console](console), and [Visual Output](visual-output) built into the IDE. It has a [project explorer](project-explorer), and many [settings](#settings) to customize your experience. There is alsol the [Keyword Highlighting Textbox](#keyword-highlighting-textbox) to type in the code. 
 
 <details open>
 <summary><strong>Directory</strong></summary>
