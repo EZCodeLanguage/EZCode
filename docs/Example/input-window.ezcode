@@ -1,16 +1,25 @@
+# project properties : name:Mouse Input Test, window:True
+
 method start
+    // Create Label and Window With Event
     window w new : text:Input Test! Move the mouse., width:400, height:190, startposition:center
+    event w close quit
     label l 
+    
+    // Display Label and Open Window
     w display l
     w open 
-    event w close quit
-    loop 999 {
-        var mouse : input mouse position
+    
+    // Loop With Mouse Input
+    var mouse \!
+    loop true {
+        mouse : input mouse position
         l text:'mouse'
         await 50
     }
 endmethod
 
 method quit
+    // Quit Program
     stop all
 endmethod
