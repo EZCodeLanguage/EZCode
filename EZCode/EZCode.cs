@@ -24,7 +24,7 @@ namespace EZCode
         /// <summary>
         /// Directory of the script playing
         /// </summary>
-        public static string Version { get; } = "2.0.0";
+        public static string Version { get; } = "2.0.1";
         /// <summary>
         /// The Official EZCode Icon
         /// </summary>
@@ -748,7 +748,7 @@ namespace EZCode
                         try
                         {
                             Var var = await CreateVar(parts, allowJump: true);
-                            vars.Add(var);
+                            if (!vars.Contains(var)) vars.Add(var);
                         }
                         catch
                         {
