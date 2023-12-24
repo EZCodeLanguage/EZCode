@@ -51,7 +51,7 @@ namespace EZCode
         /// <summary>
         /// Icon for project
         /// </summary>
-        public string IconPath { get; set; }
+        public string? IconPath { get; set; }
         /// <summary>
         /// Icon for project
         /// </summary>
@@ -88,7 +88,7 @@ namespace EZCode
             string file = "";
             if (parts.Length != 0)
             {
-                string[] commas = string.Join(" ", parts.Skip(index)).Split(",").Select(x=>x.Trim()).ToArray();
+                string[] commas = string.Join(" ", parts.Skip(index)).Split(",").Select(x => x.Trim()).ToArray();
                 foreach (string comma in commas)
                 {
                     string before = comma.Split(":")[0];
@@ -186,7 +186,8 @@ namespace EZCode
             Debug = false;
             CloseOnEnd = true;
             Name ??= $"EZCode_v{EzCode.Version}";
-            IconPath ??= Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EZCode", "EZCode", "EZCode_Logo.ico");
+            string iconpath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "EZCode", "EZCode", "EZCode_Logo.ico");
+            IconPath ??= File.Exists(iconpath) ? iconpath : null;
 
             string filecontent = FileContents;
             if (_filecontent != null) filecontent = _filecontent;
