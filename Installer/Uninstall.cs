@@ -60,22 +60,50 @@ namespace Installer
                 Install.CreateDirs();
                 Console.Clear();
                 Console.Write("Uninstalling...");
+
+                // Remove program files and directories
                 Directory.Delete(Install.appdataDir, true);
                 Directory.Delete(Install.filepath, true);
-                object shDesktop = (object)"Desktop";
-                WshShell shell = new WshShell();
-                string shortcutAddress1 = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\EZCode.lnk";
-                string shortcutAddress2 = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\SLN Builder.lnk";
-                if (File.Exists(shortcutAddress1)) File.Delete(shortcutAddress1);
-                if (File.Exists(shortcutAddress2)) File.Delete(shortcutAddress2);
+
+                // Remove desktop shortcuts
+                RemoveDesktopShortcut("EZCode Player.lnk");
+                RemoveDesktopShortcut("SLN Builder.lnk");
+                RemoveDesktopShortcut("EZ IDE.lnk");
+
+                // Remove Start Menu shortcuts
+                RemoveStartMenuShortcut();
+
                 Console.Write(" Done!");
             }
             catch (Exception ex)
             {
                 Console.ForegroundColor = ConsoleColor.DarkRed;
-                Console.WriteLine($"\nError during installation: {ex.Message}");
+                Console.WriteLine($"\nError during uninstallation: {ex.Message}");
                 Console.ResetColor();
             }
         }
+
+        static void RemoveDesktopShortcut(string shortcutName)
+        {
+            object shDesktop = (object)"Desktop";
+            WshShell shell = new WshShell();
+            string shortcutAddress = Path.Combine((string)shell.SpecialFolders.Item(ref shDesktop), shortcutName);
+
+            if (File.Exists(shortcutAddress))
+            {
+                File.Delete(shortcutAddress);
+            }
+        }
+
+        static void RemoveStartMenuShortcut()
+        {
+            string startMenuFolder = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.StartMenu), "Programs", "EZCode");
+
+            if (Directory.Exists(startMenuFolder))
+            {
+                Directory.Delete(startMenuFolder, true);
+            }
+        }
+
     }
 }

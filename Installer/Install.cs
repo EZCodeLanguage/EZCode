@@ -21,18 +21,18 @@ namespace Installer
     public static class Install
     {
         static bool done;
-        static int percentage;
-        public static string appdataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData), "EZCode");
-        public static string tempDirectory = Path.Combine(Path.GetTempPath(), "EZCode");
+        public static string appdataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "EZCode");
+        public static string tempDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp", "EZCode");
         public static string filepath = "C:\\Program Files\\EZCode\\";
+        public static string githubRepoUrl = "https://github.com/JBrosDevelopment/EZCode";
         static string _MainText;
+        static int percentage;
         static string MainText
         {
             get => _MainText;
             set
             {
                 _MainText = value;
-                //Console.WriteLine(_MainText);
             }
         }
         public static void DownloadMain()
@@ -41,9 +41,8 @@ namespace Installer
             Option[] options = Options();
             try
             {
-                string githubRepoUrl = "https://github.com/JBrosDevelopment/EZCode";
-                string type = "Official";
-                string realTag = "2.0.0";
+                string type = "";
+                string realTag = "2.0.2";
                 string releaseTag = type != "" ? $"v{realTag}_{type.ToLower()}" : $"v{realTag}";
                 string releaseTitle = type != "" ? $"v{realTag}_{type}" : $"v{realTag}";
 
@@ -116,8 +115,8 @@ namespace Installer
                     }
                     Directory.Delete(tempDirectory, true);
 
-                    Program.CreateShortcut("EZCode", Path.Combine(decompressDirectory, "EZCodePlayer.exe"));
-
+                    Program.CreateShortcut("EZCode Player", Path.Combine(decompressDirectory, "EZCodePlayer.exe"));
+                    Program.CreateStartMenuShortcut("EZCode", "EZCode Player", Path.Combine(decompressDirectory, "EZCodePlayer.exe"));
                     Program.SetUpFile(Path.Combine(decompressDirectory, "EZCodePlayer.exe"), Path.Combine(appdataDir, "EZCode", "EZCode_Logo.ico"));
                 }
 
@@ -146,6 +145,7 @@ namespace Installer
                     Directory.Delete(tempDirectory, true);
 
                     Program.CreateShortcut("SLN Builder", Path.Combine(decompressDirectory, "EZ_SLN_Builder.exe"));
+                    Program.CreateStartMenuShortcut("EZCode", "SLN Builder", Path.Combine(decompressDirectory, "EZ_SLN_Builder.exe"));
                 }
 
                 void ez_ide() // Install IDE
@@ -172,7 +172,8 @@ namespace Installer
                     }
                     Directory.Delete(tempDirectory, true);
 
-                    Program.CreateShortcut("EZCode IDE", Path.Combine(decompressDirectory, "EZ_IDE.exe"));
+                    Program.CreateShortcut("EZ IDE", Path.Combine(decompressDirectory, "EZ_IDE.exe"));
+                    Program.CreateStartMenuShortcut("EZCode", "EZ IDE", Path.Combine(decompressDirectory, "EZ_IDE.exe"));
                 }
             }
             catch (Exception ex)

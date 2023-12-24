@@ -19,12 +19,17 @@ namespace Installer
 
             ConsoleKey key;
 
+            string txt1 = "Welcome to EZCode Installer! What would you like to do today?";
+            string txt2 = "\nUse the arrow keys to select an option, press enter to submit.";
+            Console.ForegroundColor = ConsoleColor.Blue;
+            Console.WriteLine(txt1);
+            Console.ResetColor();
+            Console.WriteLine(txt2);
+
             do
             {
                 Console.Clear();
 
-                string txt1 = "Welcome to EZCode Installer! What would you like to do today?";
-                string txt2 = "\nUse the arrow keys to select an option, press enter to submit.";
                 Console.ForegroundColor = ConsoleColor.Blue;
                 Console.WriteLine(txt1);
                 Console.ResetColor();
@@ -105,6 +110,16 @@ namespace Installer
             object shDesktop = (object)"Desktop";
             WshShell shell = new WshShell();
             string shortcutAddress = (string)shell.SpecialFolders.Item(ref shDesktop) + $"\\{name}.lnk";
+            IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
+            shortcut.TargetPath = path;
+            shortcut.Save();
+        }
+        public static void CreateStartMenuShortcut(string folderName, string name, string path)
+        {
+            WshShell shell = new WshShell();
+            string startMenuFolder = Environment.GetFolderPath(Environment.SpecialFolder.StartMenu);
+            string shortcutAddress = Path.Combine(startMenuFolder, "Programs", folderName, $"{name}.lnk");
+            Directory.CreateDirectory(Path.GetDirectoryName(shortcutAddress));
             IWshShortcut shortcut = (IWshShortcut)shell.CreateShortcut(shortcutAddress);
             shortcut.TargetPath = path;
             shortcut.Save();
