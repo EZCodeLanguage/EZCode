@@ -18,7 +18,7 @@
 	<rule style="Sky">'(.*?)'|=|-|\+|\*|/|!|\&amp;|~/|~\\</rule>
 	
 	<style name="LightGreen" color="PaleGreen" fontStyle="Regular"/>
-	<rule style="LightGreen">-?[0-9]\d*</rule>
+	<rule style="LightGreen">\b(-?[0-9]\d*)\b</rule>
 
 	<style name="Group" color="LightBlue" fontStyle="Regular"/>
 	<rule style="Group">(?&lt;=\bgroup\b\s*).*\b(new|change|add|equals|remove|destroy|destroyall|clear)\b</rule>

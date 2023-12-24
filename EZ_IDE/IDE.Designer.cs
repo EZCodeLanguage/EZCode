@@ -39,6 +39,7 @@
             tabPage1 = new TabPage();
             tabPage2 = new TabPage();
             tabPage3 = new TabPage();
+            MiniConsole = new RichTextBox();
             VarListView = new ListBox();
             BreakpointsPropertyGridDebug = new PropertyGrid();
             InputDebug = new TextBox();
@@ -47,7 +48,6 @@
             NextBreakpointDebug = new Button();
             nextSegmentDebug = new Button();
             CurrentLine = new TextBox();
-            MiniConsole = new RichTextBox();
             ControlsPropertyGrid = new PropertyGrid();
             toolStripDropDownButton1 = new ToolStripDropDownButton();
             newToolStripMenuItem = new ToolStripMenuItem();
@@ -89,7 +89,7 @@
             allBreakpointsToolStripMenuItem = new ToolStripMenuItem();
             toolStripDropDownButton5 = new ToolStripDropDownButton();
             docsToolStripMenuItem = new ToolStripMenuItem();
-            toolStripTextBox2 = new ToolStripTextBox();
+            VersionTB = new ToolStripTextBox();
             FileURLTextBox = new ToolStripLabel();
             splitContainer1 = new SplitContainer();
             Tree = new TreeView();
@@ -131,7 +131,7 @@
             visualoutput.Dock = DockStyle.Fill;
             visualoutput.Location = new Point(3, 3);
             visualoutput.Name = "visualoutput";
-            visualoutput.Size = new Size(1040, 219);
+            visualoutput.Size = new Size(1067, 211);
             visualoutput.TabIndex = 0;
             // 
             // Send
@@ -143,7 +143,7 @@
             Send.FlatStyle = FlatStyle.Flat;
             Send.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Send.ForeColor = Color.FromArgb(235, 235, 235);
-            Send.Location = new Point(889, 196);
+            Send.Location = new Point(910, 188);
             Send.Name = "Send";
             Send.Size = new Size(75, 23);
             Send.TabIndex = 3;
@@ -160,7 +160,7 @@
             Clear.FlatStyle = FlatStyle.Flat;
             Clear.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             Clear.ForeColor = Color.FromArgb(235, 235, 235);
-            Clear.Location = new Point(967, 196);
+            Clear.Location = new Point(991, 188);
             Clear.Name = "Clear";
             Clear.Size = new Size(76, 23);
             Clear.TabIndex = 2;
@@ -178,9 +178,9 @@
             input.BorderStyle = BorderStyle.None;
             input.Font = new Font("Cascadia Code", 12F, FontStyle.Regular, GraphicsUnit.Point);
             input.ForeColor = Color.FromArgb(235, 235, 235);
-            input.Location = new Point(3, 196);
+            input.Location = new Point(3, 188);
             input.Name = "input";
-            input.Size = new Size(883, 19);
+            input.Size = new Size(901, 19);
             input.TabIndex = 1;
             input.KeyDown += input_KeyDown;
             // 
@@ -197,7 +197,7 @@
             output.Location = new Point(3, 3);
             output.Name = "output";
             output.ReadOnly = true;
-            output.Size = new Size(1040, 190);
+            output.Size = new Size(1067, 179);
             output.TabIndex = 0;
             output.Text = "";
             output.WordWrap = false;
@@ -214,7 +214,7 @@
             tabControl1.Multiline = true;
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1054, 253);
+            tabControl1.Size = new Size(1081, 245);
             tabControl1.TabIndex = 4;
             // 
             // tabPage1
@@ -227,7 +227,7 @@
             tabPage1.Location = new Point(4, 24);
             tabPage1.Name = "tabPage1";
             tabPage1.Padding = new Padding(3);
-            tabPage1.Size = new Size(1046, 225);
+            tabPage1.Size = new Size(1073, 217);
             tabPage1.TabIndex = 0;
             tabPage1.Text = "Console";
             // 
@@ -238,13 +238,14 @@
             tabPage2.Location = new Point(4, 24);
             tabPage2.Name = "tabPage2";
             tabPage2.Padding = new Padding(3);
-            tabPage2.Size = new Size(1046, 225);
+            tabPage2.Size = new Size(1073, 217);
             tabPage2.TabIndex = 1;
             tabPage2.Text = "Visual Output";
             // 
             // tabPage3
             // 
             tabPage3.BackColor = Color.Black;
+            tabPage3.Controls.Add(MiniConsole);
             tabPage3.Controls.Add(VarListView);
             tabPage3.Controls.Add(BreakpointsPropertyGridDebug);
             tabPage3.Controls.Add(InputDebug);
@@ -253,14 +254,31 @@
             tabPage3.Controls.Add(NextBreakpointDebug);
             tabPage3.Controls.Add(nextSegmentDebug);
             tabPage3.Controls.Add(CurrentLine);
-            tabPage3.Controls.Add(MiniConsole);
             tabPage3.Controls.Add(ControlsPropertyGrid);
             tabPage3.Location = new Point(4, 24);
             tabPage3.Name = "tabPage3";
             tabPage3.Padding = new Padding(3);
-            tabPage3.Size = new Size(1046, 225);
+            tabPage3.Size = new Size(1073, 217);
             tabPage3.TabIndex = 2;
             tabPage3.Text = "Debug";
+            // 
+            // MiniConsole
+            // 
+            MiniConsole.AcceptsTab = true;
+            MiniConsole.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
+            MiniConsole.AutoWordSelection = true;
+            MiniConsole.BackColor = Color.FromArgb(15, 15, 15);
+            MiniConsole.BorderStyle = BorderStyle.None;
+            MiniConsole.Font = new Font("Cascadia Code", 12F, FontStyle.Regular, GraphicsUnit.Point);
+            MiniConsole.ForeColor = Color.FromArgb(235, 235, 235);
+            MiniConsole.HideSelection = false;
+            MiniConsole.Location = new Point(494, 36);
+            MiniConsole.Name = "MiniConsole";
+            MiniConsole.ReadOnly = true;
+            MiniConsole.Size = new Size(571, 118);
+            MiniConsole.TabIndex = 1;
+            MiniConsole.Text = "";
+            MiniConsole.WordWrap = false;
             // 
             // VarListView
             // 
@@ -305,9 +323,9 @@
             InputDebug.BorderStyle = BorderStyle.None;
             InputDebug.Font = new Font("Cascadia Code", 12F, FontStyle.Regular, GraphicsUnit.Point);
             InputDebug.ForeColor = Color.FromArgb(235, 235, 235);
-            InputDebug.Location = new Point(494, 169);
+            InputDebug.Location = new Point(494, 161);
             InputDebug.Name = "InputDebug";
-            InputDebug.Size = new Size(463, 19);
+            InputDebug.Size = new Size(490, 19);
             InputDebug.TabIndex = 8;
             InputDebug.KeyDown += input_KeyDown;
             // 
@@ -320,7 +338,7 @@
             SendDebug.FlatStyle = FlatStyle.Flat;
             SendDebug.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             SendDebug.ForeColor = Color.FromArgb(235, 235, 235);
-            SendDebug.Location = new Point(963, 168);
+            SendDebug.Location = new Point(990, 160);
             SendDebug.Name = "SendDebug";
             SendDebug.Size = new Size(75, 23);
             SendDebug.TabIndex = 10;
@@ -334,7 +352,7 @@
             QuitDebug.BackColor = SystemColors.ControlDark;
             QuitDebug.FlatStyle = FlatStyle.Popup;
             QuitDebug.ForeColor = SystemColors.ControlText;
-            QuitDebug.Location = new Point(942, 204);
+            QuitDebug.Location = new Point(970, 191);
             QuitDebug.Name = "QuitDebug";
             QuitDebug.Size = new Size(96, 23);
             QuitDebug.TabIndex = 6;
@@ -348,7 +366,7 @@
             NextBreakpointDebug.BackColor = SystemColors.ControlDark;
             NextBreakpointDebug.FlatStyle = FlatStyle.Popup;
             NextBreakpointDebug.ForeColor = SystemColors.ControlText;
-            NextBreakpointDebug.Location = new Point(718, 203);
+            NextBreakpointDebug.Location = new Point(746, 190);
             NextBreakpointDebug.Name = "NextBreakpointDebug";
             NextBreakpointDebug.Size = new Size(218, 23);
             NextBreakpointDebug.TabIndex = 5;
@@ -362,9 +380,9 @@
             nextSegmentDebug.BackColor = SystemColors.ControlDark;
             nextSegmentDebug.FlatStyle = FlatStyle.Popup;
             nextSegmentDebug.ForeColor = SystemColors.ControlText;
-            nextSegmentDebug.Location = new Point(494, 203);
+            nextSegmentDebug.Location = new Point(494, 190);
             nextSegmentDebug.Name = "nextSegmentDebug";
-            nextSegmentDebug.Size = new Size(218, 23);
+            nextSegmentDebug.Size = new Size(246, 23);
             nextSegmentDebug.TabIndex = 4;
             nextSegmentDebug.Text = "Next Segment (F11)";
             nextSegmentDebug.UseVisualStyleBackColor = false;
@@ -380,26 +398,8 @@
             CurrentLine.Location = new Point(494, 6);
             CurrentLine.Name = "CurrentLine";
             CurrentLine.ReadOnly = true;
-            CurrentLine.Size = new Size(547, 25);
+            CurrentLine.Size = new Size(574, 25);
             CurrentLine.TabIndex = 3;
-            // 
-            // MiniConsole
-            // 
-            MiniConsole.AcceptsTab = true;
-            MiniConsole.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left | AnchorStyles.Right;
-            MiniConsole.AutoWordSelection = true;
-            MiniConsole.BackColor = Color.FromArgb(15, 15, 15);
-            MiniConsole.BorderStyle = BorderStyle.None;
-            MiniConsole.Font = new Font("Cascadia Code", 12F, FontStyle.Regular, GraphicsUnit.Point);
-            MiniConsole.ForeColor = Color.FromArgb(235, 235, 235);
-            MiniConsole.HideSelection = false;
-            MiniConsole.Location = new Point(494, 37);
-            MiniConsole.Name = "MiniConsole";
-            MiniConsole.ReadOnly = true;
-            MiniConsole.Size = new Size(544, 126);
-            MiniConsole.TabIndex = 1;
-            MiniConsole.Text = "";
-            MiniConsole.WordWrap = false;
             // 
             // ControlsPropertyGrid
             // 
@@ -416,7 +416,7 @@
             ControlsPropertyGrid.LineColor = Color.FromArgb(30, 30, 30);
             ControlsPropertyGrid.Location = new Point(0, 114);
             ControlsPropertyGrid.Name = "ControlsPropertyGrid";
-            ControlsPropertyGrid.Size = new Size(236, 112);
+            ControlsPropertyGrid.Size = new Size(236, 104);
             ControlsPropertyGrid.TabIndex = 0;
             ControlsPropertyGrid.ViewBackColor = SystemColors.ControlDarkDark;
             ControlsPropertyGrid.ViewForeColor = SystemColors.Window;
@@ -519,7 +519,7 @@
             toolStrip1.Padding = new Padding(0);
             toolStrip1.RenderMode = ToolStripRenderMode.System;
             toolStrip1.ShowItemToolTips = false;
-            toolStrip1.Size = new Size(1054, 25);
+            toolStrip1.Size = new Size(1081, 25);
             toolStrip1.Stretch = true;
             toolStrip1.TabIndex = 5;
             toolStrip1.Text = "toolStrip1";
@@ -761,7 +761,7 @@
             // 
             toolStripDropDownButton5.BackColor = Color.FromArgb(64, 64, 64);
             toolStripDropDownButton5.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton5.DropDownItems.AddRange(new ToolStripItem[] { docsToolStripMenuItem, toolStripTextBox2 });
+            toolStripDropDownButton5.DropDownItems.AddRange(new ToolStripItem[] { docsToolStripMenuItem, VersionTB });
             toolStripDropDownButton5.ForeColor = SystemColors.ButtonFace;
             toolStripDropDownButton5.Image = (Image)resources.GetObject("toolStripDropDownButton5.Image");
             toolStripDropDownButton5.ImageTransparentColor = Color.Magenta;
@@ -779,12 +779,12 @@
             docsToolStripMenuItem.Text = "Docs";
             docsToolStripMenuItem.Click += docsToolStripMenuItem_Click;
             // 
-            // toolStripTextBox2
+            // VersionTB
             // 
-            toolStripTextBox2.Name = "toolStripTextBox2";
-            toolStripTextBox2.ReadOnly = true;
-            toolStripTextBox2.Size = new Size(100, 23);
-            toolStripTextBox2.Text = "IDE v1.0.0";
+            VersionTB.Name = "VersionTB";
+            VersionTB.ReadOnly = true;
+            VersionTB.Size = new Size(100, 23);
+            VersionTB.Text = "IDE v0.0.0";
             // 
             // FileURLTextBox
             // 
@@ -807,8 +807,8 @@
             // 
             splitContainer1.Panel2.Controls.Add(fctb);
             splitContainer1.Panel2MinSize = 100;
-            splitContainer1.Size = new Size(1054, 402);
-            splitContainer1.SplitterDistance = 217;
+            splitContainer1.Size = new Size(1081, 389);
+            splitContainer1.SplitterDistance = 222;
             splitContainer1.TabIndex = 6;
             splitContainer1.SplitterMoved += splitContainer1_SplitterMoved;
             // 
@@ -822,7 +822,7 @@
             Tree.ItemHeight = 24;
             Tree.Location = new Point(0, 0);
             Tree.Name = "Tree";
-            Tree.Size = new Size(217, 402);
+            Tree.Size = new Size(222, 389);
             Tree.TabIndex = 0;
             Tree.BeforeSelect += Tree_BeforeSelect;
             Tree.AfterSelect += Tree_AfterSelect;
@@ -904,7 +904,7 @@
             fctb.SelectionColor = Color.FromArgb(90, 110, 110, 255);
             fctb.ServiceColors = null;
             fctb.ShowLineNumbers = false;
-            fctb.Size = new Size(833, 402);
+            fctb.Size = new Size(855, 389);
             fctb.TabIndex = 1;
             fctb.Zoom = 100;
             fctb.TextChanged += fctb_TextChanged;
@@ -981,8 +981,8 @@
             // 
             splitContainer2.Panel2.Controls.Add(tabControl1);
             splitContainer2.Panel2MinSize = 100;
-            splitContainer2.Size = new Size(1054, 659);
-            splitContainer2.SplitterDistance = 402;
+            splitContainer2.Size = new Size(1081, 638);
+            splitContainer2.SplitterDistance = 389;
             splitContainer2.TabIndex = 0;
             splitContainer2.SplitterMoved += splitContainer2_SplitterMoved;
             // 
@@ -1000,11 +1000,11 @@
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(10, 10, 10);
-            ClientSize = new Size(1054, 684);
+            ClientSize = new Size(1081, 663);
             Controls.Add(splitContainer2);
             Controls.Add(toolStrip1);
             Icon = (Icon)resources.GetObject("$this.Icon");
-            MinimumSize = new Size(890, 497);
+            MinimumSize = new Size(1006, 648);
             Name = "IDE";
             Text = "EZCode IDE";
             WindowState = FormWindowState.Maximized;
@@ -1062,7 +1062,7 @@
         private ToolStripMenuItem nextbreakpointToolStripMenuItem;
         private ToolStripMenuItem endDebugSessionToolStripMenuItem;
         private ToolStripMenuItem docsToolStripMenuItem;
-        private ToolStripTextBox toolStripTextBox2;
+        private ToolStripTextBox VersionTB;
         private ToolStripDropDownButton toolStripDropDownButton6;
         private ToolStripMenuItem playProjectToolStripMenuItem;
         private ToolStripMenuItem playFileToolStripMenuItem;

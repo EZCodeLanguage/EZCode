@@ -12,6 +12,8 @@ namespace EZ_IDE
 {
     public partial class IDE : Form
     {
+        public static readonly string Version = "1.0.1";
+
         #region AutoComplete
         readonly AutocompleteMenu popupMenu;
         readonly string[] keywords = { "list", "group", "sound", "var", "print", "await", "bringto", "clear", "destroy", "event", "file", "input", "intersects", "messagebox", "stop", "shape", "textbox", "label", "button", "window", "global", "if", "loop", "else", "DEVPORTAL", "method", "endmethod" };
@@ -488,6 +490,8 @@ namespace EZ_IDE
             ControlsPropertyGrid.SelectedObject = new PropertyGridControls(ezcode);
             BreakpointsPropertyGridDebug.SelectedObject = new PropertyGridBreakPoints(this);
             loaded = true;
+
+            VersionTB.Text = $"IDE v{Version}";
         }
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
@@ -609,7 +613,6 @@ namespace EZ_IDE
             }
             playInDedicatedWindowToolStripMenuItem.Checked = Settings.Play_In_Dedicated_Window;
         }
-
         private void IDE_FormClosing(object sender, FormClosingEventArgs e)
         {
             // closing
