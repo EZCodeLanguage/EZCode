@@ -1,6 +1,7 @@
 ﻿using EZCode;
 using EZCode.Debug;
 using EZCode.EZPlayer;
+using EZCode.Variables;
 using FastColoredTextBoxNS;
 using Microsoft.VisualBasic;
 using System.ComponentModel;
@@ -366,7 +367,7 @@ namespace EZ_IDE
             public PropertyGridControls(EzCode ez) => ezcode = ez;
             public EzCode ezcode = new EzCode();
             [Category("Controls")]
-            [Description("The controls program contains")]
+            [Description("The controls the program contains")]
             public Control[] Controls
             {
                 get
@@ -387,6 +388,76 @@ namespace EZ_IDE
                     try
                     {
                         ezcode.AllControls = value.ToList();
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            }
+        }
+
+        class PropertyGridVars
+        {
+            public PropertyGridVars(EzCode ez) => ezcode = ez;
+            public EzCode ezcode = new EzCode();
+            [Category("Variables")]
+            [Description("The vars the program contains")]
+            public Var[] Variables
+            {
+                get
+                {
+                    Var[] vars = new Var[0];
+                    try
+                    {
+                        vars = ezcode.vars.ToArray();
+                    }
+                    catch
+                    {
+
+                    }
+                    return vars;
+                }
+                set
+                {
+                    try
+                    {
+                        ezcode.vars = value.ToList();
+                    }
+                    catch
+                    {
+
+                    }
+                }
+            }
+        }
+
+        class PropertyGridGroup
+        {
+            public PropertyGridGroup(EzCode ez) => ezcode = ez;
+            public EzCode ezcode = new EzCode();
+            [Category("Groups")]
+            [Description("The groups the program contains")]
+            public EZCode.Groups.Group[] Groups
+            {
+                get
+                {
+                    EZCode.Groups.Group[] groups = new EZCode.Groups.Group[0];
+                    try
+                    {
+                        groups = ezcode.groups.ToArray();
+                    }
+                    catch
+                    {
+
+                    }
+                    return groups;
+                }
+                set
+                {
+                    try
+                    {
+                        ezcode.groups = value.ToList();
                     }
                     catch
                     {
@@ -489,6 +560,8 @@ namespace EZ_IDE
 
             ControlsPropertyGrid.SelectedObject = new PropertyGridControls(ezcode);
             BreakpointsPropertyGridDebug.SelectedObject = new PropertyGridBreakPoints(this);
+            VarPropertyGridDebug.SelectedObject = new PropertyGridVars(ezcode);
+            GroupsPropertyGridDebug.SelectedObject = new PropertyGridGroup(ezcode);
             loaded = true;
 
             VersionTB.Text = $"IDE v{Version}";

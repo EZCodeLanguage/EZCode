@@ -3701,6 +3701,11 @@ namespace EZCode
                             value = control.BackgroundImageLayout.ToString();
                         }
                         break;
+                    case "name":
+                        {
+                            value = control.Name;
+                        }
+                        break;
                     default:
                         ErrorText(parts, ErrorTypes.custom, custom: $"'{ind[0]}' is not a valid value for '{control.Name}' in {SegmentSeperator} {codeLine}");
                         break;

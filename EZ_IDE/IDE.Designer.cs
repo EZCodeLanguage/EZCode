@@ -39,8 +39,12 @@
             tabPage1 = new TabPage();
             tabPage2 = new TabPage();
             tabPage3 = new TabPage();
-            MiniConsole = new RichTextBox();
+            tabControl2 = new TabControl();
+            tabPage4 = new TabPage();
             VarListView = new ListBox();
+            tabPage5 = new TabPage();
+            VarPropertyGridDebug = new PropertyGrid();
+            MiniConsole = new RichTextBox();
             BreakpointsPropertyGridDebug = new PropertyGrid();
             InputDebug = new TextBox();
             SendDebug = new Button();
@@ -107,10 +111,15 @@
             redoToolStripMenuItem = new ToolStripMenuItem();
             splitContainer2 = new SplitContainer();
             imageList1 = new ImageList(components);
+            tabPage6 = new TabPage();
+            GroupsPropertyGridDebug = new PropertyGrid();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
             tabPage3.SuspendLayout();
+            tabControl2.SuspendLayout();
+            tabPage4.SuspendLayout();
+            tabPage5.SuspendLayout();
             toolStrip1.SuspendLayout();
             ((System.ComponentModel.ISupportInitialize)splitContainer1).BeginInit();
             splitContainer1.Panel1.SuspendLayout();
@@ -123,6 +132,7 @@
             splitContainer2.Panel1.SuspendLayout();
             splitContainer2.Panel2.SuspendLayout();
             splitContainer2.SuspendLayout();
+            tabPage6.SuspendLayout();
             SuspendLayout();
             // 
             // visualoutput
@@ -214,7 +224,7 @@
             tabControl1.Multiline = true;
             tabControl1.Name = "tabControl1";
             tabControl1.SelectedIndex = 0;
-            tabControl1.Size = new Size(1081, 245);
+            tabControl1.Size = new Size(1103, 245);
             tabControl1.TabIndex = 4;
             // 
             // tabPage1
@@ -245,8 +255,8 @@
             // tabPage3
             // 
             tabPage3.BackColor = Color.Black;
+            tabPage3.Controls.Add(tabControl2);
             tabPage3.Controls.Add(MiniConsole);
-            tabPage3.Controls.Add(VarListView);
             tabPage3.Controls.Add(BreakpointsPropertyGridDebug);
             tabPage3.Controls.Add(InputDebug);
             tabPage3.Controls.Add(SendDebug);
@@ -258,9 +268,77 @@
             tabPage3.Location = new Point(4, 24);
             tabPage3.Name = "tabPage3";
             tabPage3.Padding = new Padding(3);
-            tabPage3.Size = new Size(1073, 217);
+            tabPage3.Size = new Size(1095, 217);
             tabPage3.TabIndex = 2;
             tabPage3.Text = "Debug";
+            // 
+            // tabControl2
+            // 
+            tabControl2.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
+            tabControl2.Controls.Add(tabPage4);
+            tabControl2.Controls.Add(tabPage5);
+            tabControl2.Controls.Add(tabPage6);
+            tabControl2.Location = new Point(242, 6);
+            tabControl2.Name = "tabControl2";
+            tabControl2.SelectedIndex = 0;
+            tabControl2.Size = new Size(246, 208);
+            tabControl2.TabIndex = 13;
+            // 
+            // tabPage4
+            // 
+            tabPage4.Controls.Add(VarListView);
+            tabPage4.Location = new Point(4, 24);
+            tabPage4.Name = "tabPage4";
+            tabPage4.Padding = new Padding(3);
+            tabPage4.Size = new Size(238, 180);
+            tabPage4.TabIndex = 0;
+            tabPage4.Text = "Var List";
+            tabPage4.UseVisualStyleBackColor = true;
+            // 
+            // VarListView
+            // 
+            VarListView.BackColor = Color.FromArgb(50, 50, 50);
+            VarListView.BorderStyle = BorderStyle.None;
+            VarListView.Dock = DockStyle.Fill;
+            VarListView.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
+            VarListView.ForeColor = Color.White;
+            VarListView.FormattingEnabled = true;
+            VarListView.ItemHeight = 17;
+            VarListView.Location = new Point(3, 3);
+            VarListView.Name = "VarListView";
+            VarListView.Size = new Size(232, 174);
+            VarListView.TabIndex = 12;
+            // 
+            // tabPage5
+            // 
+            tabPage5.Controls.Add(VarPropertyGridDebug);
+            tabPage5.Location = new Point(4, 24);
+            tabPage5.Name = "tabPage5";
+            tabPage5.Padding = new Padding(3);
+            tabPage5.Size = new Size(238, 180);
+            tabPage5.TabIndex = 1;
+            tabPage5.Text = "Var Property Grid";
+            tabPage5.UseVisualStyleBackColor = true;
+            // 
+            // VarPropertyGridDebug
+            // 
+            VarPropertyGridDebug.BackColor = Color.Black;
+            VarPropertyGridDebug.CategoryForeColor = Color.Cornsilk;
+            VarPropertyGridDebug.CategorySplitterColor = SystemColors.ControlLight;
+            VarPropertyGridDebug.CommandsBackColor = Color.FromArgb(50, 50, 50);
+            VarPropertyGridDebug.CommandsDisabledLinkColor = Color.FromArgb(50, 50, 50);
+            VarPropertyGridDebug.CommandsForeColor = Color.Cornsilk;
+            VarPropertyGridDebug.DisabledItemForeColor = Color.FromArgb(127, 255, 255, 255);
+            VarPropertyGridDebug.Dock = DockStyle.Fill;
+            VarPropertyGridDebug.HelpBackColor = SystemColors.ControlDarkDark;
+            VarPropertyGridDebug.HelpVisible = false;
+            VarPropertyGridDebug.LineColor = Color.FromArgb(30, 30, 30);
+            VarPropertyGridDebug.Location = new Point(3, 3);
+            VarPropertyGridDebug.Name = "VarPropertyGridDebug";
+            VarPropertyGridDebug.Size = new Size(232, 174);
+            VarPropertyGridDebug.TabIndex = 12;
+            VarPropertyGridDebug.ViewBackColor = SystemColors.ControlDarkDark;
+            VarPropertyGridDebug.ViewForeColor = SystemColors.Window;
             // 
             // MiniConsole
             // 
@@ -275,24 +353,10 @@
             MiniConsole.Location = new Point(494, 36);
             MiniConsole.Name = "MiniConsole";
             MiniConsole.ReadOnly = true;
-            MiniConsole.Size = new Size(571, 118);
+            MiniConsole.Size = new Size(593, 118);
             MiniConsole.TabIndex = 1;
             MiniConsole.Text = "";
             MiniConsole.WordWrap = false;
-            // 
-            // VarListView
-            // 
-            VarListView.Anchor = AnchorStyles.Top | AnchorStyles.Bottom | AnchorStyles.Left;
-            VarListView.BackColor = Color.FromArgb(50, 50, 50);
-            VarListView.BorderStyle = BorderStyle.None;
-            VarListView.Font = new Font("Segoe UI", 10F, FontStyle.Regular, GraphicsUnit.Point);
-            VarListView.ForeColor = Color.White;
-            VarListView.FormattingEnabled = true;
-            VarListView.ItemHeight = 17;
-            VarListView.Location = new Point(241, -1);
-            VarListView.Name = "VarListView";
-            VarListView.Size = new Size(248, 221);
-            VarListView.TabIndex = 12;
             // 
             // BreakpointsPropertyGridDebug
             // 
@@ -325,7 +389,7 @@
             InputDebug.ForeColor = Color.FromArgb(235, 235, 235);
             InputDebug.Location = new Point(494, 161);
             InputDebug.Name = "InputDebug";
-            InputDebug.Size = new Size(490, 19);
+            InputDebug.Size = new Size(512, 19);
             InputDebug.TabIndex = 8;
             InputDebug.KeyDown += input_KeyDown;
             // 
@@ -338,7 +402,7 @@
             SendDebug.FlatStyle = FlatStyle.Flat;
             SendDebug.Font = new Font("Cascadia Code", 9.75F, FontStyle.Regular, GraphicsUnit.Point);
             SendDebug.ForeColor = Color.FromArgb(235, 235, 235);
-            SendDebug.Location = new Point(990, 160);
+            SendDebug.Location = new Point(1012, 160);
             SendDebug.Name = "SendDebug";
             SendDebug.Size = new Size(75, 23);
             SendDebug.TabIndex = 10;
@@ -352,7 +416,7 @@
             QuitDebug.BackColor = SystemColors.ControlDark;
             QuitDebug.FlatStyle = FlatStyle.Popup;
             QuitDebug.ForeColor = SystemColors.ControlText;
-            QuitDebug.Location = new Point(970, 191);
+            QuitDebug.Location = new Point(992, 191);
             QuitDebug.Name = "QuitDebug";
             QuitDebug.Size = new Size(96, 23);
             QuitDebug.TabIndex = 6;
@@ -366,7 +430,7 @@
             NextBreakpointDebug.BackColor = SystemColors.ControlDark;
             NextBreakpointDebug.FlatStyle = FlatStyle.Popup;
             NextBreakpointDebug.ForeColor = SystemColors.ControlText;
-            NextBreakpointDebug.Location = new Point(746, 190);
+            NextBreakpointDebug.Location = new Point(768, 190);
             NextBreakpointDebug.Name = "NextBreakpointDebug";
             NextBreakpointDebug.Size = new Size(218, 23);
             NextBreakpointDebug.TabIndex = 5;
@@ -382,7 +446,7 @@
             nextSegmentDebug.ForeColor = SystemColors.ControlText;
             nextSegmentDebug.Location = new Point(494, 190);
             nextSegmentDebug.Name = "nextSegmentDebug";
-            nextSegmentDebug.Size = new Size(246, 23);
+            nextSegmentDebug.Size = new Size(268, 23);
             nextSegmentDebug.TabIndex = 4;
             nextSegmentDebug.Text = "Next Segment (F11)";
             nextSegmentDebug.UseVisualStyleBackColor = false;
@@ -398,7 +462,7 @@
             CurrentLine.Location = new Point(494, 6);
             CurrentLine.Name = "CurrentLine";
             CurrentLine.ReadOnly = true;
-            CurrentLine.Size = new Size(574, 25);
+            CurrentLine.Size = new Size(596, 25);
             CurrentLine.TabIndex = 3;
             // 
             // ControlsPropertyGrid
@@ -519,7 +583,7 @@
             toolStrip1.Padding = new Padding(0);
             toolStrip1.RenderMode = ToolStripRenderMode.System;
             toolStrip1.ShowItemToolTips = false;
-            toolStrip1.Size = new Size(1081, 25);
+            toolStrip1.Size = new Size(1103, 25);
             toolStrip1.Stretch = true;
             toolStrip1.TabIndex = 5;
             toolStrip1.Text = "toolStrip1";
@@ -807,8 +871,8 @@
             // 
             splitContainer1.Panel2.Controls.Add(fctb);
             splitContainer1.Panel2MinSize = 100;
-            splitContainer1.Size = new Size(1081, 389);
-            splitContainer1.SplitterDistance = 222;
+            splitContainer1.Size = new Size(1103, 389);
+            splitContainer1.SplitterDistance = 226;
             splitContainer1.TabIndex = 6;
             splitContainer1.SplitterMoved += splitContainer1_SplitterMoved;
             // 
@@ -822,7 +886,7 @@
             Tree.ItemHeight = 24;
             Tree.Location = new Point(0, 0);
             Tree.Name = "Tree";
-            Tree.Size = new Size(222, 389);
+            Tree.Size = new Size(226, 389);
             Tree.TabIndex = 0;
             Tree.BeforeSelect += Tree_BeforeSelect;
             Tree.AfterSelect += Tree_AfterSelect;
@@ -904,7 +968,7 @@
             fctb.SelectionColor = Color.FromArgb(90, 110, 110, 255);
             fctb.ServiceColors = null;
             fctb.ShowLineNumbers = false;
-            fctb.Size = new Size(855, 389);
+            fctb.Size = new Size(873, 389);
             fctb.TabIndex = 1;
             fctb.Zoom = 100;
             fctb.TextChanged += fctb_TextChanged;
@@ -981,7 +1045,7 @@
             // 
             splitContainer2.Panel2.Controls.Add(tabControl1);
             splitContainer2.Panel2MinSize = 100;
-            splitContainer2.Size = new Size(1081, 638);
+            splitContainer2.Size = new Size(1103, 638);
             splitContainer2.SplitterDistance = 389;
             splitContainer2.TabIndex = 0;
             splitContainer2.SplitterMoved += splitContainer2_SplitterMoved;
@@ -995,12 +1059,43 @@
             imageList1.Images.SetKeyName(1, "app_16x16.png");
             imageList1.Images.SetKeyName(2, "1302166543_virtualbox.png");
             // 
+            // tabPage6
+            // 
+            tabPage6.Controls.Add(GroupsPropertyGridDebug);
+            tabPage6.Location = new Point(4, 24);
+            tabPage6.Name = "tabPage6";
+            tabPage6.Padding = new Padding(3);
+            tabPage6.Size = new Size(238, 180);
+            tabPage6.TabIndex = 2;
+            tabPage6.Text = "Groups";
+            tabPage6.UseVisualStyleBackColor = true;
+            // 
+            // GroupsPropertyGridDebug
+            // 
+            GroupsPropertyGridDebug.BackColor = Color.Black;
+            GroupsPropertyGridDebug.CategoryForeColor = Color.Cornsilk;
+            GroupsPropertyGridDebug.CategorySplitterColor = SystemColors.ControlLight;
+            GroupsPropertyGridDebug.CommandsBackColor = Color.FromArgb(50, 50, 50);
+            GroupsPropertyGridDebug.CommandsDisabledLinkColor = Color.FromArgb(50, 50, 50);
+            GroupsPropertyGridDebug.CommandsForeColor = Color.Cornsilk;
+            GroupsPropertyGridDebug.DisabledItemForeColor = Color.FromArgb(127, 255, 255, 255);
+            GroupsPropertyGridDebug.Dock = DockStyle.Fill;
+            GroupsPropertyGridDebug.HelpBackColor = SystemColors.ControlDarkDark;
+            GroupsPropertyGridDebug.HelpVisible = false;
+            GroupsPropertyGridDebug.LineColor = Color.FromArgb(30, 30, 30);
+            GroupsPropertyGridDebug.Location = new Point(3, 3);
+            GroupsPropertyGridDebug.Name = "GroupsPropertyGridDebug";
+            GroupsPropertyGridDebug.Size = new Size(232, 174);
+            GroupsPropertyGridDebug.TabIndex = 13;
+            GroupsPropertyGridDebug.ViewBackColor = SystemColors.ControlDarkDark;
+            GroupsPropertyGridDebug.ViewForeColor = SystemColors.Window;
+            // 
             // IDE
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
             AutoScaleMode = AutoScaleMode.Font;
             BackColor = Color.FromArgb(10, 10, 10);
-            ClientSize = new Size(1081, 663);
+            ClientSize = new Size(1103, 663);
             Controls.Add(splitContainer2);
             Controls.Add(toolStrip1);
             Icon = (Icon)resources.GetObject("$this.Icon");
@@ -1016,6 +1111,9 @@
             tabPage2.ResumeLayout(false);
             tabPage3.ResumeLayout(false);
             tabPage3.PerformLayout();
+            tabControl2.ResumeLayout(false);
+            tabPage4.ResumeLayout(false);
+            tabPage5.ResumeLayout(false);
             toolStrip1.ResumeLayout(false);
             toolStrip1.PerformLayout();
             splitContainer1.Panel1.ResumeLayout(false);
@@ -1029,6 +1127,7 @@
             splitContainer2.Panel2.ResumeLayout(false);
             ((System.ComponentModel.ISupportInitialize)splitContainer2).EndInit();
             splitContainer2.ResumeLayout(false);
+            tabPage6.ResumeLayout(false);
             ResumeLayout(false);
         }
 
@@ -1110,5 +1209,11 @@
         private PropertyGrid BreakpointsPropertyGridDebug;
         private ListBox VarListView;
         private ToolStripMenuItem playInDedicatedWindowToolStripMenuItem;
+        private TabControl tabControl2;
+        private TabPage tabPage4;
+        private TabPage tabPage5;
+        private PropertyGrid VarPropertyGridDebug;
+        private TabPage tabPage6;
+        private PropertyGrid GroupsPropertyGridDebug;
     }
 }
