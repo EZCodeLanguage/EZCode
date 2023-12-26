@@ -3856,7 +3856,7 @@ namespace EZCode
                     default:
                         float number = find_value(ind, 1, 0)[0];
                         value = group.Controls[(int)number].Name;
-                        if (ind[2] == "id")
+                        if (ind.Length > 2 && ind[2] == "id")
                         {
                             value = group.Controls[(int)number].AccessibleName;
                         }
