@@ -4,7 +4,7 @@ using System.Windows.Forms;
 
 namespace EZCode.Groups;
 
-class Group
+public class Group
 {
     public string Method { get; set; }
     public HashSet<GButton> Buttons = new HashSet<GButton>();

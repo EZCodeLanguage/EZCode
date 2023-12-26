@@ -103,7 +103,7 @@ namespace EZCode
         /// <summary>
         /// List for windows
         /// </summary>
-        private List<Window> windows;
+        public List<Window> windows;
         /// <summary>
         /// List for variables
         /// </summary>
@@ -111,7 +111,7 @@ namespace EZCode
         /// <summary>
         /// List of Groups
         /// </summary>
-        private List<Group> groups;
+        public List<Group> groups;
         /// <summary>
         /// List of all controls
         /// </summary>
@@ -1630,40 +1630,104 @@ namespace EZCode
                             }
                             else if (getControl(keyword) != null)
                             {
-                                Control? control = getControl(keyword);
+                                Control? c = getControl(keyword);
                                 if (parts[1] != "=")
                                 {
-                                    control = await DoControl(parts, control.AccessibleDescription, 0);
+                                    c = await DoControl(parts, c.AccessibleDescription, 0);
                                 }
                                 else
                                 {
+                                    Control? n = null;
                                     GShape? s = null; GButton? b = null; GLabel? l = null; GTextBox? t = null;
-                                    switch (control.AccessibleDescription)
+                                    switch (c.AccessibleDescription)
                                     {
                                         case "shape":
-                                            s = control as GShape;
-                                            s = parts[2] != "newcontrol" ? getControl(parts[2], controlType.Shape) as GShape : new GShape();
-                                            s.Name = control.Name;
+                                            s = c as GShape;
+                                            n = parts[2] != "newcontrol" ? getControl(parts[2], controlType.Shape) as GShape : new GShape();
+                                            GShape? ns = n as GShape;
+                                            s.Points = ns.Points;
+                                            s.Poly = ns.Poly;
+                                            s.click = ns.click;
+                                            s.mousehover = ns.mousehover;
+                                            s.move = ns.move;
+                                            s.scale = ns.scale;
+                                            s.backcolor = ns.backcolor;
+                                            s.forecolor = ns.forecolor;
+                                            s.font = ns.font;
+                                            s.image = ns.image;
+                                            s.imagelayout = ns.imagelayout;
+                                            s.BGImageFile = ns.BGImageFile;
                                             break;
                                         case "button":
-                                            b = control as GButton;
-                                            b = parts[2] != "newcontrol" ? getControl(parts[2], controlType.Button) as GButton : new GButton();
-                                            b.Name = control.Name;
+                                            b = c as GButton;
+                                            n = parts[2] != "newcontrol" ? getControl(parts[2], controlType.Button) as GButton : new GButton();
+                                            GButton? nb = n as GButton;
+                                            b.isclick = nb.isclick;
+                                            b.AutoSize = nb.AutoSize;
+                                            b.click = nb.click;
+                                            b.mousehover = nb.mousehover;
+                                            b.move = nb.move;
+                                            b.scale = nb.scale;
+                                            b.backcolor = nb.backcolor;
+                                            b.forecolor = nb.forecolor;
+                                            b.font = nb.font;
+                                            b.image = nb.image;
+                                            b.imagelayout = nb.imagelayout;
+                                            b.BGImageFile = nb.BGImageFile;
                                             break;
                                         case "label":
-                                            l = control as GLabel;
-                                            l = parts[2] != "newcontrol" ? getControl(parts[2], controlType.Label) as GLabel : new GLabel();
-                                            l.Name = control.Name;
+                                            l = c as GLabel;
+                                            n = parts[2] != "newcontrol" ? getControl(parts[2], controlType.Label) as GLabel : new GLabel();
+                                            GLabel? nl = n as GLabel;
+                                            l.AutoSize = l.AutoSize;
+                                            l.click = nl.click;
+                                            l.mousehover = nl.mousehover;
+                                            l.move = nl.move;
+                                            l.scale = nl.scale;
+                                            l.backcolor = nl.backcolor;
+                                            l.forecolor = nl.forecolor;
+                                            l.font = nl.font;
+                                            l.image = nl.image;
+                                            l.imagelayout = nl.imagelayout;
+                                            l.BGImageFile = nl.BGImageFile;
                                             break;
                                         case "textbox":
-                                            t = control as GTextBox;
-                                            t = parts[2] != "newcontrol" ? getControl(parts[2], controlType.Textbox) as GTextBox : new GTextBox();
-                                            t.Name = control.Name;
+                                            t = c as GTextBox;
+                                            n = parts[2] != "newcontrol" ? getControl(parts[2], controlType.Textbox) as GTextBox : new GTextBox();
+                                            GTextBox? nt = n as GTextBox;
+                                            t.AutoSize = nt.AutoSize;
+                                            t.Multiline = nt.Multiline;
+                                            t.WordWrap = nt.WordWrap;
+                                            t.ScrollBars = nt.ScrollBars;
+                                            t.click = nt.click;
+                                            t.mousehover = nt.mousehover;
+                                            t.move = nt.move;
+                                            t.scale = nt.scale;
+                                            t.backcolor = nt.backcolor;
+                                            t.forecolor = nt.forecolor;
+                                            t.font = nt.font;
+                                            t.image = nt.image;
+                                            t.imagelayout = nt.imagelayout;
+                                            t.BGImageFile = nt.BGImageFile;
                                             break;
                                     }
-                                    if (control == null || (s == null && b == null && l == null && t == null))
+                                    c.Left = n.Left;
+                                    c.Top = n.Top;
+                                    c.Width = n.Width;
+                                    c.Height = n.Height;
+                                    c.Text = n.Text;
+                                    c.AccessibleDescription = n.AccessibleDescription;
+                                    c.AccessibleName = n.AccessibleName;
+                                    c.BackColor = n.BackColor;
+                                    c.ForeColor = n.ForeColor;
+                                    c.Font = n.Font;
+                                    c.Enabled = n.Enabled;
+                                    c.BackgroundImage = n.BackgroundImage;
+                                    c.BackgroundImageLayout = n.BackgroundImageLayout;
+
+                                    if (c == null || n == null)
                                     {
-                                        ErrorText(parts, ErrorTypes.custom, custom: $"An error occured when setting '{control.Name}' to '{parts[2]}' in {SegmentSeperator} {codeLine}");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"An error occured when setting '{c.Name}' to '{parts[2]}' in {SegmentSeperator} {codeLine}");
                                     }
                                 }
                             }
