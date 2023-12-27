@@ -13,7 +13,7 @@ namespace EZ_IDE
 {
     public partial class IDE : Form
     {
-        public static readonly string Version = "1.0.1";
+        public static readonly string Version = "1.0.7";
 
         #region AutoComplete
         readonly AutocompleteMenu popupMenu;
@@ -667,6 +667,7 @@ namespace EZ_IDE
             {
                 FCTB_Highlight = Debug.HighlightTextbox;
                 CurrentLine.Text = Debug.CurrentLineTextbox.Text;
+                currentSegment.Text = Debug.ezcode.codeLine.ToString();
                 fctb.ReadOnly = true;
                 string[] vars = ezcode.vars.Select(x => $"'{x.Name}' = '{x.Value}'").ToArray();
                 if (!varListItems.SequenceEqual(vars))

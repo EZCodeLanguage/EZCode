@@ -19,7 +19,16 @@ namespace EZ_IDE
 
             try
             {
-                PopulateControls(text, GetLineIndex(text, charNum), file);
+                int l = 0;
+                try
+                {
+                    l = GetLineIndex(text, charNum);
+                }
+                catch
+                {
+
+                }
+                PopulateControls(text, l, file);
             }
             catch
             {
@@ -34,14 +43,13 @@ namespace EZ_IDE
 
         private void PopulateControls(string text, int lineIndex, string file)
         {
+            FilePathTextBox.Text = file;
             string[] lines = text.Split('\n', '|');
 
             if (lineIndex >= 0 && lineIndex < lines.Length)
             {
                 string line = lines[lineIndex].Trim();
                 string[] parts = line.Split(" ");
-
-                FilePathTextBox.Text = parts[0];
 
                 int methodLineIndex = lineIndex;
                 while (methodLineIndex >= 0 && !lines[methodLineIndex].StartsWith("method"))
@@ -60,7 +68,6 @@ namespace EZ_IDE
                 SegmentNumericUpDown.Value = SegmentValue(lines, lineIndex, methodLineIndex);
             }
 
-            FilePathTextBox.Text = file;
         }
 
         static int SegmentValue(string[] lines, int lineIndex, int methodLineIndex)
