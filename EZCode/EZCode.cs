@@ -12,6 +12,7 @@ using System.Windows.Forms;
 using Group = EZCode.Groups.Group;
 using Player = Sound.Player;
 using Types = EZCode.Variables.Ivar.Types;
+using System.Security.Cryptography;
 
 namespace EZCode
 {
@@ -804,15 +805,64 @@ namespace EZCode
                                         ErrorText(parts, ErrorTypes.normal, $"global {parts[1]}");
                                     }
                                     break;
+                                case "instance":
+                                    switch (parts[2])
+                                    {
+                                        case "shape":
+                                        case "label":
+                                        case "textbox":
+                                        case "button":
+                                            try
+                                            {
+                                                await DoControl(parts, parts[2], 3, true, true);
+                                            }
+                                            catch
+                                            {
+                                                ErrorText(parts, ErrorTypes.normal, $"global instance {parts[2]}");
+                                            }
+                                            break;
+                                        default:
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox', 'label', 'button', or 'shape' after {keyword} in {SegmentSeperator} {codeLine}");
+                                            break;
+                                    }
+                                    break;
                                 default:
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'var', 'list', 'group', 'textbox', 'label', 'button', or 'shape' after {keyword} in {SegmentSeperator} {codeLine}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'var', 'list', 'group', 'instance, 'textbox', 'label', 'button', or 'shape' after {keyword} in {SegmentSeperator} {codeLine}");
                                     break;
                             }
                         }
                         catch
                         {
                             ErrorText(parts, ErrorTypes.normal, keyword);
-                        } // VAR
+                        } // GLOBAL
+                        break;
+                    case "instance":
+                        try
+                        {
+                            switch (parts[1])
+                            {
+                                case "shape":
+                                case "label":
+                                case "textbox":
+                                case "button":
+                                    try
+                                    {
+                                        await DoControl(parts, parts[1], 2, false, true);
+                                    }
+                                    catch
+                                    {
+                                        ErrorText(parts, ErrorTypes.normal, $"instance {parts[1]}");
+                                    }
+                                    break;
+                                default:
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox', 'label', 'button', or 'shape' after {keyword} in {SegmentSeperator} {codeLine}");
+                                    break;
+                            }
+                        }
+                        catch
+                        {
+                            ErrorText(parts, ErrorTypes.normal, keyword);
+                        } // INSTANCE
                         break;
                     case "intersects":
                         try
@@ -2940,7 +2990,7 @@ namespace EZCode
             }
             return var;
         }
-        async Task<Control> DoControl(string[] parts, string contype, int index, bool global = false)
+        async Task<Control> DoControl(string[] parts, string contype, int index, bool global = false, bool instance = false)
         {
             GShape? obj = new GShape();
             GLabel? lab = new GLabel();
@@ -2952,7 +3002,7 @@ namespace EZCode
                 contype == "textbox" ? controlType.Textbox :
                 contype == "button" ? controlType.Button :
                 controlType.None;
-            Control control = await createControl(parts, controltype, index, global: global);
+            Control control = await createControl(parts, controltype, index, global: global, instance:instance);
             obj = control is GShape ? control as GShape : null;
             lab = control is GLabel ? control as GLabel : null;
             txb = control is GTextBox ? control as GTextBox : null;
@@ -4000,9 +4050,10 @@ namespace EZCode
 
             return control;
         }
-        async Task<Control> createControl(string[] parts, controlType controltype, int index = 1, bool overwrite = true, bool global = false)
+        async Task<Control> createControl(string[] parts, controlType controltype, int index = 1, bool overwrite = true, bool global = false, bool instance = false)
         {
-            string name = parts[index];
+            string name = "";
+            if (!instance) name = parts[index];
 
             int violation = methods.Select(x => x.Name).Contains(name) == true ? 3 : overwrite ? 0 : AllControls.Select(x => x.Name).Contains(name) == true ? 1 : UnusableNames.Contains(name) ? 2 : UnusableContains.Any(unusable => name.Contains(unusable)) ? 2 : 0;
             violation = IsNumericString(name) ? 2 : violation;
@@ -4029,14 +4080,12 @@ namespace EZCode
             if (controltype == controlType.Shape)
             {
                 GShape control = new GShape();
-                if (getControl(name) != null && getControl(name).AccessibleDescription == type && overwrite) control = getControl(name) as GShape;
-                else if (getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}' in {SegmentSeperator} {codeLine}");
+                if (!instance && getControl(name) != null && getControl(name).AccessibleDescription == type && overwrite) control = getControl(name) as GShape;
+                else if (!instance && getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}' in {SegmentSeperator} {codeLine}");
                 try
                 {
                     control.Name = name;
-                    control.BackColor = Color.Black;
-                    control = await Change(control, parts, index + 1, false, false, true) as GShape;
-                    control.Name = name;
+                    control = await Change(control, parts, index + 1, false, false, true, instance) as GShape;
                     control.AccessibleDescription = type;
                 }
                 catch
@@ -4063,7 +4112,7 @@ namespace EZCode
 
                 try
                 {
-                    control = await Change(control, parts, index + 1) as GLabel;
+                    control = await Change(control, parts, index + 1, instance:instance) as GLabel;
                 }
                 catch
                 {
@@ -4088,7 +4137,7 @@ namespace EZCode
 
                 try
                 {
-                    control = await Change(control, parts, index + 1) as GTextBox;
+                    control = await Change(control, parts, index + 1, instance: instance) as GTextBox;
                 }
                 catch
                 {
@@ -4115,7 +4164,7 @@ namespace EZCode
 
                 try
                 {
-                    control = await Change(control, parts, index + 1) as GButton;
+                    control = await Change(control, parts, index + 1, instance: instance) as GButton;
                 }
                 catch
                 {
@@ -4133,9 +4182,9 @@ namespace EZCode
             }
             return null;
         }
-        async Task<Control> Change(Control _control, string[] _parts, int index, bool text = true, bool allzero = false, bool sides = false)
+        async Task<Control> Change(Control _control, string[] _parts, int index, bool text = true, bool allzero = false, bool sides = false, bool instance = false)
         {
-            string[] parts = string.Join(" ", _parts.Skip(index)).Split(",");
+            string[] parts = string.Join(" ", _parts.Skip(instance ? index - 1 : index)).Split(",");
             Control control = _control;
             string[]? txt = null;
             float[]? getpoints = null;
@@ -4187,10 +4236,28 @@ namespace EZCode
             }
             catch
             {
+                int ply = control is GShape gsa1 ? gsa1.Poly : 0;
+                GShape.Type typ = control is GShape gsa2 ? gsa2.type : GShape.Type.Square;
                 int x = control.Left,
                     y = control.Top,
                     w = control.Width,
                     h = control.Height;
+                Color bg = control.BackColor,
+                    fc = control.ForeColor;
+                ImageLayout imageLayout = control.BackgroundImageLayout;
+                Image BGimage = control.BackgroundImage;
+                string id = control.AccessibleName,
+                    namee = control.Name,
+                    textt = control.Text;
+                bool readonl = control is GTextBox tb1 ? tb1.ReadOnly : false,
+                    multiline = control is GTextBox tb2 ? tb2.Multiline : false,
+                    wordwrap = control is GTextBox tb3 ? tb3.Multiline : false,
+                    enabled = control.Enabled,
+                    autosize = control.AutoSize;
+                ScrollBars scrollbars = control is GTextBox tb4 ? tb4.ScrollBars : ScrollBars.None;
+                Font font = control.Font;
+                PointF[] _points = control is GShape gsa3 ? gsa3.Points : Array.Empty<PointF>();
+
                 foreach (string p in parts)
                 {
                     string[] values = p.Split(':');
@@ -4201,8 +4268,15 @@ namespace EZCode
                         case "id":
                             {
                                 if (!AllControls.Any(x => x.AccessibleName == after[0]))
-                                    control.AccessibleName = after[0];
+                                    id = after[0];
                                 else ErrorText(_parts, ErrorTypes.custom, custom: $"A control already has the id: '{after[0].Trim()}'. For control '{control.Name}' in {SegmentSeperator} {codeLine}");
+                            }
+                            break;
+                        case "name":
+                            {
+                                if (!AllControls.Any(x => x.Name == after[0]))
+                                    namee = after[0];
+                                else ErrorText(_parts, ErrorTypes.custom, custom: $"A control already has the name: '{after[0].Trim()}'. For control '{namee}' in {SegmentSeperator} {codeLine}");
                             }
                             break;
                         case "focus":
@@ -4212,15 +4286,15 @@ namespace EZCode
                             break;
                         case "readonly":
                             {
-                                if (control is GTextBox g)
-                                    g.ReadOnly = (bool)BoolCheck(after, 0);
+                                if (control is GTextBox)
+                                    readonl = (bool)BoolCheck(after, 0);
                                 else
                                     ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}' in {SegmentSeperator} {codeLine}");
                             }
                             break;
                         case "enable":
                             {
-                                control.Enabled = (bool)BoolCheck(after, 0);
+                                enabled = (bool)BoolCheck(after, 0);
                             }
                             break;
                         case "font":
@@ -4278,15 +4352,18 @@ namespace EZCode
                                 {
                                     ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for font value in {SegmentSeperator} {codeLine}");
                                 }
-                                control.Font = new Font(fontType, fontSize, fontStyle);
+                                font = new Font(fontType, fontSize, fontStyle);
                             }
                             break;
                         case "point":
                         case "points":
                             {
-                                if (control is GShape gs)
+                                if (control is GShape)
                                 {
+                                    GShape gs = new GShape();
                                     gs = custompoints(after, 0, gs);
+                                    _points = gs.Points;
+                                    typ = gs.type;
                                 }
                                 else
                                 {
@@ -4297,7 +4374,7 @@ namespace EZCode
                         case "auto":
                         case "autosize":
                             {
-                                control.AutoSize = (bool)BoolCheck(after, 0);
+                                autosize = (bool)BoolCheck(after, 0);
                             }
                             break;
                         case "multi":
@@ -4305,7 +4382,7 @@ namespace EZCode
                             {
                                 if (control is GTextBox tb)
                                 {
-                                    tb.Multiline = (bool)BoolCheck(after, 0);
+                                    multiline = (bool)BoolCheck(after, 0);
                                 }
                                 else
                                 {
@@ -4316,13 +4393,10 @@ namespace EZCode
                         case "wrap":
                         case "wordwrap":
                             {
-                                if (control is GTextBox tb)
+                                if (control is GTextBox)
                                 {
                                     bool tr = (bool)BoolCheck(after, 0);
-                                    tb.WordWrap = tr;
-                                    tb.AcceptsReturn = !tr;
-                                    tb.AcceptsTab = !tr;
-                                    tb.AllowDrop = !tr;
+                                    wordwrap = tr;
                                 }
                                 else
                                 {
@@ -4371,7 +4445,7 @@ namespace EZCode
                         case "t":
                         case "text":
                             {
-                                control.Text = after[0];
+                                textt = after[0];
                             }
                             break;
                         case "x":
@@ -4404,14 +4478,14 @@ namespace EZCode
                         case "bg":
                         case "backcolor":
                             {
-                                control.BackColor = returncolor(_parts, after, 0, control.BackColor, allzero ? 0 : sides ? 0 : 255);
+                                bg = returncolor(_parts, after, 0, control.BackColor, allzero ? 0 : sides ? 0 : 255);
                             }
                             break;
                         case "fc":
                         case "fg":
                         case "forecolor":
                             {
-                                control.ForeColor = returncolor(_parts, after, 0, control.ForeColor, allzero ? 0 : sides ? 255 : 0);
+                                fc = returncolor(_parts, after, 0, control.ForeColor, allzero ? 0 : sides ? 255 : 0);
                             }
                             break;
                         case "poly":
@@ -4425,12 +4499,12 @@ namespace EZCode
                                     {
                                         ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}' in {SegmentSeperator} {codeLine}");
                                     }
-                                    else if (poly == 3) gs.type = GShape.Type.Triangle;
-                                    else if (poly == 4) gs.type = GShape.Type.Square;
+                                    else if (poly == 3) typ = GShape.Type.Triangle;
+                                    else if (poly == 4) typ = GShape.Type.Square;
                                     else
                                     {
-                                        gs.type = GShape.Type.Polygon;
-                                        gs.Poly = poly;
+                                        typ = GShape.Type.Polygon;
+                                        ply = poly;
                                     }
                                     gs.Refresh();
                                 }
@@ -4453,7 +4527,7 @@ namespace EZCode
                                     else
                                     {
                                         Image i = Image.FromFile(image[0]);
-                                        control.BackgroundImage = i;
+                                        BGimage = i;
                                     }
                                     if (control is GShape aa) aa.BGImageFile = image[0];
                                     else if (control is GLabel ab) ab.BGImageFile = image[0];
@@ -4471,23 +4545,23 @@ namespace EZCode
                                 string type = after[0];
                                 if (type == "tile")
                                 {
-                                    control.BackgroundImageLayout = ImageLayout.Tile;
+                                    imageLayout = ImageLayout.Tile;
                                 }
                                 else if (type == "center")
                                 {
-                                    control.BackgroundImageLayout = ImageLayout.Center;
+                                    imageLayout = ImageLayout.Center;
                                 }
                                 else if (type == "zoom")
                                 {
-                                    control.BackgroundImageLayout = ImageLayout.Zoom;
+                                    imageLayout = ImageLayout.Zoom;
                                 }
                                 else if (type == "none")
                                 {
-                                    control.BackgroundImageLayout = ImageLayout.None;
+                                    imageLayout = ImageLayout.None;
                                 }
                                 else if (type == "stretch")
                                 {
-                                    control.BackgroundImageLayout = ImageLayout.Stretch;
+                                    imageLayout = ImageLayout.Stretch;
                                 }
                                 else
                                 {
@@ -4504,6 +4578,37 @@ namespace EZCode
                 control.Top = y;
                 control.Width = w;
                 control.Height = h;
+                control.BackColor = bg;
+                control.ForeColor = fc;
+                control.BackgroundImageLayout = imageLayout;
+                control.BackgroundImage = BGimage;
+                control.Name = namee;
+                control.AccessibleName = id;
+                control.Enabled = enabled;
+                control.Font = font;
+                control.AutoSize = autosize;
+                control.Text = textt;
+                if (control is GShape a1)
+                {
+                    a1.Poly = ply;
+                    a1.type = typ;
+                    a1.Points = _points;
+                }
+                if (control is GTextBox a2)
+                {
+                    a2.ReadOnly = readonl;
+                    a2.WordWrap = wordwrap;
+                    a2.Multiline = multiline;
+                    a2.ScrollBars = scrollbars;
+                    a2.WordWrap = wordwrap;
+                    a2.AcceptsReturn = !wordwrap;
+                    a2.AcceptsTab = !wordwrap;
+                    a2.AllowDrop = !wordwrap;
+                }
+                if (instance & control.Name == "")
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Control instance created has no name. Please add the name property, `name:`, to the control in {SegmentSeperator} {codeLine}");
+                }
             }
             return control;
         }
