@@ -305,7 +305,7 @@ namespace EZCode
         #region EZCode_Script_Player
         Method? currentmethod = null;
         string returnOutput = "";
-        bool devDisplay = true, lastif = true;
+        bool devDisplay = true, lastif = true, restart = false;
         int devportal = 0, ifmany = 0, loopmany = 0;
         async Task<string[]> PlaySwitch(string[]? _parts = null, string jumpsto = "", string[]? splitcode = null, int currentindex = 0, Debugger? debugger = null)
         {
@@ -1027,6 +1027,10 @@ namespace EZCode
                                     break;
                                 case "return":
                                     stillInFile = false;
+                                    break;
+                                case "restart":
+                                    playing = false;
+                                    restart = true;
                                     break;
                                 default:
                                     ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'all' or 'return' in {SegmentSeperator} {codeLine}");
@@ -3446,7 +3450,7 @@ namespace EZCode
                                     Random rand = new Random();
                                     try
                                     {
-                                        value = rand.Next(v1, v2 - 1).ToString();
+                                        value = rand.Next(v1, v2 + 1).ToString();
                                     }
                                     catch
                                     {
@@ -3898,10 +3902,16 @@ namespace EZCode
                         }
                         break;
                     case "contains":
-                        if (ind.Length > 2)
+                        value = var.Description == Types.Array ? var.array.Length.ToString() : var.text.Length.ToString();
+                        if (ind.Length > 2 && !var.isArray())
                         {
                             string v = ind[2];
                             value = var.Value.Contains(v) ? "1" : "0";
+                        }
+                        else if (ind.Length > 2 && var.isArray())
+                        {
+                            string[] v = getString_value(ind, 2, usecolon: false);
+                            value = var.Value.Contains(v[0]) ? "1" : "0";
                         }
                         else
                         {
@@ -5190,7 +5200,15 @@ namespace EZCode
 
             for (int i = 0; i < lines.Count; i++)
             {
-                if (!playing) return output;
+                if (!playing)
+                {
+                    if (restart)
+                    {
+                        restart = false;
+                        await Play(Code, false);
+                    }
+                    return output;
+                }
                 codeLine = i + 1;
                 List<string> parts = lines[i].Split(new char[] { ' ' }).Where(x => x != "").ToList();
                 for (int j = 0; j < parts.Count; j++)
@@ -5213,6 +5231,11 @@ namespace EZCode
                 if (bool.Parse(task[1]) == false) i = lines.Count - 1;
                 output += task[0];
                 ConsoleText = output;
+            }
+            if (restart)
+            {
+                restart = false;
+                await Play(Code, false);
             }
             if (playing) playing = false;
             StopAllSounds();
@@ -5241,6 +5264,8 @@ namespace EZCode
         public void Stop()
         {
             _pplaying = false;
+            restart = false;
+            playing = false;
             returnOutput = "";
             devDisplay = true;
             devportal = 0;
