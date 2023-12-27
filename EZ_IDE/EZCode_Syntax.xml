@@ -9,7 +9,7 @@
 	<rule style="Pink">\b(if|loop|else|DEVPORTAL|method|endmethod)\b</rule>
 	
 	<style name="Keyword" color="CadetBlue" fontStyle="Regular"></style>
-	<rule style="Keyword">\b(list|group|sound|var|print|await|bringto|clear|destroy|event|file|input|intersects|messagebox|stop|shape|textbox|label|button|window|global)\b</rule>
+	<rule style="Keyword">\b(list|group|sound|var|print|await|bringto|clear|instance|destroy|event|file|input|intersects|messagebox|stop|shape|textbox|label|button|window|global)\b</rule>
 	
 	<style name="Loop" color="LightBlue" fontStyle="Regular"/>
 	<rule style="Loop">(?&lt;=\blist\b\s*).*\b(new|add|equals|remove|destroy|clear)\b</rule>

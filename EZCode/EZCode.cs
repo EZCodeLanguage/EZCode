@@ -12,7 +12,6 @@ using System.Windows.Forms;
 using Group = EZCode.Groups.Group;
 using Player = Sound.Player;
 using Types = EZCode.Variables.Ivar.Types;
-using System.Security.Cryptography;
 
 namespace EZCode
 {
@@ -2738,7 +2737,7 @@ namespace EZCode
                         {
                             varray.Add(getControl(values_.Trim()));
                         }
-                        else if (values_.StartsWith(":"))
+                        else if (values_.StartsWith(":")) 
                         {
                             string[] allv = values_.Remove(0, 1).Split(",").Select(x => x.Trim()).ToArray();
                             for (int i = 0; i < allv.Length; i++)
@@ -3604,6 +3603,20 @@ namespace EZCode
                 Control control = getControl(ind[0]);
                 switch (ind[1].ToLower())
                 {
+                    case "align":
+                        if (control is GLabel _glb1)
+                        {
+                            value = _glb1.TextAlign.ToString();
+                        }
+                        else if (control is GButton _gbt1)
+                        {
+                            value = _gbt1.TextAlign.ToString();
+                        }
+                        else
+                        {
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Labels or Buttons have '{ind[1]}' property");
+                        }
+                        break;
                     case "id":
                         value = control.AccessibleName;
                         break;
@@ -4023,6 +4036,21 @@ namespace EZCode
                     name = n;
                 }
             }
+            if (name.Contains("'"))
+            {
+                string[] varray = name.Split("'");
+                for (int j = 0; j < varray.Length; j++)
+                {
+                    if (j % 2 == 1)
+                    {
+                        for (int k = 0; k < vars.Count; k++)
+                        {
+                            if (varray[j] == vars[k].Name) varray[j] = vars[k].Value;
+                        }
+                    }
+                }
+                name = string.Join("", varray);
+            }
 
             switch (controltype)
             {
@@ -4257,6 +4285,10 @@ namespace EZCode
                 ScrollBars scrollbars = control is GTextBox tb4 ? tb4.ScrollBars : ScrollBars.None;
                 Font font = control.Font;
                 PointF[] _points = control is GShape gsa3 ? gsa3.Points : Array.Empty<PointF>();
+                ContentAlignment align = 
+                    align = control is GLabel lb1 ? lb1.TextAlign : 
+                    align = control is GButton bt1 ? bt1.TextAlign :
+                    ContentAlignment.TopLeft;
 
                 foreach (string p in parts)
                 {
@@ -4265,6 +4297,28 @@ namespace EZCode
                     string[] after = getString_value(values, int.Parse(before[1]), true);
                     switch (before[0].Trim().ToLower())
                     {
+                        case "align":
+                            if (control is GButton or GLabel)
+                            {
+                                switch (after[0])
+                                {
+                                    case "topleft": align = ContentAlignment.TopLeft; break;
+                                    case "topright": align = ContentAlignment.TopCenter; break;
+                                    case "topcenter": align = ContentAlignment.TopRight; break;
+                                    case "middleleft": align = ContentAlignment.MiddleLeft; break;
+                                    case "middlecenter": align = ContentAlignment.MiddleCenter; break;
+                                    case "middleright": align = ContentAlignment.MiddleRight; break;
+                                    case "bottomleft": align = ContentAlignment.BottomLeft; break;
+                                    case "bottomcenter": align = ContentAlignment.BottomCenter; break;
+                                    case "bottomright": align = ContentAlignment.BottomRight; break;
+                                    default: ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'topleft', 'topright', 'topcenter', 'middleleft', 'middlecenter', 'middleright', 'bottomleft', 'bottomcenter', or 'bottomright' for '{control.Name}'"); break; 
+                                }
+                            }
+                            else
+                            {
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'label' or 'button' for '{control.Name}'");
+                            }
+                        break;
                         case "id":
                             {
                                 if (!AllControls.Any(x => x.AccessibleName == after[0]))
@@ -4604,6 +4658,14 @@ namespace EZCode
                     a2.AcceptsReturn = !wordwrap;
                     a2.AcceptsTab = !wordwrap;
                     a2.AllowDrop = !wordwrap;
+                }
+                if (control is GLabel a3)
+                {
+                    a3.TextAlign = align;
+                }
+                if (control is GButton a4)
+                {
+                    a4.TextAlign = align;
                 }
                 if (instance & control.Name == "")
                 {
