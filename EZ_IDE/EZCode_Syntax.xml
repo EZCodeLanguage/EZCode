@@ -39,7 +39,7 @@
 	<rule style="AfterWordText">(?&lt;=\b(print|messagebox|DEVPORTAL)\b\s*).*</rule>
 
 	<style name="Properties" color="SkyBlue" fontStyle="Regular"/>
-	<rule style="Properties">\b(focus:|readonly:|z:|enable:|font:|point:|points:|auto:|autosize:|multi:|multiline:|wrap:|wordwrap:|vertical:|verticalscrollbar:|horizantal:|horizantalscrollbar:|x:|y:|t:|text:|h:|height:|w:|width:|bc:|bg:|backcolor:|fc:|fg:|forecolor:|poly:|p:|image:|imagelayout:|foucs:|enable:|minwidth:|maxwidth:|minheight:|maxheight:|opacity:|showicon:|showintaskbar:|icon:|state:|type:|startposition:)</rule>
+	<rule style="Properties">\b(focus:|readonly:|z:|enable:|font:|point:|points:|auto:|align:|autosize:|multi:|multiline:|wrap:|wordwrap:|vertical:|verticalscrollbar:|horizantal:|horizantalscrollbar:|x:|y:|t:|text:|h:|height:|w:|width:|bc:|bg:|backcolor:|fc:|fg:|forecolor:|poly:|p:|image:|imagelayout:|foucs:|enable:|minwidth:|maxwidth:|minheight:|maxheight:|opacity:|showicon:|showintaskbar:|icon:|state:|type:|startposition:)</rule>
 
 	<style name="ColonResponse" color="SkyBlue" fontStyle="Regular"/>
 	<rule style="ColonResponse">\b(:length|:contains|system:|:time|:random|:isnumber|:machine|:currentfile|:currentplaydirectory|:space|:newline|:pipe|:nothing)</rule>

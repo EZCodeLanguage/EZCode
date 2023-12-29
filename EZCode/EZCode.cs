@@ -1885,14 +1885,14 @@ namespace EZCode
 
                                     List<string> lines = method.Contents.ToList();
                                     string output = "";
-                                    for (int i = 1; i < method.Length - 1; i++)
+                                    for (int i = 1; i < lines.Count - 1; i++)
                                     {
                                         if (!playing) break;
                                         codeLine = i + 1;
                                         List<string> a_parts = lines[i].Split(new char[] { ' ' }).Where(x => x != "").ToList();
                                         for (int j = 0; j < a_parts.Count; j++)
                                         {
-                                            if (a_parts[j].Trim() == "->")
+                                             if (a_parts[j].Trim() == "->")
                                             {
                                                 try
                                                 {
@@ -4303,8 +4303,8 @@ namespace EZCode
                                 switch (after[0])
                                 {
                                     case "topleft": align = ContentAlignment.TopLeft; break;
-                                    case "topright": align = ContentAlignment.TopCenter; break;
-                                    case "topcenter": align = ContentAlignment.TopRight; break;
+                                    case "topcenter": align = ContentAlignment.TopCenter; break;
+                                    case "topright": align = ContentAlignment.TopRight; break;
                                     case "middleleft": align = ContentAlignment.MiddleLeft; break;
                                     case "middlecenter": align = ContentAlignment.MiddleCenter; break;
                                     case "middleright": align = ContentAlignment.MiddleRight; break;
