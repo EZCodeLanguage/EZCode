@@ -13,7 +13,7 @@ namespace EZ_IDE
 {
     public partial class IDE : Form
     {
-        public static readonly string Version = "1.0.9";
+        public static readonly string Version = "1.0.8";
 
         #region AutoComplete
         readonly AutocompleteMenu popupMenu;
