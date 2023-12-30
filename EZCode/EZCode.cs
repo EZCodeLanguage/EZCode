@@ -24,7 +24,7 @@ namespace EZCode
         /// <summary>
         /// Directory of the script playing
         /// </summary>
-        public static string Version { get; } = "2.1.7";
+        public static string Version { get; } = "2.1.8";
         /// <summary>
         /// The Official EZCode Icon
         /// </summary>
@@ -2678,8 +2678,29 @@ namespace EZCode
                         ErrorText(parts, ErrorTypes.missingVar, keyword, name);
                     }
                     break;
+                case "split":
+                    try
+                    {
+                        var = getVar(name);
+                        if (var.isSet && var.isArray())
+                        {
+                            string value = getString_value(parts, _index + 2)[0];
+                            string splitter = getString_value(parts, _index + 3)[0];
+                            string[] allvalues = value.Split(splitter);
+                            var.set(array: allvalues);
+                        }
+                        else if (!var.isArray())
+                        {
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable");
+                        }
+                    }
+                    catch
+                    {
+                        ErrorText(parts, ErrorTypes.custom, custom:$"Error splitting values to list");
+                    }
+                    break;
                 default:
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'add', 'equals', 'remove', 'destroy' or 'clear'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'add', 'equals', 'remove', 'destroy', 'split' or 'clear'");
                     break;
             }
             var.Method = currentmethod != null && !global ? currentmethod.Name : "";
