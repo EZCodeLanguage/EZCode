@@ -53,6 +53,10 @@ namespace EZCode
         /// </summary>
         public string? IconPath { get; set; }
         /// <summary>
+        /// Default Icon for project
+        /// </summary>
+        public readonly string DefaultIconPath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "EZCode", "EZCode", "EZCode_Logo.ico");
+        /// <summary>
         /// Icon for project
         /// </summary>
         public Icon Icon { get; set; }
@@ -186,7 +190,7 @@ namespace EZCode
             Debug = false;
             CloseOnEnd = true;
             Name ??= $"EZCode_v{EzCode.Version}";
-            string iconpath = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "EZCode", "EZCode", "EZCode_Logo.ico");
+            string iconpath = DefaultIconPath;
             IconPath ??= File.Exists(iconpath) ? iconpath : null;
 
             string filecontent = FileContents;

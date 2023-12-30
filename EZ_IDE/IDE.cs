@@ -13,7 +13,7 @@ namespace EZ_IDE
 {
     public partial class IDE : Form
     {
-        public static readonly string Version = "1.0.7";
+        public static readonly string Version = "1.0.8";
 
         #region AutoComplete
         readonly AutocompleteMenu popupMenu;
@@ -1227,7 +1227,7 @@ namespace EZ_IDE
         private void textToCodeToolStripMenuItem_Click(object sender, EventArgs e)
         {
             // text to code
-            Text_To_Code text_to_code = new Text_To_Code();
+            Format_Code text_to_code = new Format_Code();
             text_to_code.ShowDialog();
         }
 
