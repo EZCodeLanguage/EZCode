@@ -10,7 +10,7 @@ namespace Installer
         {
             List<Option> options = new List<Option>()
             {
-                new Option(" - Install latest version of EZCode", 0, true),
+                new Option($" - Install EZCode v{EZCode.EzCode.Version}", 0, true),
                 new Option(" - Uninstall EZCode", 1, false),
                 //new Option(" - Download extension", 2, false),
             };

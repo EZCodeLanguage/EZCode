@@ -30,4 +30,8 @@
     <PackageReference Include="DeepCopy" Version="1.0.3" />
   </ItemGroup>
 
+  <ItemGroup>
+    <ProjectReference Include="..\EZCode\EZCode.csproj" />
+  </ItemGroup>
+
 </Project>
