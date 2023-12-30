@@ -549,7 +549,7 @@
             // 
             newToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem, projectToolStripMenuItem });
             newToolStripMenuItem.Name = "newToolStripMenuItem";
-            newToolStripMenuItem.Size = new Size(177, 22);
+            newToolStripMenuItem.Size = new Size(180, 22);
             newToolStripMenuItem.Text = "New";
             // 
             // fileToolStripMenuItem
@@ -572,7 +572,7 @@
             // 
             openToolStripMenuItem.DropDownItems.AddRange(new ToolStripItem[] { fileToolStripMenuItem1, folderToolStripMenuItem1, projectToolStripMenuItem1 });
             openToolStripMenuItem.Name = "openToolStripMenuItem";
-            openToolStripMenuItem.Size = new Size(177, 22);
+            openToolStripMenuItem.Size = new Size(180, 22);
             openToolStripMenuItem.Text = "Open";
             // 
             // fileToolStripMenuItem1
@@ -603,7 +603,7 @@
             // 
             saveToolStripMenuItem.Name = "saveToolStripMenuItem";
             saveToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+S";
-            saveToolStripMenuItem.Size = new Size(177, 22);
+            saveToolStripMenuItem.Size = new Size(180, 22);
             saveToolStripMenuItem.Text = "Save";
             saveToolStripMenuItem.Click += saveToolStripMenuItem_Click;
             // 
@@ -611,7 +611,7 @@
             // 
             exitToolStripMenuItem.Name = "exitToolStripMenuItem";
             exitToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+Shift+Q";
-            exitToolStripMenuItem.Size = new Size(177, 22);
+            exitToolStripMenuItem.Size = new Size(180, 22);
             exitToolStripMenuItem.Text = "Exit";
             exitToolStripMenuItem.Click += exitToolStripMenuItem_Click;
             // 
@@ -659,7 +659,7 @@
             // 
             copyToolStripMenuItem1.Name = "copyToolStripMenuItem1";
             copyToolStripMenuItem1.ShortcutKeyDisplayString = "Ctrl+C";
-            copyToolStripMenuItem1.Size = new Size(152, 22);
+            copyToolStripMenuItem1.Size = new Size(180, 22);
             copyToolStripMenuItem1.Text = "Copy";
             copyToolStripMenuItem1.Click += copyToolStripMenuItem_Click;
             // 
@@ -667,7 +667,7 @@
             // 
             cutToolStripMenuItem.Name = "cutToolStripMenuItem";
             cutToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+X";
-            cutToolStripMenuItem.Size = new Size(152, 22);
+            cutToolStripMenuItem.Size = new Size(180, 22);
             cutToolStripMenuItem.Text = "Cut";
             cutToolStripMenuItem.Click += cutToolStripMenuItem_Click;
             // 
@@ -675,7 +675,7 @@
             // 
             pastToolStripMenuItem.Name = "pastToolStripMenuItem";
             pastToolStripMenuItem.ShortcutKeyDisplayString = "Ctrl+V";
-            pastToolStripMenuItem.Size = new Size(152, 22);
+            pastToolStripMenuItem.Size = new Size(180, 22);
             pastToolStripMenuItem.Text = "Paste";
             pastToolStripMenuItem.Click += pasteToolStripMenuItem_Click;
             // 
@@ -683,7 +683,7 @@
             // 
             deleteToolStripMenuItem2.Name = "deleteToolStripMenuItem2";
             deleteToolStripMenuItem2.ShortcutKeyDisplayString = "Del";
-            deleteToolStripMenuItem2.Size = new Size(152, 22);
+            deleteToolStripMenuItem2.Size = new Size(180, 22);
             deleteToolStripMenuItem2.Text = "Delete";
             deleteToolStripMenuItem2.Click += deleteToolStripMenuItem1_Click;
             // 
@@ -691,7 +691,7 @@
             // 
             undoToolStripMenuItem1.Name = "undoToolStripMenuItem1";
             undoToolStripMenuItem1.ShortcutKeyDisplayString = "Ctrl+Z";
-            undoToolStripMenuItem1.Size = new Size(152, 22);
+            undoToolStripMenuItem1.Size = new Size(180, 22);
             undoToolStripMenuItem1.Text = "Undo";
             undoToolStripMenuItem1.Click += undoToolStripMenuItem_Click;
             // 
@@ -699,7 +699,7 @@
             // 
             redoToolStripMenuItem1.Name = "redoToolStripMenuItem1";
             redoToolStripMenuItem1.ShortcutKeyDisplayString = "Ctrl+Y";
-            redoToolStripMenuItem1.Size = new Size(152, 22);
+            redoToolStripMenuItem1.Size = new Size(180, 22);
             redoToolStripMenuItem1.Text = "Redo";
             redoToolStripMenuItem1.Click += redoToolStripMenuItem_Click;
             // 
@@ -724,7 +724,7 @@
             textToCodeToolStripMenuItem.Name = "textToCodeToolStripMenuItem";
             textToCodeToolStripMenuItem.ShortcutKeyDisplayString = "Alt+T";
             textToCodeToolStripMenuItem.Size = new Size(244, 22);
-            textToCodeToolStripMenuItem.Text = "Text to Code";
+            textToCodeToolStripMenuItem.Text = "Format Code";
             textToCodeToolStripMenuItem.Click += textToCodeToolStripMenuItem_Click;
             // 
             // projectSettingsToolStripMenuItem

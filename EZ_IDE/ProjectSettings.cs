@@ -150,7 +150,7 @@ namespace EZ_IDE
         public string ConverToCode()
         {
             string startup = StartUp.Replace("\"", "").Trim();
-            string code = $"{(Name != "" ? $"name:\"{Name}\"{Environment.NewLine}" : "")}fileinerror:\"{FileInError}\"{Environment.NewLine}showbuild:\"{ShowBuild}\"{Environment.NewLine}isvisual:\"{IsVisual}\"{Environment.NewLine}closeonend:\"{CloseOnEnd}\"{Environment.NewLine}debug:\"{Debug}\"{Environment.NewLine}clearconsole:\"{ClearConsole}\"{Environment.NewLine}window:\"{Window}\"{(Icon != "" ? $"{Environment.NewLine}icon:\"{Icon}\"" : "")}{(startup != "" ? $"{Environment.NewLine}startup:\"{startup}\"" : "")}";
+            string code = $"{(Name != "" ? $"name:\"{Name}\"{Environment.NewLine}" : "")}{(!FileInError ? $"fileinerror:\"{FileInError}\"{Environment.NewLine}" : "")}{(ShowBuild ? $"showbuild:\"{ShowBuild}\"{Environment.NewLine}" : "")}{(IsVisual ? $"isvisual:\"{IsVisual}\"{Environment.NewLine}" : "")}{(!CloseOnEnd ? $"closeonend:\"{CloseOnEnd}\"{Environment.NewLine}" : "")}{(Debug ? $"debug:\"{Debug}\"{Environment.NewLine}" : "")}{(!ClearConsole ? $"clearconsole:\"{ClearConsole}\"{Environment.NewLine}" : "")}{(Window ? $"window:\"{Window}\"{Environment.NewLine}" : "")}{(Icon != "" ? $"icon:\"{Icon}\"{Environment.NewLine}" : "")}{(startup != "" ? $"startup:\"{startup}\"" : "")}";
             foreach (var file in Files_Code)
             {
                 code += Environment.NewLine + file;

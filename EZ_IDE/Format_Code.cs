@@ -11,9 +11,9 @@ using static System.Net.Mime.MediaTypeNames;
 
 namespace EZ_IDE
 {
-    public partial class Text_To_Code : Form
+    public partial class Format_Code : Form
     {
-        public Text_To_Code()
+        public Format_Code()
         {
             InitializeComponent();
             AllowSpaces.Checked = Settings.TtC_Allow_Spaces;

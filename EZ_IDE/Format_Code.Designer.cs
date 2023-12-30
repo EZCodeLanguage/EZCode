@@ -1,6 +1,6 @@
 ﻿namespace EZ_IDE
 {
-    partial class Text_To_Code
+    partial class Format_Code
     {
         /// <summary>
         /// Required designer variable.
