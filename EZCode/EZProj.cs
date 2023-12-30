@@ -27,23 +27,23 @@ namespace EZCode
         /// <summary>
         /// is the opposite of <see cref="EzCode.InPanel"/>
         /// </summary>
-        public bool Window { get; set; }
+        public bool Window { get; set; } = false;
         /// <summary>
         /// is <see cref="EzCode.showFileInError"/>
         /// </summary>
-        public bool FileInErrors { get; set; }
+        public bool FileInErrors { get; set; } = true;
         /// <summary>
         /// is <see cref="EzCode.showStartAndEnd"/>
         /// </summary>
-        public bool ShowBuild { get; set; }
+        public bool ShowBuild { get; set; } = false;
         /// <summary>
         /// is visual or just console
         /// </summary>
-        public bool IsVisual { get; set; }
+        public bool IsVisual { get; set; } = false;
         /// <summary>
         /// Clear console before each build
         /// </summary>
-        public bool ClearConsole { get; set; }
+        public bool ClearConsole { get; set; } = true;
         /// <summary>
         /// Name of Project
         /// </summary>
@@ -59,11 +59,11 @@ namespace EZCode
         /// <summary>
         /// Debugs project
         /// </summary>
-        public bool Debug { get; set; }
+        public bool Debug { get; set; } = false;
         /// <summary>
         /// close the application on end
         /// </summary>
-        public bool CloseOnEnd { get; set; }
+        public bool CloseOnEnd { get; set; } = true;
 
         /// <summary>
         /// Empty Instance of <see cref="EZProj"/>.
