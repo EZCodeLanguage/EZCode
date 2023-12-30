@@ -24,7 +24,7 @@ namespace EZCode
         /// <summary>
         /// Directory of the script playing
         /// </summary>
-        public static string Version { get; } = "2.1.6";
+        public static string Version { get; } = "2.1.7";
         /// <summary>
         /// The Official EZCode Icon
         /// </summary>

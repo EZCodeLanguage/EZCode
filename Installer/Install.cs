@@ -42,7 +42,7 @@ namespace Installer
             try
             {
                 string type = "";
-                string realTag = "2.0.2";
+                string realTag = $"{EZCode.EzCode.Version}";
                 string releaseTag = type != "" ? $"v{realTag}_{type.ToLower()}" : $"v{realTag}";
                 string releaseTitle = type != "" ? $"v{realTag}_{type}" : $"v{realTag}";
 
