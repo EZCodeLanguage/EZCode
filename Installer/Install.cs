@@ -23,7 +23,7 @@ namespace Installer
         static bool done;
         public static string appdataDir = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.CommonApplicationData), "EZCode");
         public static string tempDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.Windows), "Temp", "EZCode");
-        public static string filepath = "C:\\Program Files\\EZCode\\";
+        public static string filepath = "C:\\Program Files (x86)\\EZCode\\";
         public static string githubRepoUrl = "https://github.com/JBrosDevelopment/EZCode";
         static string _MainText;
         static int percentage;
