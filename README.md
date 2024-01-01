@@ -19,7 +19,7 @@ The [Official Docs](https://github.com/JBrosDevelopment/EZCode/wiki/EZCode-Docs)
 <details open>
 <summary><h2>Community</h2></summary>
 
-Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/JBrosDevelopment/EZCode-Projects.git). Create a pull request and it will be accepted as soon as possible. There is also the [Discussion Board](https://github.com/JBrosDevelopment/EZCode/discussions) for anybody who has questions or wants to share. If you need any help, you can look over the [Wiki](https://github.com/JBrosDevelopment/EZCode/wiki) which includes instructions and documentation.
+Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/JBrosDevelopment/EZCode-Projects.git). Create a pull request and it will be accepted as soon as possible. There is also the [Discussions](https://github.com/JBrosDevelopment/EZCode/discussions) for anybody who has questions or wants to share. If you need any help, you can look over the [Wiki](https://github.com/JBrosDevelopment/EZCode/wiki) which includes instructions and documentation.
 
 Please join our [Discord Server](https://discord.gg/DpBrp6Zy) to get closer to the community!
 </details>
