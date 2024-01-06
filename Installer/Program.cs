@@ -1,6 +1,8 @@
-﻿using IWshRuntimeLibrary;
+﻿using EZCode;
+using IWshRuntimeLibrary;
 using Microsoft.Win32;
 using System.Runtime.InteropServices;
+using System.Security.AccessControl;
 
 namespace Installer
 {
@@ -86,6 +88,8 @@ namespace Installer
                 {
                     case 0: // Install
                         Install.DownloadMain();
+                        RegisterInUninstallRegistry("EZCode", Path.Combine(Install.filepath, $"Installer v{EzCode.Version}", "EZCode_Installer.exe"), Path.Combine(Install.appdataDir, "EZCode", "EZCode_Logo.ico"));
+                        SetFullAccessPermissions(Install.filepath);
                         break;
                     case 1: // Uninstall
                         Uninstall.RemovePrompt();
@@ -103,6 +107,58 @@ namespace Installer
             Console.WriteLine("Press any key to exit...");
             Console.ResetColor();
             Console.ReadKey();
+        }
+        public static void RegisterInUninstallRegistry(string displayName, string uninstallString, string displayIcon)
+        {
+            try
+            {
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", true))
+                {
+                    if (key != null)
+                    {
+                        using (RegistryKey appKey = key.CreateSubKey(displayName))
+                        {
+                            appKey.SetValue("DisplayName", displayName);
+                            appKey.SetValue("UninstallString", uninstallString);
+                            appKey.SetValue("DisplayIcon", displayIcon);
+                        }
+                    }
+                    else
+                    {
+                        Console.ForegroundColor = ConsoleColor.Red;
+                        Console.WriteLine();
+                        Console.WriteLine("Error: Unable to open registry key.");
+                        Console.ResetColor();
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                Console.ForegroundColor = ConsoleColor.Red;
+                Console.WriteLine();
+                Console.WriteLine($"Error: {ex.Message}");
+                Console.ResetColor();
+            }
+        }
+        static void SetFullAccessPermissions(string directoryPath)
+        {
+            try
+            {
+                DirectoryInfo directoryInfo = new DirectoryInfo(directoryPath);
+
+                // Get the existing access control settings for the directory
+                DirectorySecurity directorySecurity = directoryInfo.GetAccessControl();
+
+                // Add a rule that allows full control to all users
+                directorySecurity.AddAccessRule(new FileSystemAccessRule("Users", FileSystemRights.FullControl, InheritanceFlags.ContainerInherit | InheritanceFlags.ObjectInherit, PropagationFlags.None, AccessControlType.Allow));
+
+                // Apply the new access control settings to the directory
+                directoryInfo.SetAccessControl(directorySecurity);
+            }
+            catch (Exception ex)
+            {
+                Console.WriteLine($"Error setting permissions: {ex.Message}");
+            }
         }
 
         public static void CreateShortcut(string name, string path)

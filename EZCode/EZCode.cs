@@ -16,7 +16,7 @@ using Types = EZCode.Variables.Ivar.Types;
 namespace EZCode
 {
     /// <summary>
-    /// This is the Official EZCode Source Code. See Version '<seealso cref="Version"/>'
+    /// This is the Official EZCode Source Code. See <seealso cref="Version"/>
     /// </summary>
     public class EzCode
     {
@@ -24,7 +24,7 @@ namespace EZCode
         /// <summary>
         /// Directory of the script playing
         /// </summary>
-        public static string Version { get; } = "2.1.8";
+        public static string Version { get; } = "2.2.0";
         /// <summary>
         /// The Official EZCode Icon
         /// </summary>
@@ -645,6 +645,37 @@ namespace EZCode
                             {
                                 AddText(output);
                             }
+                        }
+                        catch
+                        {
+                            ErrorText(parts, ErrorTypes.normal, keyword);
+                        }
+                        break;
+                    case "math":
+                        try
+                        {
+                            string[] equationparts = parts.Skip(1).TakeWhile(x => !(x == "=>" || x == ":")).ToArray();
+                            for (int i = 0; i < equationparts.Length; i++)
+                            {
+                                Var var = getVar(equationparts[i]);
+                                if (var.isSet)
+                                {
+                                    equationparts[i] = var.Value;
+                                }
+                                else
+                                {
+                                    equationparts[i] = MathFunc(equationparts[i], parts);
+                                }
+                            }
+                            string equation = string.Join(" ", equationparts);
+                            string? result = SolveEquation(equation);
+                            if (result == null) ErrorText(parts, ErrorTypes.errorEquation);
+
+                            if (jumpTo)
+                            {
+                                return new string[] { result, stillInFile.ToString() };
+                            }
+                            returnOutput += SetVKeyword(parts, 3, keyword, result, Types.Float);
                         }
                         catch
                         {
@@ -1957,6 +1988,202 @@ namespace EZCode
                 returnOutput += ErrorText(_parts, ErrorTypes.unkown, returnoutput: false) + "\n";
                 return new string[] { returnOutput, "true" };
             }
+        }
+        string MathFunc(string value, string[] parts)
+        {
+            if (!value.EndsWith(")") && Regex.Matches(value, @"\)").Count == 1 && Regex.Matches(value, @"\(").Count == 1)
+                return value;
+
+            if (value.StartsWith("abs("))
+            {
+                string eq = value.Replace("abs(", "").Replace(")", "");
+                try
+                {
+                    eq = getVar(eq).isSet ? getVar(eq).Value : eq;
+                    return Math.Abs(decimal.Parse(eq)).ToString();
+                }
+                catch
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'");
+                }
+            }
+            else if (value.StartsWith("neg("))
+            {
+                string eq = value.Replace("neg(", "").Replace(")", "");
+                try
+                {
+                    eq = getVar(eq).isSet ? getVar(eq).Value : eq;
+                    return (-decimal.Parse(eq)).ToString();
+                }
+                catch
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'");
+                }
+            }
+            else if (value.StartsWith("sq("))
+            {
+                string eq = value.Replace("sq(", "").Replace(")", "");
+                try
+                {
+                    eq = getVar(eq).isSet ? getVar(eq).Value : eq;
+                    return (decimal.Parse(eq) * decimal.Parse(eq)).ToString();
+                }
+                catch
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'");
+                }
+            }
+            else if (value.StartsWith("sqr("))
+            {
+                string eq = value.Replace("sqr(", "").Replace(")", "");
+                try
+                {
+                    eq = getVar(eq).isSet ? getVar(eq).Value : eq;
+                    return Math.Sqrt(double.Parse(eq)).ToString();
+                }
+                catch
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'");
+                }
+            }
+            else if (value.StartsWith("round("))
+            {
+                string eq = value.Replace("round(", "").Replace(")", "");
+                try
+                {
+                    eq = getVar(eq).isSet ? getVar(eq).Value : eq;
+                    return Math.Round(decimal.Parse(eq)).ToString();
+                }
+                catch
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'");
+                }
+            }
+            else if (value.StartsWith("pow("))
+            {
+                string eq = value.Replace("pow(", "").Replace(")", "");
+                string[] eqboth = eq.Split(",");
+                if (eqboth.Length != 2)
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 2 parts for power function with '{parts[0]}'. Correct Syntax, 'pow(value,exponent)'. This is");
+                    return value;
+                }
+                try
+                {
+                    string ineq1 = getVar(eqboth[0].Trim()).isSet ? getVar(eqboth[0].Trim()).Value : eqboth[0].Trim();
+                    string ineq2 = getVar(eqboth[1].Trim()).isSet ? getVar(eqboth[1].Trim()).Value : eqboth[1].Trim();
+                    return Math.Pow(double.Parse(ineq1), double.Parse(ineq2)).ToString();
+                }
+                catch
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'pow(value,exponent)'. This is with '{parts[0]}'");
+                }
+            }
+            else if (value.StartsWith("clamp("))
+            {
+                string eq = value.Replace("clamp(", "").Replace(")", "");
+                string[] eqboth = eq.Split(",");
+                if (eqboth.Length != 3)
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 3 parts for clamp function with '{parts[0]}'. Correct Syntax, 'clamp(value,min,max)'. This is");
+                    return value;
+                }
+                try
+                {
+                    float ineq1 = getVar(eqboth[0].Trim()).isSet ? float.Parse(getVar(eqboth[0].Trim()).Value) : float.Parse(eqboth[0].Trim());
+                    float ineq2 = getVar(eqboth[1].Trim()).isSet ? float.Parse(getVar(eqboth[1].Trim()).Value) : float.Parse(eqboth[1].Trim());
+                    float ineq3 = getVar(eqboth[2].Trim()).isSet ? float.Parse(getVar(eqboth[2].Trim()).Value) : float.Parse(eqboth[2].Trim());
+
+                    if (ineq1.CompareTo(ineq2) < 0) return ineq2.ToString();
+                    else if (ineq1.CompareTo(ineq3) > 0) return ineq3.ToString();
+                    else return ineq1.ToString();
+                }
+                catch
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'clamp(value,min,max)'. This is with '{parts[0]}'");
+                }
+            }
+            else if (value.StartsWith("sum("))
+            {
+                string eq = value.Replace("sum(", "").Replace(")", "");
+                string[] eqboth = eq.Split(",");
+                float result = 0;
+                try
+                {
+                    for (int i = 0; i < eqboth.Length; i++)
+                    {
+                        result += getVar(eqboth[i].Trim()).isSet ? float.Parse(getVar(eqboth[i].Trim()).Value) : float.Parse(eqboth[i].Trim());
+                    }
+                    return result.ToString();
+                }
+                catch
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'sum(value1,value2,etc)'. This is with '{parts[0]}'");
+                }
+            }
+            else if (value.StartsWith("avg("))
+            {
+                string eq = value.Replace("avg(", "").Replace(")", "");
+                string[] eqboth = eq.Split(",");
+                float[] result = new float[0];
+                try
+                {
+                    for (int i = 0; i < eqboth.Length; i++)
+                    {
+                        result = result.Append(getVar(eqboth[i].Trim()).isSet ? float.Parse(getVar(eqboth[i].Trim()).Value) : float.Parse(eqboth[i].Trim())).ToArray();
+                    }
+                    return result.Average().ToString();
+                }
+                catch
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'avg(value1,value2,etc)'. This is with '{parts[0]}'");
+                }
+            }
+            else if (value.StartsWith("min("))
+            {
+                string eq = value.Replace("min(", "").Replace(")", "");
+                string[] eqboth = eq.Split(",");
+                float? result = null;
+                try
+                {
+                    for (int i = 0; i < eqboth.Length; i++)
+                    {
+                        float fl = getVar(eqboth[i].Trim()).isSet ? float.Parse(getVar(eqboth[i].Trim()).Value) : float.Parse(eqboth[i].Trim());
+                        result ??= fl;
+                        if (fl < result) result = fl;
+                    }
+                    return result.ToString()!;
+                }
+                catch
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'min(value1,value2)'. This is with '{parts[0]}'");
+                }
+            }
+            else if (value.StartsWith("max("))
+            {
+                string eq = value.Replace("max(", "").Replace(")", "");
+                string[] eqboth = eq.Split(",");
+                float? result = null;
+                try
+                {
+                    for (int i = 0; i < eqboth.Length; i++)
+                    {
+                        float fl = getVar(eqboth[i].Trim()).isSet ? float.Parse(getVar(eqboth[i].Trim()).Value) : float.Parse(eqboth[i].Trim());
+                        result ??= fl;
+                        if (fl > result) result = fl;
+                    }
+                    return result.ToString()!;
+                }
+                catch
+                {
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'max(value1,value2)'. This is with '{parts[0]}'");
+                }
+            }
+            else if (value.Equals("pi()"))
+            {
+                return Math.PI.ToString();
+            }
+            return value;
         }
         Method? getMethod(string name)
         {

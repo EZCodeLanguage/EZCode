@@ -10,12 +10,7 @@
   </PropertyGroup>
 
   <ItemGroup>
-    <Compile Remove="_IDE.cs" />
-  </ItemGroup>
-
-  <ItemGroup>
     <Content Include="EZCode_Logo_Grey.ico" />
-    <Content Include="_IDE.cs" />
   </ItemGroup>
 
   <ItemGroup>

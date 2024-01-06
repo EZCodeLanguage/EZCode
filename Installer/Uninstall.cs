@@ -1,4 +1,5 @@
 ﻿using IWshRuntimeLibrary;
+using Microsoft.Win32;
 using System.Xml.Linq;
 using File = System.IO.File;
 
@@ -72,6 +73,12 @@ namespace Installer
 
                 // Remove Start Menu shortcuts
                 RemoveStartMenuShortcut();
+
+                // Remove the application's registry entry
+                using (RegistryKey key = Registry.LocalMachine.OpenSubKey(@"SOFTWARE\Microsoft\Windows\CurrentVersion\Uninstall", true))
+                {
+                    key?.DeleteSubKeyTree("EZCode", false);
+                }
 
                 Console.Write(" Done!");
             }

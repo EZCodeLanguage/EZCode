@@ -53,6 +53,7 @@ namespace Installer
                     {
                         case 0: // Install main
                             installcore();
+                            installer();
                             ezcodeplayer();
                             break;
                         case 1: // Install SLN
@@ -91,6 +92,34 @@ namespace Installer
                     Directory.Delete(tempDirectory, true);
                 }
 
+                void installer() // Installer
+                {
+                    Working($"\n\nInstalling Installer From {githubRepoUrl}.git... This may take a second.");
+
+                    Directory.CreateDirectory(tempDirectory);
+
+                    string installFile = $"Installer_v{realTag}.zip";
+
+                    string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
+
+                    string decompressDirectory = Path.Combine(filepath, $"Installer {releaseTitle}");
+
+                    WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
+
+                    string[] d = Directory.GetFiles(Path.Combine(tempDirectory, $"Installer"));
+                    Directory.CreateDirectory(decompressDirectory);
+                    for (int i = 0; i < d.Length; i++)
+                    {
+                        FileInfo info = new FileInfo(d[i]);
+                        string t_decompress = Path.Combine(decompressDirectory, info.Name);
+                        File.Move(d[i], t_decompress, true);
+                    }
+                    Directory.Delete(tempDirectory, true);
+
+                    Program.CreateShortcut("EZ IDE", Path.Combine(decompressDirectory, "EZ_IDE.exe"));
+                    Program.CreateStartMenuShortcut("EZCode", "EZ IDE", Path.Combine(decompressDirectory, "EZ_IDE.exe"));
+                }
+
                 void ezcodeplayer() // Install EZCode Main
                 {
                     Working($"\n\nInstalling Player From {githubRepoUrl}.git... This may take a second.");
@@ -105,7 +134,7 @@ namespace Installer
 
                     WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
 
-                    string[] d = Directory.GetFiles(Path.Combine(tempDirectory, $"EZCode_Player_v{realTag}"));
+                    string[] d = Directory.GetFiles(Path.Combine(tempDirectory, $"EZCode_Player"));
                     Directory.CreateDirectory(decompressDirectory);
                     for (int i = 0; i < d.Length; i++)
                     {
@@ -150,7 +179,7 @@ namespace Installer
 
                 void ez_ide() // Install IDE
                 {
-                    Working($"\n\nInstalling SLN Builder From {githubRepoUrl}.git... This may take a second.");
+                    Working($"\n\nInstalling IDE From {githubRepoUrl}.git... This may take a second.");
 
                     Directory.CreateDirectory(tempDirectory);
 
