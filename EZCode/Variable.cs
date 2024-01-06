@@ -32,7 +32,6 @@ namespace EZCode.Variables
         bool isFile();
         bool isFile(string value);
         bool isString();
-        string value();
         bool? returnBool();
     }
     public class Var : Ivar
@@ -286,7 +285,7 @@ namespace EZCode.Variables
 
             return true;
         }
-        public string value()
+        private string value()
         {
             if (isNumber())
             {
