@@ -1,5 +1,5 @@
-﻿using EZCode.GControls;
-using EZCode.Debug;
+﻿using EZCode.Debug;
+using EZCode.GControls;
 using EZCode.Methods;
 using EZCode.Variables;
 using EZCode.Windows;
@@ -2905,6 +2905,8 @@ namespace EZCode
                                 group1.SetRelativeChenges(control);
                             else
                                 group1.SetAbsoluteChenges(tempc, control);
+                            control.Refresh();
+                            if (control is GShape a) a.Refresh();
                         }
                     }
                     catch
@@ -4855,6 +4857,11 @@ namespace EZCode
                                 if (ended == 1)
                                 {
                                     count++;
+                                    var varstring = texts[l].Replace("\\(", texts[l].StartsWith("\\(") ? "" : "\\(").Replace(")\\", texts[l].EndsWith(")\\") ? "" : ")\\");
+                                    if (getVar(varstring).isSet)
+                                    {
+                                        texts[l] = $"{(texts[l].StartsWith("\\(") ? "\\(" : "")}{getVar(varstring).Value}{(texts[l].EndsWith(")\\") ? ")\\" : "")}";
+                                    }
                                     brackets += texts[l];
                                     if (l < texts.Count - 1) brackets += " ";
                                 }
@@ -4988,6 +4995,11 @@ namespace EZCode
                     if (ended == 1)
                     {
                         next++;
+                        var varstring = parts[l].Replace("(", parts[l].StartsWith("(") ? "" : "(").Replace(")", parts[l].EndsWith(")") ? "" : ")");
+                        if (getVar(varstring).isSet)
+                        {
+                            parts[l] = $"{(parts[l].StartsWith("(") ? "(" : "")}{getVar(varstring).Value}{(parts[l].EndsWith(")") ? ")" : "")}";
+                        }
                         brackets.Append(parts[l]);
                         if (l < parts.Length - 1) brackets.Append(" ");
                     }
@@ -5048,12 +5060,6 @@ namespace EZCode
         {
             try
             {
-                // Replace variables with their values
-                foreach (Var variable in vars)
-                {
-                    equation = equation.Replace(variable.Name, variable.Value);
-                }
-
                 DataTable dt = new DataTable();
                 dt.Columns.Add("expression", typeof(string), equation);
                 DataRow row = dt.NewRow();
