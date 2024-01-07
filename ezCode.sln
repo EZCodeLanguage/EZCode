@@ -15,7 +15,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EZ_SLN_Builder", "EZ-SLN-Bu
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EZCode_Installer", "Installer\EZCode_Installer.csproj", "{8F43107E-FAE2-4E19-A9B9-2D93F06037F5}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EZ_IDE", "EZ_IDE\EZ_IDE.csproj", "{A458612A-2A00-47A7-8834-00DF64385482}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EZ_IDE", "EZ_IDE\EZ_IDE.csproj", "{A458612A-2A00-47A7-8834-00DF64385482}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
