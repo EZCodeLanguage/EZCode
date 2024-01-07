@@ -865,11 +865,18 @@ namespace EZ_IDE
         private void projectToolStripMenuItem1_Click(object sender, EventArgs e)
         {
             // open project
-            OpenFileDialog dialog = new OpenFileDialog();
-            dialog.Filter = "EZProj|*.ezproj";
-            dialog.ShowDialog();
-            Settings.Current_Project_File = dialog.FileName;
-            Manager.OpenFolder(new FileInfo(dialog.FileName).Directory.ToString());
+            try
+            {
+                OpenFileDialog dialog = new OpenFileDialog();
+                dialog.Filter = "EZProj|*.ezproj";
+                dialog.ShowDialog();
+                Settings.Current_Project_File = dialog.FileName;
+                Manager.OpenFolder(new FileInfo(dialog.FileName).Directory.ToString());
+            }
+            catch
+            {
+                MessageBox.Show("Could not open project", "EZ IDE", MessageBoxButtons.OK, MessageBoxIcon.Warning);
+            }
         }
 
         private void playProjectToolStripMenuItem_Click(object sender, EventArgs e)
