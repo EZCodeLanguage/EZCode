@@ -9,6 +9,7 @@ using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
+using static System.Windows.Forms.LinkLabel;
 using Group = EZCode.Groups.Group;
 using Player = Sound.Player;
 using Types = EZCode.Variables.Ivar.Types;
@@ -245,6 +246,10 @@ namespace EZCode
         /// Needs to have Key_Down and Key_Up event connected to KeyInput_Down and KeyInput_Up
         /// </summary>
         public HashSet<Keys> Keys = new HashSet<Keys>();
+        /// <summary>
+        /// If the code is currently running EZText
+        /// </summary>
+        private bool isEZText = false;
 
         public static readonly string SegmentSeperator = "segment";
         /// <summary>
@@ -1570,27 +1575,31 @@ namespace EZCode
                     default:
                         try
                         {
-                            if (keyword == "#" || keyword == "#create".ToLower() || keyword == "#suppress".ToLower() || keyword == "#current" || keyword == "#project")
+                            if (keyword == "#" || keyword == "#create".ToLower() || keyword == "#suppress".ToLower() || keyword == "#current" || keyword == "#project" || keyword == "#eztext")
                             {
                                 int index =
                                     keyword == "#" && parts[1] == "create".ToLower() ? 2 :
                                     keyword == "#" && parts[1] == "suppress".ToLower() ? 2 :
                                     keyword == "#" && parts[1] == "project".ToLower() ? 2 :
                                     keyword == "#" && parts[1] == "current".ToLower() ? 2 :
+                                    keyword == "#" && parts[1] == "eztext".ToLower() ? 2 :
                                     keyword == "#create".ToLower() ? 1 :
                                     keyword == "#suppress".ToLower() ? 1 :
                                     keyword == "#current".ToLower() ? 1 :
                                     keyword == "#project".ToLower() ? 1 :
+                                    keyword == "#eztext".ToLower() ? 1 :
                                     0;
                                 keyword =
                                     keyword == "#" && parts[1] == "create".ToLower() ? "#create" :
                                     keyword == "#" && parts[1] == "suppress".ToLower() ? "#suppress" :
                                     keyword == "#" && parts[1] == "current".ToLower() ? "#current" :
                                     keyword == "#" && parts[1] == "project".ToLower() ? "#project" :
+                                    keyword == "#" && parts[1] == "eztext".ToLower() ? "#eztext" :
                                     keyword == "#create".ToLower() ? keyword.ToLower() :
                                     keyword == "#suppress".ToLower() ? keyword.ToLower() :
                                     keyword == "#current".ToLower() ? keyword.ToLower() :
                                     keyword == "#project".ToLower() ? keyword.ToLower() :
+                                    keyword == "#eztext".ToLower() ? keyword.ToLower() :
                                     keyword;
                                 switch (keyword)
                                 {
@@ -1702,6 +1711,58 @@ namespace EZCode
                                                 }
 
                                             }
+                                        }
+                                        break;
+                                    case "#eztext":
+                                        if (parts[index].ToLower() != "start" && parts[index].ToLower() != "end")
+                                        {
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'start' or 'end' keyword after '#eztext'");
+                                        }
+                                        else if (parts[index].ToLower() == "start")
+                                        {
+                                            List<string> everythingafter = new List<string>();
+                                            everythingafter.AddRange(splitcode.Skip(currentindex + 1));
+                                            everythingafter = everythingafter.Select(x => x.Trim()).TakeWhile(y => !(y == "# eztext end" || y == "#eztext end")).ToList();
+
+                                            EZText eztext = new EZText(this);
+                                            string newCode = eztext.Translate(string.Join(Environment.NewLine, everythingafter), codeLine);
+                                            foreach (string error in eztext.Errors)
+                                            {
+                                                ErrorText(new string[0], ErrorTypes.custom, custom: error, dontshowcode: true, dontshowsegment: true);
+                                            }
+                                            List<string> lines = newCode.Split(new[] { '\n', '|' }).Select(x => x.Trim()).Where(y => y != "").ToList();
+                                            string output = "";
+                                            int oldCodeLine = codeLine;
+                                            isEZText = true;
+
+                                            for (int i = 0; i < lines.Count; i++)
+                                            {
+                                                if (!playing) break;
+                                                codeLine = i + 1;
+                                                List<string> a_parts = lines[i].Split(new char[] { ' ' }).Where(x => x != "").ToList();
+                                                for (int j = 0; j < a_parts.Count; j++)
+                                                {
+                                                    if (a_parts[j].Trim() == "->")
+                                                    {
+                                                        try
+                                                        {
+                                                            a_parts.RemoveAt(j);
+                                                            a_parts.AddRange(lines[i + 1].Split(' '));
+                                                            lines.RemoveAt(i + 1);
+                                                        }
+                                                        catch
+                                                        {
+
+                                                        }
+                                                    }
+                                                }
+                                                string[] task = await PlaySwitch(a_parts.ToArray(), "", lines.ToArray(), i, debugger);
+                                                if (bool.Parse(task[1]) == false) i = lines.Count - 1;
+                                                output += task[0];
+                                                ConsoleText = output;
+                                            }
+                                            ifmany = lines.Count;
+                                            isEZText = false;
                                         }
                                         break;
                                 }
@@ -5837,7 +5898,7 @@ namespace EZCode
         /// <param name="keyword">keyword, for error type</param>
         /// <param name="name">name, for the error type</param>
         /// <param name="custom">cutom error, this makes the 'name' and 'keyword' parameters not needed</param>
-        public string ErrorText(string[] parts, ErrorTypes error, string keyword = "keyword", string name = "name", string custom = "An Error Occured", bool returnoutput = true, bool dontshowsegment = false)
+        public string ErrorText(string[] parts, ErrorTypes error, string keyword = "keyword", string name = "name", string custom = "An Error Occured", bool returnoutput = true, bool dontshowsegment = false, bool dontshowcode = false)
         {
             string text =
                 error == ErrorTypes.unkown ? $"An error occured in {SegmentSeperator} {codeLine}" :
@@ -5852,7 +5913,7 @@ namespace EZCode
                 error == ErrorTypes.errorEquation ? $"Unable to solve the equation in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.methodnamingvoilation ? $"Can not name '{keyword}' as '{name}' because there is a method already named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.custom ? $"{custom}{(!dontshowsegment ? $" in {SegmentSeperator} {codeLine}" : "")}" : "An Error Occured, We don't know why. If it helps, it was on line " + codeLine;
-            text += " : " + string.Join(" ", parts);
+            text += !dontshowcode ? " : " + string.Join(" ", parts) : "";
             if ((parts.Contains("#suppress") && parts.Contains("error")) || (parts.Contains("#") && parts.Contains("suppress") && parts.Contains("error"))) return "";
             if (showFileInError)
             {
