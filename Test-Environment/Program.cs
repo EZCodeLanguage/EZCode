@@ -1,4 +1,4 @@
-namespace EzCode_API
+namespace TestInvironment
 {
     internal static class Program
     {

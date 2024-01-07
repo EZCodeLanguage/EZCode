@@ -10,7 +10,7 @@ using System.Windows.Forms;
 using EZCode;
 using static System.Windows.Forms.VisualStyles.VisualStyleElement;
 
-namespace EzCode_API
+namespace TestInvironment
 {
     public partial class EZCode_Form : Form
     {

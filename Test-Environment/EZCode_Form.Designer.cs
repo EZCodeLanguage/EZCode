@@ -1,4 +1,4 @@
-﻿namespace EzCode_API
+﻿namespace TestInvironment
 {
     partial class EZCode_Form
     {
@@ -170,8 +170,6 @@
             // checkBox2
             // 
             checkBox2.AutoSize = true;
-            checkBox2.Checked = true;
-            checkBox2.CheckState = CheckState.Checked;
             checkBox2.Location = new Point(137, 4);
             checkBox2.Name = "checkBox2";
             checkBox2.Size = new Size(122, 19);

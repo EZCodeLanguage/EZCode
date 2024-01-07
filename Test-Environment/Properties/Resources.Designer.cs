@@ -8,7 +8,7 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace EzCode_API.Properties {
+namespace TestInvironment.Properties {
     using System;
     
     
