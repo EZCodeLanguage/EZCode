@@ -5203,6 +5203,7 @@ namespace EZCode
                         txt = txt.Contains(@"\e") && !txt.Contains(@"\\e") ? txt.Replace(@"\e", "!") : txt.Contains(@"\\e") ? txt.Replace(@"\\e", @"\e") : txt;
                         txt = txt.Contains(@"\$") && !txt.Contains(@"\\$") ? txt.Replace(@"\$", "|") : txt.Contains(@"\\$") ? txt.Replace(@"\\$", @"\$") : txt;
                         txt = txt.Contains(@"\&") && !txt.Contains(@"\\&") ? txt.Replace(@"\&", ";") : txt.Contains(@"\\&") ? txt.Replace(@"\\&", @"\&") : txt;
+                        txt = txt.Contains(@"\p") && !txt.Contains(@"\\p") ? txt.Replace(@"\p", ".") : txt.Contains(@"\\p") ? txt.Replace(@"\\p", @"\p") : txt;
                         txt = txt.Replace(@"\\(", @"\(");
                         txt = txt.Replace(@")\\", @")\");
 
