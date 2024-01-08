@@ -9,7 +9,7 @@
 	<rule style="Pink">\b(if|loop|else|DEVPORTAL|method|endmethod)\b</rule>
 	
 	<style name="Keyword" color="CadetBlue" fontStyle="Regular"></style>
-	<rule style="Keyword">\b(list|group|sound|var|print|await|bringto|clear|instance|destroy|event|file|input|intersects|messagebox|stop|shape|textbox|label|button|window|global)\b</rule>
+	<rule style="Keyword">\b(list|group|sound|var|print|await|bringto|clear|instance|destroy|event|file|input|math|intersects|messagebox|stop|shape|textbox|label|button|window|global)\b</rule>
 	
 	<style name="Loop" color="LightBlue" fontStyle="Regular"/>
 	<rule style="Loop">(?&lt;=\blist\b\s*).*\b(new|add|equals|remove|destroy|clear)\b</rule>
@@ -37,6 +37,9 @@
 
 	<style name="AfterWordText" color="LightBlue" fontStyle="Regular"/>
 	<rule style="AfterWordText">(?&lt;=\b(print|messagebox|DEVPORTAL)\b\s*).*</rule>
+
+	<style name="Math" color="SkyBlue" fontStyle="Regular"/>
+	<rule style="Math">abs\((.*?)\)|pi\(\)|neg\((.*?)\)|sq\((.*?)\)|sqr\((.*?)\)|round\((.*?)\)|pow\((.*?)\)|clamp\((.*?)\)|sum\((.*?)\)|avg\((.*?)\)|min\((.*?)\)|max\((.*?)\)|</rule>
 
 	<style name="Properties" color="SkyBlue" fontStyle="Regular"/>
 	<rule style="Properties">\b(focus:|readonly:|z:|enable:|font:|point:|points:|auto:|align:|autosize:|multi:|multiline:|wrap:|wordwrap:|vertical:|verticalscrollbar:|horizantal:|horizantalscrollbar:|x:|y:|t:|text:|h:|height:|w:|width:|bc:|bg:|backcolor:|fc:|fg:|forecolor:|poly:|p:|image:|imagelayout:|foucs:|enable:|minwidth:|maxwidth:|minheight:|maxheight:|opacity:|showicon:|showintaskbar:|icon:|state:|type:|startposition:)</rule>
