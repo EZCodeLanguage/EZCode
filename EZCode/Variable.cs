@@ -213,7 +213,7 @@ namespace EZCode.Variables
         }
         public bool isNumber()
         {
-            if (Description == Ivar.Types.Float)
+            if (Description == Ivar.Types.Float && number != null)
             {
                 return true;
             }
@@ -221,7 +221,7 @@ namespace EZCode.Variables
             {
                 try
                 {
-                    float.Parse(text);
+                    number = float.Parse(text);
                     return true;
                 }
                 catch

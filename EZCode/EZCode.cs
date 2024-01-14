@@ -1761,7 +1761,7 @@ namespace EZCode
                                                 output += task[0];
                                                 ConsoleText = output;
                                             }
-                                            ifmany = lines.Count;
+                                            ifmany = everythingafter.Count;
                                             isEZText = false;
                                         }
                                         break;
@@ -3232,6 +3232,7 @@ namespace EZCode
                                 {
                                     string[] strings = getString_value(parts, index + 1);
                                     var.Change(mid, strings[0]);
+                                    string a = var.Value;
                                 }
                                 else
                                 {
@@ -5855,21 +5856,28 @@ namespace EZCode
         /// <param name="newLine">Automatic Newline </param>
         public void AddText(string text, bool error = false, RichTextBox? control = null, bool? newLine = true)
         {
-            text = newLine == true ? text + Environment.NewLine : text;
-            ConsoleText += text;
-            RichConsole = control != null ? control : RichConsole;
-            if (error) Errors.Add(text);
-            if (RichConsole != null)
+            try
             {
-                if (RichConsole.Text.Length + 100 > RichConsole.MaxLength)
+                text = newLine == true ? text + Environment.NewLine : text;
+                ConsoleText += text;
+                RichConsole = control != null ? control : RichConsole;
+                if (error) Errors.Add(text);
+                if (RichConsole != null)
                 {
-                    RichConsole.Text = "";
+                    if (RichConsole.Text.Length + 100 > RichConsole.MaxLength)
+                    {
+                        RichConsole.Text = "";
+                    }
+                    RichConsole.SelectionStart = RichConsole.TextLength;
+                    RichConsole.SelectionLength = 0;
+                    RichConsole.SelectionColor = error ? errorColor : normalColor;
+                    RichConsole.AppendText(text);
+                    RichConsole.SelectionColor = RichConsole.ForeColor;
                 }
-                RichConsole.SelectionStart = RichConsole.TextLength;
-                RichConsole.SelectionLength = 0;
-                RichConsole.SelectionColor = error ? errorColor : normalColor;
-                RichConsole.AppendText(text);
-                RichConsole.SelectionColor = RichConsole.ForeColor;
+            }
+            catch
+            {
+
             }
         }
         /// <summary>
