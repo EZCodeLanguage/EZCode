@@ -25,7 +25,7 @@ namespace EZ_IDE
         private void Translate(object sender, EventArgs e)
         {
             EZText eztext = new EZText();
-            OutputCode.Text = eztext.Translate(InputText.Text).Replace(EZText.EZTEXT_Local_If_Var, "EZText_Generated_Var");
+            OutputCode.Text = eztext.Translate(InputText.Text);
         }
 
         private void linkLabel1_LinkClicked(object sender, LinkLabelLinkClickedEventArgs e)

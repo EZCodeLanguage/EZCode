@@ -19,9 +19,9 @@
         /// </summary>
         public int CodeLine { get; set; } = 0;
         /// <summary>
-        /// Static name for EZText Local Variable, "EZTEXT_GENERATED_VARIABLE_FOR_IF_SYNTAX___123"
+        /// Static name for EZText Local Variable, "EZTEXT_GENERATED_VARIABLE"
         /// </summary>
-        public static readonly string EZTEXT_Local_If_Var = "EZTEXT_GENERATED_VARIABLE_FOR_IF_SYNTAX___123";
+        public static readonly string EZTEXT_Local_If_Var = "EZTEXT_GENERATED_VARIABLE";
         /// <summary>
         /// Errors in EZText
         /// </summary>
@@ -52,8 +52,7 @@
             try
             {
                 CodeLine = _codeLine;
-                InputCode = InputCode.Replace(".", "|");
-                string[] lines = InputCode.Split(new[] { '\n', '|' }).Select(x => x.Trim()).Where(y => !y.Equals("")).Select(z=>z
+                string[] lines = InputCode.Replace(".", "|").Split(new[] { '\n', '|' }).Select(x => x.Trim()
                     .Replace("is not equal to", "!=")
                     .Replace("is not", "!")
                     .Replace("is equal to", "equals")
@@ -64,9 +63,9 @@
                     .Replace("is less than", "<")
                     .Replace(", then ", " then ")
                     .Replace(" then ", " : ")
-                    .Replace("[p]", ".")
+                    .Replace("[P]", ".")
                     .Replace("[SPACE]", " ")
-                    ).ToArray();
+                    ).Where(y => !y.Equals("")).ToArray();
                 for (int i = 0; i < lines.Length; i++)
                 {
                     CodeLine++;
@@ -379,7 +378,7 @@
                             }
                             else
                             {
-                                Error("Expected 'a' after create for syntax, 'Create a variable named name with the value X'", e);
+                                Error("Expected 'a' after create for syntax, 'Create a variable/list named name with the value X'", e);
                             }
                         }
                         catch
