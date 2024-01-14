@@ -454,7 +454,7 @@
                             }
                             else
                             {
-                                Error("Expected 'stop the program' to clear the console", e);
+                                Error("Expected 'stop the program' or 'stop the file' to stop the program or file", e);
                             }
                         }
                         catch
@@ -546,17 +546,24 @@
                     case "play":
                         try
                         {
-                            if (words[1] == "project")
+                            if (words[1] == "the")
                             {
-                                Code += $"file playproj {string.Join(" ", words.Skip(2))}";
-                            }
-                            else if (words[1] == "file")
-                            {
-                                Code += $"file play {string.Join(" ", words.Skip(2))}";
+                                if (words[2] == "project")
+                                {
+                                    Code += $"file playproj {string.Join(" ", words.Skip(3))}";
+                                }
+                                else if (words[2] == "file")
+                                {
+                                    Code += $"file play {string.Join(" ", words.Skip(3))}";
+                                }
+                                else
+                                {
+                                    Error("Expected 'project' or 'file' for syntax 'play the project/file URL'", e);
+                                }
                             }
                             else
                             {
-                                Error("Expected 'project' or 'file' for syntax 'play project/file URL'", e);
+                                Error("Expected 'the' for syntax 'play the project/file URL'", e);
                             }
                         }
                         catch
