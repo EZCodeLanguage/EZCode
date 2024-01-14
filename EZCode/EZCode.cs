@@ -9,7 +9,6 @@ using System.Drawing;
 using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows.Forms;
-using static System.Windows.Forms.LinkLabel;
 using Group = EZCode.Groups.Group;
 using Player = Sound.Player;
 using Types = EZCode.Variables.Ivar.Types;
@@ -21,11 +20,12 @@ namespace EZCode
     /// </summary>
     public class EzCode
     {
-        #region Variables_and_Initializers
         /// <summary>
         /// Directory of the script playing
         /// </summary>
         public static string Version { get; } = "2.3.0";
+
+        #region Variables_and_Initializers
         /// <summary>
         /// The Official EZCode Icon
         /// </summary>

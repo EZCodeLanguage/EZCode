@@ -1,10 +1,4 @@
-﻿using System.Collections.Generic;
-using System.Security.Principal;
-using System.Windows.Forms;
-using static System.Net.Mime.MediaTypeNames;
-using static System.Runtime.InteropServices.JavaScript.JSType;
-
-namespace EZCode
+﻿namespace EZCode
 {
     public class EZText
     {
