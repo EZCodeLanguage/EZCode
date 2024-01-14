@@ -1,9 +1,15 @@
 ﻿<doc>
+	<style name="Pipe" color="Yellow" fontStyle="Bold"/>
+	<rule style="Pipe">\|</rule>
+	
 	<style name="Comment" color="Green" fontStyle="Regular"/>
 	<rule style="Comment">\/\/(.*?)(?:\||$|(?:\r?\n|$))</rule>
 	
 	<style name="Hashtag" color="Orange" fontStyle="Regular"/>
 	<rule style="Hashtag"> #.*|^\s*#.*|\n#.*</rule>
+	
+	<style name="Yellow" color="Yellow" fontStyle="Regular"/>
+	<rule style="Yellow">(\# eztext start|\#eztext start)([^}]*)(\# eztext end|\#eztext end)</rule>	
 	
 	<style name="Pink" color="HotPink" fontStyle="Regular"/>
 	<rule style="Pink">\b(if|loop|else|DEVPORTAL|method|endmethod)\b</rule>
@@ -11,29 +17,17 @@
 	<style name="Keyword" color="CadetBlue" fontStyle="Regular"></style>
 	<rule style="Keyword">\b(list|group|sound|var|print|await|bringto|clear|instance|destroy|event|file|input|math|intersects|messagebox|stop|shape|textbox|label|button|window|global)\b</rule>
 	
-	<style name="Loop" color="LightBlue" fontStyle="Regular"/>
-	<rule style="Loop">(?&lt;=\blist\b\s*).*\b(new|add|equals|remove|destroy|clear)\b</rule>
-	
 	<style name="Sky" color="SkyBlue" fontStyle="Regular"/>
 	<rule style="Sky">'(.*?)'|=|-|\+|\*|/|!|\&amp;|~/|~\\</rule>
 	
 	<style name="LightGreen" color="PaleGreen" fontStyle="Regular"/>
 	<rule style="LightGreen">\b(-?[0-9]\d*)\b</rule>
 
-	<style name="Group" color="LightBlue" fontStyle="Regular"/>
-	<rule style="Group">(?&lt;=\bgroup\b\s*).*\b(new|change|add|equals|remove|destroy|destroyall|clear)\b</rule>
+	<style name="All" color="LightBlue" fontStyle="Regular"/>
+	<rule style="All">((?&lt;=\bgroup\b\s*).*\b(new|change|add|equals|remove|destroy|destroyall|clear)\b)|((?&lt;=\blist\b\s*).*\b(new|add|equals|remove|destroy|split|clear)\b)|((?&lt;=\bsound\b\s*).*\b(new|play|playall|volume|destroy|stop|playloop)\b)|((?&lt;=\bfile\b\s*).*\b(read|write|validpath|play|playproj|create|exists|delete)\b)|((?&lt;=\bwindow\b\s*).*\b(new|display|change|close|open|destroy)\b)</rule>
 	
-	<style name="Sound" color="LightBlue" fontStyle="Regular"/>
-	<rule style="Sound">(?&lt;=\bsound\b\s*).*\b(new|play|playall|volume|destroy|stop|playloop)\b</rule>
-	
-	<style name="File" color="LightBlue" fontStyle="Regular"/>
-	<rule style="File">(?&lt;=\bfile\b\s*).*\b(read|write|validpath|play|playproj|create|exists|delete)\b</rule>
-	
-	<style name="Window" color="LightBlue" fontStyle="Regular"/>
-	<rule style="Window">(?&lt;=\bwindow\b\s*).*\b(new|display|change|close|open|destroy)\b</rule>
-
 	<style name="Characters" color="Yellow" fontStyle="Regular"/>
-	<rule style="Characters">\\n|\\!|\\_|\\;|\\q|\\c|\\e|\\|\\\$|\\&amp;|\\\(|\\\)|\\-|\\"|\&#63;\(|\)\&#63;|\||</rule>
+	<rule style="Characters">\\n|\\!|\\_|\\;|\\q|\\c|\\e|\\|\\\$|\\&amp;|\\\(|\\\)|\\-|\\"|\&#63;\(|\)\&#63;</rule>
 
 	<style name="AfterWordText" color="LightBlue" fontStyle="Regular"/>
 	<rule style="AfterWordText">(?&lt;=\b(print|messagebox|DEVPORTAL)\b\s*).*</rule>

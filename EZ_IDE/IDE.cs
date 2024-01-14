@@ -635,6 +635,8 @@ namespace EZ_IDE
                         textToCodeToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.W:
                         playInDedicatedWindowToolStripMenuItem.PerformClick(); break;
+                    case Keys.Control | Keys.D:
+                        FCTB_DuplicateLine(); break;
                 }
             }
             else if (msg.Msg == 260)
@@ -657,6 +659,20 @@ namespace EZ_IDE
         #endregion
 
         #region events
+        private void FCTB_DuplicateLine()
+        {
+            int currentLine = fctb.Selection.Start.iLine;
+            string currentLineText = fctb.Lines[currentLine].ToString();
+
+            int charIndex = 0;
+            for (int i = 0; i < fctb.GetLine(currentLine).Start.iLine; i++)
+            {
+                charIndex += fctb.Lines[i].Length + 2;
+            }
+            fctb.Text = fctb.Text.Insert(charIndex, currentLineText + Environment.NewLine);
+
+            fctb.Selection = new FastColoredTextBoxNS.Range(fctb, currentLineText.Length, currentLine + 1, currentLineText.Length, currentLine + 1);
+        }
 
         public int changeTime = 0;
 
