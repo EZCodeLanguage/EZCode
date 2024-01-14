@@ -19,9 +19,9 @@
         /// </summary>
         public int CodeLine { get; set; } = 0;
         /// <summary>
-        /// Static name for EZText Local Variable, "EZTEXT_GENERATED_VARIABLE_FOR_IF_SYNTAX___123"
+        /// Static name for EZText Local Variable, "EZTEXT_GENERATED_VARIABLE"
         /// </summary>
-        public static readonly string EZTEXT_Local_If_Var = "EZTEXT_GENERATED_VARIABLE_FOR_IF_SYNTAX___123";
+        public static readonly string EZTEXT_Local_If_Var = "EZTEXT_GENERATED_VARIABLE";
         /// <summary>
         /// Errors in EZText
         /// </summary>
