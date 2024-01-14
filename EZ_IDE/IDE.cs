@@ -13,7 +13,7 @@ namespace EZ_IDE
 {
     public partial class IDE : Form
     {
-        public static readonly string Version = "1.1.1";
+        public static readonly string Version = "1.1.2";
 
         #region AutoComplete
         readonly AutocompleteMenu popupMenu;
@@ -569,6 +569,7 @@ namespace EZ_IDE
 
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
+            bool accounted = true;
             if (msg.Msg == 256)
             {
                 switch (keyData)
@@ -632,11 +633,14 @@ namespace EZ_IDE
                     case Keys.Control | Keys.Shift | Keys.A:
                         newToolStripMenuItem1.PerformClick(); break;
                     case Keys.Alt | Keys.T:
-                        textToCodeToolStripMenuItem.PerformClick(); break;
+                        formatTextToolStripMenuItem.PerformClick(); break;
+                    case Keys.Alt | Keys.G:
+                        ezTextToEzcodeToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.W:
                         playInDedicatedWindowToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.D:
                         FCTB_DuplicateLine(); break;
+                    default: accounted = false; break;
                 }
             }
             else if (msg.Msg == 260)
@@ -648,11 +652,15 @@ namespace EZ_IDE
                         nextbreakpointToolStripMenuItem.PerformClick();
                         break;
                     case Keys.Alt | Keys.T:
-                        textToCodeToolStripMenuItem.PerformClick(); break;
+                        formatTextToolStripMenuItem.PerformClick(); break;
+                    case Keys.Alt | Keys.G:
+                        ezTextToEzcodeToolStripMenuItem.PerformClick(); break;
                     case Keys.Alt | Keys.P:
                         playFileToolStripMenuItem.PerformClick(); break;
+                    default: accounted = false; break;
                 }
             }
+            if (accounted) return true;
             return base.ProcessCmdKey(ref msg, keyData);
         }
 
@@ -1247,11 +1255,18 @@ namespace EZ_IDE
             if (loaded) Settings.Left_Splitter_Distance = splitContainer1.SplitterDistance;
         }
 
-        private void textToCodeToolStripMenuItem_Click(object sender, EventArgs e)
+        private void formatTextToolStripMenuItem_Click(object sender, EventArgs e)
         {
-            // text to code
-            Format_Code text_to_code = new Format_Code();
-            text_to_code.ShowDialog();
+            // format text
+            Format_Code formatter = new Format_Code();
+            formatter.ShowDialog();
+        }
+
+        private void eZTextoEzcodeToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // eztext to ezcode 
+            EZText_To_EZCode eztext_to_ezcode = new EZText_To_EZCode();
+            eztext_to_ezcode.ShowDialog();
         }
 
         private void playInDedicatedWindowToolStripMenuItem_Click(object sender, EventArgs e)
