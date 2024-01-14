@@ -25,6 +25,10 @@ namespace EZCode
         /// </summary>
         public int CodeLine { get; set; } = 0;
         /// <summary>
+        /// Static name for EZText Local Variable, "EZTEXT_GENERATED_VARIABLE_FOR_IF_SYNTAX___123"
+        /// </summary>
+        public static readonly string EZTEXT_Local_If_Var = "EZTEXT_GENERATED_VARIABLE_FOR_IF_SYNTAX___123";
+        /// <summary>
         /// Errors in EZText
         /// </summary>
         public string[] Errors { get; set; } = new string[0];
@@ -56,6 +60,8 @@ namespace EZCode
                 CodeLine = _codeLine;
                 InputCode = InputCode.Replace(".", "|");
                 string[] lines = InputCode.Split(new[] { '\n', '|' }).Select(x => x.Trim()).Where(y => !y.Equals("")).Select(z=>z
+                    .Replace("is not equal to", "!=")
+                    .Replace("is not", "!")
                     .Replace("is equal to", "equals")
                     .Replace(" equals ", " = ")
                     .Replace("is greater than or equal to", ">=")
@@ -64,7 +70,8 @@ namespace EZCode
                     .Replace("is less than", "<")
                     .Replace(", then ", " then ")
                     .Replace(" then ", " : ")
-                    .Replace("{p}", ".")
+                    .Replace("[p]", ".")
+                    .Replace("[SPACE]", " ")
                     ).ToArray();
                 for (int i = 0; i < lines.Length; i++)
                 {
@@ -79,6 +86,7 @@ namespace EZCode
             {
 
             }
+            //MessageBox.Show(Code);
             return Code;
         }
         static EZText StaticTranslate(string line)
@@ -146,9 +154,83 @@ namespace EZCode
                                 nw.RemoveAt(1);
                                 words = nw.ToArray();
                             }
+                            if (words[1] == "the" && words[2] == "console" && words[3] == "input")
+                            {
+                                Code += $"var {EZTEXT_Local_If_Var} : input console{Environment.NewLine}";
+                                List<string> nw = words.ToList();
+                                nw[1] = $"'{EZTEXT_Local_If_Var}'";
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                words = nw.ToArray();
+                            }
+                            if (words[2] == "intersects" && words[4] == ":")
+                            {
+                                Code += $"var {EZTEXT_Local_If_Var} : intersects {words[1]} {words[3]}{Environment.NewLine}";
+                                List<string> nw = words.ToList();
+                                nw[1] = $"'{EZTEXT_Local_If_Var}'";
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                words = nw.ToArray();
+                            }
+                            if (words[1] == "the" && words[2] == "contents" && words[3] == "of" && words[4] == "the" && words[5] == "file")
+                            {
+                                Code += $"var {EZTEXT_Local_If_Var} : file read {words[6]}{Environment.NewLine}";
+                                List<string> nw = words.ToList();
+                                nw[1] = $"'{EZTEXT_Local_If_Var}'";
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                words = nw.ToArray();
+                            }
+                            if (words[2] == "is" && words[3] == "being" && words[4] == "pressed")
+                            {
+                                Code += $"var {EZTEXT_Local_If_Var} : input key {words[1]}{Environment.NewLine}";
+                                List<string> nw = words.ToList();
+                                nw[1] = $"'{EZTEXT_Local_If_Var}'";
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                words = nw.ToArray();
+                            }
+                            if (words[1] == "the" && words[3] == "mouse" && words[4] == "button" && words[5] == "is" && words[6] == "being" && words[7] == "pressed")
+                            {
+                                Code += $"var {EZTEXT_Local_If_Var} : input mouse button {words[2]}{Environment.NewLine}";
+                                List<string> nw = words.ToList();
+                                nw[1] = $"'{EZTEXT_Local_If_Var}'";
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                words = nw.ToArray();
+                            }
+                            if (words[1] == "the" && (words[2] == "mouse" || words[3] == "mouse") && words[4] == "position")
+                            {
+                                Code += $"var {EZTEXT_Local_If_Var} : input mouse position {(words[2] == "mouse" ? words[3] : words[2])}{Environment.NewLine}";
+                                List<string> nw = words.ToList();
+                                nw[1] = $"'{EZTEXT_Local_If_Var}'";
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                words = nw.ToArray();
+                            }
+                            if (words[1] == "the" && words[2] == "mouse" && words[3] == "wheel" && words[4] == "state")
+                            {
+                                Code += $"var {EZTEXT_Local_If_Var} : input mouse wheel{Environment.NewLine}";
+                                List<string> nw = words.ToList();
+                                nw[1] = $"'{EZTEXT_Local_If_Var}'";
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                nw.RemoveAt(2);
+                                words = nw.ToArray();
+                            }
+
                             words[0] = words[0].ToLower();
                             string newline = string.Join(" ", words).Split(":")[0];
-                            string nextcode = StaticTranslate(string.Join(" ", words).Split(":")[1]).Code;
+                            string nextcode = StaticTranslate(string.Join(" ", words).Split(":", StringSplitOptions.TrimEntries)[1]).Code;
                             Code += newline + ": " + nextcode;
                         }
                         catch
