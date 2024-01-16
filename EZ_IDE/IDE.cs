@@ -13,7 +13,7 @@ namespace EZ_IDE
 {
     public partial class IDE : Form
     {
-        public static readonly string Version = "1.1.2";
+        public static readonly string Version = "1.2.0";
 
         #region AutoComplete
         readonly AutocompleteMenu popupMenu;
@@ -636,6 +636,8 @@ namespace EZ_IDE
                         formatTextToolStripMenuItem.PerformClick(); break;
                     case Keys.Alt | Keys.G:
                         ezTextToEzcodeToolStripMenuItem.PerformClick(); break;
+                    case Keys.Alt | Keys.W:
+                        windowDesignerToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.W:
                         playInDedicatedWindowToolStripMenuItem.PerformClick(); break;
                     case Keys.Control | Keys.D:
@@ -653,6 +655,8 @@ namespace EZ_IDE
                         break;
                     case Keys.Alt | Keys.T:
                         formatTextToolStripMenuItem.PerformClick(); break;
+                    case Keys.Alt | Keys.W:
+                        windowDesignerToolStripMenuItem.PerformClick(); break;
                     case Keys.Alt | Keys.G:
                         ezTextToEzcodeToolStripMenuItem.PerformClick(); break;
                     case Keys.Alt | Keys.P:
@@ -1267,6 +1271,20 @@ namespace EZ_IDE
             // eztext to ezcode 
             EZText_To_EZCode eztext_to_ezcode = new EZText_To_EZCode();
             eztext_to_ezcode.ShowDialog();
+        }
+
+        private void windowDesignerToolStripMenuItem_Click(object sender, EventArgs e)
+        {
+            // window designer
+            if (Window_Designer.Instance == null)
+            {
+                Window_Designer window_Designer = new Window_Designer();
+                window_Designer.Show();
+            }
+            else
+            {
+                Window_Designer.Instance.BringToFront();
+            }
         }
 
         private void playInDedicatedWindowToolStripMenuItem_Click(object sender, EventArgs e)

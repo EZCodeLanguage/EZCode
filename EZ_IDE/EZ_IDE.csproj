@@ -14,6 +14,7 @@
   </ItemGroup>
 
   <ItemGroup>
+    <PackageReference Include="Control.Draggable" Version="1.0.5049.269" />
     <PackageReference Include="FCTB" Version="2.16.24" />
   </ItemGroup>
 
