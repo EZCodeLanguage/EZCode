@@ -126,14 +126,14 @@
                 }
                 string[] parts = line.Split(" ");
                 if (parts[3].EndsWith(","))
-                {
+            {
                     parts[3] = parts[3].Replace(",", "");
                     line = string.Join(" ", parts);
                 }
                 line += $"{Environment.NewLine}{MAIN.Name} display {con.Name}";
                 Code += line;
             }
-            Code += Environment.NewLine + Environment.NewLine;
+                Code += Environment.NewLine + Environment.NewLine;
             Code += $"// Open {MAIN.Name}{Environment.NewLine}";
             Code += $"{MAIN.Name} open";
             OutputCode.Text = Code;

@@ -1,6 +1,6 @@
-﻿using EZCode.GControls;
+﻿using System.ComponentModel;
 using EZCode.Windows;
-using System.ComponentModel;
+using EZCode.GControls;
 
 namespace EZ_IDE
 {
@@ -15,15 +15,15 @@ namespace EZ_IDE
             IsWindow = iswindow;
             control = con;
 
-            BackColor = con.BackColor;
-            ForeColor = con.ForeColor;
-            Text = con.Text;
-            Name = con.Name;
-            Id = con.AccessibleName;
-            Enable = con.Enabled;
-            AutoSize = con.AutoSize;
-            ImageLayout = con.BackgroundImageLayout;
-            MainFont = con.Font;
+                BackColor = con.BackColor;
+                ForeColor = con.ForeColor;
+                Text = con.Text;
+                Name = con.Name;
+                Id = con.AccessibleName;
+                Enable = con.Enabled;
+                AutoSize = con.AutoSize;
+                ImageLayout = con.BackgroundImageLayout;
+                MainFont = con.Font;
             if (!IsWindow)
             {
                 Size = con.Size;
@@ -248,12 +248,12 @@ namespace EZ_IDE
                 }
                 if(value.Length > 0)
                 {
-                    _image = value;
+                _image = value;
                     control.BackgroundImage = System.Drawing.Image.FromFile(value[0].FilePath);
                     window.BackgroundImage = System.Drawing.Image.FromFile(value[0].FilePath);
                     window.BGImageFile = value[0].FilePath;
-                }
             }
+        }
         }
 
         private ImageLayout _imagelayout;
@@ -575,7 +575,7 @@ namespace EZ_IDE
                 }
                 if (value.Length > 0)
                 {
-                    _icon = value;
+                _icon = value;
                     window.IconImageFile = value[0].FilePath;
                 }
             }
