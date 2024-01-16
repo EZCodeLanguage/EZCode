@@ -116,6 +116,7 @@
             redoToolStripMenuItem = new ToolStripMenuItem();
             splitContainer2 = new SplitContainer();
             imageList1 = new ImageList(components);
+            windowDesignerToolStripMenuItem = new ToolStripMenuItem();
             tabControl1.SuspendLayout();
             tabPage1.SuspendLayout();
             tabPage2.SuspendLayout();
@@ -741,7 +742,7 @@
             // 
             toolStripDropDownButton5.BackColor = Color.FromArgb(64, 64, 64);
             toolStripDropDownButton5.DisplayStyle = ToolStripItemDisplayStyle.Text;
-            toolStripDropDownButton5.DropDownItems.AddRange(new ToolStripItem[] { formatTextToolStripMenuItem, ezTextToEzcodeToolStripMenuItem });
+            toolStripDropDownButton5.DropDownItems.AddRange(new ToolStripItem[] { formatTextToolStripMenuItem, ezTextToEzcodeToolStripMenuItem, windowDesignerToolStripMenuItem });
             toolStripDropDownButton5.ForeColor = SystemColors.ButtonFace;
             toolStripDropDownButton5.Image = (Image)resources.GetObject("toolStripDropDownButton5.Image");
             toolStripDropDownButton5.ImageTransparentColor = Color.Magenta;
@@ -755,7 +756,7 @@
             // 
             formatTextToolStripMenuItem.Name = "formatTextToolStripMenuItem";
             formatTextToolStripMenuItem.ShortcutKeyDisplayString = "Alt+T";
-            formatTextToolStripMenuItem.Size = new Size(221, 22);
+            formatTextToolStripMenuItem.Size = new Size(223, 22);
             formatTextToolStripMenuItem.Text = "Format Text";
             formatTextToolStripMenuItem.Click += formatTextToolStripMenuItem_Click;
             // 
@@ -763,7 +764,7 @@
             // 
             ezTextToEzcodeToolStripMenuItem.Name = "ezTextToEzcodeToolStripMenuItem";
             ezTextToEzcodeToolStripMenuItem.ShortcutKeyDisplayString = "Alt+G";
-            ezTextToEzcodeToolStripMenuItem.Size = new Size(221, 22);
+            ezTextToEzcodeToolStripMenuItem.Size = new Size(223, 22);
             ezTextToEzcodeToolStripMenuItem.Text = "EZText To EZCode";
             ezTextToEzcodeToolStripMenuItem.Click += eZTextoEzcodeToolStripMenuItem_Click;
             // 
@@ -1129,6 +1130,14 @@
             imageList1.Images.SetKeyName(1, "app_16x16.png");
             imageList1.Images.SetKeyName(2, "1302166543_virtualbox.png");
             // 
+            // windowDesignerToolStripMenuItem
+            // 
+            windowDesignerToolStripMenuItem.Name = "windowDesignerToolStripMenuItem";
+            windowDesignerToolStripMenuItem.ShortcutKeyDisplayString = "Alt+W";
+            windowDesignerToolStripMenuItem.Size = new Size(223, 22);
+            windowDesignerToolStripMenuItem.Text = "Window Designer";
+            windowDesignerToolStripMenuItem.Click += windowDesignerToolStripMenuItem_Click;
+            // 
             // IDE
             // 
             AutoScaleDimensions = new SizeF(7F, 15F);
@@ -1257,5 +1266,6 @@
         private ToolStripDropDownButton toolStripDropDownButton2;
         private ToolStripMenuItem docsToolStripMenuItem;
         private ToolStripTextBox VersionTB;
+        private ToolStripMenuItem windowDesignerToolStripMenuItem;
     }
 }

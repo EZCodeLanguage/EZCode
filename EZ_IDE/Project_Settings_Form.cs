@@ -481,4 +481,57 @@ namespace EZ_IDE
             return fileInfo?.FullName;
         }
     }
+    public class ImageFile
+    {
+        private FileInfo fileInfo;
+
+        public ImageFile()
+        {
+            fileInfo = ChooseFile();
+        }
+
+        public ImageFile(string filePath)
+        {
+            fileInfo = new FileInfo(filePath);
+        }
+
+        [Category("Project Properties")]
+        [DisplayName("Image Path")]
+        [Description("Path to the image.")]
+        public string FilePath
+        {
+            get { return fileInfo?.FullName; }
+            set
+            {
+                if (string.IsNullOrEmpty(value))
+                {
+                    fileInfo = null;
+                }
+                else
+                {
+                    fileInfo = new FileInfo(value);
+                }
+            }
+        }
+
+        public static FileInfo ChooseFile()
+        {
+            using (OpenFileDialog openFileDialog = new OpenFileDialog())
+            {
+                openFileDialog.Title = "Select a File";
+                openFileDialog.Filter = "Image Files|*.bmp;*.jpg;*.jpeg;*.gif;*.png;*.tiff;*.ico|All Files|*.*";
+
+                if (openFileDialog.ShowDialog() == DialogResult.OK)
+                {
+                    return new FileInfo(openFileDialog.FileName);
+                }
+            }
+            return null;
+        }
+
+        public override string ToString()
+        {
+            return fileInfo?.FullName;
+        }
+    }
 }
