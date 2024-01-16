@@ -23,7 +23,7 @@ namespace EZCode
         /// <summary>
         /// Directory of the script playing
         /// </summary>
-        public static string Version { get; } = "2.3.3";
+        public static string Version { get; } = "2.3.5";
 
         #region Variables_and_Initializers
         /// <summary>
@@ -3915,6 +3915,12 @@ namespace EZCode
                 Control control = getControl(ind[0]);
                 switch (ind[1].ToLower())
                 {
+                    case "visible":
+                        value = control.Visible.ToString();
+                        break;
+                    case "anchor":
+                        value = control.Anchor.ToString();
+                        break;
                     case "align":
                         if (control is GLabel _glb1)
                         {
@@ -4593,14 +4599,16 @@ namespace EZCode
                     multiline = control is GTextBox tb2 ? tb2.Multiline : false,
                     wordwrap = control is GTextBox tb3 ? tb3.Multiline : false,
                     enabled = control.Enabled,
+                    visible = control.Visible,
                     autosize = control.AutoSize;
                 ScrollBars scrollbars = control is GTextBox tb4 ? tb4.ScrollBars : ScrollBars.None;
                 Font font = control.Font;
                 PointF[] _points = control is GShape gsa3 ? gsa3.Points : Array.Empty<PointF>();
-                ContentAlignment align = 
-                    align = control is GLabel lb1 ? lb1.TextAlign : 
+                ContentAlignment align =
+                    align = control is GLabel lb1 ? lb1.TextAlign :
                     align = control is GButton bt1 ? bt1.TextAlign :
                     ContentAlignment.TopLeft;
+                AnchorStyles anchor = control.Anchor;
 
                 foreach (string p in parts)
                 {
@@ -4935,6 +4943,51 @@ namespace EZCode
                                 }
                             }
                             break;
+                        case "visible":
+                            {
+                                visible = (bool)BoolCheck(after, 0);
+                            }
+                            break;
+                        case "anchor":
+                            try 
+                            {
+                                string[] strings = getString_value(after, 0);
+                                string all = string.Join("", strings[0].Split(" ")).Trim();
+                                bool thing2 = all.StartsWith("[") && all.EndsWith("]#suppresserror".ToLower());
+                                if ((all.StartsWith("[") && all.EndsWith("]")) || thing2)
+                                {
+                                    if (!thing2) all = all.Substring(1, all.Length - 2);
+                                    else all = all.Substring(1, all.Length - 1).Replace("]#suppresserror", "");
+                                    string[] seperator = all.Split(";").Select(x=>x.ToLower()).ToArray();
+                                    bool top = false, bottom = false, left = false, right = false;
+                                    for (int i = 0; i < seperator.Length; i++)
+                                    {
+                                        string sep = seperator[i];
+                                        switch (sep)
+                                        {
+                                            case "top": top = true; break;
+                                            case "bottom": bottom = true; break;
+                                            case "left": left = true; break;
+                                            case "right": right = true; break;
+                                            case "none": top = false; bottom = false; left = false; right = false; break;
+                                            default: ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'top', 'bottom', 'left', 'right', or 'none' with anchor values"); break;
+                                        }
+                                    }
+                                    if (top) anchor |= AnchorStyles.Top;
+                                    if (bottom) anchor |= AnchorStyles.Bottom;
+                                    if (left) anchor |= AnchorStyles.Left;
+                                    if (right) anchor |= AnchorStyles.Right;
+                                }
+                                else
+                                {
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' to set anchor values");
+                                }
+                            }
+                            catch
+                            {
+                                anchor = AnchorStyles.Top | AnchorStyles.Left;
+                            }
+                            break;
                         default:
                             ErrorText(_parts, ErrorTypes.custom, custom: $"'{before[0].Trim()}' is not a correct property for '{control.Name}'. Visit https://ez-code.web.app for more information about property values.");
                             break;
@@ -4954,6 +5007,9 @@ namespace EZCode
                 control.Font = font;
                 control.AutoSize = autosize;
                 control.Text = textt;
+                control.Visible = visible;
+                control.Visible = visible;
+                control.Anchor = anchor;
                 if (control is GShape a1)
                 {
                     a1.Poly = ply;
