@@ -54,7 +54,7 @@
                 $"{(win.ShowInTaskbar != w.ShowInTaskbar ? $", showintaskbar:{win.ShowInTaskbar}" : "")}" +
                 $"{(win.WindowState != w.WindowState ? $", state:{win.WindowState.ToString().ToLower()}" : "")}" +
                 $"{(win.FormBorderStyle != w.FormBorderStyle ? $", type:{win.FormBorderStyle.ToString().ToLower()}" : "")}" +
-                $"{(win.StartPosition != w.StartPosition ? $", startposition:{win.StartPosition.ToString().ToLower().Replace("centerscreen", "enter").Replace("window", "")}" : "")}" +
+                $"{(win.StartPosition != w.StartPosition ? $", startposition:{win.StartPosition.ToString().ToLower().Replace("centerscreen", "enter").Replace("windows", "").Replace("location", "")}" : "")}" +
                 $"{(win.Font != w.Font ? $", font:[{win.Font.Name};{win.Font.Size};{win.Font.Style}]" : "")}" +
                 $"{(win.BackgroundImageLayout != w.BackgroundImageLayout ? $", imagelayout:{win.BackgroundImageLayout.ToString().ToLower()}" : "")}" +
                 $"{(win.IconImageFile != w.IconImageFile ? $", icon:{win.IconImageFile.Replace("\\", "/").Replace(":", "\\;")}" : "")}" +
@@ -81,6 +81,7 @@
                     $"{(con.Height != c.Height ? $", height:{con.Height}" : "")}" +
                     $"{(con.BackColor != c.BackColor ? $", bg:[{con.BackColor.R};{con.BackColor.G};{con.BackColor.B}]" : "")}" +
                     $"{(con.ForeColor != c.ForeColor ? $", fg:[{con.ForeColor.R};{con.ForeColor.G};{con.ForeColor.B}]" : "")}" +
+                    $"{(con.AutoSize != c.AutoSize ? $", auto:{con.AutoSize}" : "")}" +
                     $"{(con.Enabled != c.Enabled ? $", enable:{con.Enabled}" : "")}" +
                     $"{(con.Visible != c.Visible ? $", visible:{con.Visible}" : "")}" +
                     $"{(con.Anchor != c.Anchor? $", anchor:[{con.Anchor.ToString().Replace(",", ";").Replace(" ", "")}]" : "")}" +
