@@ -17,6 +17,12 @@ The [Official Docs](https://github.com/JBrosDevelopment/EZCode/wiki/EZCode-Docs)
 </details>
 
 <details open>
+<summary><h2>API</h2></summary>
+
+The EZCode [API](https://github.com/JBrosDevelopment/EZCode/wiki/API-Docs) is designed to make it easier to integrate EZCode into your program.
+</details>
+
+<details open>
 <summary><h2>Community</h2></summary>
 
 Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/JBrosDevelopment/EZCode-Projects.git). Create a pull request and it will be accepted as soon as possible. There is also the [Discussions](https://github.com/JBrosDevelopment/EZCode/discussions) for anybody who has questions or wants to share. If you need any help, you can look over the [Wiki](https://github.com/JBrosDevelopment/EZCode/wiki) which includes instructions and documentation.
