@@ -86,6 +86,8 @@ This is the official IDE (Integrated Development Environment) for EZCode. This i
 <details open>
 <summary><h2>Basic Syntax</h2></summary>
 
+This is the Basic Syntax and keywords for EZCode v2.0.0. It has not been updated since the release of v2.0.0. Please view the [EZCode Docs](https://github.com/JBrosDevelopment/EZCode/wiki/EZCode-Docs) to view the latest docs. 
+
 <details open>
 <summary><h3>Keywords</h3></summary>
 
