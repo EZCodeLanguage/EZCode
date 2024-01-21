@@ -602,60 +602,6 @@ namespace EZCode
                             ErrorText(parts, ErrorTypes.normal, keyword);
                         } // PRINT
                         break;
-                    case "DEVPORTAL":
-                        try
-                        {
-                            devportal = devportal == 0 ? 1 : 2;
-                            string output = "";
-                            string next = parts[1];
-                            if (devportal == 1)
-                            {
-                                output = "Entered into Devportal";
-                                if (next != "!display") output += "\n";
-                            }
-                            if (next == "display")
-                            {
-                                devDisplay = true;
-                                output += "Set Dev Portal Display to true";
-                            }
-                            if (next == "!display")
-                            {
-                                devDisplay = false;
-                            }
-                            if (next == "refreshonchange")
-                            {
-                                RefreshOnControl = true;
-                                output += "Set Dev Portal Refresh on Update to true";
-                            }
-                            if (next == "!refreshonchange")
-                            {
-                                RefreshOnControl = false;
-                                output += "Set Dev Portal Refresh on Update to false";
-                            }
-                            if (next == "seperatingchars")
-                            {
-                                string addedchar = parts[2];
-                                List<char> each = seperatorChars.ToList();
-                                foreach (char c in addedchar)
-                                {
-                                    each.Add(c);
-                                }
-                                seperatorChars = each.ToArray();
-                            }
-                            if (next == "resetseperatingchars")
-                            {
-                                seperatorChars = new char[] { '\n', '|' };
-                            }
-                            if (devDisplay)
-                            {
-                                AddText(output);
-                            }
-                        }
-                        catch
-                        {
-                            ErrorText(parts, ErrorTypes.normal, keyword);
-                        }
-                        break;
                     case "math":
                         try
                         {
