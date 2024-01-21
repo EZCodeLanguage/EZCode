@@ -23,7 +23,7 @@ namespace EZCode
         /// <summary>
         /// Directory of the script playing
         /// </summary>
-        public static string Version { get; } = "2.3.5";
+        public static string Version { get; } = "2.4.0";
 
         #region Variables_and_Initializers
         /// <summary>
@@ -454,7 +454,7 @@ namespace EZCode
                             }
                             else
                             {
-                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' for '{keyword}'");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' for '{keyword}'", id:"ex10");
                             }
                             lastif = true;
                         }
@@ -518,11 +518,11 @@ namespace EZCode
                             }
                             else if (number == 0)
                             {
-                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' for '{keyword}'");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' for '{keyword}'", id:"ex10");
                             }
                             else if (number > 1)
                             {
-                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected only one ':' for '{keyword}'");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected only one ':' for '{keyword}'", id:"ex11");
                             }
                             wholearray = wholearray.Where(x => x != "").ToArray();
                             string[] after = string.Join(" ", wholearray).Split(" : ");
@@ -857,12 +857,12 @@ namespace EZCode
                                             }
                                             break;
                                         default:
-                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox', 'label', 'button', or 'shape' after {keyword}");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox', 'label', 'button', or 'shape' after {keyword}", id:"ex12");
                                             break;
                                     }
                                     break;
                                 default:
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'var', 'list', 'group', 'instance, 'textbox', 'label', 'button', or 'shape' after {keyword}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'var', 'list', 'group', 'instance, 'textbox', 'label', 'button', or 'shape' after {keyword}", id:"ex13");
                                     break;
                             }
                         }
@@ -890,7 +890,7 @@ namespace EZCode
                                     }
                                     break;
                                 default:
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox', 'label', 'button', or 'shape' after {keyword}");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox', 'label', 'button', or 'shape' after {keyword}", id:"ex12");
                                     break;
                             }
                         }
@@ -977,7 +977,7 @@ namespace EZCode
                             {
                                 case "read":
                                     string[] file_r = await getFile(parts, 2);
-                                    if (!File.Exists(file_r[0])) throw new Exception($"File not found");
+                                    if (!File.Exists(file_r[0])) ErrorText(parts, ErrorTypes.custom, custom: $"The file, '{file_r[0]}' does not exist", id: "ex14");
                                     output = File.ReadAllText(file_r[0]);
                                     endindex = int.Parse(file_r[1]);
                                     break;
@@ -1008,7 +1008,7 @@ namespace EZCode
                                     break;
                                 case "play":
                                     string[] file_p = await getFile(parts, 2);
-                                    if (!File.Exists(file_p[0])) ErrorText(parts, ErrorTypes.custom, custom: $"File not found");
+                                    if (!File.Exists(file_p[0])) ErrorText(parts, ErrorTypes.custom, custom: $"The file, '{file_p[0]}' does not exist", id:"ex14");
                                     string code = File.ReadAllText(file_p[0]);
                                     endindex = int.Parse(file_p[1]);
                                     List<string> lines = code.Split(seperatorChars).ToList();
@@ -1050,7 +1050,7 @@ namespace EZCode
                                 case "playproj":
                                     {
                                         file_p = await getFile(parts, 2);
-                                        if (!File.Exists(file_p[0])) ErrorText(parts, ErrorTypes.custom, custom: $"File not found");
+                                        if (!File.Exists(file_p[0])) ErrorText(parts, ErrorTypes.custom, custom: $"The file, '{file_p[0]}' does not exist", id: "ex14");
                                         code = File.ReadAllText(file_p[0]);
                                         endindex = int.Parse(file_p[1]);
                                         EzCode ezCode = new EzCode();
@@ -1078,14 +1078,14 @@ namespace EZCode
                                 case "delete":
                                     {
                                         string[] file_ = await getFile(parts, 2);
-                                        if (!File.Exists(file_[0])) throw new Exception($"File not found");
+                                        if (!File.Exists(file_[0])) ErrorText(parts, ErrorTypes.custom, custom: $"The file, '{file_[0]}' does not exist", id: "ex14");
                                         File.Delete(file_[0]);
                                         output = !File.Exists(file_[0]) ? "1" : "0";
                                         endindex = int.Parse(file_[1]);
                                     }
                                     break;
                                 default:
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'read', 'write', 'validpath', 'delete', 'exists', 'create', 'playproj', or 'play'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'read', 'write', 'validpath', 'delete', 'exists', 'create', 'playproj', or 'play'", id:"ex15");
                                     break;
                             }
                             if (jumpTo) return new string[] { output, stillInFile.ToString() };
@@ -1093,8 +1093,7 @@ namespace EZCode
                         }
                         catch (Exception ex)
                         {
-                            if (ex.Message == $"File not found") ErrorText(parts, ErrorTypes.custom, custom: ex.Message);
-                            else ErrorText(parts, ErrorTypes.normal, keyword);
+                            ErrorText(parts, ErrorTypes.normal, keyword);
                         } // FILE
                         break;
                     case "stop":
@@ -1118,7 +1117,7 @@ namespace EZCode
                                     restart = true;
                                     break;
                                 default:
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'all' or 'return'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'all' or 'return'", id:"ex15");
                                     break;
                             }
                         }
@@ -1173,7 +1172,7 @@ namespace EZCode
                                                     output = $"{MousePosition.X}, {MousePosition.Y}";
                                                     break;
                                                 default:
-                                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'X' or 'Y' for '{keyword}'");
+                                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'X' or 'Y' for '{keyword}'", id:"ex15");
                                                     break;
                                             }
                                             break;
@@ -1187,7 +1186,7 @@ namespace EZCode
                                                     output = mouseWheel.ToString();
                                                     break;
                                                 default:
-                                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'X' or 'Y' for '{keyword}'");
+                                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'X' or 'Y' for '{keyword}'", id:"ex15");
                                                     break;
                                             }
                                             break;
@@ -1205,7 +1204,7 @@ namespace EZCode
                                     }
                                     break;
                                 default:
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'console' 'key' or 'mouse' for '{keyword}'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'console' 'key' or 'mouse' for '{keyword}'", id:"ex15");
                                     break;
                             }
                             if (jumpTo) return new string[] { output, stillInFile.ToString() };
@@ -1305,7 +1304,7 @@ namespace EZCode
                                     }
                                     break;
                                 default:
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'destroy' 'play' or 'stop'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new' 'destroy' 'play' or 'stop'", id:"ex15");
                                     break;
                             }
                         }
@@ -1422,7 +1421,7 @@ namespace EZCode
                                         control.TextChanged += G_text;
                                         break;
                                     default:
-                                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'click' 'hover' 'move' 'scale' 'backcolor' 'forecolor' 'image' 'imagetype' 'font' or 'text' for 'event'");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'click' 'hover' 'move' 'scale' 'backcolor' 'forecolor' 'image' 'imagetype' 'font' or 'text' for 'event'", id: "ex15");
                                         break;
                                 }
                             }
@@ -1527,7 +1526,7 @@ namespace EZCode
                                         window.ResizeEnd += G_resizedend;
                                         break;
                                     default:
-                                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a correct property listener for 'event'");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'click', 'hover', 'move', 'backcolor', 'forecolor', 'image', 'imagelayout', 'font', 'text', 'focused', 'controladded', 'controlremoved', 'defocused', 'close', 'open', 'enabledchanged', 'keydown', 'keyup', 'keypress', 'resize', 'resizestart', or 'resizeend' for 'event'", id: "ex15");
                                         break;
                                 }
                             }
@@ -1548,7 +1547,7 @@ namespace EZCode
                             Control? control = getControl(parts[2]);
                             if (control == null)
                             {
-                                ErrorText(parts, ErrorTypes.custom, custom: $"Could not find Control named '{parts[2]}'");
+                                ErrorText(parts, ErrorTypes.missingControl, name:parts[2]);
                             }
                             switch (next)
                             {
@@ -1563,7 +1562,7 @@ namespace EZCode
                                     }
                                     break;
                                 default:
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'front' or 'back'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'front' or 'back' for 'bringto'", id: "ex15");
                                     break;
                             }
                         }
@@ -1606,13 +1605,13 @@ namespace EZCode
                                     case "#suppress":
                                         if (parts[index] != "error")
                                         {
-                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#suppress'");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#suppress'", id:"ex16");
                                         }
                                         break;
                                     case "#create":
                                         if (parts[index] != "error")
                                         {
-                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#create'");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'error' keyword after '#create'", id: "ex16");
                                         }
                                         else
                                         {
@@ -1630,14 +1629,14 @@ namespace EZCode
                                     case "#current":
                                         if (parts[index] != "file")
                                         {
-                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'file' keyword after '#current'");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'file' keyword after '#current'", id: "ex16");
                                         }
                                         else
                                         {
                                             string[] strings = await getFile(parts, index);
                                             if (!EZProj.validfile(strings[0]))
                                             {
-                                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected a valid file after '#current'");
+                                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected a valid file after '#current'", id: "ex16");
                                             }
                                             else
                                             {
@@ -1648,13 +1647,13 @@ namespace EZCode
                                     case "#project":
                                         if (parts[index] != "properties")
                                         {
-                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'properties' keyword after '#project'");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'properties' keyword after '#project'", id: "ex16");
                                         }
                                         else
                                         {
                                             if (parts[index + 1] != ":")
                                             {
-                                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' after '#project properties'");
+                                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' after '#project properties'", id: "ex16");
                                             }
                                             else
                                             {
@@ -1697,7 +1696,7 @@ namespace EZCode
                                                             //proj.IconPath = s[0];
                                                             break;
                                                         default:
-                                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected valid property for '#project properties'");
+                                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'icon', 'name', 'fileinerror', 'clearconsole', 'window', 'debug', closeonend', 'isvisual', or 'showbuild' for '#project properties'", id: "ex16");
                                                             break;
                                                     }
                                                     //InPanel = !proj.Window;
@@ -1716,7 +1715,7 @@ namespace EZCode
                                     case "#eztext":
                                         if (parts[index].ToLower() != "start" && parts[index].ToLower() != "end")
                                         {
-                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'start' or 'end' keyword after '#eztext'");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'start' or 'end' keyword after '#eztext'", id: "ex16");
                                         }
                                         else if (parts[index].ToLower() == "start")
                                         {
@@ -1728,7 +1727,7 @@ namespace EZCode
                                             string newCode = eztext.Translate(string.Join(Environment.NewLine, everythingafter), codeLine);
                                             foreach (string error in eztext.Errors)
                                             {
-                                                ErrorText(new string[0], ErrorTypes.custom, custom: error, dontshowcode: true, dontshowsegment: true);
+                                                ErrorText(new string[0], ErrorTypes.custom, custom: error, id:"ex17", dontshowcode: true, dontshowsegment: true);
                                             }
                                             List<string> lines = newCode.Split(new[] { '\n', '|' }).Select(x => x.Trim()).Where(y => y != "").ToList();
                                             string output = "";
@@ -1872,7 +1871,7 @@ namespace EZCode
 
                                     if (c == null || n == null)
                                     {
-                                        ErrorText(parts, ErrorTypes.custom, custom: $"An error occured when setting '{c.Name}' to '{parts[2]}'");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"An error occured when setting '{c.Name}' to '{parts[2]}'", id:"ex18");
                                     }
                                 }
                             }
@@ -1923,7 +1922,7 @@ namespace EZCode
                                             catch
                                             {
                                                 string msg = $"Error setting the parameters for '{method.Name}'";
-                                                ErrorText(parts, ErrorTypes.custom, custom: msg);
+                                                ErrorText(parts, ErrorTypes.custom, custom: msg, id:"ex19");
                                             }
                                         }
                                         else if (parts[1] == "=>")
@@ -1942,13 +1941,13 @@ namespace EZCode
                                             catch
                                             {
                                                 string msg = $"Error setting the parameters for '{method.Name}'";
-                                                ErrorText(parts, ErrorTypes.custom, custom: msg);
+                                                ErrorText(parts, ErrorTypes.custom, custom: msg, id: "ex19");
                                             }
                                         }
                                         else
                                         {
                                             string msg = $"Expected ':' or '=>' to set parameters for '{method.Name}'";
-                                            ErrorText(parts, ErrorTypes.custom, custom: msg);
+                                            ErrorText(parts, ErrorTypes.custom, custom: msg, id: "ex20");
                                         }
                                     }
                                     catch
@@ -2027,12 +2026,12 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a Method named '{method}'");
+                                    ErrorText(parts, ErrorTypes.unkown);
                                 }
                             }
                             else if (!keyword.StartsWith("//") && !keyword.StartsWith("{") && !keyword.StartsWith("}") && keyword != "method" && keyword != "endmethod" && keyword != "")
                             {
-                                ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a keyword or variable named '{keyword}'");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a keyword, variable, control, list, or group named '{keyword}'", id:"ex21");
                             }
                         }
                         catch
@@ -2065,7 +2064,7 @@ namespace EZCode
                 }
                 catch
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'", id:"ex22");
                 }
             }
             else if (value.StartsWith("neg("))
@@ -2078,7 +2077,7 @@ namespace EZCode
                 }
                 catch
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'", id: "ex22");
                 }
             }
             else if (value.StartsWith("sq("))
@@ -2091,7 +2090,7 @@ namespace EZCode
                 }
                 catch
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'", id: "ex22");
                 }
             }
             else if (value.StartsWith("sqr("))
@@ -2104,7 +2103,7 @@ namespace EZCode
                 }
                 catch
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'", id: "ex22");
                 }
             }
             else if (value.StartsWith("round("))
@@ -2117,7 +2116,7 @@ namespace EZCode
                 }
                 catch
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the value '{eq}' with '{parts[0]}'", id: "ex22");
                 }
             }
             else if (value.StartsWith("pow("))
@@ -2126,7 +2125,7 @@ namespace EZCode
                 string[] eqboth = eq.Split(",");
                 if (eqboth.Length != 2)
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 2 parts for power function with '{parts[0]}'. Correct Syntax, 'pow(value,exponent)'. This is");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 2 parts for power function with '{parts[0]}'. Correct Syntax, 'pow(value,exponent)'", id: "ex23");
                     return value;
                 }
                 try
@@ -2137,7 +2136,7 @@ namespace EZCode
                 }
                 catch
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'pow(value,exponent)'. This is with '{parts[0]}'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'pow(value,exponent)'. This is with '{parts[0]}'", id: "ex22");
                 }
             }
             else if (value.StartsWith("clamp("))
@@ -2146,7 +2145,7 @@ namespace EZCode
                 string[] eqboth = eq.Split(",");
                 if (eqboth.Length != 3)
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 3 parts for clamp function with '{parts[0]}'. Correct Syntax, 'clamp(value,min,max)'. This is");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 3 parts for clamp function with '{parts[0]}'. Correct Syntax, 'clamp(value,min,max)'", id: "ex23");
                     return value;
                 }
                 try
@@ -2161,7 +2160,7 @@ namespace EZCode
                 }
                 catch
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'clamp(value,min,max)'. This is with '{parts[0]}'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'clamp(value,min,max)'. This is with '{parts[0]}'", id: "ex22");
                 }
             }
             else if (value.StartsWith("sum("))
@@ -2179,7 +2178,7 @@ namespace EZCode
                 }
                 catch
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'sum(value1,value2,etc)'. This is with '{parts[0]}'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'sum(value1,value2,etc)'. This is with '{parts[0]}'", id: "ex22");
                 }
             }
             else if (value.StartsWith("avg("))
@@ -2197,7 +2196,7 @@ namespace EZCode
                 }
                 catch
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'avg(value1,value2,etc)'. This is with '{parts[0]}'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'avg(value1,value2,etc)'. This is with '{parts[0]}'", id: "ex22");
                 }
             }
             else if (value.StartsWith("min("))
@@ -2217,7 +2216,7 @@ namespace EZCode
                 }
                 catch
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'min(value1,value2)'. This is with '{parts[0]}'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'min(value1,value2)'. This is with '{parts[0]}'", id: "ex22");
                 }
             }
             else if (value.StartsWith("max("))
@@ -2237,7 +2236,7 @@ namespace EZCode
                 }
                 catch
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'max(value1,value2)'. This is with '{parts[0]}'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Error solving '{value}' with the values '{eq}'. Try removing spaces between values, 'max(value1,value2)'. This is with '{parts[0]}'", id: "ex22");
                 }
             }
             else if (value.Equals("pi()"))
@@ -2362,7 +2361,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a Control or Group named '{parts[index + 2]}'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Could not find a Control or Group named '{parts[index + 2]}'", id:"ex21");
                                 }
                             }
                         }
@@ -2388,7 +2387,7 @@ namespace EZCode
                     break;
                 default:
                     {
-                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'display', 'change', 'close', 'open', or 'destroy' for '{name}'");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'display', 'change', 'close', 'open', or 'destroy' for '{name}'", id:"ex15");
                     }
                     break;
             }
@@ -2527,7 +2526,7 @@ namespace EZCode
                                     }
                                     catch
                                     {
-                                        ErrorText(parts, ErrorTypes.custom, custom: $"An error occured setting the icon to '{window.Name}'");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"An error occured setting the icon to '{window.Name}'", id:"ex25");
                                     }
                                 }
                                 break;
@@ -2653,7 +2652,7 @@ namespace EZCode
                                             }
                                             else
                                             {
-                                                ErrorText(parts, ErrorTypes.custom, custom: $"'{seperator[0]}' is not a valid font. Try 'Arial' or go to https://learn.mcrosoft.com for more inWindowation about supported WinWindows fonts. Exception for '{window.Name}'");
+                                                ErrorText(parts, ErrorTypes.custom, custom: $"'{seperator[0]}' is not a valid font. Try 'Arial' or go to https://learn.mcrosoft.com for more information about supported WinForms fonts. Exception for '{window.Name}'", id:"ex26");
                                             }
                                             try
                                             {
@@ -2663,7 +2662,7 @@ namespace EZCode
                                             }
                                             catch
                                             {
-                                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected a number greater greater than zero for font size value");
+                                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected a number greater greater than zero for font size value", id:"ex26");
                                             }
                                             if (Enum.TryParse(char.ToUpper(seperator[2][0]) + seperator[2].Substring(1).ToLower(), out FontStyle parsedFontStyle))
                                             {
@@ -2671,17 +2670,17 @@ namespace EZCode
                                             }
                                             else
                                             {
-                                                ErrorText(parts, ErrorTypes.custom, custom: $"'{seperator[2]}' is not a valid font style. Valid styles are: {string.Join(", ", Enum.GetNames(typeof(FontStyle)))}. Exception for '{window.Name}'");
+                                                ErrorText(parts, ErrorTypes.custom, custom: $"'{seperator[2]}' is not a valid font style. Valid styles are: {string.Join(", ", Enum.GetNames(typeof(FontStyle)))}. Exception for '{window.Name}'", id:"ex26");
                                             }
                                         }
                                         else
                                         {
-                                            ErrorText(parts, ErrorTypes.custom, custom: $"Requires 3 values for font");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Requires 3 values for font", id: "ex27");
                                         }
                                     }
                                     else if (parts.Length != 1)
                                     {
-                                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for font value");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for font value", id:"ex28");
                                     }
                                     window.Font = new Font(fontType, fontSize, fontStyle);
                                 }
@@ -2704,7 +2703,7 @@ namespace EZCode
                                     }
                                     catch
                                     {
-                                        ErrorText(parts, ErrorTypes.custom, custom: $"An error occured setting the image for '{window.Name}'");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"An error occured setting the image for '{window.Name}'", id: "ex25");
                                     }
                                 }
                                 break;
@@ -2738,14 +2737,14 @@ namespace EZCode
                                 }
                                 break;
                             default:
-                                ErrorText(parts, ErrorTypes.custom, custom: $"'{before[0].Trim()}' is not a correct property for '{window.Name}'");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"'{before[0].Trim()}' is not a correct property for '{window.Name}'", id: "ex29");
                                 break;
                         }
                     }
                 }
                 else
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' to initialize values to set");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' to initialize values to set", id:"ex30");
                 }
             }
             return window;
@@ -2785,7 +2784,7 @@ namespace EZCode
             }
 
             // If no closing bracket is found, throw an exception
-            ErrorText(parts, ErrorTypes.custom, custom: $"Expected closing bracket for '{parts[0]}'");
+            ErrorText(parts, ErrorTypes.custom, custom: $"Expected closing bracket for '{parts[0]}'", id:"ex31");
             return new string[0];
         }
         int GetZIndex(Control control)
@@ -2824,7 +2823,7 @@ namespace EZCode
                     string values = colon[0];
                     if (!values.StartsWith(":") && values != "")
                     {
-                        ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the list");
+                        ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the list", id: "ex31");
                     }
                     else if (values == "")
                     {
@@ -2847,7 +2846,7 @@ namespace EZCode
                         string values_ = colon_[0];
                         if (!values_.StartsWith(":") && values_ == "")
                         {
-                            ErrorText(parts, ErrorTypes.custom, $"Expected values set the list");
+                            ErrorText(parts, ErrorTypes.custom, $"Missing values to set to the list", id:"ex32");
                         }
                         else if (!values_.Contains(":"))
                         {
@@ -2862,7 +2861,7 @@ namespace EZCode
                     }
                     else if (!var.isArray())
                     {
-                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable", id:"ex33");
                     }
                     else
                     {
@@ -2880,7 +2879,7 @@ namespace EZCode
                         string values__ = colon__[0];
                         if (values__ == "")
                         {
-                            ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the list");
+                            ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the list", id:"ex30");
                         }
                         else
                         {
@@ -2890,7 +2889,7 @@ namespace EZCode
                     }
                     else if (!var.isArray())
                     {
-                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable", id:"ex33");
                     }
                     else
                     {
@@ -2905,7 +2904,7 @@ namespace EZCode
                     }
                     else if (!var.isArray())
                     {
-                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable", id:"ex33");
                     }
                     else
                     {
@@ -2931,7 +2930,7 @@ namespace EZCode
                         }
                         if (index == null && rem == null)
                         {
-                            ErrorText(parts, ErrorTypes.custom, $"Expected an index or a value to remove from the list");
+                            ErrorText(parts, ErrorTypes.custom, $"Expected an index or a value to remove from the list", id:"ex34");
                         }
                         else
                         {
@@ -2948,7 +2947,7 @@ namespace EZCode
                     }
                     else
                     {
-                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable", id:"ex33");
                     }
                     break;
                 case "destroy":
@@ -2959,7 +2958,7 @@ namespace EZCode
                     }
                     else if (!var.isArray())
                     {
-                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable", id:"ex33");
                     }
                     else
                     {
@@ -2979,16 +2978,16 @@ namespace EZCode
                         }
                         else if (!var.isArray())
                         {
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable", id: "ex33");
                         }
                     }
                     catch
                     {
-                        ErrorText(parts, ErrorTypes.custom, custom:$"Error splitting values to list");
+                        ErrorText(parts, ErrorTypes.custom, custom:$"Error splitting values to list", id:"ex35");
                     }
                     break;
                 default:
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'add', 'equals', 'remove', 'destroy', 'split' or 'clear'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'add', 'equals', 'remove', 'destroy', 'split' or 'clear'", id: "ex15");
                     break;
             }
             var.Method = currentmethod != null && !global ? currentmethod.Name : "";
@@ -3014,7 +3013,7 @@ namespace EZCode
                     group = new Group(name);
                     if (!values.StartsWith(":") && values != "")
                     {
-                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' to set values to the Group");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' to set values to the Group", id:"ex30");
                     }
                     else if (values == "")
                     {
@@ -3040,7 +3039,7 @@ namespace EZCode
                         string values_ = colon_[0];
                         if (!values_.StartsWith(":") && values_ == "")
                         {
-                            ErrorText(parts, ErrorTypes.custom, $"Expected values add to the Group");
+                            ErrorText(parts, ErrorTypes.custom, $"Expected values add to the Group", id:"ex32");
                         }
                         else if (!values_.Contains(":"))
                         {
@@ -3072,7 +3071,7 @@ namespace EZCode
                         string values__ = colon__[0];
                         if (values__ == "")
                         {
-                            ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group");
+                            ErrorText(parts, ErrorTypes.custom, $"Expected ':' to set values to the Group", id:"ex30");
                         }
                         else
                         {
@@ -3104,7 +3103,7 @@ namespace EZCode
                         }
                         if (index == null && rem == null)
                         {
-                            ErrorText(parts, ErrorTypes.custom, $"Expected an index or a value to remove from the group");
+                            ErrorText(parts, ErrorTypes.custom, $"Expected an index or a value to remove from the group", id:"ex34");
                         }
                         else
                         {
@@ -3203,7 +3202,7 @@ namespace EZCode
                     }
                     break;
                 default:
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'add', 'equals', 'remove', 'change', 'clear', 'destroy', or 'destroyall'");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'new', 'add', 'equals', 'remove', 'change', 'clear', 'destroy', or 'destroyall' for 'group", id:"ex15");
                     break;
             }
             group.Method = currentmethod != null && !global ? currentmethod.Name : "";
@@ -3269,7 +3268,7 @@ namespace EZCode
                             }
                             else
                             {
-                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected a Number Variable");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected a Number Variable", id:"ex33");
                             }
                         }
                         break;
@@ -3281,7 +3280,7 @@ namespace EZCode
                             }
                             catch
                             {
-                                ErrorText(parts, ErrorTypes.custom, custom: $"There was an error setting the variable to the correct value");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"There was an error setting the variable to the correct value", id:"ex36");
                             }
                         }
                         break;
@@ -3290,14 +3289,14 @@ namespace EZCode
                             if (var.returnBool(var.Value) != null && BoolCheck(parts, index, false) != null)
                                 var.set(BoolCheck(parts, index) == true ? "1" : "0");
                             else
-                                ErrorText(parts, ErrorTypes.custom, custom: $"There was an Error with changing '{var.Name}'. Expected '+', '-', '*', '/', '=', or ':'");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"There was an Error with changing '{var.Name}'. Expected '+', '-', '*', '/', '=', or ':'", id:"ex15");
                         }
                         break;
                 }
             }
             catch
             {
-                ErrorText(parts, ErrorTypes.custom, custom: $"There was an Error with changing '{var.Name}'");
+                ErrorText(parts, ErrorTypes.custom, custom: $"There was an Error with changing '{var.Name}'", id:"ex36");
             }
             return var;
         }
@@ -3373,7 +3372,7 @@ namespace EZCode
                 }
                 else
                 {
-                    if (error) ErrorText(parts, ErrorTypes.custom, custom: $"Expected a boolean variable");
+                    if (error) ErrorText(parts, ErrorTypes.custom, custom: $"Expected a boolean variable", id:"ex33");
                 }
             }
             return check;
@@ -3456,7 +3455,7 @@ namespace EZCode
             }
             catch
             {
-                ErrorText(parts, ErrorTypes.custom, custom: $"There was an error with the bool check");
+                ErrorText(parts, ErrorTypes.custom, custom: $"There was an error with ?( boolean )?", id:"ex37");
                 return new int[] { };
             }
         }
@@ -3581,7 +3580,7 @@ namespace EZCode
                     catch
                     {
                         errorText = $"Expected new variable name after '=>' for '{keyword}'";
-                        ErrorText(parts, ErrorTypes.custom, custom: errorText);
+                        ErrorText(parts, ErrorTypes.custom, custom: errorText, id: "ex38");
                     }
                     break;
                 case ":":
@@ -3592,14 +3591,14 @@ namespace EZCode
                     catch
                     {
                         errorText = $"Expected variable name after ':' for '{keyword}'";
-                        ErrorText(parts, ErrorTypes.custom, custom: errorText);
+                        ErrorText(parts, ErrorTypes.custom, custom: errorText, id:"ex38");
                     }
                     break;
                 case "":
                     break;
                 default:
                     errorText = $"Expected '=>' or ':' for '{keyword}'";
-                    ErrorText(parts, ErrorTypes.custom, custom: errorText);
+                    ErrorText(parts, ErrorTypes.custom, custom: errorText, id:"ex20");
                     break;
             }
             return errorText;
@@ -3627,7 +3626,7 @@ namespace EZCode
                     var.set(alreadyVal);
                     break;
                 case false:
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Can not find a variable named '{name}'");
+                    ErrorText(parts, ErrorTypes.missingVar, name:name);
                     break;
             }
 
@@ -3673,7 +3672,7 @@ namespace EZCode
                             string str = string.Join(' ', parts.Skip(index + 2));
                             if (str.Trim() == "")
                             {
-                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected an assigned value after ':'");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected an assigned value after ':'", id:"ex30");
                             }
 
                             string[] strings = await PlaySwitch(jumpsto: str);
@@ -3681,7 +3680,7 @@ namespace EZCode
                         }
                         catch
                         {
-                            ErrorText(parts, ErrorTypes.custom, custom: $"There was an error setting the variable to the correct value");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"There was an error setting the variable to the correct value", id:"ex36");
                         }
                     }
                     else
@@ -3805,7 +3804,7 @@ namespace EZCode
                                     int v2 = (int)fl2[0];
                                     if (v1 >= v2)
                                     {
-                                        ErrorText(parts, ErrorTypes.custom, custom: $"Minumum can not be greater or equal to the max in 'system:random'");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"Minumum can not be greater or equal to the max in 'system:random'", id:"ex39");
                                         return "0";
                                     }
                                     Random rand = new Random();
@@ -3884,17 +3883,6 @@ namespace EZCode
                     case "currentplaydirectory":
                         value = Environment.CurrentDirectory.ToString();
                         break;
-  /*Does not work*/ case "litteral":
-                        if (value.Contains("system:litteral:"))
-                        {
-                            string[] strings = getString_value(ind, 2, false, false, false, false, "", false);
-                            return strings[0];
-                        }
-                        else
-                        {
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected ':' after 'system:litteral'");
-                        }
-                        break; /*Does not work*/
                     case "space":
                         value = " ";
                         break;
@@ -3932,7 +3920,7 @@ namespace EZCode
                         }
                         else
                         {
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Labels or Buttons have '{ind[1]}' property");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Labels or Buttons have '{ind[1]}' property", id:"ex40");
                         }
                         break;
                     case "id":
@@ -3994,7 +3982,7 @@ namespace EZCode
                         if (control is GButton a)
                             value = a.isclick.ToString();
                         else
-                            ErrorText(parts, ErrorTypes.custom, custom: "Only Buttons have a 'click' value");
+                            ErrorText(parts, ErrorTypes.custom, custom: "Only Buttons have a 'click' value", id: "ex40");
                         break;
                     case "font":
                         value = $"{control.Font.Name}, {control.Font.Size}, {control.Font.Style}";
@@ -4013,49 +4001,49 @@ namespace EZCode
                         if (control is GShape gs)
                             value = string.Join(",", gs.Points);
                         else
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Shapes have '{ind[1]}' value in");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Shapes have '{ind[1]}' value", id: "ex40");
                         break;
                     case "auto":
                     case "autosize":
                         if (control is GLabel l)
                             value = l.AutoSize ? "1" : "0";
                         else
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Labels have 'autosize' value in");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Labels have 'autosize' value", id: "ex40");
                         break;
                     case "multi":
                     case "multiline":
                         if (control is GTextBox t)
                             value = t.Multiline == true ? "1" : "0";
                         else
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value", id: "ex40");
                         break;
                     case "wrap":
                     case "wordwrap":
                         if (control is GTextBox tt)
                             value = tt.WordWrap == true ? "1" : "0";
                         else
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value", id: "ex40");
                         break;
                     case "vertical":
                     case "verticalscrollbar":
                         if (control is GTextBox ttt)
                             value = ttt.ScrollBars == ScrollBars.Vertical || ttt.ScrollBars == ScrollBars.Both ? "1" : "0";
                         else
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value", id: "ex40");
                         break;
                     case "horizantal":
                     case "horizantalscrollbar":
                         if (control is GTextBox tttt)
                             value = tttt.ScrollBars == ScrollBars.Vertical || tttt.ScrollBars == ScrollBars.Both ? "1" : "0";
                         else
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value", id: "ex40");
                         break;
                     case "p":
                     case "poly":
                         if (control is GShape g)
                             value = g.Poly.ToString();
                         else
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Shapes have '{ind[1]}' value in");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Shapes have '{ind[1]}' value", id: "ex40");
                         break;
                     case "z":
                     case "zindex":
@@ -4071,7 +4059,7 @@ namespace EZCode
                         if (control is GTextBox rt)
                             value = rt.ReadOnly ? "1" : "0";
                         else
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value in");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Only Textboxes have '{ind[1]}' value", id: "ex40");
                         break;
                     case "image":
                         {
@@ -4092,7 +4080,7 @@ namespace EZCode
                         }
                         break;
                     default:
-                        ErrorText(parts, ErrorTypes.custom, custom: $"'{ind[0]}' is not a valid value for '{control.Name}'");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"'{ind[0]}' is not a valid property for '{control.Name}'", id:"ex29");
                         break;
                 }
             }
@@ -4261,7 +4249,7 @@ namespace EZCode
                         }
                         break;
                     default:
-                        ErrorText(parts, ErrorTypes.custom, custom: $"'{ind[0]}' is not a valid value for '{window.Name}'");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"'{ind[0]}' is not a valid value for '{window.Name}'", id:"ex29");
                         break;
                 }
             }
@@ -4279,7 +4267,7 @@ namespace EZCode
                         }
                         else if (ind.Length > 2 && !var.isArray())
                         {
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected an array variable");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected a list variable", id:"ex33");
                         }
                         break;
                     case "contains":
@@ -4296,7 +4284,7 @@ namespace EZCode
                         }
                         else
                         {
-                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected a value to check in '{ind[0]}:{ind[1]}' for");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected a value to check in '{ind[0]}:{ind[1]}'", id:"ex41");
                         }
                         break;
                     default:
@@ -4427,7 +4415,7 @@ namespace EZCode
             {
                 GShape control = new GShape();
                 if (!instance && getControl(name) != null && getControl(name).AccessibleDescription == type && overwrite) control = getControl(name) as GShape;
-                else if (!instance && getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}'");
+                else if (!instance && getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}'", id:"ex42");
                 try
                 {
                     control.Name = name;
@@ -4452,7 +4440,7 @@ namespace EZCode
             {
                 GLabel control = new GLabel();
                 if (getControl(name) != null && getControl(name).AccessibleDescription == type && overwrite) control = getControl(name) as GLabel;
-                else if (getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}'");
+                else if (getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}'", id: "ex42");
                 control.Name = name;
                 control.AccessibleDescription = type;
 
@@ -4477,7 +4465,7 @@ namespace EZCode
             {
                 GTextBox control = new GTextBox();
                 if (getControl(name) != null && getControl(name).AccessibleDescription == type && overwrite) control = getControl(name) as GTextBox;
-                else if (getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}'");
+                else if (getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}'", id: "ex42");
                 control.Name = name;
                 control.AccessibleDescription = type;
 
@@ -4503,7 +4491,7 @@ namespace EZCode
             {
                 GButton control = new GButton();
                 if (getControl(name) != null && getControl(name).AccessibleDescription == type && overwrite) control = getControl(name) as GButton;
-                else if (getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}'");
+                else if (getControl(name) != null && getControl(name).AccessibleDescription != type && overwrite) ErrorText(parts, ErrorTypes.custom, custom: $"Expected '{getControl(name).AccessibleDescription}'", id: "ex42");
                 control.Name = name;
                 control.AccessibleDescription = type;
                 control.Click += GButtonClick;
@@ -4555,7 +4543,7 @@ namespace EZCode
                         points = poly;
                         if (poly < 3)
                         {
-                            ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}'");
+                            ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}'", id:"ex27");
                         }
                         else if (poly == 3) gs.type = GShape.Type.Triangle;
                         else if (poly == 4) gs.type = GShape.Type.Square;
@@ -4568,7 +4556,7 @@ namespace EZCode
                     }
                     else
                     {
-                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}'");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}'", id:"ex42");
                     }
                 }
                 catch
@@ -4631,26 +4619,26 @@ namespace EZCode
                                     case "bottomleft": align = ContentAlignment.BottomLeft; break;
                                     case "bottomcenter": align = ContentAlignment.BottomCenter; break;
                                     case "bottomright": align = ContentAlignment.BottomRight; break;
-                                    default: ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'topleft', 'topright', 'topcenter', 'middleleft', 'middlecenter', 'middleright', 'bottomleft', 'bottomcenter', or 'bottomright' for '{control.Name}'"); break; 
+                                    default: ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'topleft', 'topright', 'topcenter', 'middleleft', 'middlecenter', 'middleright', 'bottomleft', 'bottomcenter', or 'bottomright' for '{control.Name}'", id:"ex15"); break; 
                                 }
                             }
                             else
                             {
-                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'label' or 'button' for '{control.Name}'");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'label' or 'button' for '{control.Name}'", id:"ex40");
                             }
                         break;
                         case "id":
                             {
                                 if (!AllControls.Any(x => x.AccessibleName == after[0]))
                                     id = after[0];
-                                else ErrorText(_parts, ErrorTypes.custom, custom: $"A control already has the id: '{after[0].Trim()}'. For control '{control.Name}'");
+                                else ErrorText(_parts, ErrorTypes.custom, custom: $"A control already has the id: '{after[0].Trim()}'. For control '{control.Name}'", id:"ex43");
                             }
                             break;
                         case "name":
                             {
                                 if (!AllControls.Any(x => x.Name == after[0]))
                                     namee = after[0];
-                                else ErrorText(_parts, ErrorTypes.custom, custom: $"A control already has the name: '{after[0].Trim()}'. For control '{namee}'");
+                                else ErrorText(_parts, ErrorTypes.alreadyMember, control.AccessibleDescription, namee);
                             }
                             break;
                         case "focus":
@@ -4663,7 +4651,7 @@ namespace EZCode
                                 if (control is GTextBox)
                                     readonl = (bool)BoolCheck(after, 0);
                                 else
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}'", id:"ex40");
                             }
                             break;
                         case "enable":
@@ -4696,13 +4684,13 @@ namespace EZCode
                                         }
                                         else
                                         {
-                                            ErrorText(parts, ErrorTypes.custom, custom: $"'{seperator[0]}' is not a valid font. Try 'Arial' or go to https://learn.mcrosoft.com for more inWindowation about supported WinWindows fonts. Exception for '{control.Name}'");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"'{seperator[0]}' is not a valid font. Try 'Arial' or go to https://learn.mcrosoft.com for more information about supported WinForms fonts. Exception for '{control.Name}'", id:"ex26");
                                         }
                                         try
                                         {
                                             float[] floats = find_value(seperator, 1, -1);
                                             fontSize = (int)floats[0];
-                                            if (fontSize < 0) new Exception("");
+                                            if (fontSize < 0) ErrorText(parts, ErrorTypes.custom, custom: $"Expected a number greater greater than zero for font size value", id: "ex26");
                                         }
                                         catch
                                         {
@@ -4714,17 +4702,17 @@ namespace EZCode
                                         }
                                         else
                                         {
-                                            ErrorText(parts, ErrorTypes.custom, custom: $"'{seperator[2]}' is not a valid font style. Valid styles are: {string.Join(", ", Enum.GetNames(typeof(FontStyle)))}. Exception for '{control.Name}'");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"'{seperator[2]}' is not a valid font style. Valid styles are: {string.Join(", ", Enum.GetNames(typeof(FontStyle)))}. Exception for '{control.Name}'", id:"ex26");
                                         }
                                     }
                                     else
                                     {
-                                        ErrorText(parts, ErrorTypes.custom, custom: $"Requires 3 values for font");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"Requires 3 values for font", id:"ex27");
                                     }
                                 }
                                 else if (parts.Length != 1)
                                 {
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for font value");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for font value", id:"ex28");
                                 }
                                 font = new Font(fontType, fontSize, fontStyle);
                             }
@@ -4741,7 +4729,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}'", id:"ex40");
                                 }
                             }
                             break;
@@ -4760,7 +4748,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}'", id: "ex40");
                                 }
                             }
                             break;
@@ -4774,7 +4762,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}'", id: "ex40");
                                 }
                             }
                             break;
@@ -4793,7 +4781,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}'", id: "ex40");
                                 }
                             }
                             break;
@@ -4812,7 +4800,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'textbox' for '{control.Name}'", id: "ex40");
                                 }
                             }
                             break;
@@ -4871,7 +4859,7 @@ namespace EZCode
                                     int poly = (int)floats[0];
                                     if (poly < 3)
                                     {
-                                        ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}'");
+                                        ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{control.Name}'", id:"ex27");
                                     }
                                     else if (poly == 3) typ = GShape.Type.Triangle;
                                     else if (poly == 4) typ = GShape.Type.Square;
@@ -4884,7 +4872,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'shape' for '{control.Name}'", id: "ex40");
                                 }
                             }
                             break;
@@ -4910,7 +4898,7 @@ namespace EZCode
                                 }
                                 catch
                                 {
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"An error occured setting the image for '{control.Name}'");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"An error occured setting the image for '{control.Name}'", id: "ex25");
                                 }
                             }
                             break;
@@ -4970,7 +4958,7 @@ namespace EZCode
                                             case "left": left = true; break;
                                             case "right": right = true; break;
                                             case "none": top = false; bottom = false; left = false; right = false; break;
-                                            default: ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'top', 'bottom', 'left', 'right', or 'none' with anchor values"); break;
+                                            default: ErrorText(parts, ErrorTypes.custom, custom: $"Expected 'top', 'bottom', 'left', 'right', or 'none' with anchor values", id: "ex15"); break;
                                         }
                                     }
                                     if (top) anchor |= AnchorStyles.Top;
@@ -4980,7 +4968,7 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' to set anchor values");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' to set anchor values", id:"ex28");
                                 }
                             }
                             catch
@@ -4989,7 +4977,7 @@ namespace EZCode
                             }
                             break;
                         default:
-                            ErrorText(_parts, ErrorTypes.custom, custom: $"'{before[0].Trim()}' is not a correct property for '{control.Name}'. Visit https://ez-code.web.app for more information about property values.");
+                            ErrorText(_parts, ErrorTypes.custom, custom: $"'{before[0].Trim()}' is not a correct property for '{control.Name}'. Visit https://ez-code.web.app for more information about property values.", id: "ex15");
                             break;
                     }
                 }
@@ -5037,8 +5025,9 @@ namespace EZCode
                 }
                 if (instance & control.Name == "")
                 {
-                    ErrorText(parts, ErrorTypes.custom, custom: $"Control instance created has no name. Please add the name property, `name:`, to the control");
+                    ErrorText(parts, ErrorTypes.custom, custom: $"Control instance created has no name. Please add the name property, `name:`, to the control", id:"ex44");
                 }
+                control.Refresh();
             }
             return control;
         }
@@ -5079,7 +5068,7 @@ namespace EZCode
                     }
                     else
                     {
-                        ErrorText(allparts, ErrorTypes.custom, custom: $"Requires 3 values for color");
+                        ErrorText(allparts, ErrorTypes.custom, custom: $"Requires 3 values for color", id:"ex27");
                     }
                 }
                 else if (all.Equals("transparent"))
@@ -5088,7 +5077,7 @@ namespace EZCode
                 }
                 else if (parts.Length != 1)
                 {
-                    ErrorText(allparts, ErrorTypes.custom, custom: $"Expected '[' and ']' for color value");
+                    ErrorText(allparts, ErrorTypes.custom, custom: $"Expected '[' and ']' for color value", id:"ex28");
                 }
                 c = Color.FromArgb(r, g, b);
             }
@@ -5123,18 +5112,18 @@ namespace EZCode
                                 }
                                 else
                                 {
-                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 2 values for a single point in points value");
+                                    ErrorText(parts, ErrorTypes.custom, custom: $"Expected 2 values for a single point in points value", id:"ex45");
                                 }
                             }
                             else
                             {
-                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected '(' and ')' for points value");
+                                ErrorText(parts, ErrorTypes.custom, custom: $"Expected '(' and ')' for points value", id:"ex45");
                             }
                         }
                     }
                     else
                     {
-                        ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{gs.Name}'");
+                        ErrorText(parts, ErrorTypes.custom, custom: $"A minumum of 3 points required for the shape '{gs.Name}'", id:"ex27");
                     }
                     gs.Points = ppoints.ToArray();
                 }
@@ -5145,7 +5134,7 @@ namespace EZCode
             }
             else
             {
-                ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for points value");
+                ErrorText(parts, ErrorTypes.custom, custom: $"Expected '[' and ']' for points value", id:"ex28");
             }
             gs.type = GShape.Type.Custom;
             gs.Refresh();
@@ -5365,7 +5354,7 @@ namespace EZCode
             }
             else if (ended == 1)
             {
-                ErrorText(parts, ErrorTypes.custom, custom: $"Syntax error. Expected ')' to end equation.");
+                ErrorText(parts, ErrorTypes.custom, custom: $"Syntax error. Expected ')' to end equation.", id:"ex46");
             }
 
             return new float[] { float.Parse(value), next };
@@ -5714,7 +5703,7 @@ namespace EZCode
             catch (Exception ex)
             {
                 string msg = $"An error occured while finding and setting methods. C# ERROR MESSAGE:'{ex.Message}'";
-                ErrorText(new string[0], ErrorTypes.custom, custom: msg);
+                ErrorText(new string[0], ErrorTypes.custom, custom: msg, id:"ex47");
                 return msg;
             }
             string[] oldLines = lines.Select(x => x.Trim()).Where(y => y != "").ToArray();
@@ -5963,23 +5952,40 @@ namespace EZCode
         /// <param name="keyword">keyword, for error type</param>
         /// <param name="name">name, for the error type</param>
         /// <param name="custom">cutom error, this makes the 'name' and 'keyword' parameters not needed</param>
-        public string ErrorText(string[] parts, ErrorTypes error, string keyword = "keyword", string name = "name", string custom = "An Error Occured", bool returnoutput = true, bool dontshowsegment = false, bool dontshowcode = false)
+        /// <param name="id">The ID of the error (ex00)</param>
+        public string ErrorText(string[] parts, ErrorTypes error, string keyword = "keyword", string name = "name", string custom = "An Error Occured", string id = "ex", bool returnoutput = true, bool dontshowsegment = false, bool dontshowcode = false)
         {
+            if (!id.Contains("ex")) id = "ex" + id;
+            switch (error)
+            {
+                case ErrorTypes.unkown: id += "00"; break;
+                case ErrorTypes.normal: id += "01"; break;
+                case ErrorTypes.violation: id += "02"; break;
+                case ErrorTypes.missingControl: id += "03"; break;
+                case ErrorTypes.missingVar: id += "04"; break;
+                case ErrorTypes.missingSound: id += "04"; break;
+                case ErrorTypes.missingGroup: id += "05"; break;
+                case ErrorTypes.missingWindow: id += "06"; break;
+                case ErrorTypes.alreadyMember: id += "07"; break;
+                case ErrorTypes.errorEquation: id += "08"; break;
+                case ErrorTypes.methodnamingvoilation: id += "09"; break;
+            }
             string text =
                 error == ErrorTypes.unkown ? $"An error occured in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.normal ? $"An error occured with '{keyword}' in {SegmentSeperator} {codeLine}" :
-                error == ErrorTypes.violation ? $"Naming violation in {SegmentSeperator} {codeLine}. '{name}' can not be used as a name" :
+                error == ErrorTypes.violation ? $"Naming violation, '{name}' can not be used as a name in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.missingControl ? $"Could not find a Control named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.missingVar ? $"Could not find a Variable named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.missingSound ? $"Could not find a Sound Player named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.missingGroup ? $"Could not find a Group named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.missingWindow ? $"Could not find a Window named '{name}' in {SegmentSeperator} {codeLine}" :
-                error == ErrorTypes.alreadyMember ? $"Naming violation in {SegmentSeperator} {codeLine}. There is already a '{keyword}' named '{name}'" :
+                error == ErrorTypes.alreadyMember ? $"Naming violation, there is already a '{keyword}' named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.errorEquation ? $"Unable to solve the equation in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.methodnamingvoilation ? $"Can not name '{keyword}' as '{name}' because there is a method already named '{name}' in {SegmentSeperator} {codeLine}" :
                 error == ErrorTypes.custom ? $"{custom}{(!dontshowsegment ? $" in {SegmentSeperator} {codeLine}" : "")}" : "An Error Occured, We don't know why. If it helps, it was on line " + codeLine;
             text += !dontshowcode ? " : " + string.Join(" ", parts) : "";
             if ((parts.Contains("#suppress") && parts.Contains("error")) || (parts.Contains("#") && parts.Contains("suppress") && parts.Contains("error"))) return "";
+            text = $"({id}) " + text;
             if (showFileInError)
             {
                 string st = !(ScriptDirectory == "" || ScriptDirectory == null) && currentmethod != null ? $"{ScriptDirectory.Trim()} - '{currentmethod.Name}'" : !(ScriptDirectory == "" || ScriptDirectory == null) ? ScriptDirectory.Trim() : currentmethod != null ? $"'{currentmethod.Name}'" : "";
