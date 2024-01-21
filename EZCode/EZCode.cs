@@ -23,7 +23,7 @@ namespace EZCode
         /// <summary>
         /// Directory of the script playing
         /// </summary>
-        public static string Version { get; } = "2.4.0";
+        public static string Version { get; } = "2.4.1";
 
         #region Variables_and_Initializers
         /// <summary>
@@ -4694,7 +4694,7 @@ namespace EZCode
                                         }
                                         catch
                                         {
-                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected a number greater greater than zero for font size value");
+                                            ErrorText(parts, ErrorTypes.custom, custom: $"Expected a number greater greater than zero for font size value", id: "ex26");
                                         }
                                         if (Enum.TryParse(char.ToUpper(seperator[2][0]) + seperator[2].Substring(1).ToLower(), out FontStyle parsedFontStyle))
                                         {

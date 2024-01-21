@@ -5,7 +5,7 @@
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>enable</Nullable>
     <Title>EZCode WinForms Programming Language</Title>
-    <Version>2.4.0</Version>
+    <Version>2.4.1</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <Description>EZCode is a easy to ue programming language for WinForms and can help speed up your development process. Go to https://ez-code.web.app</Description>
     <Copyright>Copyright © 2023</Copyright>
