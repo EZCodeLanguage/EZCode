@@ -1,8 +1,4 @@
-﻿using NAudio.MediaFoundation;
-using System.Net.Http.Headers;
-using System.Windows.Forms;
-
-namespace EZCode.Converter
+﻿namespace EZCode.Converter
 {
     public class Converter
     {
@@ -11,7 +7,7 @@ namespace EZCode.Converter
             Python,
         }
         private static readonly ProgrammingLanguage Default = ProgrammingLanguage.Python;
-        public ProgrammingLanguage Language { get; set; } = Default;
+        public static ProgrammingLanguage Language { get; set; } = Default;
         public string Code { get; set; } = "";
         public Converter() { }
         public Converter(string code, ProgrammingLanguage language)
@@ -105,7 +101,7 @@ namespace EZCode.Converter
 
                 if (language == ProgrammingLanguage.Python)
                 {
-                    con = ConvertLinePython(action, line, ref tab);
+                    con = ConvertLinePython(action, line, objects, ref tab);
                 }
 
                 converted += con + Environment.NewLine;
@@ -113,8 +109,9 @@ namespace EZCode.Converter
 
             if (language == ProgrammingLanguage.Python && ImportAndDefine.ContainsMethod)
             {
+                int ttab = 0;
                 string firstMethod = lines.FirstOrDefault(x => getAction(x, objects) == Actions.Method, "method Start");
-                firstMethod = ConvertLinePython(Actions.Method, firstMethod, ref tab).Split(" ")[1].Replace(":", "");
+                firstMethod = ConvertLinePython(Actions.Method, firstMethod, objects, ref ttab).Split(" ").Select(x=>x.Trim()).ToArray()[1].Replace(":", "");
                 converted += Environment.NewLine + firstMethod + Environment.NewLine;
             }
 
@@ -136,7 +133,7 @@ namespace EZCode.Converter
 
             return converted;
         }
-        private static string ConvertLinePython(Actions action, string line, ref int _tab)
+        private static string ConvertLinePython(Actions action, string line, List<EZCodeObject> objects, ref int _tab)
         {
             try
             {
@@ -271,11 +268,34 @@ namespace EZCode.Converter
                         }
                         string parameters = string.Join(", ", newW);
                         line = $"def {w[1]}({parameters}):";
-                        tab += 1;
+                        tab ++;
                         break;
                     case Actions.EndMethod:
                         line = "";
-                        tab -= 1;
+                        tab--;
+                        break;
+                    case Actions.ClosingBracket:
+                        line = "";
+                        tab--;
+                        break;
+                    case Actions.OpenningBracket:
+                        line = "";
+                        break;
+                    case Actions.If:
+                        int next = 0;
+                        line = $"if {returnAgument(w, 1, objects, ref next)}:";
+                        if (w.Length > next && !string.Join(" ", w).Trim().EndsWith("{"))
+                        {
+                            string nextLine = string.Join(" ", w.Skip(next));
+                            Actions _action = getAction(nextLine, objects);
+                            tab++;
+                            line += Environment.NewLine + ConvertLinePython(_action, nextLine, objects, ref tab);
+                            tab--;
+                        }
+                        else
+                        {
+                            tab++;
+                        }
                         break;
                 }
                 string tabs = string.Join("", Enumerable.Repeat("    ", _tab));
@@ -286,6 +306,29 @@ namespace EZCode.Converter
             {
                 return "";
             }
+        }
+        private static string returnAgument(string[] _w, int index, List<EZCodeObject> objects, ref int next)
+        {
+            string val = "";
+            string[] w = _w.Skip(index).TakeWhile(x => x != ":").Select(y => y.Trim()).ToArray();
+            for (int i = 0; i < w.Length; i++)
+            {
+                if (objects.FirstOrDefault(x => x.Type == EZCodeObject.EZType.Var && x.Name == w[i], null) != null)
+                {
+                    val += w[i] + " ";
+                }
+                else if (new[] { "=", "!", "!=", ">", "<", "<=", ">=", "&", "and", "or" }.Any(x => w[i] == x))
+                {
+                    val += w[i] + " ";
+                }
+                else
+                {
+                    val += returnValue(w, i, false) + " ";
+                }
+            }
+            if (val.EndsWith(" ")) val = val.Remove(val.Length - 1, 1);
+            next = _w.ToList().IndexOf(":") + 1;
+            return val.Replace(" = ", " == ").Replace(" ! ", " not ");
         }
         private static string returnArray(string[] w)
         {
@@ -349,6 +392,8 @@ namespace EZCode.Converter
             SplitList,
             Method,
             EndMethod,
+            ClosingBracket,
+            OpenningBracket,
             Loop,
             Else,
             If,
@@ -736,9 +781,23 @@ namespace EZCode.Converter
                     }
                     break;
                 case "method":
+                    if (parts.Length > 2)
+                    {
+                        string[] param = string.Join(" ", parts.Skip(3)).Split(",").Select(x=>x.Trim()).ToArray();
+                        EZCodeObject[] vals = new EZCodeObject[0];
+                        foreach (string val in param)
+                        {
+                            vals = vals.Append(new EZCodeObject(val.Split(":")[0], EZCodeObject.EZType.Var)).ToArray();
+                        }
+                        objects.AddRange(vals.ToList());
+                    }
                     return Actions.Method;
                 case "endmethod":
                     return Actions.EndMethod;
+                case "}":
+                    return Actions.ClosingBracket;
+                case "{":
+                    return Actions.OpenningBracket;
                 default:
                     if (parts.Length == 0) return Actions.None;
                     //vars
@@ -780,7 +839,7 @@ namespace EZCode.Converter
             }
             return Actions.None;
         }
-        struct EZCodeObject
+        class EZCodeObject
         {
             public enum EZType
             {
@@ -925,39 +984,73 @@ namespace EZCode.Converter
                         switch (ind[2].ToLower())
                         {
                             case "today":
-                                return "datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).strftime(\"%m/%d/%Y %I:%M:%S %p\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).strftime(\"%m/%d/%Y %I:%M:%S %p\")";
+                                else return "";
                             case "now":
-                                return "datetime.datetime.now().strftime(\"%m/%d/%Y %I:%M:%S %p\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%m/%d/%Y %I:%M:%S %p\")";
+                                else return "";
                             case "utcnow":
-                                return "datetime.datetime.utcnow().strftime(\"%m/%d/%Y %I:%M:%S %p\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.utcnow().strftime(\"%m/%d/%Y %I:%M:%S %p\")";
+                                else return "";
                             case "unixepoch":
-                                return "1/1/1970 12:00:00 AM";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "1/1/1970 12:00:00 AM";
+                                else return "";
                             case "hour24":
-                                return "datetime.datetime.now().strftime(\"%H\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%H\")";
+                                else return "";
                             case "hour":
-                                return "datetime.datetime.now().strftime(\"%I %p\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%I %p\")";
+                                else return "";
                             case "minute":
-                                return "datetime.datetime.now().strftime(\"%M\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%M\")";
+                                else return "";
                             case "second":
-                                return "datetime.datetime.now().strftime(\"%S\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%S\")";
+                                else return "";
                             case "milisecond":
-                                return "datetime.datetime.now().strftime(\"%f\")[:-3]";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%f\")[:-3]";
+                                else return "";
                             case "nownormal":
-                                return "datetime.datetime.now().strftime(\"%m/%d/%Y %I:%M %p\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%m/%d/%Y %I:%M %p\")";
+                                else return "";
                             case "now24":
-                                return "datetime.datetime.now().strftime(\"%m/%d/%Y %H:%M\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%m/%d/%Y %H:%M\")";
+                                else return "";
                             case "date":
-                                return "datetime.datetime.now().strftime(\"%m/%d/%Y\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%m/%d/%Y\")";
+                                else return "";
                             case "datedash":
-                                return "datetime.datetime.now().strftime(\"%m-%d-%Y\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%m-%d-%Y\")";
+                                else return "";
                             case "month":
-                                return "datetime.datetime.now().strftime(\"%B\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%B\")";
+                                else return "";
                             case "monthnumber":
-                                return "datetime.datetime.now().strftime(\"%m\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%m\")";
+                                else return "";
                             case "day":
-                                return "datetime.datetime.now().strftime(\"%d\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%d\")";
+                                else return "";
                             case "dayname":
-                                return "datetime.datetime.now().strftime(\"%A\")";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "datetime.datetime.now().strftime(\"%A\")";
+                                else return "";
                         }
                         break;
                     case "random":
@@ -968,46 +1061,70 @@ namespace EZCode.Converter
                                 bool more = value.Contains("system:random:");
                                 if (more)
                                 {
-                                    return $"random.randint({ind[2]}, {ind[3]})";
+                                    if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                        return $"random.randint({ind[2]}, {ind[3]})";
+                                    else return "";
                                 }
                                 else
                                 {
                                     Converter.ImportAndDefine.Sys = true;
-                                    return "random.randint(0, sys.maximize)";
+                                    if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                        return "random.randint(0, sys.maximize)";
+                                    else return "";
                                 }
                             case "single":
-                                return "random.random()";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "random.random()";
+                                else return "";
                         }
                     case "isnumber":
                         Converter.ImportAndDefine.IsNumber = true;
-                        return $"is_number({Converter.returnValue(ind, 2, false)})";
+                        if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                            return $"is_number({Converter.returnValue(ind, 2, false)})";
+                        else return "";
                     case "machine":
                         switch (ind[2].ToLower())
                         {
                             case "machinename":
                                 Converter.ImportAndDefine.Socket = true;
-                                return "socket.gethostname()";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "socket.gethostname()";
+                                else return "";
                             case "osversion":
                                 Converter.ImportAndDefine.Platform = true;
-                                return "platform.platform()";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "platform.platform()";
+                                else return "";
                             case "is64bitoperatingsystem":
                                 Converter.ImportAndDefine.Is64Bit = true;
-                                return "is_windows_64but()";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "is_windows_64but()";
+                                else return "";
                             case "username":
                                 Converter.ImportAndDefine.OS = true;
-                                return "os.getlogin()";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "os.getlogin()";
+                                else return "";
                             case "workingset":
-                                return "\"CAN_NOT_GET_WORKING_SET\"";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "\"CAN_NOT_GET_WORKING_SET\"";
+                                else return "";
                             case "hasshutdownstarted":
-                                return "\"CAN_NOT_GET_HAS_SHUT_DOWN_STARTED\"";
+                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    return "\"CAN_NOT_GET_HAS_SHUT_DOWN_STARTED\"";
+                                else return "";
                         }
                         break;
                     case "currentfile":
                         Converter.ImportAndDefine.OS = true;
-                        return "os.path.dirname(os.path.realpath(__file__))";
+                        if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                            return "os.path.dirname(os.path.realpath(__file__))";
+                        else return "";
                     case "currentplaydirectory":
                         Converter.ImportAndDefine.OS = true;
-                        return "os.getcwd()";
+                        if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                            return "os.getcwd()";
+                        else return "";
                     case "space":
                         return "\" \"";
                     case "newline":
@@ -1023,11 +1140,17 @@ namespace EZCode.Converter
                 switch (ind[1].ToLower())
                 {
                     case "length":
-                        return ind[0] + ".__len__()";
+                        if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                            return ind[0] + ".__len__()";
+                        else return "";
                     case "contains":
-                        return ind[0] + ".__contains__()";
+                        if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                            return ind[0] + ".__contains__()";
+                        else return "";
                     default:
-                        return $"{ind[0]}[{ind[1]}]";
+                        if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                            return $"{ind[0]}[{ind[1]}]";
+                        else return "";
 
 
 
