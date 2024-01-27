@@ -5,6 +5,9 @@
 	<style name="Comment" color="Green" fontStyle="Regular"/>
 	<rule style="Comment">\/\/(.*?)(?:\||$|(?:\r?\n|$))</rule>
 	
+	<style name="Litteral" color="SkyBlue" fontStyle="Regular"/>
+	<rule style="Litteral">@s:(.*?)(?:\||$|(?:\r?\n|$))</rule>
+	
 	<style name="Hashtag" color="Orange" fontStyle="Regular"/>
 	<rule style="Hashtag"> #.*|^\s*#.*|\n#.*</rule>
 	
@@ -18,7 +21,7 @@
 	<rule style="Keyword">\b(list|group|sound|var|print|await|bringto|clear|instance|destroy|event|file|input|math|intersects|messagebox|stop|shape|textbox|label|button|window|global)\b</rule>
 	
 	<style name="Sky" color="SkyBlue" fontStyle="Regular"/>
-	<rule style="Sky">'(.*?)'|=|-|\+|\*|/|!|\&amp;|~/|~\\</rule>
+	<rule style="Sky">'(.*?)'|=|:|=&gt;|-|\+|\*|/|!|\&amp;|~/|~\\</rule>
 	
 	<style name="LightGreen" color="PaleGreen" fontStyle="Regular"/>
 	<rule style="LightGreen">\b(-?[0-9]\d*)\b</rule>

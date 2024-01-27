@@ -23,7 +23,7 @@ namespace EZCode
         /// <summary>
         /// Directory of the script playing
         /// </summary>
-        public static string Version { get; } = "2.4.1";
+        public static string Version { get; } = "2.4.4";
 
         #region Variables_and_Initializers
         /// <summary>
@@ -1289,9 +1289,17 @@ namespace EZCode
                                         ErrorText(parts, ErrorTypes.missingControl, keyword, name);
                                         break;
                                 }
+                                string file = "";
                                 string type = parts[2];
-                                string[] file_r = await getFile(parts, 3);
-                                string file = file_r[0];
+                                if (parts[3] == "=>")
+                                {
+                                    file = string.Join(" ", parts.Skip(4));
+                                }
+                                else
+                                {
+                                    string[] file_r = await getFile(parts, 3);
+                                    file = file_r[0];
+                                }
                                 switch (type)
                                 {
                                     case "click":
@@ -5121,6 +5129,16 @@ namespace EZCode
                 val = s;
                 List<string> texts = s.Split(" ").ToList();
 
+                if (val.StartsWith("@s:"))
+                {
+                    return new string[] { val.Remove(0, 3), next.ToString() };
+                }
+                if (val.StartsWith("\\@s:"))
+                {
+                    val = val.Remove(0, 1);
+                    texts = val.Split(" ").ToList();
+                }
+
                 if (useEquation && s.Contains(@"\(") && !s.Contains(@"\\("))
                 {
                     for (int i = 0; i < texts.Count; i++)
@@ -5525,7 +5543,7 @@ namespace EZCode
                 case eventType.resizestart: file = w.resizedstart; break;
                 case eventType.resizeend: file = w.resizedend; break;
             }
-            if (!file.Contains(":")) isfile = false;
+            if (!file.Contains(":\\")) isfile = false;
             if (isfile) await PlaySwitch(jumpsto: $"file play {file}");
             else await PlaySwitch(jumpsto: file);
         }

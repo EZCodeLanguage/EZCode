@@ -1,16 +1,7 @@
-﻿using System;
-using System.Collections.Generic;
-using System.ComponentModel;
-using System.Data;
-using System.Drawing;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Windows.Forms;
-using EZCode;
-using static System.Windows.Forms.VisualStyles.VisualStyleElement;
+﻿using EZCode;
+using RegestrySettings;
 
-namespace TestInvironment
+namespace TestEnvironment
 {
     public partial class EZCode_Form : Form
     {
@@ -21,10 +12,9 @@ namespace TestInvironment
         {
             InitializeComponent();
             ezcode.Initialize(checkBox4.Checked, "NOTHING", OutputPanel, Console, checkBox2.Checked, checkBox1.Checked, checkBox3.Checked);
-            if (File.Exists("cache")) InputText.Text = File.ReadAllText("cache");
-            else File.Create("cache").Close();
-            if (File.Exists("dircache")) directory.Text = File.ReadAllText("dircache");
-            else File.Create("dircache").Close();
+            Settings.keyName = @"JBrosDevelopment\EZCode\TestEnvironment";
+            InputText.Text = Settings.GetKey("cache", "") != null ? Settings.GetKey("cache", "").ToString() : "";
+            directory.Text = Settings.GetKey("dircache", "") != null ? Settings.GetKey("dircache", "").ToString() : "";
             AppDomain.CurrentDomain.UnhandledException += ezcode.CurrentDomain_UnhandledException;
             OutputPanel.MouseWheel += ezcode.MouseInput_Wheel;
             OutputPanel.MouseMove += ezcode.MouseInput_Move;
@@ -109,8 +99,8 @@ namespace TestInvironment
                 }
                 else if (keyData == (Keys.Control | Keys.S))
                 {
-                    File.WriteAllText("cache", InputText.Text);
-                    File.WriteAllText("dircache", directory.Text);
+                    Settings.SetKey("cache", InputText.Text);
+                    Settings.SetKey("dircache", directory.Text);
                 }
             }
             return base.ProcessCmdKey(ref msg, keyData);
@@ -118,8 +108,8 @@ namespace TestInvironment
 
         private void EZCode_Form_FormClosing(object sender, FormClosingEventArgs e)
         {
-            File.WriteAllText("cache", InputText.Text);
-            File.WriteAllText("dircache", directory.Text);
+            Settings.SetKey("cache", InputText.Text);
+            Settings.SetKey("dircache", directory.Text);
         }
 
         private void InputText_KeyPress(object sender, KeyPressEventArgs e)

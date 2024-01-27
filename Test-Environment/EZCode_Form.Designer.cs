@@ -1,4 +1,4 @@
-﻿namespace TestInvironment
+﻿namespace TestEnvironment
 {
     partial class EZCode_Form
     {
