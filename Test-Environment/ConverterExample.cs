@@ -24,7 +24,7 @@
             Converter.ProgrammingLanguage language;
             Enum.TryParse(Language.SelectedValue.ToString(), out language);
 
-            converted.Text = converter.Convert(language, main.Text);
+            converted.Text = converter.Convert(main.Text, language);
         }
         protected override bool ProcessCmdKey(ref Message msg, Keys keyData)
         {
