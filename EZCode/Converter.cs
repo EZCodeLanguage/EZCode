@@ -1,4 +1,6 @@
-﻿namespace EZCode.Converter
+﻿using System.Text.RegularExpressions;
+
+namespace EZCode.Converter
 {
     public class Converter
     {
@@ -7,7 +9,7 @@
             Python,
         }
         private static readonly ProgrammingLanguage Default = ProgrammingLanguage.Python;
-        public static ProgrammingLanguage Language { get; set; } = Default;
+        public ProgrammingLanguage Language { get; set; } = Default;
         public string Code { get; set; } = "";
         public Converter() { }
         public Converter(string code, ProgrammingLanguage language)
@@ -23,27 +25,33 @@
         {
             Language = language;
         }
-        public static class ImportAndDefine
+        public ImportAndDefine Import = new ImportAndDefine();
+        public class ImportAndDefine
         {
             // contains
-            public static bool ContainsMethod = false;
+            public bool ContainsMethod = false;
 
             // import
-            public static bool Time = false;
-            public static bool DateTime = false;
-            public static bool OS = false;
-            public static bool Sys = false;
-            public static bool Random = false;
-            public static bool Socket = false;
-            public static bool Platform = false;
+            public bool Time = false;
+            public bool DateTime = false;
+            public bool OS = false;
+            public bool Sys = false;
+            public bool Random = false;
+            public bool Socket = false;
+            public bool Platform = false;
+            public bool Math = false;
+            public bool Keyboard = false;
+            public bool Pyatuogui = false;
+            public bool Pynput = false;
+            public bool Threading = false;
 
             // def
-            public static bool ReadFile = false;
-            public const string READFILE = "def read_file(file_path):\r\n    try:\r\n        with open(file_path, 'r') as file:\r\n            content = file.read()\r\n            return content\r\n    except FileNotFoundError:\r\n        return f\"File not found: {file_path}\"";
-            public static bool WriteFile = false;
-            public const string WRITEFILE = "def write_file(content, file_path):\r\n    try:\r\n        with open(file_path, 'w') as file:\r\n           file.write(content)\r\n           return file_exists(file_path)\r\n    except:\r\n        return False";
-            private static bool _validatePathFile = false;
-            public static bool ValidatePathFile
+            public bool ReadFile = false;
+            public readonly string READFILE = "def read_file(file_path):\r\n    try:\r\n        with open(file_path, 'r') as file:\r\n            content = file.read()\r\n            return content\r\n    except FileNotFoundError:\r\n        return f\"File not found: {file_path}\"";
+            public bool WriteFile = false;
+            public readonly string WRITEFILE = "def write_file(content, file_path):\r\n    try:\r\n        with open(file_path, 'w') as file:\r\n           file.write(content)\r\n           return file_exists(file_path)\r\n    except:\r\n        return False";
+            private bool _validatePathFile = false;
+            public bool ValidatePathFile
             {
                 get => _validatePathFile;
                 set
@@ -52,13 +60,13 @@
                     OS = true;
                 }
             }
-            public const string VALIDATEPATHFILE = "def is_valid_path(file_path):\r\n    return os.path.exists(file_path) and os.path.isfile(file_path)";
-            public static bool CreateFile = false;
-            public const string CREATEFILE = "def create_file(file_path):\r\n    try:\r\n        with open(file_path, 'w'):\r\n            pass\r\n            return True\r\n    except:\r\n        return False";
-            public static bool FileExists = false;
-            public const string FILEEXISTS = "def file_exists(file_path):\r\n    return os.path.exists(file_path)";
-            private static bool _deletefile = false;
-            public static bool DeleteFile
+            public readonly string VALIDATEPATHFILE = "def is_valid_path(file_path):\r\n    return os.path.exists(file_path) and os.path.isfile(file_path)";
+            public bool CreateFile = false;
+            public readonly string CREATEFILE = "def create_file(file_path):\r\n    try:\r\n        with open(file_path, 'w'):\r\n            pass\r\n            return True\r\n    except:\r\n        return False";
+            public bool FileExists = false;
+            public readonly string FILEEXISTS = "def file_exists(file_path):\r\n    return os.path.exists(file_path)";
+            private bool _deletefile = false;
+            public bool DeleteFile
             {
                 get => _deletefile;
                 set
@@ -67,12 +75,12 @@
                     OS = true;
                 }
             }
-            public const string DELETEFILE = "def delete_file(file_path):\r\n    try:\r\n        os.remove(file_path)\r\n        return True\r\n    except FileNotFoundError:\r\n        return False";
+            public readonly string DELETEFILE = "def delete_file(file_path):\r\n    try:\r\n        os.remove(file_path)\r\n        return True\r\n    except FileNotFoundError:\r\n        return False";
 
-            public static bool IsNumber = false;
-            public const string ISNUMBER = "def is_number(value):\r\n    try:\r\n        float(value)\r\n        return True\r\n    except:\r\n        return False";
+            public bool IsNumber = false;
+            public readonly string ISNUMBER = "def is_number(value):\r\n    try:\r\n        float(value)\r\n        return True\r\n    except:\r\n        return False";
 
-            public static bool Is64Bit
+            public bool Is64Bit
             {
                 get => _is64Bit;
                 set
@@ -81,17 +89,61 @@
                     OS = true;
                 }
             }
-            private static bool _is64Bit = false;
-            public const string IS64BIT = "def is_windows_64bit():\r\n  if 'PROCESSOR_ARCHITEW6432' in os.environ:\r\n    return True\r\n  return os.environ['PROCESSOR_ARCHITECTURE'].endswith('64')";
+            private bool _is64Bit = false;
+            public readonly string IS64BIT = "def is_windows_64bit():\r\n  if 'PROCESSOR_ARCHITEW6432' in os.environ:\r\n    return True\r\n  return os.environ['PROCESSOR_ARCHITECTURE'].endswith('64')";
+
+            public bool KeysPressed
+            {
+                get => _keysPressed;
+                set
+                {
+                    _keysPressed = value;
+                    Pynput = true;
+                    Threading = true;
+                }
+            }
+            private bool _keysPressed = false;
+            public readonly string KEYSPRESSED = "input_key = set()\r\ninput_key_lock = threading.Lock()\r\n\r\ndef on_press(key):\r\n    global input_key\r\n    with input_key_lock:\r\n        input_key.add(key)\r\n\r\ndef on_release(key):\r\n    with input_key_lock:\r\n        input_key.remove(key)\r\n        \r\nkeyboard_listener = pynput.keyboard.Listener(on_press=on_press, on_release=on_release)\r\nlistener_thread = threading.Thread(target=keyboard_listener.run)\r\nlistener_thread.start()\r\n\r\ndef get_all_keys():\r\n    with input_key_lock:\r\n        return list(input_key)\r\n\r\ndef get_specific_key(key):\r\n    with input_key_lock:\r\n        for k in input_key:\r\n            k = str(k)\r\n            key = f\"'{str(key)}'\"\r\n            if k == key:\r\n                return True\r\n        return False";
+
+            public bool MouseButton
+            {
+                get => _mouseButton;
+                set
+                {
+                    _mouseButton = value;
+                    Pynput = true;
+                    Threading = true;
+                }
+            }
+            private bool _mouseButton = false;
+            public readonly string MOUSEBUTTON = "input_mouse_buttons = set()\r\ninput_mouse_buttons_lock = threading.Lock()\r\n\r\ndef on_mouse_click(x, y, button, pressed):\r\n    global input_mouse_buttons\r\n    with input_mouse_buttons_lock:\r\n        if pressed:\r\n            input_mouse_buttons.add(button)\r\n        else:\r\n            input_mouse_buttons.remove(button)\r\n\r\ndef get_all_mouse_buttons():\r\n    val = []\r\n    with input_mouse_buttons_lock:\r\n        if pynput.mouse.Button.left in input_mouse_buttons:\r\n            val.append(\"left\")\r\n        if pynput.mouse.Button.right in input_mouse_buttons:\r\n            val.append(\"right\")\r\n        if pynput.mouse.Button.middle in input_mouse_buttons:\r\n            val.append(\"middle\")\r\n    return val\r\n\r\ndef is_left_mouse_button_pressed():\r\n    with input_mouse_buttons_lock:\r\n        return pynput.mouse.Button.left in input_mouse_buttons\r\n\r\ndef is_right_mouse_button_pressed():\r\n    with input_mouse_buttons_lock:\r\n        return pynput.mouse.Button.right in input_mouse_buttons\r\n\r\ndef is_middle_mouse_button_pressed():\r\n    with input_mouse_buttons_lock:\r\n        return pynput.mouse.Button.middle in input_mouse_buttons\r\n\r\ndef get_specific_mouse_button(button):\r\n    if button.lower() == \"left\": button = pynput.mouse.Button.left\r\n    elif button.lower() == \"right\": pynput.mouse.Button.right\r\n    elif button.lower() == \"middle\": pynput.mouse.Button.middle\r\n    with input_mouse_buttons_lock:\r\n        return button in input_mouse_buttons\r\n\r\nmouse_listener = pynput.mouse.Listener(on_click=on_mouse_click)\r\nmouse_thread = threading.Thread(target=mouse_listener.run)\r\nmouse_thread.start()";
+
+            public bool WheelState
+            {
+                get => _wheelState;
+                set
+                {
+                    _wheelState = value;
+                    Pynput = true;
+                }
+            }
+            private bool _wheelState = false;
+            public readonly string WHEELSTATE = "wheel_state = 0\r\nwheel_state_raw = 0\r\ndef on_scroll(x, y, dx, dy):\r\n    wheel_state_raw = dy\r\n    if dy > 0:\r\n        wheel_state = 1\r\n    elif dy < 0:\r\n        wheel_state = -1\r\n    else:\r\n        wheel_state = 0\r\n\r\nwith pynput.mouse.Listener(on_scroll=on_scroll) as listener:\r\n    listener.join()";
+            
+            public bool Clamp = false;
+            public readonly string CLAMP = "def clamp(_val, _min, _max):\r\n    return max(_min, min(_val, _max))";
+            public bool Average = false;
+            public readonly string AVERAGE = "def average(*args):\r\n    if not args:\r\n        return 0\r\n    return sum(args) / len(args)";
         }
+        public List<EZCodeObject> objects = new List<EZCodeObject>();
         public string Convert(string code) => Convert(code, Language);
         public string Convert(ProgrammingLanguage language) => Convert(Code, language);
-        public string Convert(ProgrammingLanguage language, string code) => Convert(code, language);
-        private static string Convert(string code, ProgrammingLanguage language)
+        public string Convert(string code, ProgrammingLanguage language)
         {
+            Import = new ImportAndDefine();
             string converted = "";
             string[] lines = code.Split(Environment.NewLine).Where(x => x != "").Select(y => y.Trim()).ToArray();
-            List<EZCodeObject> objects = new List<EZCodeObject>();
+            objects = new List<EZCodeObject>();
             int tab = 0;
             foreach (string _line in lines)
             {
@@ -107,37 +159,59 @@
                 converted += con + Environment.NewLine;
             }
 
-            if (language == ProgrammingLanguage.Python && ImportAndDefine.ContainsMethod)
+            if (language == ProgrammingLanguage.Python && Import.ContainsMethod)
             {
-                int ttab = 0;
+                int ttab = 0; 
                 string firstMethod = lines.FirstOrDefault(x => getAction(x, objects) == Actions.Method, "method Start");
                 firstMethod = ConvertLinePython(Actions.Method, firstMethod, objects, ref ttab).Split(" ").Select(x=>x.Trim()).ToArray()[1].Replace(":", "");
                 converted += Environment.NewLine + firstMethod + Environment.NewLine;
             }
 
-            if (ImportAndDefine.ReadFile) converted = ImportAndDefine.READFILE + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.WriteFile) converted = ImportAndDefine.WRITEFILE + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.ValidatePathFile) converted = ImportAndDefine.VALIDATEPATHFILE + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.CreateFile) converted = ImportAndDefine.CREATEFILE + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.FileExists) converted = ImportAndDefine.FILEEXISTS + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.DeleteFile) converted = ImportAndDefine.DELETEFILE + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.IsNumber) converted = ImportAndDefine.ISNUMBER + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.Is64Bit) converted = ImportAndDefine.IS64BIT + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.Sys) converted = "import sys" + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.OS) converted = "import os" + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.Time) converted = "import time" + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.Time) converted = "import datetime" + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.Random) converted = "import random" + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.Socket) converted = "import socket" + Environment.NewLine + Environment.NewLine + converted;
-            if (ImportAndDefine.Platform) converted = "import platform" + Environment.NewLine + Environment.NewLine + converted;
+            converted = "# Your converted python code" + Environment.NewLine + converted;
+            string pre = PreRequisites();
+            if (pre != "") converted = "# Converted python prerequisites" + Environment.NewLine + pre + converted;
+
+            if (converted.StartsWith(Environment.NewLine)) converted = converted.Remove(0, Environment.NewLine.Length);
 
             return converted;
         }
-        private static string ConvertLinePython(Actions action, string line, List<EZCodeObject> objects, ref int _tab)
+        private string PreRequisites()
+        {
+            string pre = "";
+            if (Import.ReadFile) pre = Import.READFILE + Environment.NewLine + Environment.NewLine + pre;
+            if (Import.WriteFile) pre = Import.WRITEFILE + Environment.NewLine + Environment.NewLine + pre;
+            if (Import.ValidatePathFile) pre = Import.VALIDATEPATHFILE + Environment.NewLine + Environment.NewLine + pre;
+            if (Import.CreateFile) pre = Import.CREATEFILE + Environment.NewLine + Environment.NewLine + pre;
+            if (Import.FileExists) pre = Import.FILEEXISTS + Environment.NewLine + Environment.NewLine + pre;
+            if (Import.DeleteFile) pre = Import.DELETEFILE + Environment.NewLine + Environment.NewLine + pre;
+            if (Import.IsNumber) pre = Import.ISNUMBER + Environment.NewLine + Environment.NewLine + pre;
+            if (Import.Is64Bit) pre = Import.IS64BIT + Environment.NewLine + Environment.NewLine + pre;
+            if (Import.Clamp) pre = Import.CLAMP + Environment.NewLine + Environment.NewLine + pre;
+            if (Import.Average) pre = Import.AVERAGE + Environment.NewLine + Environment.NewLine + pre;
+            if (Import.KeysPressed) pre = Import.KEYSPRESSED + Environment.NewLine + Environment.NewLine + pre;
+            if (Import.MouseButton) pre = Import.MOUSEBUTTON + Environment.NewLine + Environment.NewLine + pre;
+            if (Import.WheelState) pre = Import.WHEELSTATE + Environment.NewLine + Environment.NewLine + pre;
+            pre = Environment.NewLine + pre;
+            if (Import.Sys) pre = "import sys" + Environment.NewLine + pre;
+            if (Import.OS) pre = "import os" + Environment.NewLine + pre;
+            if (Import.Time) pre = "import time" + Environment.NewLine + pre;
+            if (Import.DateTime) pre = "import datetime" + Environment.NewLine + pre;
+            if (Import.Random) pre = "import random" + Environment.NewLine + pre;
+            if (Import.Socket) pre = "import socket" + Environment.NewLine + pre;
+            if (Import.Platform) pre = "import platform" + Environment.NewLine + pre;
+            if (Import.Math) pre = "import math" + Environment.NewLine + pre;
+            if (Import.Threading) pre = "import threading" + Environment.NewLine + pre;
+            if (Import.Keyboard) pre = "import keyboard # use 'pip install keyboard' to install this module" + Environment.NewLine + pre;
+            if (Import.Pyatuogui) pre = "import pyautogui # use 'pip install pyautogui' to install this module" + Environment.NewLine + pre;
+            if (Import.Pynput) pre = "import pynput # use 'pip install pynput' to install this module" + Environment.NewLine + pre;
+            return pre;
+        }
+        private string ConvertLinePython(Actions action, string line, List<EZCodeObject> objects, ref int _tab)
         {
             try
             {
                 int tab = _tab;
+                int _t = 0;
                 string[] w = line.Split(' ').Where(x => x != "").Select(y => y.Trim()).ToArray();
                 switch (action)
                 {
@@ -150,7 +224,11 @@
                     case Actions.CreateVariable:
                         if (w[2] == ":")
                         {
-
+                            string nextline = string.Join(" ", w.Skip(3));
+                            Actions _action = getAction(nextline, objects);
+                            int t = 0;
+                            nextline = ConvertLinePython(_action, nextline, objects, ref _t);
+                            line = $"{w[1]} = {nextline}";
                         }
                         else
                         {
@@ -158,9 +236,12 @@
                         }
                         break;
                     case Actions.SetVar:
-                        if (w[2] == ":")
+                        if (w[1] == ":")
                         {
-
+                            string nextline = string.Join(" ", w.Skip(2));
+                            Actions _action = getAction(nextline, objects);
+                            nextline = ConvertLinePython(_action, nextline, objects, ref tab);
+                            line = $"{w[0]} = {nextline}";
                         }
                         else
                         {
@@ -172,15 +253,15 @@
                         line = $"print({returnValue(w, 1)})";
                         break;
                     case Actions.Clear:
-                        ImportAndDefine.OS = true;
+                        Import.OS = true;
                         line = "os.system('cls')";
                         break;
                     case Actions.ClearConditional:
-                        ImportAndDefine.OS = true;
+                        Import.OS = true;
                         line = $"if {returnBoolean(w, 1)}: os.system('cls')";
                         break;
                     case Actions.AwaitMiliseconds:
-                        ImportAndDefine.Time = true;
+                        Import.Time = true;
                         try
                         {
                             line = $"time.sleep({float.Parse(w[1]) / 1000})";
@@ -191,7 +272,7 @@
                         }
                         break;
                     case Actions.AwaitConditional:
-                        ImportAndDefine.Time = true;
+                        Import.Time = true;
                         try
                         {
                             line = $"while {returnBoolean(w, 1)}: time.sleep({float.Parse(w[1]) / 1000})";
@@ -202,31 +283,85 @@
                         }
                         break;
                     case Actions.ReadFile:
-                        ImportAndDefine.ReadFile = true;
-                        line = $"read_file({returnValue(w, 2)})";
+                        Import.ReadFile = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = $"read_file({returnValue(w, 2)})";
+                        }
                         break;
                     case Actions.WriteFile:
-                        ImportAndDefine.WriteFile = true;
-                        line = $"write_file({returnValue(w[2])}, {returnValue(w, 3)})";
+                        Import.WriteFile = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = $"write_file({returnValue(w[2])}, {returnValue(w, 3)})";
+                        }
                         break;
                     case Actions.ValidPathFile:
-                        ImportAndDefine.ValidatePathFile = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            Import.ValidatePathFile = true;
+                        }
                         line = $"is_valid_path({returnValue(w, 2)})";
                         break;
                     case Actions.CreateFile:
-                        ImportAndDefine.CreateFile = true;
-                        line = $"create_file({returnValue(w, 2)})";
+                        Import.CreateFile = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = $"create_file({returnValue(w, 2)})";
+                        }
                         break;
                     case Actions.ExistsFile:
-                        ImportAndDefine.FileExists = true;
-                        line = $"file_exists({returnValue(w, 2)})";
+                        Import.FileExists = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = $"file_exists({returnValue(w, 2)})";
+                        }
                         break;
                     case Actions.DeleteFile:
-                        ImportAndDefine.DeleteFile = true;
-                        line = $"delete_file({returnValue(w, 2)})";
+                        Import.DeleteFile = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = $"delete_file({returnValue(w, 2)})";
+                        }
                         break;
                     case Actions.StopAll:
-                        ImportAndDefine.OS = true;
+                        Import.OS = true;
                         line = $"delete_file({returnValue(w, 2)})";
                         break;
                     case Actions.StopReturn:
@@ -258,15 +393,15 @@
                         line = $"{w[1]} = {returnValue(w[3])}.split({returnValue(w[4])})";
                         break;
                     case Actions.Method:
-                        ImportAndDefine.ContainsMethod = true;
-                        string[] newW = w.Skip(3).Select(x => x.Replace(":", "=").Replace(",", "")).ToArray();
+                        Import.ContainsMethod = true;
+                        string[] newW = string.Join(" ", w.Skip(3).Select(x => x.Replace(":", "="))).Split(",").Where(y => y != "").ToArray();
                         for (int i = 0; i < newW.Length; i++)
                         {
                             string before = newW[i].Split("=")[0];
                             string after = newW[i].Split("=")[1];
                             newW[i] = before + "=" + returnValue(after);
                         }
-                        string parameters = string.Join(", ", newW);
+                        string parameters = string.Join(",", newW);
                         line = $"def {w[1]}({parameters}):";
                         tab ++;
                         break;
@@ -282,8 +417,7 @@
                         line = "";
                         break;
                     case Actions.If:
-                        int next = 0;
-                        line = $"if {returnAgument(w, 1, objects, ref next)}:";
+                        line = $"if {returnAgument(w, 1, objects, out int next)}:";
                         if (w.Length > next && !string.Join(" ", w).Trim().EndsWith("{"))
                         {
                             string nextLine = string.Join(" ", w.Skip(next));
@@ -297,6 +431,149 @@
                             tab++;
                         }
                         break;
+                    case Actions.Loop:
+                        next = 0;
+                        line = $"while {returnAgument(w, 1, objects, out next)}:";
+                        tab++;
+                        break;
+                    case Actions.Else:
+                        line = $"else:";
+                        if (w.Length > 2 && !string.Join(" ", w).Trim().EndsWith("{"))
+                        {
+                            string nextLine = string.Join(" ", w.Skip(2));
+                            Actions _action = getAction(nextLine, objects);
+                            tab++;
+                            line += Environment.NewLine + ConvertLinePython(_action, nextLine, objects, ref tab);
+                            tab--;
+                        }
+                        else
+                        {
+                            tab++;
+                        }
+                        break;
+                    case Actions.CallMethod:
+                        newW = string.Join(" ", w.Skip(2)).Split(",").Where(x => x != "").ToArray();
+                        for (int i = 0; i < newW.Length; i++)
+                        {
+                            newW[i] = returnValue(newW[i]);
+                        }
+                        parameters = string.Join(", ", newW);
+                        line = $"{w[0]}({parameters})";
+                        break;
+                    case Actions.Math:
+                        string values = string.Join(" ", w.Skip(1).TakeWhile(x => x != ":" && x != "=>").Select(returnMath));
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            values = nl;
+                        }
+                        line = values;
+                        break;
+                    case Actions.ConsoleInput:
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = "input()";
+                        }
+                        break;
+                    case Actions.KeyInput:
+                        Import.KeysPressed = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = $"get_all_keys()";
+                        }
+                        break;
+                    case Actions.SpecificKeyInput:
+                        Import.KeysPressed = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = $"get_specific_key({returnValue(w[2])})";
+                        }
+                        break;
+                    case Actions.MousePositionInput:
+                        Import.Pyatuogui = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = $"pyautogui.position()";
+                        }
+                        break;
+                    case Actions.SpecificMousePositionInput:
+                        Import.Pyatuogui = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = $"pyautogui.position().{w[3]}";
+                        }
+                        break;
+                    case Actions.MouseWheelInput:
+                    case Actions.RawMouseWheelInput:
+                        Import.WheelState = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = $"wheel_state{(Actions.RawMouseWheelInput == action ? "_raw" : "")}";
+                        }
+                        break;
+                    case Actions.MouseButtonInput:
+                        Import.MouseButton = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = $"get_all_mouse_buttons()";
+                        }
+                        break;
+                    case Actions.SpecificMouseButtonInput:
+                        Import.MouseButton = true;
+                        if (line.Contains(" => ") || line.Contains(" : "))
+                        {
+                            string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
+                            nl = ConvertLinePython(Actions.CreateVariable, nl, objects, ref _t);
+                            line = nl;
+                        }
+                        else
+                        {
+                            line = $"get_specific_mouse_button({returnValue(w[3])})";
+                        }
+                        break;
                 }
                 string tabs = string.Join("", Enumerable.Repeat("    ", _tab));
                 _tab = tab;
@@ -307,17 +584,97 @@
                 return "";
             }
         }
-        private static string returnAgument(string[] _w, int index, List<EZCodeObject> objects, ref int next)
+        private string returnMath(string value)
+        {
+            if (!value.EndsWith(")") && Regex.Matches(value, @"\)").Count == 1 && Regex.Matches(value, @"\(").Count == 1)
+                return value;
+
+            if (value.StartsWith("abs("))
+            {
+                string eq = value.Replace("abs(", "").Replace(")", "");
+                return $"abs({eq})";
+            }
+            else if (value.StartsWith("neg("))
+            {
+                string eq = value.Replace("neg(", "").Replace(")", "");
+                return $"-{eq}";
+            }
+            else if (value.StartsWith("sq("))
+            {
+                string eq = value.Replace("sq(", "").Replace(")", "");
+                return $"({eq} ** 2)";
+            }
+            else if (value.StartsWith("sqr("))
+            {
+                Import.Math = true;
+                string eq = value.Replace("sqr(", "").Replace(")", "");
+                return $"math.sqrt({eq})";
+            }
+            else if (value.StartsWith("round("))
+            {
+                string eq = value.Replace("round(", "").Replace(")", "");
+                return $"round({eq})";
+            }
+            else if (value.StartsWith("pow("))
+            {
+                string eq = value.Replace("pow(", "").Replace(")", "");
+                string[] eqboth = eq.Split(",");
+                return $"({eqboth[0]} ** {eqboth[1]})";
+            }
+            else if (value.StartsWith("clamp("))
+            {
+                Import.Clamp = true;
+
+                string eq = value.Replace("clamp(", "").Replace(")", "");
+                string[] eqboth = eq.Split(",");
+
+                float ineq1 = float.Parse(eqboth[0].Trim());
+                float ineq2 = float.Parse(eqboth[1].Trim());
+                float ineq3 = float.Parse(eqboth[2].Trim());
+                return $"clamp({ineq1}, {ineq2}, {ineq3})";
+            }
+            else if (value.StartsWith("sum("))
+            {
+                string eq = value.Replace("sum(", "").Replace(")", "");
+                string[] eqboth = eq.Split(",");
+                return $"sum({string.Join(", ", eqboth)})";
+            }
+            else if (value.StartsWith("avg("))
+            {
+                Import.Average = true;
+                string eq = value.Replace("avg(", "").Replace(")", "");
+                string[] eqboth = eq.Split(",");
+                return $"average({string.Join(", ", eqboth)})";
+            }
+            else if (value.StartsWith("min("))
+            {
+                string eq = value.Replace("min(", "").Replace(")", "");
+                string[] eqboth = eq.Split(",");
+                return $"min({string.Join(", ", eqboth)})";
+            }
+            else if (value.StartsWith("max("))
+            {
+                string eq = value.Replace("max(", "").Replace(")", "");
+                string[] eqboth = eq.Split(",");
+                return $"max({string.Join(", ", eqboth)})";
+            }
+            else if (value.Equals("pi()"))
+            {
+                return "";
+            }
+            return value;
+        }
+        private string returnAgument(string[] _w, int index, List<EZCodeObject> objects, out int next)
         {
             string val = "";
-            string[] w = _w.Skip(index).TakeWhile(x => x != ":").Select(y => y.Trim()).ToArray();
+            string[] w = _w.Skip(index).TakeWhile(x => x != ":" && x != "{").Select(y => y.Trim().Replace("?(", "").Replace(")?", "")).ToArray();
             for (int i = 0; i < w.Length; i++)
             {
                 if (objects.FirstOrDefault(x => x.Type == EZCodeObject.EZType.Var && x.Name == w[i], null) != null)
                 {
                     val += w[i] + " ";
                 }
-                else if (new[] { "=", "!", "!=", ">", "<", "<=", ">=", "&", "and", "or" }.Any(x => w[i] == x))
+                else if (new[] { "=", "!", "!=", ">", "<", "<=", ">=", "&", "and", "or", "true", "false" }.Any(x => w[i] == x))
                 {
                     val += w[i] + " ";
                 }
@@ -328,9 +685,9 @@
             }
             if (val.EndsWith(" ")) val = val.Remove(val.Length - 1, 1);
             next = _w.ToList().IndexOf(":") + 1;
-            return val.Replace(" = ", " == ").Replace(" ! ", " not ");
+            return val.Replace(" = ", " == ").Replace(" ! ", " not ").Replace("&", "and").Replace("true", "True").Replace("false", "False");
         }
-        private static string returnArray(string[] w)
+        private string returnArray(string[] w)
         {
             string val = "[";
             w = w.Select(x => x.Trim()).ToArray();
@@ -341,15 +698,15 @@
             if(val.EndsWith(", ")) val = val.Remove(val.Length - 2, 2);
             return val + "]";
         }
-        private static string returnBoolean(string[] w, int index)
+        private string returnBoolean(string[] w, int index)
         {
             return string.Join(" ", w.Skip(index)).Replace("?(", "").Replace(")?", "");
         }
-        public static string returnValue(string val, bool specialChars = true)
+        public string returnValue(string val, bool specialChars = true)
         {
             return returnValue(new[] { val }, 0, false, specialChars);
         }
-        public static string returnValue(string[] w, int index, bool all = true, bool specialChars = true)
+        public string returnValue(string[] w, int index, bool all = true, bool specialChars = true)
         {
             try
             {
@@ -360,7 +717,7 @@
                 string inside = all ? string.Join(" ", w.Skip(index)) : w[index];
                 string incase = inside.Contains("\"") ? "'" : "\"";
                 string val = incase + inside + incase;
-                return specialChars ? val.SpecialChars() : val;
+                return specialChars ? val.SpecialChars(this) : val;
             }
         }
         private enum Actions
@@ -398,6 +755,7 @@
             Else,
             If,
             CallMethod,
+            Math,
             ConsoleInput,
             KeyInput,
             SpecificKeyInput,
@@ -407,7 +765,6 @@
             RawMouseWheelInput,
             MouseButtonInput,
             SpecificMouseButtonInput,
-            Math,
 
             NewWindow,//
             ChangeWindow,//
@@ -617,8 +974,8 @@
                         case "console":
                             return Actions.ConsoleInput;
                         case "key":
-                            if (parts[parts.Length - 1] == "key") return Actions.SpecificKeyInput;
-                            else return Actions.KeyInput;
+                            if (parts[parts.Length - 1] == "key") return Actions.KeyInput;
+                            else return Actions.SpecificKeyInput;
                         case "mouse":
                             switch (parts[2].Trim())
                             {
@@ -645,7 +1002,7 @@
                                     }
                                     break;
                                 case "button":
-                                    switch (parts.Length - 1 < 3 ? "" : parts[3].Trim())
+                                    switch (parts.TakeWhile(x => x != ":" && x != ":").ToArray().Length - 1 < 3 ? "" : parts[3].Trim())
                                     {
                                         case "":
                                             return Actions.MouseButtonInput;
@@ -801,7 +1158,7 @@
                 default:
                     if (parts.Length == 0) return Actions.None;
                     //vars
-                    if (objects.Select(x => x.Name == keyword && x.Type == EZCodeObject.EZType.Var).FirstOrDefault() || parts[1] == ":" || parts[1] == "+" || parts[1] == "-" || parts[1] == "*" || parts[1] == "/")
+                    if (parts.Length > 1 && (objects.Select(x => x.Name == keyword && x.Type == EZCodeObject.EZType.Var).FirstOrDefault() || parts[1] == "+" || parts[1] == "-" || parts[1] == "*" || parts[1] == "/"))
                     {
                         return Actions.SetVar;
                     }
@@ -831,15 +1188,22 @@
                         return getAction($"{line}", objects);
                     }
                     //methods
-                    else if (objects.Select(x => x.Name == keyword && x.Type == EZCodeObject.EZType.Method).FirstOrDefault())
+                    else if (objects.Select(x => x.Name == keyword && x.Type == EZCodeObject.EZType.Method).FirstOrDefault() || parts.Length == 1)
                     {
                         return Actions.CallMethod;
+                    }
+                    else
+                    {
+                        if (parts.Length > 1 && parts[1] == ":" && parts.Contains(":"))
+                        {
+                            return Actions.CallMethod;
+                        }
                     }
                     break;
             }
             return Actions.None;
         }
-        class EZCodeObject
+        public class EZCodeObject
         {
             public enum EZType
             {
@@ -863,7 +1227,7 @@
     }
     internal static class StringExtensions
     {
-        public static string SpecialChars(this string val)
+        public static string SpecialChars(this string val, Converter converter)
         {
             bool format = false;
             List<string> formats = new List<string>();
@@ -884,7 +1248,7 @@
                     cr = cr.Remove(texts[i].Length - 2, 1);
                     end = true;
                 }
-                string t = ColonResponse(cr);
+                string t = ColonResponse(cr, converter);
                 cr = t == "" ? cr : $"'{t}'";
                 texts[i] = t != "" ? (start ? "\"" : "") + cr + (end ? "\"" : "") : texts[i];
 
@@ -966,7 +1330,7 @@
             }
             return text;
         }
-        private static string ColonResponse(string value)
+        private static string ColonResponse(string value, Converter converter)
         {
             string[] ind = value.Split(':');
             if (value.StartsWith("system:"))
@@ -974,7 +1338,7 @@
                 switch (ind[1])
                 {
                     case "time":
-                        Converter.ImportAndDefine.DateTime = true;
+                        converter.Import.DateTime = true;
                         if (ind.Length == 2)
                         {
                             List<string> list = ind.ToList();
@@ -984,71 +1348,71 @@
                         switch (ind[2].ToLower())
                         {
                             case "today":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().replace(hour=0, minute=0, second=0, microsecond=0).strftime(\"%m/%d/%Y %I:%M:%S %p\")";
                                 else return "";
                             case "now":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%m/%d/%Y %I:%M:%S %p\")";
                                 else return "";
                             case "utcnow":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.utcnow().strftime(\"%m/%d/%Y %I:%M:%S %p\")";
                                 else return "";
                             case "unixepoch":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "1/1/1970 12:00:00 AM";
                                 else return "";
                             case "hour24":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%H\")";
                                 else return "";
                             case "hour":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%I %p\")";
                                 else return "";
                             case "minute":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%M\")";
                                 else return "";
                             case "second":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%S\")";
                                 else return "";
                             case "milisecond":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%f\")[:-3]";
                                 else return "";
                             case "nownormal":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%m/%d/%Y %I:%M %p\")";
                                 else return "";
                             case "now24":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%m/%d/%Y %H:%M\")";
                                 else return "";
                             case "date":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%m/%d/%Y\")";
                                 else return "";
                             case "datedash":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%m-%d-%Y\")";
                                 else return "";
                             case "month":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%B\")";
                                 else return "";
                             case "monthnumber":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%m\")";
                                 else return "";
                             case "day":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%d\")";
                                 else return "";
                             case "dayname":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "datetime.datetime.now().strftime(\"%A\")";
                                 else return "";
                         }
@@ -1057,72 +1421,72 @@
                         switch (ind[2])
                         {
                             default:
-                                Converter.ImportAndDefine.Random = true;
+                                converter.Import.Random = true;
                                 bool more = value.Contains("system:random:");
                                 if (more)
                                 {
-                                    if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    if (converter.Language == Converter.ProgrammingLanguage.Python)
                                         return $"random.randint({ind[2]}, {ind[3]})";
                                     else return "";
                                 }
                                 else
                                 {
-                                    Converter.ImportAndDefine.Sys = true;
-                                    if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                    converter.Import.Sys = true;
+                                    if (converter.Language == Converter.ProgrammingLanguage.Python)
                                         return "random.randint(0, sys.maximize)";
                                     else return "";
                                 }
                             case "single":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "random.random()";
                                 else return "";
                         }
                     case "isnumber":
-                        Converter.ImportAndDefine.IsNumber = true;
-                        if (Converter.Language == Converter.ProgrammingLanguage.Python)
-                            return $"is_number({Converter.returnValue(ind, 2, false)})";
+                        converter.Import.IsNumber = true;
+                        if (converter.Language == Converter.ProgrammingLanguage.Python)
+                            return $"is_number({converter.returnValue(ind, 2, false)})";
                         else return "";
                     case "machine":
                         switch (ind[2].ToLower())
                         {
                             case "machinename":
-                                Converter.ImportAndDefine.Socket = true;
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                converter.Import.Socket = true;
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "socket.gethostname()";
                                 else return "";
                             case "osversion":
-                                Converter.ImportAndDefine.Platform = true;
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                converter.Import.Platform = true;
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "platform.platform()";
                                 else return "";
                             case "is64bitoperatingsystem":
-                                Converter.ImportAndDefine.Is64Bit = true;
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                converter.Import.Is64Bit = true;
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "is_windows_64but()";
                                 else return "";
                             case "username":
-                                Converter.ImportAndDefine.OS = true;
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                converter.Import.OS = true;
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "os.getlogin()";
                                 else return "";
                             case "workingset":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "\"CAN_NOT_GET_WORKING_SET\"";
                                 else return "";
                             case "hasshutdownstarted":
-                                if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                                if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "\"CAN_NOT_GET_HAS_SHUT_DOWN_STARTED\"";
                                 else return "";
                         }
                         break;
                     case "currentfile":
-                        Converter.ImportAndDefine.OS = true;
-                        if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                        converter.Import.OS = true;
+                        if (converter.Language == Converter.ProgrammingLanguage.Python)
                             return "os.path.dirname(os.path.realpath(__file__))";
                         else return "";
                     case "currentplaydirectory":
-                        Converter.ImportAndDefine.OS = true;
-                        if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                        converter.Import.OS = true;
+                        if (converter.Language == Converter.ProgrammingLanguage.Python)
                             return "os.getcwd()";
                         else return "";
                     case "space":
@@ -1140,16 +1504,20 @@
                 switch (ind[1].ToLower())
                 {
                     case "length":
-                        if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                        if (converter.Language == Converter.ProgrammingLanguage.Python)
                             return ind[0] + ".__len__()";
                         else return "";
                     case "contains":
-                        if (Converter.Language == Converter.ProgrammingLanguage.Python)
+                        if (converter.Language == Converter.ProgrammingLanguage.Python)
                             return ind[0] + ".__contains__()";
                         else return "";
                     default:
-                        if (Converter.Language == Converter.ProgrammingLanguage.Python)
-                            return $"{ind[0]}[{ind[1]}]";
+                        if (converter.objects.Select(x => x.Name).Contains(ind[0]))
+                        {
+                            if (converter.Language == Converter.ProgrammingLanguage.Python)
+                                return $"{ind[0]}[{ind[1]}]";
+                            else return "";
+                        }
                         else return "";
 
 
