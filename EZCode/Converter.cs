@@ -26,6 +26,17 @@ namespace EZCode.Converter
             Language = language;
         }
         public ImportAndDefine Import = new ImportAndDefine();
+        public ProgramFile[] ProgramFiles = Array.Empty<ProgramFile>();
+        public class ProgramFile
+        {
+            public string Name { get; set; }
+            public string Content { get; set; }
+            public ProgramFile(string name, string content)
+            {
+                Name = name;
+                Content = content;
+            }
+        }
         public class ImportAndDefine
         {
             // contains
@@ -136,8 +147,16 @@ namespace EZCode.Converter
             public readonly string AVERAGE = "def average(*args):\r\n    if not args:\r\n        return 0\r\n    return sum(args) / len(args)";
         }
         public List<EZCodeObject> objects = new List<EZCodeObject>();
+        public string Convert() => Convert(Code, Language);
         public string Convert(string code) => Convert(code, Language);
         public string Convert(ProgrammingLanguage language) => Convert(Code, language);
+        public string Convert(string code, ProgrammingLanguage language, out ProgramFile[] programFiles)
+        {
+            Converter con = new Converter(code, language);
+            string ret = con.Convert();
+            programFiles = con.ProgramFiles;
+            return ret;
+        }
         public string Convert(string code, ProgrammingLanguage language)
         {
             Import = new ImportAndDefine();
@@ -159,12 +178,20 @@ namespace EZCode.Converter
                 converted += con + Environment.NewLine;
             }
 
-            if (language == ProgrammingLanguage.Python && Import.ContainsMethod)
+            if (language == ProgrammingLanguage.Python)
             {
-                int ttab = 0; 
-                string firstMethod = lines.FirstOrDefault(x => getAction(x, objects) == Actions.Method, "method Start");
-                firstMethod = ConvertLinePython(Actions.Method, firstMethod, objects, ref ttab).Split(" ").Select(x=>x.Trim()).ToArray()[1].Replace(":", "");
-                converted += Environment.NewLine + firstMethod + Environment.NewLine;
+                ProgramFiles = new ProgramFile[]
+                {
+                    new ProgramFile("Main.py", converted),
+                    new ProgramFile("Main.py2", PreRequisites())
+                };
+                if (Import.ContainsMethod)
+                {
+                    int ttab = 0; 
+                    string firstMethod = lines.FirstOrDefault(x => getAction(x, objects) == Actions.Method, "method Start");
+                    firstMethod = ConvertLinePython(Actions.Method, firstMethod, objects, ref ttab).Split(" ").Select(x=>x.Trim()).ToArray()[1].Replace(":", "");
+                    converted += Environment.NewLine + firstMethod + Environment.NewLine;
+                }
             }
 
             converted = "# Your converted python code" + Environment.NewLine + converted;
