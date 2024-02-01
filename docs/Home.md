@@ -8,7 +8,7 @@ Welcome to the official documentation for EZCode, a powerful programming languag
 
 ### Files
 
-EZCode's supported file extensions are _.ezcode_ and _.ezproj_. The _ezcode_ extension should have EZCode in it with it's specific syntax. The _ezproj_ has the EZProject Syntax that acts as the entry part for the program.
+EZCode's supported file extensions are _.ezcode_ and _.ezproj_. The _ezcode_ extension should have EZCode in it with its specific syntax. The _ezproj_ has the EZProject Syntax that acts as the entry part for the program.
 
 ### Syntax
 
