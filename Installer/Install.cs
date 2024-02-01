@@ -41,11 +41,7 @@ namespace Installer
             Option[] options = Options();
             try
             {
-                string type = "";
-                try { type = EZCode.EzCode.Version.Split("_")[1]; } catch { }
-                string realTag = $"{EZCode.EzCode.Version}";
-                string releaseTag = type != "" ? $"v{realTag}_{type.ToLower()}" : $"v{realTag}";
-                string releaseTitle = type != "" ? $"v{realTag}_{type}" : $"v{realTag}";
+                string releaseTag = $"{EZCode.EzCode.Version}";
 
                 foreach (var option in options)
                 {
@@ -54,14 +50,28 @@ namespace Installer
                     {
                         case 0: // Install main
                             installcore();
-                            installer();
-                            ezcodeplayer();
+                            install("Installer", "Installer", "Installer.exe", false);
+                            install("EZCode_Player", "EZCode Player", "EZCodePlayer.exe", true);
+                            Program.SetUpFile(Path.Combine(filepath, $"Installer {releaseTag}", "EZCodePlayer.exe"), Path.Combine(appdataDir, "EZCode", "EZCode_Logo.ico"));
+                            
+                            //installer();
+                            //ezcodeplayer();
+
                             break;
                         case 1: // Install SLN
-                            slnbuilder();
+                            install("Sln_Builder", "SLN Builder", "EZ_SLN_Builder.exe", true);
+
+                            //slnbuilder();
                             break;
                         case 2: // Install IDE
-                            ez_ide();
+                            install("EZ_IDE", "EZ IDE", "EZ_IDE.exe", true);
+
+                            //ez_ide();
+                            break;
+                        case 3: // Install Language Converter
+                            install("Language_Converter", "Language Converter", "LanguageConverter.exe", true);
+
+                            //lang_converter();
                             break;
                     }
                 }
@@ -72,13 +82,13 @@ namespace Installer
 
                     Directory.CreateDirectory(tempDirectory);
 
-                    string installFile = releaseTitle + ".zip";
+                    string installFile = releaseTag + ".zip";
 
-                    string downloadUrl = $"{githubRepoUrl}/archive/refs/tags/{releaseTag}.zip";
+                    string downloadUrl = $"{githubRepoUrl}/archive/refs/tags/v{releaseTag}.zip";
 
                     WebInstaller(installFile, downloadUrl, tempDirectory, true);
 
-                    string[] d = Directory.GetDirectories(Path.Combine(tempDirectory, $"EZCode-{(type != "" ? $"{realTag}_{type.ToLower()}" : realTag)}"));
+                    string[] d = Directory.GetDirectories(Path.Combine(tempDirectory, $"EZCode-{releaseTag}"));
                     for (int i = 0; i < d.Length; i++)
                     {
                         DirectoryInfo info = new DirectoryInfo(d[i]);
@@ -93,17 +103,50 @@ namespace Installer
                     Directory.Delete(tempDirectory, true);
                 }
 
+                void install(string name, string shortcutname, string appname, bool shortcut) // Install
+                {
+                    Working($"\n\nInstalling {name} From {githubRepoUrl}.git... This may take a second.");
+
+                    Directory.CreateDirectory(tempDirectory);
+
+                    string installFile = $"{name}_v{releaseTag}.zip";
+
+                    string downloadUrl = $"{githubRepoUrl}/releases/download/v{releaseTag}/{installFile}";
+
+                    string decompressDirectory = Path.Combine(filepath, $"{name} {releaseTag}");
+
+                    WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
+
+                    string[] d = Directory.GetFiles(Path.Combine(tempDirectory, name));
+                    Directory.CreateDirectory(decompressDirectory);
+                    for (int i = 0; i < d.Length; i++)
+                    {
+                        FileInfo info = new FileInfo(d[i]);
+                        string t_decompress = Path.Combine(decompressDirectory, info.Name);
+                        File.Move(d[i], t_decompress, true);
+                    }
+                    Directory.Delete(tempDirectory, true);
+
+                    if (shortcut)
+                    {
+                        Program.CreateShortcut(shortcutname, Path.Combine(decompressDirectory, appname));
+                        Program.CreateStartMenuShortcut("EZCode", shortcutname, Path.Combine(decompressDirectory, appname));
+                    }
+                }
+
+
+                /*
                 void installer() // Installer
                 {
                     Working($"\n\nInstalling Installer From {githubRepoUrl}.git... This may take a second.");
 
                     Directory.CreateDirectory(tempDirectory);
 
-                    string installFile = $"Installer_v{realTag}.zip";
+                    string installFile = $"Installer_v{releaseTag}.zip";
 
-                    string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
+                    string downloadUrl = $"{githubRepoUrl}/releases/download/v{releaseTag}/{installFile}";
 
-                    string decompressDirectory = Path.Combine(filepath, $"Installer {releaseTitle}");
+                    string decompressDirectory = Path.Combine(filepath, $"Installer {releaseTag}");
 
                     WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
 
@@ -116,9 +159,6 @@ namespace Installer
                         File.Move(d[i], t_decompress, true);
                     }
                     Directory.Delete(tempDirectory, true);
-
-                    Program.CreateShortcut("EZ IDE", Path.Combine(decompressDirectory, "EZ_IDE.exe"));
-                    Program.CreateStartMenuShortcut("EZCode", "EZ IDE", Path.Combine(decompressDirectory, "EZ_IDE.exe"));
                 }
 
                 void ezcodeplayer() // Install EZCode Main
@@ -127,11 +167,11 @@ namespace Installer
 
                     Directory.CreateDirectory(tempDirectory);
 
-                    string installFile = $"EZCode_Player_v{realTag}.zip";
+                    string installFile = $"EZCode_Player_v{releaseTag}.zip";
 
                     string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
 
-                    string decompressDirectory = Path.Combine(filepath, $"EZCode-Player {releaseTitle}");
+                    string decompressDirectory = Path.Combine(filepath, $"EZCode-Player {releaseTag}");
 
                     WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
 
@@ -147,7 +187,6 @@ namespace Installer
 
                     Program.CreateShortcut("EZCode Player", Path.Combine(decompressDirectory, "EZCodePlayer.exe"));
                     Program.CreateStartMenuShortcut("EZCode", "EZCode Player", Path.Combine(decompressDirectory, "EZCodePlayer.exe"));
-                    Program.SetUpFile(Path.Combine(decompressDirectory, "EZCodePlayer.exe"), Path.Combine(appdataDir, "EZCode", "EZCode_Logo.ico"));
                 }
 
                 void slnbuilder() // Install Sln Builder
@@ -156,11 +195,11 @@ namespace Installer
 
                     Directory.CreateDirectory(tempDirectory);
 
-                    string installFile = $"Sln_Builder_v{realTag}.zip";
+                    string installFile = $"Sln_Builder_v{releaseTag}.zip";
 
                     string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
 
-                    string decompressDirectory = Path.Combine(filepath, $"SLN_Builder {releaseTitle}");
+                    string decompressDirectory = Path.Combine(filepath, $"SLN_Builder {releaseTag}");
 
                     WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
 
@@ -184,11 +223,11 @@ namespace Installer
 
                     Directory.CreateDirectory(tempDirectory);
 
-                    string installFile = $"EZ_IDE_v{realTag}.zip";
+                    string installFile = $"EZ_IDE_v{releaseTag}.zip";
 
                     string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
 
-                    string decompressDirectory = Path.Combine(filepath, $"EZ_IDE {releaseTitle}");
+                    string decompressDirectory = Path.Combine(filepath, $"EZ_IDE {releaseTag}");
 
                     WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
 
@@ -205,6 +244,36 @@ namespace Installer
                     Program.CreateShortcut("EZ IDE", Path.Combine(decompressDirectory, "EZ_IDE.exe"));
                     Program.CreateStartMenuShortcut("EZCode", "EZ IDE", Path.Combine(decompressDirectory, "EZ_IDE.exe"));
                 }
+
+                void lang_converter() // Install Language Converter
+                {
+                    Working($"\n\nInstalling IDE From {githubRepoUrl}.git... This may take a second.");
+
+                    Directory.CreateDirectory(tempDirectory);
+
+                    string installFile = $"Language_Converter_v{releaseTag}.zip";
+
+                    string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
+
+                    string decompressDirectory = Path.Combine(filepath, $"Language_Converter {releaseTag}");
+
+                    WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
+
+                    string[] d = Directory.GetFiles(Path.Combine(tempDirectory, $"Language_Converter"));
+                    Directory.CreateDirectory(decompressDirectory);
+                    for (int i = 0; i < d.Length; i++)
+                    {
+                        FileInfo info = new FileInfo(d[i]);
+                        string t_decompress = Path.Combine(decompressDirectory, info.Name);
+                        File.Move(d[i], t_decompress, true);
+                    }
+                    Directory.Delete(tempDirectory, true);
+
+                    Program.CreateShortcut("Language Converter", Path.Combine(decompressDirectory, "LanguageConverter.exe"));
+                    Program.CreateStartMenuShortcut("EZCode", "Language Converter", Path.Combine(decompressDirectory, "LanguageConverter.exe"));
+                }
+
+                */
             }
             catch (Exception ex)
             {
@@ -224,6 +293,7 @@ namespace Installer
                 new Option("EZCode Core and Player", 0, true),
                 new Option("EZ_IDE (Development platform for EZCode)", 2, true),
                 new Option("EZCode SLN (Microsoft Visual Studio Project) Builder", 1, false),
+                new Option("EZCode Language Converter (BETA)", 3, false),
             };
 
             int index = 0;
