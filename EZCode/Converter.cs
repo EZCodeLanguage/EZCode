@@ -182,9 +182,9 @@ namespace EZCode.Converter
             {
                 ProgramFiles = new ProgramFile[]
                 {
-                    new ProgramFile("Main.py", converted),
-                    new ProgramFile("Main.py2", PreRequisites())
+                    new ProgramFile("Main.py", converted)
                 };
+                if (PreRequisites().Trim() != "") ProgramFiles = ProgramFiles.Append(new ProgramFile("Main.py2", PreRequisites())).ToArray();
                 if (Import.ContainsMethod)
                 {
                     int ttab = 0; 
@@ -196,7 +196,7 @@ namespace EZCode.Converter
 
             converted = "# Your converted python code" + Environment.NewLine + converted;
             string pre = PreRequisites();
-            if (pre != "") converted = "# Converted python prerequisites" + Environment.NewLine + pre + converted;
+            if (pre.Trim() != "") converted = "# Converted python prerequisites" + Environment.NewLine + pre + converted;
 
             if (converted.StartsWith(Environment.NewLine)) converted = converted.Remove(0, Environment.NewLine.Length);
 
