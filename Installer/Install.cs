@@ -133,6 +133,65 @@ namespace Installer
                         Program.CreateStartMenuShortcut("EZCode", shortcutname, Path.Combine(decompressDirectory, appname));
                     }
                 }
+
+                void install(string name, string shortcutname, string appname, bool shortcut) // Install
+                {
+                    Working($"\n\nInstalling {name} From {githubRepoUrl}.git... This may take a second.");
+
+                    Directory.CreateDirectory(tempDirectory);
+
+                    string installFile = $"{name}_v{releaseTag}.zip";
+
+                    string downloadUrl = $"{githubRepoUrl}/releases/download/v{releaseTag}/{installFile}";
+
+                    string decompressDirectory = Path.Combine(filepath, $"{name} {releaseTag}");
+
+                    WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
+
+                    string[] d = Directory.GetFiles(Path.Combine(tempDirectory, name));
+                    Directory.CreateDirectory(decompressDirectory);
+                    for (int i = 0; i < d.Length; i++)
+                    {
+                        FileInfo info = new FileInfo(d[i]);
+                        string t_decompress = Path.Combine(decompressDirectory, info.Name);
+                        File.Move(d[i], t_decompress, true);
+                    }
+                    Directory.Delete(tempDirectory, true);
+
+                    if (shortcut)
+                    {
+                        Program.CreateShortcut(shortcutname, Path.Combine(decompressDirectory, appname));
+                        Program.CreateStartMenuShortcut("EZCode", shortcutname, Path.Combine(decompressDirectory, appname));
+                    }
+                }
+
+                void lang_converter() // Install Language Converter
+                {
+                    Working($"\n\nInstalling IDE From {githubRepoUrl}.git... This may take a second.");
+
+                    Directory.CreateDirectory(tempDirectory);
+
+                    string installFile = $"Language_Converter_v{releaseTag}.zip";
+
+                    string downloadUrl = $"{githubRepoUrl}/releases/download/{releaseTag}/{installFile}";
+
+                    string decompressDirectory = Path.Combine(filepath, $"Language_Converter {releaseTag}");
+
+                    WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
+
+                    string[] d = Directory.GetFiles(Path.Combine(tempDirectory, $"Language_Converter"));
+                    Directory.CreateDirectory(decompressDirectory);
+                    for (int i = 0; i < d.Length; i++)
+                    {
+                        FileInfo info = new FileInfo(d[i]);
+                        string t_decompress = Path.Combine(decompressDirectory, info.Name);
+                        File.Move(d[i], t_decompress, true);
+                    }
+                    Directory.Delete(tempDirectory, true);
+
+                    Program.CreateShortcut("Language Converter", Path.Combine(decompressDirectory, "LanguageConverter.exe"));
+                    Program.CreateStartMenuShortcut("EZCode", "Language Converter", Path.Combine(decompressDirectory, "LanguageConverter.exe"));
+                }
             }
             catch (Exception ex)
             {
