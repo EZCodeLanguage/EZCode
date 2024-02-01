@@ -66,7 +66,7 @@ namespace Installer
                     }
                 }
 
-                void installcore() // Install Source Start
+                void installcore() // Install Source
                 {
                     Working($"Installing Core From {githubRepoUrl}.git... This may take a second.");
 
