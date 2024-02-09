@@ -1,6 +1,4 @@
-﻿using Antlr.Runtime.Tree;
-
-namespace EZCode.Converter
+﻿namespace EZCode.Converter
 {
     public class Converter
     {
