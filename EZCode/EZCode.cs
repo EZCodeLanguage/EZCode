@@ -23,7 +23,7 @@ namespace EZCode
         /// <summary>
         /// Directory of the script playing
         /// </summary>
-        public static string Version { get; } = "2.5.0_beta2";
+        public static string Version { get; } = "2.5.0_beta3";
 
         #region Variables_and_Initializers
         /// <summary>

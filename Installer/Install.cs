@@ -103,7 +103,7 @@ namespace Installer
 
                     string downloadUrl = $"{githubRepoUrl}/releases/download/v{releaseTag}/{installFile}";
 
-                    string decompressDirectory = Path.Combine(filepath, $"{name} {releaseTag}");
+                    string decompressDirectory = Path.Combine(filepath, $"{name} v{releaseTag}");
 
                     WebInstaller($"{installFile}.zip", downloadUrl, tempDirectory, true);
 
