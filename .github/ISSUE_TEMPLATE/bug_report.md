@@ -1,7 +1,7 @@
 ---
-name: Bug report
-about: Create a report to help us improve
-title: ''
+name: Feature request
+about: Suggest an idea for this project
+title: '[bug]'
 labels: ''
 assignees: ''
 
@@ -10,14 +10,23 @@ assignees: ''
 **Describe the bug**
 A clear and concise description of what the bug is.
 
+**To Reproduce**
+Steps to reproduce the behavior:
+- This simplified EZCode: 
+    ```
+    print Hello World
+    ```
+
+or
+1. Go to '...'
+2. Click on '....'
+
+
 **Expected behavior**
 A clear and concise description of what you expected to happen.
 
-**Example**
-Please copy and paste the EZCode that gives the unexpected results.
-
-**Version:**
- - EZCode: [e.g. 2.0.0]
+**Screenshots**
+If applicable, add screenshots to help explain your problem.
 
 **Additional context**
 Add any other context about the problem here.

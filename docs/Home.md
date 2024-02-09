@@ -1,3 +1,22 @@
+\
+\
+\
+\
+
+# **EZCode Has Been Moved**
+
+**Please go to [New EZCode Repository](https://github.com/EZCodeLanguage/EZCode.git) to view new Repository**
+
+
+---
+\
+\
+\
+\
+\
+\
+\
+\
 ![Main Image](https://github.com/JBrosDevelopment/EZCode/blob/master/docs/Images/EZCode_Wide_Logo.png)
 
 # Welcome to the EZCode Wiki
