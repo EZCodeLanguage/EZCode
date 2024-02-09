@@ -1293,7 +1293,34 @@ namespace EZCode
                                 string type = parts[2];
                                 if (parts[3] == "=>")
                                 {
-                                    file = string.Join(" ", parts.Skip(4));
+                                    string[] wholearray = parts.ToArray();
+                                    string[] after = string.Join(" ", wholearray).Split(" => ");
+                                    string code = after.Length == 2 ? after[1].Trim() : "";
+                                    int indexof = Array.IndexOf(wholearray, ":");
+                                    bool anythingafter = indexof != wholearray.Length - 1;
+                                    bool startswithbracket = code.StartsWith("{");
+                                    List<string> everythingafter = new List<string>();
+                                    everythingafter.AddRange(splitcode.Skip(currentindex));
+                                    everythingafter = everythingafter.Select(x => x.Trim()).ToList();
+                                    string nextline = "";
+                                    for (int i = 1; i < everythingafter.Count && nextline == ""; i++) if (everythingafter[i] != "") nextline = everythingafter[i];
+                                    bool inline = anythingafter && !startswithbracket;
+                                    bool onnextline = !inline && !startswithbracket && !nextline.Trim().StartsWith("{") && nextline != "";
+                                    if (inline) // current line
+                                    {
+                                        file = string.Join(" ", parts.Skip(4));
+                                    }
+                                    else if (onnextline) // next line
+                                    {
+                                        file = splitcode[currentindex].Trim();
+                                    }
+                                    else // everything inside { }
+                                    {
+                                        string[] returnned = ExtractContent(everythingafter.ToArray(), parts);
+                                        file = string.Join(Environment.NewLine, returnned);
+                                        ifmany = returnned.Length - (startswithbracket ? 2 : 1);
+                                    }
+
                                 }
                                 else
                                 {
@@ -5357,6 +5384,9 @@ namespace EZCode
         }
         string? SolveEquation(string equation)
         {
+            equation = equation.Trim();
+            if (equation.StartsWith("(")) equation = equation.Remove(0, 1);
+            if (equation.EndsWith(")")) equation = equation.Remove(equation.Length - 1, 1);
             try
             {
                 DataTable dt = new DataTable();
@@ -5368,7 +5398,20 @@ namespace EZCode
             }
             catch
             {
-                return null;
+                try
+                {
+                    equation = string.Join(" ", equation.Split(" ").Select(x => getVar(x).isSet ? getVar(x).Value : x));
+                    DataTable dt = new DataTable();
+                    dt.Columns.Add("expression", typeof(string), equation);
+                    DataRow row = dt.NewRow();
+                    dt.Rows.Add(row);
+                    object result = row["expression"];
+                    return result.ToString();
+                }
+                catch
+                {
+                    return null;
+                }
             }
         }
         #endregion
@@ -5545,7 +5588,36 @@ namespace EZCode
             }
             if (!file.Contains(":\\")) isfile = false;
             if (isfile) await PlaySwitch(jumpsto: $"file play {file}");
-            else await PlaySwitch(jumpsto: file);
+            else
+            {
+                List<string> lines = file.Split(Environment.NewLine).ToList();
+                string output = "";
+                for (int i = 0; i < lines.Count; i++)
+                {
+                    codeLine = i + 1;
+                    List<string> a_parts = lines[i].Split(new char[] { ' ' }).Where(x => x != "").ToList();
+                    for (int j = 0; j < a_parts.Count; j++)
+                    {
+                        if (a_parts[j].Trim() == "->")
+                        {
+                            try
+                            {
+                                a_parts.RemoveAt(j);
+                                a_parts.AddRange(lines[i + 1].Split(' '));
+                                lines.RemoveAt(i + 1);
+                            }
+                            catch
+                            {
+
+                            }
+                        }
+                    }
+                    string[] task = await PlaySwitch(a_parts.ToArray(), "", lines.ToArray(), i);
+                    if (bool.Parse(task[1]) == false) i = lines.Count - 1;
+                    output += task[0];
+                    ConsoleText = output;
+                }
+            }
         }
         #endregion
 

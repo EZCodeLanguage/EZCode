@@ -1,4 +1,4 @@
-﻿using System.Text.RegularExpressions;
+﻿using Antlr.Runtime.Tree;
 
 namespace EZCode.Converter
 {
@@ -25,7 +25,7 @@ namespace EZCode.Converter
         {
             Language = language;
         }
-        public ImportAndDefine Import = new ImportAndDefine();
+        public PythonImportAndDefine PythonImport = new PythonImportAndDefine();
         public ProgramFile[] ProgramFiles = Array.Empty<ProgramFile>();
         public class ProgramFile
         {
@@ -37,10 +37,64 @@ namespace EZCode.Converter
                 Content = content;
             }
         }
-        public class ImportAndDefine
+        public class PythonImportAndDefine
         {
+            // __init__
+            public bool Init { get => INIT != "def __init__(self):\r\n"; }
+            public string INIT = "def __init__(self):\r\n";
+            private bool init_keyboard = false;
+            public bool Init_keyboard
+            {
+                get
+                {
+                    return init_keyboard;
+                }
+                set
+                {
+                    if (value && !init_keyboard)
+                    {
+                        INIT += "    self.input_key = set()\r\n    self.input_key_lock = threading.Lock()\r\n    self.start_keyboard_listener()\r\n";
+                    }
+                    init_keyboard = value;
+                }
+            }
+            private bool init_mouse_button = false;
+            public bool Init_mouse_button
+            {
+                get
+                {
+                    return init_mouse_button;
+                }
+                set
+                {
+                    if (value && !init_mouse_button)
+                    {
+                        INIT += "    self.input_mouse_buttons = set()\r\n    self.input_mouse_buttons_lock = threading.Lock()\r\n    self.start_mouse_button_listener()\r\n";
+                    }
+                    init_mouse_button = value;
+                }
+            }
+            private bool init_mouse_wheel = false;
+            public bool Init_mouse_wheel
+            {
+                get
+                {
+                    return init_mouse_wheel;
+                }
+                set
+                {
+                    if (value && !init_mouse_wheel)
+                    {
+                        INIT += "    self.wheel_state = 0\r\n    self.wheel_state_raw = 0\r\n    self.start_mouse_wheel_listener()\r\n";
+                    }
+                    init_mouse_wheel = value;
+                }
+            }
+
             // contains
             public bool ContainsMethod = false;
+            public bool ContainsWindow = false;
+            public string firstWindow = "";
 
             // import
             public bool Time = false;
@@ -55,12 +109,14 @@ namespace EZCode.Converter
             public bool Pyatuogui = false;
             public bool Pynput = false;
             public bool Threading = false;
+            public bool TKinter = false;
+            public bool Enum = false;
 
             // def
             public bool ReadFile = false;
-            public readonly string READFILE = "def read_file(file_path):\r\n    try:\r\n        with open(file_path, 'r') as file:\r\n            content = file.read()\r\n            return content\r\n    except FileNotFoundError:\r\n        return f\"File not found: {file_path}\"";
+            public readonly string READFILE = "def read_file(self, file_path):\r\n    try:\r\n        with open(file_path, 'r') as file:\r\n            content = file.read()\r\n            return content\r\n    except FileNotFoundError:\r\n        return f\"File not found: {file_path}\"";
             public bool WriteFile = false;
-            public readonly string WRITEFILE = "def write_file(content, file_path):\r\n    try:\r\n        with open(file_path, 'w') as file:\r\n           file.write(content)\r\n           return file_exists(file_path)\r\n    except:\r\n        return False";
+            public readonly string WRITEFILE = "def write_file(self, content, file_path):\r\n    try:\r\n        with open(file_path, 'w') as file:\r\n            file.write(content)\r\n            return self.file_exists(file_path)\r\n    except:\r\n        return False";
             private bool _validatePathFile = false;
             public bool ValidatePathFile
             {
@@ -71,11 +127,11 @@ namespace EZCode.Converter
                     OS = true;
                 }
             }
-            public readonly string VALIDATEPATHFILE = "def is_valid_path(file_path):\r\n    return os.path.exists(file_path) and os.path.isfile(file_path)";
+            public readonly string VALIDATEPATHFILE = "def is_valid_path(self, file_path):\r\n    return os.path.exists(file_path) and os.path.isfile(file_path)";
             public bool CreateFile = false;
-            public readonly string CREATEFILE = "def create_file(file_path):\r\n    try:\r\n        with open(file_path, 'w'):\r\n            pass\r\n            return True\r\n    except:\r\n        return False";
+            public readonly string CREATEFILE = "def create_file(self, file_path):\r\n    try:\r\n        with open(file_path, 'w'):\r\n            pass\r\n            return True\r\n    except:\r\n        return False";
             public bool FileExists = false;
-            public readonly string FILEEXISTS = "def file_exists(file_path):\r\n    return os.path.exists(file_path)";
+            public readonly string FILEEXISTS = "def file_exists(self, file_path):\r\n    return os.path.exists(file_path)";
             private bool _deletefile = false;
             public bool DeleteFile
             {
@@ -86,10 +142,10 @@ namespace EZCode.Converter
                     OS = true;
                 }
             }
-            public readonly string DELETEFILE = "def delete_file(file_path):\r\n    try:\r\n        os.remove(file_path)\r\n        return True\r\n    except FileNotFoundError:\r\n        return False";
+            public readonly string DELETEFILE = "def delete_file(self, file_path):\r\n    try:\r\n        os.remove(file_path)\r\n        return True\r\n    except FileNotFoundError:\r\n        return False";
 
             public bool IsNumber = false;
-            public readonly string ISNUMBER = "def is_number(value):\r\n    try:\r\n        float(value)\r\n        return True\r\n    except:\r\n        return False";
+            public readonly string ISNUMBER = "def is_number(self, value):\r\n    try:\r\n        float(value)\r\n        return True\r\n    except:\r\n        return False";
 
             public bool Is64Bit
             {
@@ -101,7 +157,7 @@ namespace EZCode.Converter
                 }
             }
             private bool _is64Bit = false;
-            public readonly string IS64BIT = "def is_windows_64bit():\r\n  if 'PROCESSOR_ARCHITEW6432' in os.environ:\r\n    return True\r\n  return os.environ['PROCESSOR_ARCHITECTURE'].endswith('64')";
+            public readonly string IS64BIT = "def is_windows_64bit(self):\r\n    if 'PROCESSOR_ARCHITEW6432' in os.environ:\r\n        return True\r\n    return os.environ['PROCESSOR_ARCHITECTURE'].endswith('64')";
 
             public bool KeysPressed
             {
@@ -111,10 +167,11 @@ namespace EZCode.Converter
                     _keysPressed = value;
                     Pynput = true;
                     Threading = true;
+                    Init_keyboard = true;
                 }
             }
             private bool _keysPressed = false;
-            public readonly string KEYSPRESSED = "input_key = set()\r\ninput_key_lock = threading.Lock()\r\n\r\ndef on_press(key):\r\n    global input_key\r\n    with input_key_lock:\r\n        input_key.add(key)\r\n\r\ndef on_release(key):\r\n    with input_key_lock:\r\n        input_key.remove(key)\r\n        \r\nkeyboard_listener = pynput.keyboard.Listener(on_press=on_press, on_release=on_release)\r\nlistener_thread = threading.Thread(target=keyboard_listener.run)\r\nlistener_thread.start()\r\n\r\ndef get_all_keys():\r\n    with input_key_lock:\r\n        return list(input_key)\r\n\r\ndef get_specific_key(key):\r\n    with input_key_lock:\r\n        for k in input_key:\r\n            k = str(k)\r\n            key = f\"'{str(key)}'\"\r\n            if k == key:\r\n                return True\r\n        return False";
+            public readonly string KEYSPRESSED = "def on_press(self, key):\r\n    with self.input_key_lock:\r\n        self.input_key.add(key)\r\n\r\ndef on_release(self, key):\r\n    with self.input_key_lock:\r\n        self.input_key.remove(key)\r\n\r\ndef start_keyboard_listener(self):\r\n    keyboard_listener = pynput.keyboard.Listener(\r\n        on_press=self.on_press, on_release=self.on_release\r\n    )\r\n    keyboard_listener.start()\r\n\r\ndef get_all_keys(self):\r\n    with self.input_key_lock:\r\n        return list(self.input_key)\r\n\r\ndef get_specific_key(self, key):\r\n    with self.input_key_lock:\r\n        for k in self.input_key:\r\n            k_str = str(k)\r\n            key_str = f\"'{str(key)}'\"\r\n            if k_str == key_str:\r\n                return True\r\n        return False";
 
             public bool MouseButton
             {
@@ -124,10 +181,11 @@ namespace EZCode.Converter
                     _mouseButton = value;
                     Pynput = true;
                     Threading = true;
+                    Init_mouse_button = true;
                 }
             }
             private bool _mouseButton = false;
-            public readonly string MOUSEBUTTON = "input_mouse_buttons = set()\r\ninput_mouse_buttons_lock = threading.Lock()\r\n\r\ndef on_mouse_click(x, y, button, pressed):\r\n    global input_mouse_buttons\r\n    with input_mouse_buttons_lock:\r\n        if pressed:\r\n            input_mouse_buttons.add(button)\r\n        else:\r\n            input_mouse_buttons.remove(button)\r\n\r\ndef get_all_mouse_buttons():\r\n    val = []\r\n    with input_mouse_buttons_lock:\r\n        if pynput.mouse.Button.left in input_mouse_buttons:\r\n            val.append(\"left\")\r\n        if pynput.mouse.Button.right in input_mouse_buttons:\r\n            val.append(\"right\")\r\n        if pynput.mouse.Button.middle in input_mouse_buttons:\r\n            val.append(\"middle\")\r\n    return val\r\n\r\ndef is_left_mouse_button_pressed():\r\n    with input_mouse_buttons_lock:\r\n        return pynput.mouse.Button.left in input_mouse_buttons\r\n\r\ndef is_right_mouse_button_pressed():\r\n    with input_mouse_buttons_lock:\r\n        return pynput.mouse.Button.right in input_mouse_buttons\r\n\r\ndef is_middle_mouse_button_pressed():\r\n    with input_mouse_buttons_lock:\r\n        return pynput.mouse.Button.middle in input_mouse_buttons\r\n\r\ndef get_specific_mouse_button(button):\r\n    if button.lower() == \"left\": button = pynput.mouse.Button.left\r\n    elif button.lower() == \"right\": pynput.mouse.Button.right\r\n    elif button.lower() == \"middle\": pynput.mouse.Button.middle\r\n    with input_mouse_buttons_lock:\r\n        return button in input_mouse_buttons\r\n\r\nmouse_listener = pynput.mouse.Listener(on_click=on_mouse_click)\r\nmouse_thread = threading.Thread(target=mouse_listener.run)\r\nmouse_thread.start()";
+            public readonly string MOUSEBUTTON = "def on_mouse_click(self, x, y, button, pressed):\r\n    with self.input_mouse_buttons_lock:\r\n        if pressed:\r\n            self.input_mouse_buttons.add(button)\r\n        else:\r\n            self.input_mouse_buttons.remove(button)\r\n\r\ndef get_all_mouse_buttons(self):\r\n    val = []\r\n    with self.input_mouse_buttons_lock:\r\n        if pynput.mouse.Button.left in self.input_mouse_buttons:\r\n            val.append(\"left\")\r\n        if pynput.mouse.Button.right in self.input_mouse_buttons:\r\n            val.append(\"right\")\r\n        if pynput.mouse.Button.middle in self.input_mouse_buttons:\r\n            val.append(\"middle\")\r\n    return val\r\n\r\ndef is_left_mouse_button_pressed(self):\r\n    with self.input_mouse_buttons_lock:\r\n        return pynput.mouse.Button.left in self.input_mouse_buttons\r\n\r\ndef is_right_mouse_button_pressed(self):\r\n    with self.input_mouse_buttons_lock:\r\n        return pynput.mouse.Button.right in self.input_mouse_buttons\r\n\r\ndef is_middle_mouse_button_pressed(self):\r\n    with self.input_mouse_buttons_lock:\r\n        return pynput.mouse.Button.middle in self.input_mouse_buttons\r\n\r\ndef get_specific_mouse_button(self, button):\r\n    if button.lower() == \"left\":\r\n        button_enum = pynput.mouse.Button.left\r\n    elif button.lower() == \"right\":\r\n        button_enum = pynput.mouse.Button.right\r\n    elif button.lower() == \"middle\":\r\n        button_enum = pynput.mouse.Button.middle\r\n    else:\r\n        raise ValueError(\"Invalid mouse button specified\")\r\n\r\n    with self.input_mouse_buttons_lock:\r\n        return button_enum in self.input_mouse_buttons\r\n\r\ndef start_mouse_button_listener(self):\r\n    mouse_listener = pynput.mouse.Listener(on_click=self.on_mouse_click)\r\n    mouse_listener.start()";
 
             public bool WheelState
             {
@@ -136,15 +194,29 @@ namespace EZCode.Converter
                 {
                     _wheelState = value;
                     Pynput = true;
+                    Init_mouse_wheel = true;
                 }
             }
-            private bool _wheelState = false;
-            public readonly string WHEELSTATE = "wheel_state = 0\r\nwheel_state_raw = 0\r\ndef on_scroll(x, y, dx, dy):\r\n    wheel_state_raw = dy\r\n    if dy > 0:\r\n        wheel_state = 1\r\n    elif dy < 0:\r\n        wheel_state = -1\r\n    else:\r\n        wheel_state = 0\r\n\r\nwith pynput.mouse.Listener(on_scroll=on_scroll) as listener:\r\n    listener.join()";
             
+            private bool _wheelState = false;
+            public readonly string WHEELSTATE = "def on_scroll(self, x, y, dx, dy):\r\n    self.wheel_state_raw = dy\r\n    if dy > 0:\r\n        self.wheel_state = 1\r\n    elif dy < 0:\r\n        self.wheel_state = -1\r\n    else:\r\n        self.wheel_state = 0\r\n\r\ndef start_mouse_wheel_listener(self):\r\n    mouse_listener = pynput.mouse.Listener(on_scroll=self.on_scroll)\r\n    mouse_listener.start()";
             public bool Clamp = false;
-            public readonly string CLAMP = "def clamp(_val, _min, _max):\r\n    return max(_min, min(_val, _max))";
+            public readonly string CLAMP = "def clamp(self, _val, _min, _max):\r\n    return max(_min, min(_val, _max))";
             public bool Average = false;
-            public readonly string AVERAGE = "def average(*args):\r\n    if not args:\r\n        return 0\r\n    return sum(args) / len(args)";
+            public readonly string AVERAGE = "def average(self, *args):\r\n    if not args:\r\n        return 0\r\n    return sum(args) / len(args)";
+            public bool Window
+            {
+                get => _window;
+                set
+                {
+                    _window = value;
+                    TKinter = true;
+                    Enum = true;
+                    ContainsWindow = true;
+                }
+            }
+            private bool _window = false;
+            public readonly string WINDOW = "class Window:\r\n    class Control:\r\n        class Type(Enum):\r\n            Shape = 1\r\n            Label = 2\r\n            Textbox = 3\r\n            Button = 4\r\n\r\n        class Properties:\r\n            def __init__(self):\r\n                self.X = 0\r\n                self.Y = 0\r\n                self.Width = 0\r\n                self.Height = 0\r\n                self.Text = \"\"\r\n\r\n        def __init__(self, control_type=Type.Shape):\r\n            self.type = control_type\r\n            self.properties = self.Properties()\r\n            self.X = self.properties.X\r\n            self.widget = None \r\n\r\n        def change(self, x=-1, y=-1, width=-1, height=-1, title=\"\"):\r\n            if x != -1: self.properties.X = x\r\n            if y != -1: self.properties.Y = y\r\n            if width != -1: self.properties.Width = width\r\n            elif width == -1 and self.type == EZCodeConversion.Window.Control.Type.Shape: self.properties.Width = 50\r\n            elif width == -1 and self.type == EZCodeConversion.Window.Control.Type.Button: self.properties.Width = 75\r\n            elif width == -1 and self.type == EZCodeConversion.Window.Control.Type.Textbox: self.properties.Width = 75\r\n            if height != -1: self.properties.Height = height\r\n            elif height == -1 and self.type == EZCodeConversion.Window.Control.Type.Shape: self.properties.Height = 50\r\n            elif height == -1 and self.type == EZCodeConversion.Window.Control.Type.Button: self.properties.Height = 25\r\n            elif height == -1 and self.type == EZCodeConversion.Window.Control.Type.Textbox: self.properties.Height = 50\r\n            if title != \"\": self.properties.Text = title\r\n    def __init__(self):\r\n        self.window = None\r\n        self.X = 0\r\n        self.Y = 0\r\n        self.Width = 600\r\n        self.Height = 400\r\n        self.Title = \"tk\"\r\n        self.Icon = \"\"\r\n        self.controls = []\r\n        self.waitDisplayControls = []\r\n\r\n    def open(self):\r\n        self.window = tkinter.Tk()\r\n        self.change()\r\n        for control in self.waitDisplayControls:\r\n            self.display_control(control)\r\n        self.waitDisplayControls = []\r\n\r\n    def close(self):\r\n        self.window = tkinter.Tk().destroy()\r\n        self.window = None\r\n\r\n    def destroy(self):\r\n        self.window = tkinter.Tk().destroy()\r\n        self.window = None\r\n        self.controls = []\r\n        self.waitDisplayControls = []\r\n\r\n    def start_loop(self):\r\n        try: self.window.mainloop()\r\n        except: None\r\n        \r\n    def change(self, x=0, y=0, width=600, height=400, title=\"\", icon=\"\", default=\"\"):\r\n        if x != 0: self.X = x\r\n        if y != 0: self.Y = y\r\n        if width != 600: self.Width = width\r\n        if height != 400: self.Height = height\r\n        if title != \"\": self.Title = title\r\n        if icon != \"\": self.Icon = icon\r\n\r\n        try:\r\n            self.window.geometry(f\"{self.Width}x{self.Height}+{self.X}+{self.Y}\")\r\n            self.window.title(self.Title)\r\n            self.window.iconbitmap(self.Icon)\r\n        except:\r\n            None\r\n\r\n    def display_controls(self, *args):\r\n        if self.window == None:\r\n            for control in args:\r\n                self.waitDisplayControls.append(control)\r\n            return\r\n        for control in args:\r\n            self.controls.append(control)\r\n            self.display_control(control)\r\n    \r\n    def display_control(self, control):\r\n            if control.type == EZCodeConversion.Window.Control.Type.Shape:\r\n                shape = tkinter.Canvas(self.window, width=control.properties.Width, height=control.properties.Height, bg=\"blue\")\r\n                shape.place(x=control.properties.X, y=control.properties.Y)\r\n                control.widget = shape\r\n            elif control.type == EZCodeConversion.Window.Control.Type.Label:\r\n                label = tkinter.Label(self.window, text=control.properties.Text)\r\n                label.place(x=control.properties.X, y=control.properties.Y)\r\n                control.widget = label\r\n            elif control.type == EZCodeConversion.Window.Control.Type.Textbox:\r\n                textbox = tkinter.Entry(self.window, width=control.properties.Width)\r\n                textbox.place(x=control.properties.X, y=control.properties.Y)\r\n                textbox.delete(0, tkinter.END)\r\n                textbox.insert(0, control.properties.Text)\r\n                control.widget = textbox\r\n            elif control.type == EZCodeConversion.Window.Control.Type.Button:\r\n                button = tkinter.Button(self.window, text=control.properties.Text)\r\n                button.place(x=control.properties.X, y=control.properties.Y)\r\n                control.widget = button\r\n\r\n    def clear_controls(self):\r\n        for control in self.controls:\r\n            control.widget.destroy()";
         }
         public List<EZCodeObject> objects = new List<EZCodeObject>();
         public string Convert() => Convert(Code, Language);
@@ -159,7 +231,7 @@ namespace EZCode.Converter
         }
         public string Convert(string code, ProgrammingLanguage language)
         {
-            Import = new ImportAndDefine();
+            PythonImport = new PythonImportAndDefine();
             string converted = "";
             string[] lines = code.Split(Environment.NewLine).Where(x => x != "").Select(y => y.Trim()).ToArray();
             objects = new List<EZCodeObject>();
@@ -180,57 +252,79 @@ namespace EZCode.Converter
 
             if (language == ProgrammingLanguage.Python)
             {
+                converted = "ezcode_conversion = EZCodeConversion()" + Environment.NewLine + converted + (PythonImport.ContainsWindow ? Environment.NewLine + $"{PythonImport.firstWindow}.start_loop()" : "");
+
                 ProgramFiles = new ProgramFile[]
                 {
-                    new ProgramFile("Main.py", converted)
+                    new ProgramFile("Main.py", "from EZCodeConversion import EZCodeConversion" + Environment.NewLine + PreRequisites(true) +Environment.NewLine + converted),
                 };
-                if (PreRequisites().Trim() != "") ProgramFiles = ProgramFiles.Append(new ProgramFile("Main.py2", PreRequisites())).ToArray();
-                if (Import.ContainsMethod)
+                if (PreRequisites().Trim() != "") ProgramFiles = ProgramFiles.Append(new ProgramFile("EZCodeConversion.py", PreRequisites())).ToArray();
+                if (PythonImport.ContainsMethod)
                 {
                     int ttab = 0; 
                     string firstMethod = lines.FirstOrDefault(x => getAction(x, objects) == Actions.Method, "method Start");
                     firstMethod = ConvertLinePython(Actions.Method, firstMethod, objects, ref ttab).Split(" ").Select(x=>x.Trim()).ToArray()[1].Replace(":", "");
                     converted += Environment.NewLine + firstMethod + Environment.NewLine;
                 }
-            }
 
-            converted = "# Your converted python code" + Environment.NewLine + converted;
-            string pre = PreRequisites();
-            if (pre.Trim() != "") converted = "# Converted python prerequisites" + Environment.NewLine + pre + converted;
+                converted = "# Your converted EZCode" + Environment.NewLine + converted;
+                string pre = PreRequisites();
+                if (pre.Trim() != "") converted = "# Python prerequisites" + Environment.NewLine + pre + converted;
+            }
 
             if (converted.StartsWith(Environment.NewLine)) converted = converted.Remove(0, Environment.NewLine.Length);
 
             return converted;
         }
-        private string PreRequisites()
+        private string PreRequisites(bool justImports = false)
         {
             string pre = "";
-            if (Import.ReadFile) pre = Import.READFILE + Environment.NewLine + Environment.NewLine + pre;
-            if (Import.WriteFile) pre = Import.WRITEFILE + Environment.NewLine + Environment.NewLine + pre;
-            if (Import.ValidatePathFile) pre = Import.VALIDATEPATHFILE + Environment.NewLine + Environment.NewLine + pre;
-            if (Import.CreateFile) pre = Import.CREATEFILE + Environment.NewLine + Environment.NewLine + pre;
-            if (Import.FileExists) pre = Import.FILEEXISTS + Environment.NewLine + Environment.NewLine + pre;
-            if (Import.DeleteFile) pre = Import.DELETEFILE + Environment.NewLine + Environment.NewLine + pre;
-            if (Import.IsNumber) pre = Import.ISNUMBER + Environment.NewLine + Environment.NewLine + pre;
-            if (Import.Is64Bit) pre = Import.IS64BIT + Environment.NewLine + Environment.NewLine + pre;
-            if (Import.Clamp) pre = Import.CLAMP + Environment.NewLine + Environment.NewLine + pre;
-            if (Import.Average) pre = Import.AVERAGE + Environment.NewLine + Environment.NewLine + pre;
-            if (Import.KeysPressed) pre = Import.KEYSPRESSED + Environment.NewLine + Environment.NewLine + pre;
-            if (Import.MouseButton) pre = Import.MOUSEBUTTON + Environment.NewLine + Environment.NewLine + pre;
-            if (Import.WheelState) pre = Import.WHEELSTATE + Environment.NewLine + Environment.NewLine + pre;
-            pre = Environment.NewLine + pre;
-            if (Import.Sys) pre = "import sys" + Environment.NewLine + pre;
-            if (Import.OS) pre = "import os" + Environment.NewLine + pre;
-            if (Import.Time) pre = "import time" + Environment.NewLine + pre;
-            if (Import.DateTime) pre = "import datetime" + Environment.NewLine + pre;
-            if (Import.Random) pre = "import random" + Environment.NewLine + pre;
-            if (Import.Socket) pre = "import socket" + Environment.NewLine + pre;
-            if (Import.Platform) pre = "import platform" + Environment.NewLine + pre;
-            if (Import.Math) pre = "import math" + Environment.NewLine + pre;
-            if (Import.Threading) pre = "import threading" + Environment.NewLine + pre;
-            if (Import.Keyboard) pre = "import keyboard # use 'pip install keyboard' to install this module" + Environment.NewLine + pre;
-            if (Import.Pyatuogui) pre = "import pyautogui # use 'pip install pyautogui' to install this module" + Environment.NewLine + pre;
-            if (Import.Pynput) pre = "import pynput # use 'pip install pynput' to install this module" + Environment.NewLine + pre;
+            if (Language == ProgrammingLanguage.Python)
+            {
+                if (!justImports)
+                {
+                    if (PythonImport.ReadFile) pre = PythonImport.READFILE + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.WriteFile) pre = PythonImport.WRITEFILE + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.ValidatePathFile) pre = PythonImport.VALIDATEPATHFILE + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.CreateFile) pre = PythonImport.CREATEFILE + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.FileExists) pre = PythonImport.FILEEXISTS + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.DeleteFile) pre = PythonImport.DELETEFILE + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.IsNumber) pre = PythonImport.ISNUMBER + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.Is64Bit) pre = PythonImport.IS64BIT + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.Clamp) pre = PythonImport.CLAMP + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.Average) pre = PythonImport.AVERAGE + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.KeysPressed) pre = PythonImport.KEYSPRESSED + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.MouseButton) pre = PythonImport.MOUSEBUTTON + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.WheelState) pre = PythonImport.WHEELSTATE + Environment.NewLine + Environment.NewLine + pre;
+                    if (PythonImport.Window) pre = PythonImport.WINDOW + Environment.NewLine + Environment.NewLine + pre;
+
+                    if (PythonImport.Init) pre = PythonImport.INIT + Environment.NewLine + Environment.NewLine + pre;
+                    if (pre != "" && pre != "ezcode_conversion = EZCodeConversion()" + Environment.NewLine)
+                    {
+                        string[] p = pre.Split(Environment.NewLine);
+                        pre = "class EZCodeConversion:" + Environment.NewLine; ;
+                        for (int i = 0; i < p.Length; i++)
+                        {
+                            pre += (p[i] == "ezcode_conversion = EZCodeConversion()" ? "" : "    ") + p[i] + Environment.NewLine;
+                        }
+                    }
+                    pre = Environment.NewLine + pre;
+                }
+                if (PythonImport.Sys) pre = "import sys" + Environment.NewLine + pre;
+                if (PythonImport.OS) pre = "import os" + Environment.NewLine + pre;
+                if (PythonImport.Time) pre = "import time" + Environment.NewLine + pre;
+                if (PythonImport.DateTime) pre = "import datetime" + Environment.NewLine + pre;
+                if (PythonImport.Random) pre = "import random" + Environment.NewLine + pre;
+                if (PythonImport.Socket) pre = "import socket" + Environment.NewLine + pre;
+                if (PythonImport.Platform) pre = "import platform" + Environment.NewLine + pre;
+                if (PythonImport.Math) pre = "import math" + Environment.NewLine + pre;
+                if (PythonImport.Threading) pre = "import threading" + Environment.NewLine + pre;
+                if (PythonImport.Enum) pre = "from enum import Enum" + Environment.NewLine + pre;
+                if (PythonImport.Keyboard) pre = "import keyboard # use 'pip install keyboard' to install this module" + Environment.NewLine + pre;
+                if (PythonImport.Pyatuogui) pre = "import pyautogui # use 'pip install pyautogui' to install this module" + Environment.NewLine + pre;
+                if (PythonImport.Pynput) pre = "import pynput # use 'pip install pynput' to install this module" + Environment.NewLine + pre;
+                if (PythonImport.TKinter) pre = "import tkinter # use 'pip install tkinter' to install this module" + Environment.NewLine + pre;
+            }
             return pre;
         }
         private string ConvertLinePython(Actions action, string line, List<EZCodeObject> objects, ref int _tab)
@@ -280,15 +374,15 @@ namespace EZCode.Converter
                         line = $"print({returnValue(w, 1)})";
                         break;
                     case Actions.Clear:
-                        Import.OS = true;
+                        PythonImport.OS = true;
                         line = "os.system('cls')";
                         break;
                     case Actions.ClearConditional:
-                        Import.OS = true;
+                        PythonImport.OS = true;
                         line = $"if {returnBoolean(w, 1)}: os.system('cls')";
                         break;
                     case Actions.AwaitMiliseconds:
-                        Import.Time = true;
+                        PythonImport.Time = true;
                         try
                         {
                             line = $"time.sleep({float.Parse(w[1]) / 1000})";
@@ -299,7 +393,7 @@ namespace EZCode.Converter
                         }
                         break;
                     case Actions.AwaitConditional:
-                        Import.Time = true;
+                        PythonImport.Time = true;
                         try
                         {
                             line = $"while {returnBoolean(w, 1)}: time.sleep({float.Parse(w[1]) / 1000})";
@@ -310,7 +404,7 @@ namespace EZCode.Converter
                         }
                         break;
                     case Actions.ReadFile:
-                        Import.ReadFile = true;
+                        PythonImport.ReadFile = true;
                         if (line.Contains(" => ") || line.Contains(" : "))
                         {
                             string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
@@ -319,11 +413,11 @@ namespace EZCode.Converter
                         }
                         else
                         {
-                            line = $"read_file({returnValue(w, 2)})";
+                            line = $"ezcode_conversion.read_file({returnValue(w, 2)})";
                         }
                         break;
                     case Actions.WriteFile:
-                        Import.WriteFile = true;
+                        PythonImport.WriteFile = true;
                         if (line.Contains(" => ") || line.Contains(" : "))
                         {
                             string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
@@ -332,7 +426,7 @@ namespace EZCode.Converter
                         }
                         else
                         {
-                            line = $"write_file({returnValue(w[2])}, {returnValue(w, 3)})";
+                            line = $"ezcode_conversion.write_file({returnValue(w[2])}, {returnValue(w, 3)})";
                         }
                         break;
                     case Actions.ValidPathFile:
@@ -344,12 +438,12 @@ namespace EZCode.Converter
                         }
                         else
                         {
-                            Import.ValidatePathFile = true;
+                            PythonImport.ValidatePathFile = true;
                         }
-                        line = $"is_valid_path({returnValue(w, 2)})";
+                        line = $"ezcode_conversion.is_valid_path({returnValue(w, 2)})";
                         break;
                     case Actions.CreateFile:
-                        Import.CreateFile = true;
+                        PythonImport.CreateFile = true;
                         if (line.Contains(" => ") || line.Contains(" : "))
                         {
                             string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
@@ -358,11 +452,11 @@ namespace EZCode.Converter
                         }
                         else
                         {
-                            line = $"create_file({returnValue(w, 2)})";
+                            line = $"ezcode_conversion.create_file({returnValue(w, 2)})";
                         }
                         break;
                     case Actions.ExistsFile:
-                        Import.FileExists = true;
+                        PythonImport.FileExists = true;
                         if (line.Contains(" => ") || line.Contains(" : "))
                         {
                             string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
@@ -371,11 +465,11 @@ namespace EZCode.Converter
                         }
                         else
                         {
-                            line = $"file_exists({returnValue(w, 2)})";
+                            line = $"ezcode_conversion.file_exists({returnValue(w, 2)})";
                         }
                         break;
                     case Actions.DeleteFile:
-                        Import.DeleteFile = true;
+                        PythonImport.DeleteFile = true;
                         if (line.Contains(" => ") || line.Contains(" : "))
                         {
                             string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
@@ -384,12 +478,12 @@ namespace EZCode.Converter
                         }
                         else
                         {
-                            line = $"delete_file({returnValue(w, 2)})";
+                            line = $"ezcode_conversion.delete_file({returnValue(w, 2)})";
                         }
                         break;
                     case Actions.StopAll:
-                        Import.OS = true;
-                        line = $"delete_file({returnValue(w, 2)})";
+                        PythonImport.OS = true;
+                        line = $"ezcode_conversion.delete_file({returnValue(w, 2)})";
                         break;
                     case Actions.StopReturn:
                         line = $"return";
@@ -420,7 +514,7 @@ namespace EZCode.Converter
                         line = $"{w[1]} = {returnValue(w[3])}.split({returnValue(w[4])})";
                         break;
                     case Actions.Method:
-                        Import.ContainsMethod = true;
+                        PythonImport.ContainsMethod = true;
                         string[] newW = string.Join(" ", w.Skip(3).Select(x => x.Replace(":", "="))).Split(",").Where(y => y != "").ToArray();
                         for (int i = 0; i < newW.Length; i++)
                         {
@@ -510,7 +604,7 @@ namespace EZCode.Converter
                         }
                         break;
                     case Actions.KeyInput:
-                        Import.KeysPressed = true;
+                        PythonImport.KeysPressed = true;
                         if (line.Contains(" => ") || line.Contains(" : "))
                         {
                             string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
@@ -519,11 +613,11 @@ namespace EZCode.Converter
                         }
                         else
                         {
-                            line = $"get_all_keys()";
+                            line = $"ezcode_conversion.get_all_keys()";
                         }
                         break;
                     case Actions.SpecificKeyInput:
-                        Import.KeysPressed = true;
+                        PythonImport.KeysPressed = true;
                         if (line.Contains(" => ") || line.Contains(" : "))
                         {
                             string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
@@ -532,11 +626,11 @@ namespace EZCode.Converter
                         }
                         else
                         {
-                            line = $"get_specific_key({returnValue(w[2])})";
+                            line = $"ezcode_conversion.get_specific_key({returnValue(w[2])})";
                         }
                         break;
                     case Actions.MousePositionInput:
-                        Import.Pyatuogui = true;
+                        PythonImport.Pyatuogui = true;
                         if (line.Contains(" => ") || line.Contains(" : "))
                         {
                             string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
@@ -549,7 +643,7 @@ namespace EZCode.Converter
                         }
                         break;
                     case Actions.SpecificMousePositionInput:
-                        Import.Pyatuogui = true;
+                        PythonImport.Pyatuogui = true;
                         if (line.Contains(" => ") || line.Contains(" : "))
                         {
                             string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
@@ -563,7 +657,7 @@ namespace EZCode.Converter
                         break;
                     case Actions.MouseWheelInput:
                     case Actions.RawMouseWheelInput:
-                        Import.WheelState = true;
+                        PythonImport.WheelState = true;
                         if (line.Contains(" => ") || line.Contains(" : "))
                         {
                             string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
@@ -572,11 +666,11 @@ namespace EZCode.Converter
                         }
                         else
                         {
-                            line = $"wheel_state{(Actions.RawMouseWheelInput == action ? "_raw" : "")}";
+                            line = $"ezcode_conversion.wheel_state{(Actions.RawMouseWheelInput == action ? "_raw" : "")}";
                         }
                         break;
                     case Actions.MouseButtonInput:
-                        Import.MouseButton = true;
+                        PythonImport.MouseButton = true;
                         if (line.Contains(" => ") || line.Contains(" : "))
                         {
                             string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
@@ -585,11 +679,11 @@ namespace EZCode.Converter
                         }
                         else
                         {
-                            line = $"get_all_mouse_buttons()";
+                            line = $"ezcode_conversion.get_all_mouse_buttons()";
                         }
                         break;
                     case Actions.SpecificMouseButtonInput:
-                        Import.MouseButton = true;
+                        PythonImport.MouseButton = true;
                         if (line.Contains(" => ") || line.Contains(" : "))
                         {
                             string nl = $"var {line.Split(" ")[line.Split(" ").Length - 1]} : {string.Join(" ", line.Split(" ").TakeWhile(x => x != ":" && x != "=>"))}";
@@ -598,8 +692,39 @@ namespace EZCode.Converter
                         }
                         else
                         {
-                            line = $"get_specific_mouse_button({returnValue(w[3])})";
+                            line = $"ezcode_conversion.get_specific_mouse_button({returnValue(w[3])})";
                         }
+                        break;
+                    case Actions.NewWindow:
+                        PythonImport.Window = true;
+                        PythonImport.firstWindow = PythonImport.firstWindow == "" ? w[1] : "";
+                        line = $"{w[1]} = ezcode_conversion.Window()";
+                        string change = returnProperties(w, false);
+                        line += Environment.NewLine + change;
+                        break;
+                    case Actions.ChangeWindow:
+                        line = returnProperties(w, false);
+                        break;
+                    case Actions.OpenWindow:
+                        line = $"{w[1]}.open()";
+                        break;
+                    case Actions.CloseWindow:
+                        line = $"{w[1]}.close()";
+                        break;
+                    case Actions.DestroyWindow:
+                        line = $"""
+                        {w[1]}.destroy()
+                        {w[1]} = None
+                        """;
+                        break;
+                    case Actions.ClearWindow:
+                        line = $"{w[1]}.clear()";
+                        break;
+                    case Actions.DisplayWindow:
+                        line = $"{w[1]}.display_controls({w[3]})";
+                        break;
+                    case Actions.CreateControl:
+                        line = $"{w[1]} = ezcode_conversion.Window.Control(control_type=EZCodeConversion.Window.Control.Type.{w[0].FisrtLetterToUpper()})" + Environment.NewLine + returnProperties(w, true);
                         break;
                 }
                 string tabs = string.Join("", Enumerable.Repeat("    ", _tab));
@@ -611,9 +736,55 @@ namespace EZCode.Converter
                 return "";
             }
         }
+        private string returnProperties(string[] w, bool control)
+        {
+            string change = "";
+            string propertyString = string.Join(" ", w.Skip(control ? 2 : 4));
+            string[] properties = propertyString.Split(",").Select(x => x.Trim()).ToArray();
+            change = $"{w[1]}.change(";
+            string _default = "";
+            foreach (string property in properties)
+            {
+                string[] splitProp = property.Split(":");
+                string name = splitProp[0].ToLower();
+                string value = splitProp[1];
+                switch (name)
+                {
+                    case "x":
+                    case "y":
+                        change += name + "=" + (value == "0" && !control ? "1" : control && value == "-1" ? "-2" : value);
+                        break;
+                    case "w":
+                    case "width":
+                        change += "width=" + (value == "600" ? "601" : control && value == "-1" ? "-2" : value);
+                        break;
+                    case "h":
+                    case "height":
+                        change += "height=" + (value == "400" ? "401" : control && value == "-1" ? "-2" : value);
+                        break;
+                    case "t":
+                    case "text":
+                        change += $"title=\"{(value == "" ? " " : value)}\"";
+                        break;
+                    case "icon":
+                        change += $"icon={returnValue(value.Split(" "), 0)}";
+                        break;
+                    default:
+                        if (_default == "") _default += "|";
+                        _default += $" can not convert '{name}' |";
+                        break;
+                }
+                change += $", ";
+            }
+            change += $"{(_default == "" ? "" : $"default=\"{_default}\"")}";
+            change = change.Replace(", , , ", ", ").Replace(", , ", ", ");
+            if (change.EndsWith(", ")) change = change.Remove(change.Length - 2, 2);
+            change += ")";
+            return change;
+        }
         private string returnMath(string value)
         {
-            if (!value.EndsWith(")") && Regex.Matches(value, @"\)").Count == 1 && Regex.Matches(value, @"\(").Count == 1)
+            if (!value.EndsWith(")") && System.Text.RegularExpressions.Regex.Matches(value, @"\)").Count == 1 && System.Text.RegularExpressions.Regex.Matches(value, @"\(").Count == 1)
                 return value;
 
             if (value.StartsWith("abs("))
@@ -633,7 +804,7 @@ namespace EZCode.Converter
             }
             else if (value.StartsWith("sqr("))
             {
-                Import.Math = true;
+                PythonImport.Math = true;
                 string eq = value.Replace("sqr(", "").Replace(")", "");
                 return $"math.sqrt({eq})";
             }
@@ -650,7 +821,7 @@ namespace EZCode.Converter
             }
             else if (value.StartsWith("clamp("))
             {
-                Import.Clamp = true;
+                PythonImport.Clamp = true;
 
                 string eq = value.Replace("clamp(", "").Replace(")", "");
                 string[] eqboth = eq.Split(",");
@@ -658,7 +829,7 @@ namespace EZCode.Converter
                 float ineq1 = float.Parse(eqboth[0].Trim());
                 float ineq2 = float.Parse(eqboth[1].Trim());
                 float ineq3 = float.Parse(eqboth[2].Trim());
-                return $"clamp({ineq1}, {ineq2}, {ineq3})";
+                return $"ezcode_conversion.clamp({ineq1}, {ineq2}, {ineq3})";
             }
             else if (value.StartsWith("sum("))
             {
@@ -668,10 +839,10 @@ namespace EZCode.Converter
             }
             else if (value.StartsWith("avg("))
             {
-                Import.Average = true;
+                PythonImport.Average = true;
                 string eq = value.Replace("avg(", "").Replace(")", "");
                 string[] eqboth = eq.Split(",");
-                return $"average({string.Join(", ", eqboth)})";
+                return $"ezcode_conversion.average({string.Join(", ", eqboth)})";
             }
             else if (value.StartsWith("min("))
             {
@@ -793,56 +964,56 @@ namespace EZCode.Converter
             MouseButtonInput,
             SpecificMouseButtonInput,
 
-            NewWindow,//
-            ChangeWindow,//
-            ClearWindow,//
-            CloseWindow,//
-            OpenWindow,//
-            DisplayWindow,//
-            DestroyWindow,//
-            CreateControl,//
-            Destroy,//
-            DestroyConditional,//
-            Intersects,//
-            NewGroup,//
-            AddGroup,//
-            EqualsGroup,//
-            RemoveGroup,//
-            ClearGroup,//
-            DestroyGroup,//
-            DestroyAllGroup,//
-            ChangeGroup,//
-            StopAllSound,//
-            VolumeSound,//
-            NewSound,//
-            PlaySound,//
-            PlayLoopSound,//
-            DestroySound,//
-            StopSound,//
-            FontEvent,//
-            TextEvent,//
-            ClickEvent,//
-            HoverEvent,//
-            MoveEvent,//
-            BackColorEvent,//
-            ForeColorEvent,//
-            ImageEvent,//
-            ImageLayoutEvent,//
-            FocusedEvent,//
-            ControlAddedEvent,//
-            ControlRemovedEvent,//
-            DefocusedEvent,//
-            CloseEvent,//
-            OpenEvent,//
-            EnabledChangedEvent,//
-            KeyDownEvent,//
-            KeyUpEvent,//
-            KeyPressEvent,//
-            ResizeEvent,//
-            ResizeStartEvent,//
-            ResizeEndEvent,//
-            BringToFront,//
-            BringToBack,//
+            NewWindow,
+            ChangeWindow,
+            ClearWindow,
+            CloseWindow,
+            OpenWindow,
+            DisplayWindow,
+            DestroyWindow,
+            CreateControl,
+            Destroy,
+            DestroyConditional,
+            Intersects,
+            BringToFront,
+            BringToBack,
+            NewGroup,
+            AddGroup,
+            EqualsGroup,
+            RemoveGroup,
+            ClearGroup,
+            DestroyGroup,
+            DestroyAllGroup,
+            ChangeGroup,
+            StopAllSound,
+            VolumeSound,
+            NewSound,
+            PlaySound,
+            PlayLoopSound,
+            DestroySound,
+            StopSound,
+            FontEvent,
+            TextEvent,
+            ClickEvent,
+            HoverEvent,
+            MoveEvent,
+            BackColorEvent,
+            ForeColorEvent,
+            ImageEvent,
+            ImageLayoutEvent,
+            FocusedEvent,
+            ControlAddedEvent,
+            ControlRemovedEvent,
+            DefocusedEvent,
+            CloseEvent,
+            OpenEvent,
+            EnabledChangedEvent,
+            KeyDownEvent,
+            KeyUpEvent,
+            KeyPressEvent,
+            ResizeEvent,
+            ResizeStartEvent,
+            ResizeEndEvent,
         }
         private static Actions getAction(string line, List<EZCodeObject> objects)
         {
@@ -1357,6 +1528,17 @@ namespace EZCode.Converter
             }
             return text;
         }
+
+        public static string FisrtLetterToUpper(this string input)
+        {
+            string result = "";
+
+            if (!string.IsNullOrEmpty(input))
+            {
+                result = char.ToUpper(input[0]) + input.Substring(1);
+            }
+            return result;
+        }
         private static string ColonResponse(string value, Converter converter)
         {
             string[] ind = value.Split(':');
@@ -1365,7 +1547,7 @@ namespace EZCode.Converter
                 switch (ind[1])
                 {
                     case "time":
-                        converter.Import.DateTime = true;
+                        converter.PythonImport.DateTime = true;
                         if (ind.Length == 2)
                         {
                             List<string> list = ind.ToList();
@@ -1448,7 +1630,7 @@ namespace EZCode.Converter
                         switch (ind[2])
                         {
                             default:
-                                converter.Import.Random = true;
+                                converter.PythonImport.Random = true;
                                 bool more = value.Contains("system:random:");
                                 if (more)
                                 {
@@ -1458,7 +1640,7 @@ namespace EZCode.Converter
                                 }
                                 else
                                 {
-                                    converter.Import.Sys = true;
+                                    converter.PythonImport.Sys = true;
                                     if (converter.Language == Converter.ProgrammingLanguage.Python)
                                         return "random.randint(0, sys.maximize)";
                                     else return "";
@@ -1469,30 +1651,30 @@ namespace EZCode.Converter
                                 else return "";
                         }
                     case "isnumber":
-                        converter.Import.IsNumber = true;
+                        converter.PythonImport.IsNumber = true;
                         if (converter.Language == Converter.ProgrammingLanguage.Python)
-                            return $"is_number({converter.returnValue(ind, 2, false)})";
+                            return $"ezcode_conversion.is_number({converter.returnValue(ind, 2, false)})";
                         else return "";
                     case "machine":
                         switch (ind[2].ToLower())
                         {
                             case "machinename":
-                                converter.Import.Socket = true;
+                                converter.PythonImport.Socket = true;
                                 if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "socket.gethostname()";
                                 else return "";
                             case "osversion":
-                                converter.Import.Platform = true;
+                                converter.PythonImport.Platform = true;
                                 if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "platform.platform()";
                                 else return "";
                             case "is64bitoperatingsystem":
-                                converter.Import.Is64Bit = true;
+                                converter.PythonImport.Is64Bit = true;
                                 if (converter.Language == Converter.ProgrammingLanguage.Python)
-                                    return "is_windows_64but()";
+                                    return "ezcode_conversion.is_windows_64bit()";
                                 else return "";
                             case "username":
-                                converter.Import.OS = true;
+                                converter.PythonImport.OS = true;
                                 if (converter.Language == Converter.ProgrammingLanguage.Python)
                                     return "os.getlogin()";
                                 else return "";
@@ -1507,12 +1689,12 @@ namespace EZCode.Converter
                         }
                         break;
                     case "currentfile":
-                        converter.Import.OS = true;
+                        converter.PythonImport.OS = true;
                         if (converter.Language == Converter.ProgrammingLanguage.Python)
                             return "os.path.dirname(os.path.realpath(__file__))";
                         else return "";
                     case "currentplaydirectory":
-                        converter.Import.OS = true;
+                        converter.PythonImport.OS = true;
                         if (converter.Language == Converter.ProgrammingLanguage.Python)
                             return "os.getcwd()";
                         else return "";
