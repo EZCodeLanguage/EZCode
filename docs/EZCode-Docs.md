@@ -119,7 +119,7 @@ This code will skip over the `if` and go straight to the `else` because the if s
 
 ### Event
 
-The `event` keyword is for controls or windows. This acts as a trigger for the inputted action. Whenever the control or window is triggered, it can play the inputted method or file. The correct syntax is `event control_or_window eventType filePath_or_method`. 
+The `event` keyword is for controls or windows. This acts as a trigger for the inputted action. Whenever the control or window is triggered, it can play a file, method, or single segment of code. The correct syntax is `event control_or_window eventType filePath_or_method_or_code`. 
 ```
 shape player
 event player click ~/player_clicked.ezcode`
@@ -746,6 +746,8 @@ Hello,
 John Doe
 ```
 Here is the list of special characters.
+- `@s:`: If at beggining of text, gets litteral text
+  - `print @s: No\_Space 'X'`: This will print `No\_Space 'X'`.
 - `\!`: Value is nothing ''
   - `btn text:\!`: This sets a control named `btn` text to nothing.
 - `\n`: Value of newline
@@ -754,7 +756,7 @@ Here is the list of special characters.
         Hello
         World!
         ```
-- `\_`: Value of space 1' '
+- `\_`: Value of space ' '
   - `file write Hello\_World C:\path.txt`: This writes `Hello World` to a file.
 - `~\` or `~/`: Uses local path
   - `file play ~\file.ezcode`: This is used for local paths for the current file being played.
