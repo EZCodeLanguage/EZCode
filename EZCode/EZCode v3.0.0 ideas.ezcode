@@ -1,0 +1,356 @@
+// Ideas for EZCode v3.0.0
+
+// Syntax meaning
+// var -> declare Variable with a flexible datatype, 'var name value'
+// class -> declares a class
+// static -> not an instance
+// semi -> allows class to have static methods/variables
+// ontop -> allows class name to not be included. Requires static
+// explicit watch -> syntax to look for when finding value type
+// explicit params -> syntax for when object is declared overriding the default setting properties after colon
+// explicit insideof -> class is inside of a container
+// explicit typeof -> the datatype of the class
+// container -> ease with grouping classes
+// return -> Returns value at end of method
+// @type -> requires value to be a certain type
+// get -> How the class returns the value
+// EZCodeLanguage.EZHelp.METHOD() -> referencing C# method
+
+static ontop class PROGRAM { 
+    nocol method print : @str:text {
+        EZCodeLanguage.EZHelp.Print(text)
+    }
+    nocol method exec : @str:prog {
+        EZCodeLanguage.EZHelp.Execute(prog)
+    }
+    nocol method clear : ? @bool:arg {
+        if arg ! null or arg : EZCodeLanguage.EZHelp.Clear()
+    }
+    nocol method destroy : object, ? @bool:arg {
+        if arg ! null or arg : EZCodeLanguage.EZHelp.Destroy(object)
+    }
+    nocol method stop : ? @bool:arg {
+        if arg ! null or arg : EZCodeLanguage.EZHelp.Stop()
+    }
+    nocol method await : val {
+        var isInt ?(val = @int)?
+        if isInt : EZCodeLanguage.EZHelp.AwaitMiliseconds(val)
+        else : EZCodeLanguage.EZHelp.AwaitArgument(val)
+    }
+}
+// Accessed by
+// print TEXT
+
+semi class color {
+    explicit watch \[c\:{@str:t}\] => FromText : t 
+    explicit watch \[{@int:r};{@int:g};{@int:b}\] => FromRGB : r, g, b
+    var R 0
+    var B 0
+    var G 0
+    static method FromText : @str:text => @Color {
+        return EZCodeLanguage.EZHelp.Color.FromText(text)
+    }
+    static method FromRGB : @int:r, @int:g, @int:b => @Color {
+        return EZCodeLanguage.EZHelp.Color.FromRGB(r,g,b)
+    }
+}
+// Accessed by
+// color name new : R:50, G:60, B:70
+// or
+// shape name new : bg:[LightBlue]
+// shape name new : bg:[50;60;70]
+
+static class file {
+    nocol method read : @url:file => @str {
+        return EZCodeLanguage.EZHelp.FILE.READ : file
+    }
+    nocol method write : @str:content, @url:file => @bool {
+        try {
+            EZCodeLanguage.EZHelp.FILE.Write(content, file)
+            return true
+        }
+        fail {
+            return false
+        }
+    }
+    nocol method create : @url:file => @bool {
+        try {
+            EZCodeLanguage.EZHelp.File.Write("", file)
+            return true
+        }
+        fail {
+            return false
+        }
+    }
+    nocol method exists : @url:file => @bool {
+        try {
+            EZCodeLanguage.EZHelp.File.Read(file)
+            return true
+        }
+        fail {
+            return false
+        }
+    }
+    nocol method delete : @url:file => @bool {
+        try {
+            EZCodeLanguage.EZHelp.File.Delete(file)
+            return true
+        }
+        fail {
+            return false
+        }
+    }
+    nocol method validpath : @str:file => @bool {
+        return EZCodeLanguage.EZHelp.File.ValidPath(file)
+    }
+}
+// Accessed by
+// file read C:/file/path.txt
+
+class list {
+    explicit watch \[(*:,{vals})\] => set : vals
+    explicit params *:,{param} => set : param
+    var Value \!
+    method set : param* {
+        Value = EZCodeLanguage.EZHelp.List.Join(param)
+    }
+    get => @str {
+        return Value
+    }
+    get => @list {
+        return EZCodeLanguage.EZHelp.LIST.SPLIT : Value
+    }
+    method add : param* {
+        Value + EZCodeLanguage.EZHelp.Lines.Join(param)
+    }
+    method replace : old, new {
+        try {
+            Value = EZCodeLanguage.EZHelp.List.Replace.Index(Value, old, new)
+        }
+        fail {
+            Value = EZCodeLanguage.EZHelp.List.Replace.Index(Value, old, new)
+        }
+    }
+    method remove : val {
+        Value = EZCodeLanguage.EZHelp.List.Remove(Value, val)
+    }
+    method clear {
+        Value = \!
+    }
+    method split : val, split {
+        Value = EZCodeLanguage.EZHelp.List.SplitValue(val, split)
+    }
+}
+// Accessed by
+// list name new : val1, val2, val3
+// or
+// print 'name'
+
+container control {
+    button,
+    textbox,
+    shape,
+    label
+}
+class button : {
+    explicit insideof = @control
+    var x 0
+    var y 0
+    var width 75
+    var height 25
+    var bg [White]
+    var fc [Black]
+    var text \!
+    method onchange : @button:btn {
+        EZCodeLanguage.EZHelp.CONTROL.BUTTON : btn, x, y, width, height, bg, fc, text
+    }
+}
+// Accessed by
+// button name new : x:10, y:15
+// name : text:TEST
+
+static class input {
+    method keys => @str {
+        return EZCodeLanguage.EZHelp.Input.KEYS
+    }
+    nocol method iskeydown : @str:key => @str {
+        return EZCodeLanguage.EZHelp.Input.ISKEYDOWN : key
+    }
+    method console => @str {
+        return EZCodeLanguage.EZHelp.Input.CONSOLE
+    } 
+    method position ? @str:format => @str {
+        if format ! null : return EZCodeLanguage.EZHelp.Input.Mouse.Position()
+        else return EZCodeLanguage.EZHelp.Input.Mouse.PositionFormat(format)
+    }
+    method buttons => @str {
+        return EZCodeLanguage.EZHelp.Input.Mouse.BUTTON
+    }
+    method isbuttondown : @str:btn => @str {
+        return EZCodeLanguage.EZHelp.Input.Mouse.IsButtonDown(btn)
+    }
+    method wheel => @str {
+        return EZCodeLanguage.EZHelp.Input.Mouse.Wheel()
+    }
+    method wheelraw => @str {
+        return EZCodeLanguage.EZHelp.Input.Mouse.WheelRaw()
+    }
+}
+// Accessed by
+// input keys
+// var val => input iskeydown A
+
+class error {
+    var Id cx00 // ex[INT] for built in EZCode Exceptions and cx[INT] for Custom Exceptions
+    var Message \!
+    get => @str {
+        return Message
+    }
+    method init : @str:id, @str:message {
+        Id = id
+        Message = message
+        EZCodeLanguage.EZHelp.Error(Id, Message) // This causes an Exception to occur
+    }
+}
+// Accessed by
+// error new : Id:cx00, Message:Error Occured
+
+semi class thread {
+    explicit watch [str=(@int:t)(~hidden:(object:m))] => setmethod : t, m
+    var strand 1
+    var object null
+    method setmethod : @int:str, obj {
+        strand = str
+        object = EZCodeLanguage.EZHelp.Thread.GetObject(obj)
+        EZCodeLanguage.EZHelp.Thread.SetMethod(strand, object)
+    }
+    static method setnext : @int:str {
+        EZCodeLanguage.EZHelp.Thread.SetNext(str)
+    }
+    static method setall : ? @str:thread1, @str:thread2, @str:thread3 {
+        // Epected each parameter to be either, 'method', 'main', 'all', or 'none'
+        if thread1 = null : thread1 = none
+        if thread2 = null : thread2 = none
+        if thread3 = null : thread3 = none
+        EZCodeLanguage.EZHelp.Thread.Set(thread1, thread2, thread3)
+    }
+}
+// Accessed by
+// thread setall : method, main
+// thread new : strand:1
+// METHODNAME : prop:val, [..last_prop..], strand:[str=1]
+
+semi class _Int {
+    var Value null
+    explicit typeof => EZCodeLanguage.EZCode.DataType("int")
+    static method _sum : val1, val2 => val {
+        return EZCodeLanguage.EZHelp.Num.Add(val1, val2)
+    }
+    static method _dif : val1, val2 => val {
+        return EZCodeLanguage.EZHelp.Num.Subtract(val1, val2)
+    }
+    static method _prod : val1, val2 => val {
+        return EZCodeLanguage.EZHelp.Num.Multiply(val1, val2)
+    }
+    static method _quot : val1, val2 => val {
+        return EZCodeLanguage.EZHelp.Num.Divide(val1, val2)
+    }
+    static method _pow : val1, val2 => val {
+        return EZCodeLanguage.EZHelp.Num.Exponent(val1,val2)
+    }
+    method Add : val {
+        Value = (_sum : Value, val)
+    }
+    method Sub : val {
+        Value = (_dif : Value, val)
+    }
+    method Mult : val {
+        Value = (_prod : Value, val)
+    }
+    method Div : val {
+        Value = (_quot : Value, val)
+    }
+    method Pow : val {
+        Value = (_pow : Value, val)
+    }
+    static method MAX => val {
+        return EZCodeLanguage.EZHelp.Int.Max()
+    }
+}
+class int {
+    explicit watch (@_Int:v) => set : v
+    explicit params (@_Int:v) => set : v
+    _Int _value new : Value:0
+    var value 0
+    nocol method + : @_Int:val {
+        _Int Add : val
+        value = _Int
+    }
+    nocol method - : @_Int:val {
+        _Int Sub : val
+        value = _Int
+    }
+    nocol method * : @_Int:val {
+        _Int Mult : val
+        value = _Int
+    }
+    nocol method / : @_Int:val {
+        _Int Div : val
+        value = _Int
+    }
+    nocol method ^ : @_Int:val {
+        _Int Pow : val
+        value = _Int
+    }
+}
+
+// More classes and methods will be in the final version. For now though, this is it.
+
+//...
+
+// Statements syntax
+// If           -> if argument {
+//                     // code
+//                 }
+//              -> if argument : // code
+// Else         -> // if right before
+//                 // else : // same bracket or colon syntax as 'if'
+//                 // else if :
+// Loop         -> loop int {
+//                     // Code
+//                 } // same syntax with colon or bracket as 'if'
+//              -> loop argument : // loops while true
+// try & fail   -> try : // same bracket syntax as 'if'
+//              -> fail : // not required and if not there, code will move on from try if exception occurs
+//                           The variable 'exception' is created when fail is used that contains the error message/id
+
+//...
+
+// Code Syntax
+// To get a method value in line, put it inside ( )
+// To set variable to method, use =>
+// To set class properties, use ':' (ex., object name new : property1:value)
+// To perform change variable, use '+', '-', '/', or '*' instead of the popular '+=', etc.
+// In an argument, '=' or '!' is all that is needed instead of the popular '==' or '!='
+// To split long lines over multiple lines, use '->' to continue the line over
+// To have multiple lines per line, use '|' to seperate them. Use \$ for pipe character
+// In strings, " " are not used. Text is just found in the line. Although, "" "" is 
+//    sometimes used especially with large text but can't go over multiple lines
+// In text (string), to insert object value, use 'valueName'
+
+//...
+
+// Example code
+
+// shape player new : bg:[Red], y:150
+// var X 0
+// var isRunning true
+// loop isRunning {
+//     var left => input iskeydown Left
+//     var right => input iskeydown Right
+//     X - left
+//     X + right
+//     player : x:X
+//     if (input iskeydown escape) = true : isRunning = false
+//     await 50 
+// }
