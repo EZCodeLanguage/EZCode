@@ -1,4 +1,4 @@
-﻿using EZCodeLanguage;
+﻿using EZCodeLanguage.Tokenizer;
 using System.Diagnostics;
 
 string code = """
@@ -167,9 +167,9 @@ class TreeVisualizer
 #else
 
 Stopwatch stopwatch = Stopwatch.StartNew();
-EZCode ezcode = new EZCode();
-EZCode.LineWithTokens[] tokens = ezcode.Tokenize(code);
-List<EZCode.TokenType[]> tokenTypes = [];
+Tokenizer ezcode = new Tokenizer();
+Tokenizer.LineWithTokens[] tokens = ezcode.Tokenize(code);
+List<Tokenizer.TokenType[]> tokenTypes = [];
 for (int i = 0; i < tokens.Length; i++)
 {
     tokenTypes.Add(tokens[i].Tokens.Select(x => x.Type).ToArray());
