@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace EZCodeLanguage
+namespace EZCodeLanguage.Tokenizer
 {
     public class EZCode
     {
@@ -356,7 +356,6 @@ namespace EZCodeLanguage
         public char[] Delimeters = [];
         public string Code { get; set; }
         private List<Class> Classes = [];
-        private List<Var> Vars = [];
         private List<Method> Methods = [];
         public LineWithTokens[] Tokens = Array.Empty<LineWithTokens>();
         public EZCode() { }
