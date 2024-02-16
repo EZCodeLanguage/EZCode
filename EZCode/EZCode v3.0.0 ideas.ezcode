@@ -14,9 +14,36 @@
 // return -> Returns value at end of method
 // @type -> requires value to be a certain type
 // get -> How the class returns the value
-// EZCodeLanguage.EZHelp.METHOD() -> referencing C# method
+// runexec("CSHARP_METHOD") -> referencing C# method
+// make -> replaces shorthand for code 'make hw => print Hello World'
 
-static ontop class PROGRAM { 
+make var {Name} => var {Name} new
+make var {Name} {Value} => var {Name} new : {Value}
+make static ontop class => static ontop class ONTOP
+class var {
+    explicit params {val} => set : val
+    undefined Value
+    method set : val {
+        Value = val
+    }
+    get => @str {
+        return EZCodeLanguage.EZHelp.ToString(Value)
+    }
+    get => @int {
+        return EZCodeLanguage.EZHelp.Int.Parse(Value)
+    }
+    get => @float {
+        return EZCodeLanguage.EZHelp.Float.Parse(Value)
+    }
+    get => @bool {
+        return EZCodeLanguage.EZHelp.Bool.Parse(Value)
+    }
+}
+// Accessed by
+// var name new : value
+// var name value
+
+static ontop class { 
     nocol method print : @str:text {
         EZCodeLanguage.EZHelp.Print(text)
     }
@@ -108,7 +135,7 @@ static class file {
 // file read C:/file/path.txt
 
 class list {
-    explicit watch \[(*:,{vals})\] => set : vals
+    explicit watch \[(*:,{vals})\] => set : vals 
     explicit params *:,{param} => set : param
     var Value \!
     method set : param* {
@@ -240,67 +267,113 @@ semi class thread {
 // thread new : strand:1
 // METHODNAME : prop:val, [..last_prop..], strand:[str=1]
 
-semi class _Int {
-    var Value null
-    explicit typeof => EZCodeLanguage.EZCode.DataType("int")
-    static method _sum : val1, val2 => val {
-        return EZCodeLanguage.EZHelp.Num.Add(val1, val2)
+semi class int {
+    explicit typeof => reflection int : EZCodeLanguage.EZHelp.DataType("int")
+    var value 0
+    static method sum : val1, val2 => val {
+        return reflection int : EZCodeLanguage.EZHelp.Num.Add('val1', 'val2')
     }
-    static method _dif : val1, val2 => val {
-        return EZCodeLanguage.EZHelp.Num.Subtract(val1, val2)
+    static method dif : val1, val2 => val {
+        return reflection int : EZCodeLanguage.EZHelp.Num.Subtract('val1', 'val2')
     }
-    static method _prod : val1, val2 => val {
-        return EZCodeLanguage.EZHelp.Num.Multiply(val1, val2)
+    static method prod : val1, val2 => val {
+        return reflection int : EZCodeLanguage.EZHelp.Num.Multiply('val1', 'val2')
     }
-    static method _quot : val1, val2 => val {
-        return EZCodeLanguage.EZHelp.Num.Divide(val1, val2)
+    static method quot : val1, val2 => val {
+        return reflection int : EZCodeLanguage.EZHelp.Num.Divide('val1', 'val2')
     }
-    static method _pow : val1, val2 => val {
-        return EZCodeLanguage.EZHelp.Num.Exponent(val1,val2)
-    }
-    method Add : val {
-        Value = (_sum : Value, val)
-    }
-    method Sub : val {
-        Value = (_dif : Value, val)
-    }
-    method Mult : val {
-        Value = (_prod : Value, val)
-    }
-    method Div : val {
-        Value = (_quot : Value, val)
-    }
-    method Pow : val {
-        Value = (_pow : Value, val)
+    static method pow : val1, val2 => val {
+        return reflection int : EZCodeLanguage.EZHelp.Num.Exponent('val1', 'val2')
     }
     static method MAX => val {
-        return EZCodeLanguage.EZHelp.Int.Max()
+        return reflection int : EZCodeLanguage.EZHelp.Int.Max()
     }
-}
-class int {
-    explicit watch (@_Int:v) => set : v
-    explicit params (@_Int:v) => set : v
-    _Int _value new : Value:0
-    var value 0
-    nocol method + : @_Int:val {
-        _Int Add : val
-        value = _Int
+    nocol method + : val {
+        value => sum : Value, val
     }
     nocol method - : @_Int:val {
-        _Int Sub : val
-        value = _Int
+        value => dif : Value val
     }
     nocol method * : @_Int:val {
-        _Int Mult : val
-        value = _Int
+        value => prod : Value, val
     }
     nocol method / : @_Int:val {
-        _Int Div : val
-        value = _Int
+        value => quot : Value, val
     }
     nocol method ^ : @_Int:val {
-        _Int Pow : val
-        value = _Int
+        value => pow : Value, val
+    }
+}
+// Accessed by
+// int X new : 1
+// var X 1
+// X + 10
+
+semi class str {
+    explicit watch ""(.*? {text})"" => set : text
+    explicit watch .*'(.*? {val})'.* => set : val
+    explicit typeof => EZCodeLanguage.EZHelp.DataType("string")
+    explicit params (text) => set : text
+    var value \!
+    get => @int {
+        return EZCodeLanguage.EZHelp.String.Parse(value)
+    }
+    get => @bool {
+        return EZCodeLanguage.EZHelp.Bool.Parse(value)
+    }
+    get => @float {
+        return EZCodeLanguage.EZHelp.Float.Parse(value)
+    }
+    method set : text {
+        value => format : text
+    }
+    nocol method + : @str:text {
+        value = EZCodeLanguage.EZHelp.addstring(value, text)
+    }
+    static method format : text => @str {
+        return EZCodeLanguage.EZHelp.formatstring(text)
+    }
+}
+// Accessed by
+// str name new : value
+// ""text""
+// var name value
+// name + text
+
+static class reflect {
+    static method do : @str:does {
+        runexec(does)
+    }
+    static method any : @str:does => @var {
+        return runexec(does)
+    }
+    static method int : @str:does => @int {
+        return runexec(does)
+    }
+    static method str : @str:does => @str {
+        return runexec(does)
+    }
+    static method float : @str:does => @float {
+        return runexec(does)
+    }
+    static method bool : @str:does => @bool {
+        return runexec(does)
+    }
+}
+// Accessed by
+// reflection do : EZCodeLanguage.EZHelp.Print("Hello World")s
+
+semi class expression {
+    explicit watch \((.*{exp})\) => set : exp
+    var Value 0
+    method set : exp {
+        Value => reflect float : EZCodeLanguage.EZHelp.Expression("'exp'")
+    }
+    get => @float {
+        return Value
+    }
+    get => @int {
+        return Value
     }
 }
 
@@ -331,7 +404,6 @@ class int {
 // To set variable to method, use =>
 // To set class properties, use ':' (ex., object name new : property1:value)
 // To perform change variable, use '+', '-', '/', or '*' instead of the popular '+=', etc.
-// In an argument, '=' or '!' is all that is needed instead of the popular '==' or '!='
 // To split long lines over multiple lines, use '->' to continue the line over
 // To have multiple lines per line, use '|' to seperate them. Use \$ for pipe character
 // In strings, " " are not used. Text is just found in the line. Although, "" "" is 
