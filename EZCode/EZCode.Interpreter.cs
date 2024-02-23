@@ -33,6 +33,7 @@ namespace EZCodeLanguage
                 }
             }
         }
+        bool AmDebugging = true;
         public string[] Output { get; internal set; } = [];
         public Exception[] Errors { get; private set; } = [];
         public Var[] Vars { get; set; } = [];
@@ -59,7 +60,7 @@ namespace EZCodeLanguage
                         message = "\"" + ez.StackTrace + "\" ~> " + message;
                         message += " (" + ez.Id + ")";
                     }
-                    Console.WriteLine(message);
+                    if (AmDebugging) Console.WriteLine(message);
                     Errors = Errors.Append(ex).ToArray();
                 }
             }
@@ -69,35 +70,38 @@ namespace EZCodeLanguage
         private object? SingleLine(LineWithTokens line)
         {
             string deb = "";
-            foreach (var t in line.Tokens)
+            if (AmDebugging)
             {
-                if (t.Value is RunMethod r)
+                foreach (var t in line.Tokens)
                 {
-                    deb += r.Runs.Name;
+                    if (t.Value is RunMethod r)
+                    {
+                        deb += r.Runs.Name;
+                    }
+                    else if (t.Value is Var v)
+                    {
+                        deb += v.Name;
+                    }
+                    else if (t.Value is ExplicitWatch e)
+                    {
+                        deb += e.Runs.ClassName;
+                    }
+                    else if (t.Value is Class)
+                    {
+                        continue;
+                    }
+                    else if (t.Value is Method)
+                    {
+                        continue;
+                    }
+                    else
+                    {
+                        deb += t.Value.ToString();
+                    }
+                    deb += " ";
                 }
-                else if (t.Value is Var v)
-                {
-                    deb += v.Name;
-                }
-                else if (t.Value is ExplicitWatch e)
-                {
-                    deb += e.Runs.ClassName;
-                }
-                else if (t.Value is Class)
-                {
-                    continue;
-                }
-                else if (t.Value is Method)
-                {
-                    continue;
-                }
-                else
-                {
-                    deb += t.Value.ToString();
-                }
-                deb += " ";
+                Console.WriteLine(line.Line.CodeLine + " -> " + line.Line.Value + "   ->   " + deb);
             }
-            Console.WriteLine(line.Line.CodeLine + " -> " + line.Line.Value + "   ->   " + deb);
             Token FirstToken = line.Tokens.First();
             switch (FirstToken.Type)
             {
@@ -356,7 +360,7 @@ namespace EZCodeLanguage
         }
         public object? MethodRun(Method method, Var[]? parameters)
         {
-            Console.WriteLine("-- " + method.Name + (method.Returns != null ? (" => " + (method.Returns.ObjectClass != null ? method.Returns.ObjectClass.Name : method.Returns.Type)) : ""));
+            if (AmDebugging) Console.WriteLine("-- " + method.Name + (method.Returns != null ? (" => " + (method.Returns.ObjectClass != null ? method.Returns.ObjectClass.Name : method.Returns.Type)) : ""));
             LineWithTokens[] lines = method.Lines;
             parameters ??= [];
             Var[] vvars = method.Params ?? [];
@@ -484,7 +488,7 @@ namespace EZCodeLanguage
         }
         public object Reflect(CSharpMethod method)
         {
-            Console.WriteLine("--  " + method.Path);
+            if (AmDebugging) Console.WriteLine("--  " + method.Path);
             if (method.IsVar)
             {
                 string value = GetVar(method.Path).Value.ToString();
