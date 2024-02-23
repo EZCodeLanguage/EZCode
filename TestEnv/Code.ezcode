@@ -1,0 +1,41 @@
+make var {Name} => var {Name} new :
+semi class var {
+    explicit override params {val} => set : val
+    undefined Value
+    method set : val => @var {
+        Value = val
+        return Value
+    }
+    nocol method = : val => @var {
+        return runexec => EZCodeLanguage.EZHelp.ObjectParse ~> {val}, var
+    }
+    get => @str {
+        return runexec => EZCodeLanguage.EZHelp.StringParse ~> {Value}
+    }
+}
+semi class str {
+    explicit typeof => EZCodeLanguage.EZCode.DataType("string")
+    explicit watch .*?'(.* {text})'.*? => set : text
+    explicit watch ""(.*? {text})"" => set : text
+    explicit watch \! => setEmpty
+    var Value \!
+    method setEmpty {
+        Value => EZCodeLanguage.EZHelp.StringEmpty
+    }
+    method set : text => @str {
+        Value => parse : text
+        return Value
+    }
+    static method parse : val => @str {
+        return runexec => EZCodeLanguage.EZHelp.StringParse ~> {val}
+    }
+    static method format : @str:text => @str {
+        return runexec => EZCodeLanguage.EZHelp.Format ~> {text}
+    }
+}
+nocol method print : @str:text {
+    runexec => EZCodeLanguage.EZHelp.Print ~> {text}
+}
+
+var value This\_'1'\cis\\n\!some'text'
+print 'value'

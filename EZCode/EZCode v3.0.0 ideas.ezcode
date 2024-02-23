@@ -180,7 +180,7 @@ container control {
     label
 }
 class button : {
-    explicit insideof = @control
+    explicit insideof => @control
     var x 0
     var y 0
     var width 75

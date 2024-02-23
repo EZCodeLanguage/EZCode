@@ -13,4 +13,10 @@
     <ProjectReference Include="..\EZCode\EZCode.csproj" />
   </ItemGroup>
 
+  <ItemGroup>
+    <None Update="Code.ezcode">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </None>
+  </ItemGroup>
+
 </Project>

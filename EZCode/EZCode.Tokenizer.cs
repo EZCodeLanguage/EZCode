@@ -1,6 +1,6 @@
 ﻿using System.Text.RegularExpressions;
 
-namespace EZCodeLanguage.Tokenizer
+namespace EZCodeLanguage
 {
     public class Tokenizer
     {
@@ -24,7 +24,7 @@ namespace EZCodeLanguage.Tokenizer
                 this.CodeLine = line;
             }
         }
-        class Argument
+        public class Argument
         {
             public Token[] Tokens { get; set; }
             public Line Line { get; set; }
@@ -41,7 +41,7 @@ namespace EZCodeLanguage.Tokenizer
                 return check;
             }
         }
-        class Statement
+        public class Statement
         {
             public Argument? Argument { get; set; }
             public Line Line { get; set; }
@@ -62,7 +62,7 @@ namespace EZCodeLanguage.Tokenizer
             }
             
         }
-        class DataType
+        public class DataType
         {
             public enum Types {
                 NotSet,
@@ -80,32 +80,36 @@ namespace EZCodeLanguage.Tokenizer
             }
             public Types Type { get; set; }
             public Class? ObjectClass { get; set; }
-            public DataType(Types type, Class? _class)
+            public Container? ObjectContainer { get; set; }
+            public DataType(Types type, Class? _class, Container? container = null)
             {
                 Type = type;
                 ObjectClass = _class;
+                ObjectContainer = container;
             }
             public DataType() { }
             public static DataType UnSet = new DataType() { Type = Types.NotSet };
-            public static DataType GetType(string param, Class[] classes)
+            public static DataType GetType(string param, Class[] classes, Container[] containers)
             {
                 Types types = new();
                 Class _class = new();
+                Container container = new();
+                param = param.Replace("@", "");
                 switch (param)
                 {
-                    case "@string": case "@str": types = Types._string; break;
-                    case "@int": types = Types._int; break;
-                    case "@float": types = Types._float; break;
-                    case "@bool": types = Types._bool; break;
-                    default: 
-                        types = Types._object; 
-                        _class = classes.FirstOrDefault(x=>x.Name == param.Replace("@", ""), null); 
-                        break;
+                    case "string": case "str": types = Types._string; break;
+                    case "int": types = Types._int; break;
+                    case "float": types = Types._float; break;
+                    case "bool": types = Types._bool; break;
+                    default: types = Types._object; break;
                 }
-                return new(types, _class);
+                _class = classes.FirstOrDefault(x => x.Name == param, null);
+                if (_class == null) container = containers.FirstOrDefault(x => x.Name == param, null);
+
+                return new(types, _class, container);
             }
         }
-        class ExplicitWatch
+        public class ExplicitWatch
         {
             public string Pattern { get; set; }
             public Var[]? Vars { get; private set; }
@@ -116,7 +120,7 @@ namespace EZCodeLanguage.Tokenizer
                 Runs = run;
                 Vars = vars;
             }
-            public bool IsFound(string input, Class[] classes)
+            public bool IsFound(string input, Class[] classes, Container[] containers)
             {
                 Match match = Regex.Match(input, Pattern);
                 if (match.Success)
@@ -137,7 +141,7 @@ namespace EZCodeLanguage.Tokenizer
                             type = capturedValues[i].Split(":")[0];
                             name = capturedValues[i].Split(":")[1];
                         }
-                        vars = vars.Append(new Var(Vars[i].Name, capturedValues[i], Vars[i].Line, type != "" ? DataType.GetType(type, classes) : DataType.UnSet)).ToArray();
+                        vars = vars.Append(new Var(Vars[i].Name, capturedValues[i], Vars[i].Line, type != "" ? DataType.GetType(type, classes, containers) : DataType.UnSet)).ToArray();
                     }
                     Runs.Parameters = vars;
                     return true;
@@ -145,29 +149,46 @@ namespace EZCodeLanguage.Tokenizer
                 return false;
             }
         }
-        class ExplicitParams
+        public class ExplicitParams
         {
-            public string Format { get; set; }
+            public string Pattern { get; set; }
             public Var[]? Vars { get; private set; }
             public RunMethod Runs { get; set; }
-            public ExplicitParams(string format, RunMethod run, Var[] vars)
+            public bool IsOverride { get; set; }
+            public ExplicitParams(string format, RunMethod run, Var[] vars, bool overide)
             {
-                Format = format;
+                Pattern = format;
                 Runs = run;
                 Vars = vars;
+                IsOverride = overide;
+            }
+            public bool IsFound(string input, Class[] classes, Container[] containers)
+            {
+                ExplicitWatch watch = new ExplicitWatch(Pattern, Runs, Vars);
+                return watch.IsFound(Regex.Escape(input), classes, containers);
+            }
+            public ExplicitParams(ExplicitWatch w)
+            {
+                Pattern = w.Pattern;
+                Vars = w.Vars;
+                Runs = w.Runs;
             }
         }
-        class RunMethod
+        public class RunMethod
         {
+            public string? ClassName { get; set; }
             public Method Runs { get; set; }
             public Var[]? Parameters { get; set; }
-            public RunMethod(Method method, Var[] vars)
+            public Token[] Tokens { get; set; }
+            public RunMethod(Method method, Var[] vars, string? classname, Token[] tokens)
             {
                 Runs = method;
                 Parameters = vars;
+                ClassName = classname;
+                Tokens = tokens;
             }
         }
-        class Method
+        public class Method
         {
             public string Name { get; set; }
             public Line Line { get; set; }
@@ -192,7 +213,7 @@ namespace EZCodeLanguage.Tokenizer
             }
             public Method() { }
         }
-        class GetValueMethod
+        public class GetValueMethod
         {
             public DataType DataType { get; set; }
             public Method Method { get; set; }
@@ -203,16 +224,19 @@ namespace EZCodeLanguage.Tokenizer
                 Method = method;
             }
         }
-        class Class
+        public class Class
         {
             public GetValueMethod[]? GetTypes { get; set; }
             public ExplicitWatch[] WatchFormat { get; set; }
             public DataType? TypeOf { get; set; }
-            public ExplicitParams Params { get; set; }
+            public ExplicitParams? Params { get; set; }
             public string Name { get; set; }
             public Line Line { get; set; }
             public Method[]? Methods { get; set; }
             public Var[]? Properties { get; set; }
+            public Class[]? Classes { get; set; }
+            public DataType[] InsideOf { get; set; }
+            public int Length { get; set; }
             [Flags] public enum ClassSettings
             {
                 None = 0,
@@ -222,7 +246,8 @@ namespace EZCodeLanguage.Tokenizer
             }
             public ClassSettings Settings { get; set; }
             public Class() { }
-            public Class(string name, Line line, Method[]? methods = null, ClassSettings settings = ClassSettings.None, Var[]? properties = null, ExplicitWatch[]? watchForamt = null, ExplicitParams? explicitParams = null, DataType? datatype = null, GetValueMethod[]? getValue = null)
+            public Class(string name, Line line, Method[]? methods = null, ClassSettings settings = ClassSettings.None, Var[]? properties = null, ExplicitWatch[]? watchForamt = null, 
+                ExplicitParams? explicitParams = null, DataType? datatype = null, GetValueMethod[]? getValue = null, Class[]? classes = null, DataType[]? insideof = null, int length = 0)
             {
                 Name = name;
                 Line = line;
@@ -233,23 +258,42 @@ namespace EZCodeLanguage.Tokenizer
                 Params = explicitParams;
                 TypeOf = datatype;
                 GetTypes = getValue ?? [];
+                Classes = classes ?? [];
+                InsideOf = insideof ?? [];
+                Length = length;
             }
-
+            public Class(Class cl)
+            {
+                Name = cl.Name;
+                Line = cl.Line;
+                Methods = cl.Methods ?? [];
+                Settings = cl.Settings;
+                Properties = cl.Properties ?? [];
+                WatchFormat = cl.WatchFormat ?? [];
+                Params = cl.Params;
+                TypeOf = cl.TypeOf;
+                GetTypes = cl.GetTypes ?? [];
+                Classes = cl.Classes ?? [];
+                InsideOf = cl.InsideOf ?? [];
+                Length = cl.Length;
+            }
         }
-        class Var
+        public class Var
         {
             public string? Name { get; set; }
             public object? Value { get; set; }
-            public DataType DataType { get; set; }
+            public DataType? DataType { get; set; }
             public Line Line { get; set; }
+            public bool Required { get; set; }
             public Var() { }
-            public Var(string? name, object? value, Line line, DataType? type = null)
+            public Var(string? name, object? value, Line line, DataType? type = null, bool optional = true)
             {
                 type ??= DataType.UnSet;
                 Name = name;
                 Value = value;
                 Line = line;
                 DataType = type;
+                Required = optional;
             }
             public object? GetFromType(DataType data)
             {
@@ -282,6 +326,19 @@ namespace EZCodeLanguage.Tokenizer
                 return value;
             }
         }
+        public class Container
+        {
+            public Container() { }
+            public Container(string name, Class[] classes, Line line)
+            {
+                Name = name;
+                Classes = classes;
+                Line = line;
+            }
+            public string Name { get; set; }
+            public Class[] Classes { get; set; }
+            public Line Line { get; set; }
+        }
         public class LineWithTokens
         {
             public Line Line { get; set; }
@@ -292,14 +349,19 @@ namespace EZCodeLanguage.Tokenizer
                 Line = line;
                 Tokens = tokens;
             }
+            public LineWithTokens(LineWithTokens line)
+            {
+                Line = line.Line;
+                Tokens = line.Tokens;
+            }
         }
-        class CSharpMethod(string path, Var[]? @params, bool isVar)
+        public class CSharpMethod(string path, string[]? @params, bool isVar)
         {
             public string Path { get; set; } = path;
-            public Var[]? Params { get; set; } = @params;
+            public string[]? Params { get; set; } = @params;
             public bool IsVar { get; set; } = isVar;
         }
-        class CSharpDataType(string path, string type)
+        public class CSharpDataType(string path, string type)
         {
             public string Path { get; set; } = path;
             public string Type { get; set; } = type;
@@ -307,15 +369,10 @@ namespace EZCodeLanguage.Tokenizer
         public enum TokenType
         {
             None,
+            Null,
             Comment,
             Comma,
-            EqualTo,
-            Not,
-            GreaterThan,
-            GreaterThanOrEqualTo,
-            LessThan,
-            LessThanOrEqualTo,
-            Nothing,
+            QuestionMark,
             Colon,
             Arrow,
             DataType,
@@ -346,17 +403,21 @@ namespace EZCodeLanguage.Tokenizer
             Return,
             Get,
             And,
+            Not,
+            Or,
             Make,
             Is,
             RunExec,
             EZCodeDataType,
             Include,
             Exclude,
+            Override
         }
-        public char[] Delimeters = [];
+        public char[] Delimeters = [' ', '{', '}', '@', ':', ',', '?'];
         public string Code { get; set; }
-        private List<Class> Classes = [];
-        private List<Method> Methods = [];
+        public List<Class> Classes = [];
+        public List<Container> Containers = [];
+        public List<Method> Methods = [];
         public LineWithTokens[] Tokens = Array.Empty<LineWithTokens>();
         public Tokenizer() { }
         public Tokenizer(string code)
@@ -384,6 +445,7 @@ namespace EZCodeLanguage.Tokenizer
                     if (stops) continue;
                 }
                 i += continues;
+                line.CodeLine += 1;
 
                 withTokens.Add(new(tokens.ToArray(), line));
             }
@@ -398,21 +460,24 @@ namespace EZCodeLanguage.Tokenizer
             if (parts[partIndex] is string)
             {
                 string part = parts[partIndex] as string;
-                switch (part.ToLower())
+                switch (part)
                 {
                     default: tokenType = TokenType.Identifier; break;
                     case "!": case "not": tokenType = TokenType.Not; break;
                     case "&": case "and": tokenType = TokenType.And; break;
+                    case "or": tokenType = TokenType.Or; break;
                     case "//": tokenType = TokenType.Comment; stops = true; break;
                     case "=>": tokenType = TokenType.Arrow; break;
                     case ":": tokenType = TokenType.Colon; break;
                     case "{": tokenType = TokenType.OpenCurlyBracket; break;
                     case "}": tokenType = TokenType.CloseCurlyBracket; break;
+                    case "?": tokenType = TokenType.QuestionMark; break;
                     case ",": tokenType = TokenType.Comma; break;
                     case "undefined": tokenType = TokenType.Undefined; break;
                     case "static": tokenType = TokenType.Static; break;
                     case "explicit": tokenType = TokenType.Explicit; break;
                     case "watch": tokenType = TokenType.Watch; break;
+                    case "override": tokenType = TokenType.Override; break;
                     case "params": tokenType = TokenType.Params; break;
                     case "insideof": tokenType = TokenType.InsideOf; break;
                     case "typeof": tokenType = TokenType.TypeOf; break;
@@ -420,13 +485,12 @@ namespace EZCodeLanguage.Tokenizer
                     case "ontop": tokenType = TokenType.Ontop; break;
                     case "nocol": tokenType = TokenType.NoCol; break;
                     case "method": tokenType = TokenType.Method; break;
-                    case "container": tokenType = TokenType.Container; break;
                     case "return": tokenType = TokenType.Return; break;
                     case "is": tokenType = TokenType.Is; break;
                     case "get": tokenType = TokenType.Get; break;
                     case "new": tokenType = TokenType.New; break;
                     case "make": tokenType = TokenType.Make; break;
-                    case "\\!": tokenType = TokenType.Nothing; break;
+                    case "null": tokenType = TokenType.Null; parts[partIndex] = ""; break;
                 }
                 if (part.StartsWith("//")) tokenType = TokenType.Comment;
                 if (part.StartsWith('@')) tokenType = TokenType.DataType;
@@ -463,12 +527,15 @@ namespace EZCodeLanguage.Tokenizer
             {
                 tokenType = TokenType.EZCodeDataType;
             }
+            else if (parts[partIndex] is Container)
+            {
+                tokenType = TokenType.Container;
+            }
 
             return new Token(tokenType, parts[partIndex]);
         }
-        private object[] SplitParts(ref Line[] lines, int lineIndex, out int continues, bool insideClass = false)
+        public object[] SplitParts(ref Line[] lines, int lineIndex, out int continues, bool insideClass = false)
         {
-            Delimeters = [' ', '{', '}', '@', ':', ','];
             string line = lines[lineIndex].Value;
             object[] parts = SplitWithDelimiters(line, Delimeters).Where(x => x != "" && x != " ").Select(x => (object)x).ToArray();
             string[] partsSpaces = line.Split(" ").Where(x => x != "" && x != " ").ToArray();
@@ -526,13 +593,24 @@ namespace EZCodeLanguage.Tokenizer
                         List<Token[]> propertyTokens = new List<Token[]>();
                         List<Line> propertyLine = new List<Line>();
                         Var[]? paramVars = null;
+                        bool paramoveride = false;
+                        Token[] paramTokens = [], watchTokens = [];
+                        DataType[] insideof = [];
+                        Class[] classes = [];
+                        int length = 0;
                         for (int j = lineIndex + 1, skip = 0; j < lines.Length; j++, skip -= skip > 0 ? 1 : 0)
                         {
                             Line bracketLine = lines[j];
                             LineWithTokens bracketLineTokens = TokenArray(bracketLine.Value, true)[0];
+                            if (bracketLineTokens.Tokens[0].Value.ToString() == "class")
+                            {
+                                bracketLineTokens = TokenArray(string.Join(Environment.NewLine, lines.Select(x=>x.Value).Skip(j)), true)[0];
+                                skip += (bracketLineTokens.Tokens[0].Value as Class).Length + 1;
+                            }
                             if (skip == 0)
                             {
-                                bool ismethod = false, isproperty = false, isexplicit = false, iswatch = false, isparam = false, istypeof = false, isget = false;
+                                bool ismethod = false, isproperty = false, isexplicit = false, iswatch = false, isparam = false,
+                                    istypeof = false, isinsideof = false, isget = false, isclass = false, isoverride = false;
                                 for (int k = 0; k < bracketLineTokens.Tokens.Length; k++)
                                 {
                                     bracketLineTokens.Line.CodeLine = lines[lineIndex].CodeLine + k;
@@ -540,9 +618,12 @@ namespace EZCodeLanguage.Tokenizer
                                     if (bracketLineTokens.Tokens[k].Type == TokenType.Method) ismethod = true;
                                     if (bracketLineTokens.Tokens[k].Type == TokenType.Explicit) isexplicit = true;
                                     if (bracketLineTokens.Tokens[k].Type == TokenType.Get) isget = true;
+                                    if (bracketLineTokens.Tokens[k].Type == TokenType.Class) isclass = true;
+                                    if (bracketLineTokens.Tokens[k].Type == TokenType.Override) isoverride = true;
                                     if (isexplicit && bracketLineTokens.Tokens[k].Type == TokenType.Watch) iswatch = true;
                                     if (isexplicit && bracketLineTokens.Tokens[k].Type == TokenType.Params) isparam = true;
                                     if (isexplicit && bracketLineTokens.Tokens[k].Type == TokenType.TypeOf) istypeof = true;
+                                    if (isexplicit && bracketLineTokens.Tokens[k].Type == TokenType.InsideOf) isinsideof = true;
                                 }
                                 if (isproperty)
                                 {
@@ -561,13 +642,16 @@ namespace EZCodeLanguage.Tokenizer
                                     watchNames = [.. watchNames, bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).TakeWhile(x => x.Type != TokenType.Colon).ToArray()[1].Value.ToString()];
                                     Token[] varTokens = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).Skip(1).ToArray();
                                     watchVars.Add(GetVarsFromParameter(varTokens, lines[j]));
+                                    watchTokens = bracketLineTokens.Tokens;
                                 }
                                 else if (isparam)
                                 {
-                                    paramFormat = string.Join("", bracketLineTokens.Tokens.Skip(2).TakeWhile(x => x.Type != TokenType.Arrow).Select(x => x.Value));
+                                    paramFormat = string.Join("", bracketLineTokens.Tokens.Skip(isoverride ? 3 : 2).TakeWhile(x => x.Type != TokenType.Arrow).Select(x => x.Value));
                                     paramName = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).TakeWhile(x => x.Type != TokenType.Colon).ToArray()[1].Value.ToString();
                                     Token[] varTokens = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).Skip(1).ToArray();
                                     paramVars = GetVarsFromParameter(varTokens, lines[j]);
+                                    paramoveride = isoverride;
+                                    paramTokens = bracketLineTokens.Tokens;
                                 }
                                 else if (istypeof)
                                 {
@@ -577,8 +661,20 @@ namespace EZCodeLanguage.Tokenizer
                                         string[] exp = token.Value.ToString().Split(['(', ')', '.']).Where(x => x != "").ToArray();
                                         string type = "@" + exp[exp.Length - 1].Remove(0, 1);
                                         type = type.Remove(type.Length - 1, 1);
-                                        typeOf = DataType.GetType(type, Classes.ToArray());
+                                        typeOf = DataType.GetType(type, Classes.ToArray(), Containers.ToArray());
                                     }
+                                }
+                                else if (isinsideof)
+                                {
+                                    Token token = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).Skip(1).ToArray()[0];
+                                    if (token.Type == TokenType.DataType)
+                                    {
+                                        insideof = [.. insideof, DataType.GetType(token.Value.ToString(), Classes.ToArray(), Containers.ToArray())];
+                                    }
+                                }
+                                else if (isclass)
+                                {
+                                    classes = [.. classes, bracketLineTokens.Tokens[0].Value as Class];
                                 }
                                 else if (isget)
                                 {
@@ -593,18 +689,19 @@ namespace EZCodeLanguage.Tokenizer
                                 curleyBrackets--;
                             string code = bracketLineTokens.Line.Value;
                             l.Remove(bracketLine);
+                            length = j;
                             if (curleyBrackets == 0)
                                 break;
                         }
                         lines = [.. l];
                         for (int j = 0; j < watchFormats.Length; j++)
-                            explicitWatch = [.. explicitWatch, new ExplicitWatch(watchFormats[j], new(methods.FirstOrDefault(x => x.Name == watchNames[j], null), null), watchVars[j])];
+                            explicitWatch = [.. explicitWatch, new ExplicitWatch(watchFormats[j], new(methods.FirstOrDefault(x => x.Name == watchNames[j], null), watchVars[j] != null ? watchVars[j] : null, name, watchTokens), watchVars[j])];
                         if (paramName != "")
-                            explicitParams = new ExplicitParams(paramFormat, new(methods.FirstOrDefault(x => x.Name == paramName, null), null), paramVars);
+                            explicitParams = new ExplicitParams(paramFormat, new RunMethod(methods.FirstOrDefault(x => x.Name == paramName, null), paramVars != null ? paramVars : null, name, paramTokens), paramVars, paramoveride);
                         for (int j = 0; j < propertyTokens.Count; j++)
                             properties = [.. properties, SetVar(propertyLine[j], propertyTokens[j])];
 
-                        Class @class = new(name, lines[lineIndex], methods, settings, properties, explicitWatch, explicitParams, typeOf, getValueMethods);
+                        Class @class = new(name, lines[lineIndex], methods, settings, properties, explicitWatch, explicitParams, typeOf, getValueMethods, classes, insideof, length);
                         if (Classes.Any(x => x.Name == name) != false)
                         {
                             Class oc = Classes.FirstOrDefault(x => x.Name == name);
@@ -673,7 +770,7 @@ namespace EZCodeLanguage.Tokenizer
                     else if (parts[i].ToString() == "runexec")
                     {
                         string path = "";
-                        Var[]? vars = null;
+                        string[]? vars = null;
                         int skip = 1;
                         if (parts[i + 1].ToString() == "=>")
                         {
@@ -682,13 +779,14 @@ namespace EZCodeLanguage.Tokenizer
                             if (parts.Length - 1 > 3 && parts[i + 3].ToString() == "~>")
                             {
                                 skip++;
-                                string[] vals = parts.Select(x => x.ToString()).Skip(4 + i).ToArray();
-                                skip += vals.Length;
-                                vals = vals.Where(x => x != ",").ToArray();
+                                string[] str = parts.Select(x => x.ToString()).Skip(4 + i).ToArray();
+                                skip += str.Length;
+                                string all = string.Join(" ", str);
+                                str = all.Split(",").Select(x=>x.Trim()).ToArray();
                                 vars = [];
-                                for (int j = 0; j < vals.Length; j++)
+                                for (int j = 0; j < str.Length; j++)
                                 {
-                                    vars = [.. vars, new Var(null, vals[j], lines[lineIndex])];
+                                    vars = [.. vars, str[j]];
                                 }
                             }
                         }
@@ -698,6 +796,31 @@ namespace EZCodeLanguage.Tokenizer
                         }
                         parts[i] =  new CSharpMethod(path, vars, path.Contains('\''));
                     }
+                    else if (parts[i].ToString() == "container")
+                    {
+                        string name = parts[i + 1].ToString();
+                        Class[] classes = [];
+                        Line nextLine = lines[lineIndex + 1];
+                        bool sameLineBracket = nextLine.Value.StartsWith('{');
+                        List<Line> l = [.. lines];
+                        int curleyBrackets = sameLineBracket ? 0 : 1;
+                        for (int j = lineIndex + 1; j < lines.Length; j++)
+                        {
+                            Line bracketLine = lines[j];
+                            if (bracketLine.Value.Contains('{'))
+                                curleyBrackets++;
+                            if (bracketLine.Value.Contains('}'))
+                                curleyBrackets--;
+
+                            classes = classes.Append(Classes.FirstOrDefault(x => x.Name == bracketLine.Value)).ToArray();
+
+                            l.Remove(bracketLine);
+                            if (curleyBrackets == 0)
+                                break;
+                        }
+                        lines = [.. l];
+                        parts = [new Container(name, classes, lines[lineIndex])];
+                    }
                 }
                 catch
                 {
@@ -706,7 +829,7 @@ namespace EZCodeLanguage.Tokenizer
             }
             return parts;
         }
-        private bool WatchIsFound(object[] parts, int index, out ExplicitWatch? watch)
+        internal bool WatchIsFound(object[] parts, int index, out ExplicitWatch? watch)
         {
             watch = null;
 
@@ -714,7 +837,7 @@ namespace EZCodeLanguage.Tokenizer
             {
                 for (int j = 0; j < Classes[i].WatchFormat.Length; j++)
                 {
-                    if (Classes[i].WatchFormat[j].IsFound(parts[index].ToString(), Classes.ToArray()))
+                    if (Classes[i].WatchFormat[j].IsFound(parts[index].ToString(), Classes.ToArray(), Containers.ToArray()))
                     {
                         watch = Classes[i].WatchFormat[j];
                         return true;
@@ -724,8 +847,25 @@ namespace EZCodeLanguage.Tokenizer
 
             return false;
         }
+        internal bool ParamIsFound(object[] parts, int index, out ExplicitParams? param)
+        {
+            param = null;
+
+            for (int i = 0; i < Classes.Count; i++)
+            {
+                if (Classes[i].Params == null) continue;
+                if (Classes[i].Params.IsFound(parts[index].ToString(), Classes.ToArray(), Containers.ToArray()))
+                {
+                    param = Classes[i].Params;
+                    return true;
+                }
+            }
+
+            return false;
+        }
         private Var[] GetVarsFromParameter(Token[] tokens, Line line)
         {
+            line.CodeLine += 1;
             if (tokens.Length > 1 && tokens.Select(x => x.Type).Contains(TokenType.Colon))
             {
                 tokens = tokens.Skip(2).TakeWhile(x => x.Type != TokenType.Arrow).ToArray();
@@ -738,7 +878,7 @@ namespace EZCodeLanguage.Tokenizer
                     string[] sides = all[i].Split(":");
                     if(sides.Length > 1)
                     {
-                        type = DataType.GetType(sides[0], Classes.ToArray());
+                        type = DataType.GetType(sides[0], Classes.ToArray(), Containers.ToArray());
                         name = sides[1];
                     }
                     vars = [.. vars, new Var(name, null, line, type)];
@@ -834,12 +974,15 @@ namespace EZCodeLanguage.Tokenizer
                     lines = [.. l];
                 }
             }
+            for (int i = 0; i < lineWithTokens.Length; i++)
+                lineWithTokens[i].Line.CodeLine += 1;
             return new Statement(parts[partIndex].ToString(), lines[lineIndex], lineWithTokens, argument);
         }
         private Method SetMethod(Line[] lines, int index) => SetMethod(ref lines, index);
         private Method SetMethod(ref Line[] lines, int index)
         {
             Line line = lines[index];
+            line.CodeLine += 1;
 
             Method.MethodSettings settings =
                 (line.Value.Contains("static ") ? Method.MethodSettings.Static : Method.MethodSettings.None) |
@@ -848,7 +991,7 @@ namespace EZCodeLanguage.Tokenizer
             Var[]? param = [];
             Token[] fistLineTokens = TokenArray(string.Join(" ", line.Value.Split(" ").SkipWhile(x => x != "method").Skip(1)))[0].Tokens;
             string name = fistLineTokens[0].Value.ToString()!;
-            bool ret = false;
+            bool ret = false, req = true;
             for (int i = 1; i < fistLineTokens.Length; i++)
             {
                 Token token = fistLineTokens[i];
@@ -856,13 +999,19 @@ namespace EZCodeLanguage.Tokenizer
                 {
                     if(token.Type == TokenType.DataType)
                     {
-                        returns = DataType.GetType(token.Value.ToString()!, Classes.ToArray());
+                        returns = DataType.GetType(token.Value.ToString()!, Classes.ToArray(), Containers.ToArray());
                         break;
                     }
                 }
                 if (token.Type == TokenType.Arrow)
                 {
                     ret = true;
+                    continue;
+                }
+
+                if (token.Type == TokenType.QuestionMark)
+                {
+                    req = false;
                     continue;
                 }
 
@@ -873,7 +1022,7 @@ namespace EZCodeLanguage.Tokenizer
                     DataType pType = DataType.UnSet;
                     if(pTypeDef)
                     {
-                        pType = DataType.GetType(fistLineTokens[i + 1].Value.ToString()!, Classes.ToArray());
+                        pType = DataType.GetType(fistLineTokens[i + 1].Value.ToString()!, Classes.ToArray(), Containers.ToArray());
                         if (fistLineTokens[i + 2].Type == TokenType.Colon)
                         {
                             pName = fistLineTokens[i + 3].Value.ToString()!;
@@ -883,7 +1032,7 @@ namespace EZCodeLanguage.Tokenizer
                     {
                         pName = fistLineTokens[i + 1].Value.ToString()!;
                     }
-                    param = param.Append(new Var(pName, null, line, pType)).ToArray();
+                    param = param.Append(new Var(pName, null, line, pType, req)).ToArray();
                 }
             }
 
@@ -922,11 +1071,15 @@ namespace EZCodeLanguage.Tokenizer
             }
             if (lineWithTokens[0].Line.Value == "{") lineWithTokens = lineWithTokens.Where((x, y) => y != 0).ToArray();
             lines = [.. l];
+
+            for (int i = 0; i < lineWithTokens.Length; i++)
+                lineWithTokens[i].Line.CodeLine += 1;
             return new Method(name, line, settings, lineWithTokens, param, returns);
         }
         private GetValueMethod SetGetVal(Line[] lines, int index)
         {
             Line line = new Line(string.Join(" ", lines[index].Value.Split(" ").Prepend("name").Prepend("method")), index);
+            line.CodeLine += 1;
             Line[] liness = lines.Select((x, y) => y == index ? line : x).ToArray();
             Method method = SetMethod(liness, index);
             method.Line = lines[index];
@@ -936,6 +1089,7 @@ namespace EZCodeLanguage.Tokenizer
         }
         private Var? SetVar(Line line, Token[] tokens)
         {
+            line.CodeLine += 1;
             Var? var = null;
             if (tokens[0].Type == TokenType.Identifier)
             {

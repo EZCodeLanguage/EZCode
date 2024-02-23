@@ -1,94 +1,7 @@
-﻿using EZCodeLanguage.Tokenizer;
+﻿using EZCodeLanguage;
 using System.Diagnostics;
 
-string code = """
-    make var {NAME} => var {NAME} new :
-    static class reflect {
-        static method do : @str:does {
-            runexec => 'does'
-        }
-        static method any : @str:does => @var {
-            return runexec => 'does'
-        }
-        static method int : @str:does => @int {
-            return runexec => 'does'
-        }
-        static method str : @str:does => @str {
-            return runexec => 'does'
-        }
-        static method float : @str:does => @float {
-            return runexec => 'does'
-        }
-        static method bool : @str:does => @bool {
-            return runexec => 'does'
-        }
-    }
-    class var {
-        explicit params {val} => set : val
-        undefined Value
-        method set : val {
-            Value = val
-        }
-        get => @str {
-            return reflection str : EZCodeLanguage.EZHelp.String.Parse ~> 'Value'
-        }
-        get => @int {
-            return reflection int : EZCodeLanguage.EZHelp.Int.Parse ~> 'Value'
-        }
-        nocol method = : val {
-            if val is @int : Value => AsInt : val
-            elif val is @str : Value => AsStr : val
-        }
-        static method AsInt : val => @int {
-            return reflection int : EZCodeLanguage.EZHelp.Int.Parse ~> 'val'
-        }
-        static method AsStr : val => @str {
-            return reflection int : EZCodeLanguage.EZHelp.String.Parse ~> 'val'
-        }
-        nocol method == : val => @bool {
-            return reflection bool : EZCodeLanguage.EZHelp.Bool.Equals ~> 'Value', 'val'
-        }
-    }
-    semi class str {
-        explicit typeof => EZCodeLanguage.EZCode.DataType("string")
-        explicit watch ""(.*? {text})"" => set : text
-        explicit watch .*?'(.* {text})'.*? => set : text
-        var Value \!
-        method set : text {
-            Value => format : text
-        }
-        static method format : @str:text => @str {
-            return reflection str : EZCode.EZHelp.String.Format ~> 'text'
-        }
-    }
-    class int {
-        explicit typeof => EZCodeLanguage.EZCode.DataType("int")
-        var Value 0
-        method set : val {
-            Value = val
-        }
-    }
-    class bool {
-        explicit typeof => EZCodeLanguage.EZCode.DataType("bool")
-        var Value false
-        method set : val {
-            Value = val
-        }
-    }
-    static ontop class ONTOP { 
-        nocol method print : @str:text {
-            reflection do : EZCodeLanguage.EZHelp.Print ~> 'text'
-        }
-    }
-
-    method Main {
-        var index 10
-        var text ""this\_is\_some\_text""
-        if index == 10 {
-            print TEXT='text'
-        }
-    }
-    """;
+string code = File.ReadAllText("Code.ezcode");
 
 #if false
 
@@ -165,10 +78,9 @@ class TreeVisualizer
 }
 
 #else
-
 Stopwatch stopwatch = Stopwatch.StartNew();
-Tokenizer ezcode = new Tokenizer();
-Tokenizer.LineWithTokens[] tokens = ezcode.Tokenize(code);
+Tokenizer tokenizer = new Tokenizer();
+Tokenizer.LineWithTokens[] tokens = tokenizer.Tokenize(code);
 List<Tokenizer.TokenType[]> tokenTypes = [];
 for (int i = 0; i < tokens.Length; i++)
 {
@@ -185,10 +97,18 @@ for (int i = 0; i < tokenTypes.Count; i++)
 }
 
 stopwatch.Stop();
-long mili = stopwatch.ElapsedMilliseconds;
-Console.WriteLine("Miliseconds:" + mili.ToString() + "\n--------------------\n\n\n--------------------\n" +
-    code + "\n--------------------\n" +
-    tokenString
+long Omili = stopwatch.ElapsedMilliseconds;
+Console.WriteLine(code + "\n--------------------\n"
+    //+ tokenString + "--------------------\n"
     );
 
+stopwatch.Restart();
+
+Interpreter interpreter = new Interpreter("C:/Base.test", tokenizer);
+interpreter.Interperate();
+
+
+stopwatch.Stop();
+long mili = stopwatch.ElapsedMilliseconds;
+Console.WriteLine("\n--------------------\n" + "Tokenize Miliseconds:" + Omili.ToString() + "\nInterperate Miliseconds:" + mili.ToString() + "\nOverall Miliseconds:" + (Omili + mili).ToString());
 #endif
