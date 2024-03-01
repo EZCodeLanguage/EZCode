@@ -1,3 +1,5 @@
+### **Version 3 currently in progress**
+
 ![Main Image](https://raw.githubusercontent.com/JBrosDevelopment/EZCode/master/docs/Images/EZCode_Wide_Logo.png)
 ---
 
