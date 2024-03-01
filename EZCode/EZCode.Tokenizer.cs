@@ -1,4 +1,5 @@
-﻿using System.Text.RegularExpressions;
+﻿using System.Text;
+using System.Text.RegularExpressions;
 
 namespace EZCodeLanguage
 {
@@ -34,11 +35,6 @@ namespace EZCodeLanguage
                 Tokens = tokens;
                 Line = line;
                 Value = value;
-            }
-            public bool GetValue()
-            {
-                bool check = false;
-                return check;
             }
         }
         public class Statement
@@ -557,7 +553,7 @@ namespace EZCodeLanguage
                         parts[i] = "@" + parts[i + 1];
                         parts = parts.ToList().Where((item, index) => index != i + 1).ToArray();
                     }
-                    else if (parts[i].ToString() == "//")
+                    else if (parts[i].ToString().StartsWith("//"))
                     {
                         parts[i] = string.Join(" ", parts.Skip(i));
                         parts = parts.ToList().Where((item, index) => index <= i).ToArray();
@@ -735,27 +731,125 @@ namespace EZCodeLanguage
                     {
                         string[] both = string.Join(" ", partsSpaces.Skip(1)).Split("=>").Select(x => x.Trim()).ToArray();
                         string take = both[0];
-                        string replace = both[1];
-
-                        for (int j = i + 1; j < lines.Length; j++)
+                        string replace = both.Length == (0 | 1) ? "" : both[1];
+                        int next = lineIndex + 1;
+                        string takeMulti = "", replaceMulti = "";
+                        if (take.Trim() == "{")
                         {
-                            Match match = Regex.Match(lines[j].Value.ToString(), take.Replace("{", "(?<").Replace("}", ">\\w+)"));
-                            if (match.Success)
+                            // Handle multi-line matching
+                            StringBuilder multiLineTake = new StringBuilder();
+                            int braceCount = 1;
+
+                            for (int j = next; j < lines.Length; j++)
                             {
-                                GroupCollection groups = match.Groups;
-                                string transformedValue = replace;
+                                braceCount -= lines[j].Value.Trim().StartsWith('}') ? 1 : 0;
 
-                                for (int k = 1; k < groups.Count; k++)
-                                {
-                                    string placeholder = $"{{{groups[k].Name}}}";
-                                    string capturedValue = groups[k].Value;
-                                    transformedValue = transformedValue.Replace(placeholder, capturedValue);
-                                }
+                                if (braceCount == 0)
+                                    break;
 
-                                lines[j].Value = lines[j].Value.ToString().Substring(0, match.Index) + transformedValue +
-                                     lines[j].Value.ToString().Substring(match.Index + match.Length);
+                                multiLineTake.AppendLine(lines[j].Value.ToString());
+
+                                next++;
                             }
+                            if (!lines[next].Value.Contains("=>"))
+                            {
+                                return null;
+                            }
+                            else
+                            {
+                                replace = lines[next].Value.Split("=>")[1];
+                            }
+
+                            next++;
+                            take = multiLineTake.ToString();
+                            takeMulti = take.Split(['\n', '\r']).Select(x=>x.Trim()).ToArray()[0];
                         }
+                        if (replace.Trim() == "{")
+                        {
+                            // Handle multi-line matching
+                            StringBuilder multiLineTake = new StringBuilder();
+                            int braceCount = 1;
+
+                            for (int j = next; j < lines.Length; j++)
+                            {
+                                braceCount -= lines[j].Value.Trim().StartsWith('}') ? 1 : 0;
+
+                                if (braceCount == 0)
+                                    break;
+
+                                multiLineTake.AppendLine(lines[j].Value.ToString());
+                                next++;
+                            }
+
+                            next++;
+                            replace = multiLineTake.ToString();
+                            replaceMulti = replace.Split('\n').Select(x => x.Trim()).ToArray()[0];
+                        }
+                        string[] takeLines = take.Split("\n").Select(x => x.Trim()).Where(y => y != "").ToArray();
+                        int line_removes = 0, lr = -1;
+                        var _LINES = lines.ToList();
+
+                        for (int j = lineIndex + 1; j < lines.Length; j++)
+                        {
+                            if (next > lineIndex + 1)
+                            {
+                                lr = lr == -1 ? j : lr;
+                                line_removes++;
+                                next--;
+                                continue;
+                            }
+                            string input = lines[j].Value.ToString();
+                            if (takeMulti != "")
+                            {
+                                string rep = replace;
+                                if (MakeMatch(input, takeLines[0], ref rep, out string output, false))
+                                {
+                                    bool match = false;
+                                    Line[] takes = [new Line(output, j)];
+                                    for (int k = 1; k < takeLines.Length; k++)
+                                    {
+                                        match = MakeMatch(lines[j + k].Value.ToString(), takeLines[k], ref rep, out string o, false);
+                                        if (!match) goto OuterLoop; 
+                                        takes = takes.Append(new Line(o, j + k)).ToArray();
+                                    }
+                                    _LINES.RemoveRange(takes[0].CodeLine, takes[takes.Length - 1].CodeLine - takes[0].CodeLine + 1);
+                                    rep = replace;
+                                    bool m = MakeMatchMulti(string.Join(Environment.NewLine, takes.Select(x => x.Value.ToString())), take, ref rep, out string val, true);
+                                    var vals = val.Split(Environment.NewLine).Where(x=>x != "").ToArray();
+                                    for (int k = vals.Length - 1; k >= 0; k--)
+                                    {
+                                        _LINES.Insert(takes[0].CodeLine, new Line(vals[k], takes[0].CodeLine + k)); 
+                                    }
+                                }
+                            }
+                            else
+                            {
+                                string _ref = replace;
+                                if (MakeMatch(input, take, ref _ref, out string output, true))
+                                {
+                                    if (replaceMulti != "")
+                                    {
+                                        bool m = MakeMatchMulti(input, take, ref _ref, out string val, true);
+                                        var vals = val.Split(Environment.NewLine).Where(x => x != "").ToArray();
+                                        _LINES.RemoveAt(j);
+                                        for (int k = vals.Length - 1; k >= 0; k--)
+                                        {
+                                            _LINES.Insert(j, new Line(vals[k], j + k));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        lines[j].Value = output;
+                                    }
+                                }
+                            }
+
+                        OuterLoop: 
+                            continue;
+                        }
+                        for (int j = 0; j < line_removes; j++)
+                            _LINES.RemoveAt(lr);
+                        lines = _LINES.ToArray();
                         parts = ["make"];
                     }
                     else if (parts[i].ToString().StartsWith("EZCodeLanguage.EZCode.DataType("))
@@ -828,6 +922,54 @@ namespace EZCodeLanguage
                 }
             }
             return parts;
+        }
+
+        private static bool MakeMatch(string input, string pattern, ref string replace, out string output, bool format)
+        {
+            string newPat = pattern.Replace("\\{", "\\<[[>").Replace("\\}", "\\<]]>").Replace("{", "(?<").Replace("}", ">\\S+)").Replace("\\<[[>", "\\{").Replace("\\<]]>", "\\}");
+            Match match = Regex.Match(input, newPat);
+            if (match.Success)
+            {
+                GroupCollection groups = match.Groups;
+                for (int k = 1; k < groups.Count; k++)
+                {
+                    string placeholder = $"{{{groups[k].Name}}}";
+                    string capturedValue = groups[k].Value;
+                    replace = replace.Replace(placeholder, capturedValue);
+                }
+                var l = replace.Split(Environment.NewLine);
+                for (int i = 0; i < l.Length; i++)
+                    l[i] = string.Join(" ", l[i].Split(" ").Select(x => x.Replace("\\\\{", "\\<[[>").Replace("\\\\}", "\\<]]>").Replace("\\{", "{").Replace("\\}", "}").Replace("\\<[[>", "\\{").Replace("\\<]]>", "\\}")));
+                replace = string.Join(Environment.NewLine, l);
+                if (format) output = input.Substring(0, match.Index) + replace + input.Substring(match.Index + match.Length);
+                else output = input;
+                return true;
+            }
+            output = "";
+            return false;
+        }
+        private static bool MakeMatchMulti(string input, string pattern, ref string replace, out string output, bool format)
+        {
+            string[] inputLines = input.Split('\n').Select(x => x.Trim()).ToArray();
+            string[] patternLines = pattern.Split('\n').Select(x => x.Trim()).ToArray();
+            output = "";
+
+            for (int i = 0; i < inputLines.Length; i++)
+            {
+                string line = inputLines[i];
+                string lineOutput;
+                bool lineMatch = MakeMatch(line, patternLines[i], ref replace, out lineOutput, format);
+
+                if (lineMatch)
+                {
+                    output = lineOutput;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+            return true;
         }
         internal bool WatchIsFound(object[] parts, int index, out ExplicitWatch? watch)
         {

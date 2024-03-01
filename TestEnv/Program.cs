@@ -81,30 +81,36 @@ class TreeVisualizer
 Stopwatch stopwatch = Stopwatch.StartNew();
 Tokenizer tokenizer = new Tokenizer();
 Tokenizer.LineWithTokens[] tokens = tokenizer.Tokenize(code);
-List<Tokenizer.TokenType[]> tokenTypes = [];
+List<Tokenizer.Token[]> tokenTypes = [];
 for (int i = 0; i < tokens.Length; i++)
 {
-    tokenTypes.Add(tokens[i].Tokens.Select(x => x.Type).ToArray());
+    tokenTypes.Add(tokens[i].Tokens);
 }
 string tokenString = "";
 for (int i = 0; i < tokenTypes.Count; i++)
 {
     for (int j = 0; j < tokenTypes[i].Length; j++)
     {
-        tokenString += tokenTypes[i][j].ToString() + " ";
+        if (tokenTypes[i][j].Type == Tokenizer.TokenType.Identifier)
+            tokenString += $"'{tokenTypes[i][j].Value}' ";
+        else
+            tokenString += tokenTypes[i][j].Type.ToString() + " ";
     }
     tokenString += "\n";
 }
 
+string ch = "⁚";
+code = string.Join("\n", code.Split("\n").Select((x, y) => x = $"{(y + 1 < 10 ? "0" : "")}{y + 1} {ch}  {x}").Select(x => x.Replace("\t", "    ").Replace("    ", $"  {ch} ")));
+Console.OutputEncoding = System.Text.Encoding.UTF8;
 stopwatch.Stop();
 long Omili = stopwatch.ElapsedMilliseconds;
 Console.WriteLine(code + "\n--------------------\n"
-    //+ tokenString + "--------------------\n"
+    /**/+ tokenString + "--------------------\n"
     );
 
 stopwatch.Restart();
 
-Interpreter interpreter = new Interpreter("C:/Base.test", tokenizer);
+Interpreter interpreter = new Interpreter("C:/Test.ezcode", tokenizer);
 interpreter.Interperate();
 
 

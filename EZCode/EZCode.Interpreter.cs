@@ -108,188 +108,19 @@ namespace EZCodeLanguage
                 case TokenType.Identifier:
                     try
                     {
-                        if (Methods.Any(x => x.Name == FirstToken.Value.ToString()))
+                        switch (IsType(FirstToken.Value.ToString())!)
                         {
-                            Method method = Methods.FirstOrDefault(x => x.Name == FirstToken.Value.ToString());
-                            Method.MethodSettings settings = method.Settings;
-                            bool nocol = (settings & Method.MethodSettings.NoCol) != 0;
-                            int next = nocol ? 0 : 1;
-                            if (!nocol && line.Tokens[1].Type != TokenType.Colon)
-                            {
-                                throw new Exception("Expected ':' identifier to set method perameters");
-                            }
-                            Var[] vars = [];
+                            case IdentType.Var:
+                                break;
 
-                            if (method.Params != null && method.Params.Length > 0)
-                            {
-                                string all = string.Join(" ", line.Tokens.Skip(next + 1).Select(x => GetValue(x)));
-                                string[] vals = all.Split(',').Select(x => x.Trim()).ToArray();
-                                if (vals.Length > 0)
-                                {
-                                    for (int i = 0; i < method.Params.Length; i++)
-                                    {
-                                        vars = [.. vars, new Var(method.Params[i].Name, vals[i], line.Line, method.Params[i].DataType)];
-                                    }
-                                    if (vars.Length != method.Params.Select(x => x.Required).ToArray().Length)
-                                    {
-                                        throw new Exception("Not all parameters are set");
-                                    }
-                                }
-                                else
-                                {
-                                    if (line.Tokens.Length > 1)
-                                    {
-                                        throw new Exception("Method does not require any parameters");
-                                    }
-                                }
-                            }
+                            case IdentType.Class:
+                                break;
 
-                            return MethodRun(method, vars);
-                        }
-                        else if (Classes.Any(x => x.Name == FirstToken.Value.ToString()))
-                        {
-                            Class cl = new Class(Classes.FirstOrDefault(x => x.Name == FirstToken.Value.ToString()));
-                            if (line.Tokens[2].Type == TokenType.New)
-                            {
-                                string name = line.Tokens[1].Value.ToString();
-                                Var var = new Var(name, cl, line.Line, new DataType(cl.TypeOf != null ? cl.TypeOf.Type : DataType.Types._object, cl));
-                                Vars = [.. Vars, var];
+                            case IdentType.Method:
+                                break;
 
-                                if (line.Tokens.Length > 3)
-                                {
-                                    if (line.Tokens[3].Type != TokenType.Colon)
-                                        throw new Exception("Expected colon to set instance properties");
-                                    ExplicitParams? p = cl.Params;
-                                    if (p != null)
-                                    {
-                                        if (p.IsOverride)
-                                        {
-                                            RunMethod run = p.Runs;
-                                            if (tokenizer.ParamIsFound(line.Tokens.Select(x => x.Value).ToArray(), 4, out _) == false)
-                                                throw new Exception($"The format pattern of the class, '{p.Pattern}' does not match this class instance");
-                                            Method[] backupMethods = Methods;
-                                            Var[] backupVars = Vars;
-                                            Vars = cl.Properties;
-                                            Methods = cl.Methods;
-                                            MethodRun(run.Runs, run.Parameters);
-                                            Methods = backupMethods;
-                                            Vars = backupVars;
-                                        }
-                                        else if (line.Tokens[4].Type == TokenType.Match)
-                                        {
-                                            RunMethod run = line.Tokens[4].Value as RunMethod;
-                                            Method[] backupMethods = Methods;
-                                            Var[] backupVars = Vars;
-
-                                            int i = 0;
-                                            while (run.ClassName != FirstToken.Value.ToString())
-                                            {
-                                                i++; if (i > 50) throw new Exception($"Infinite loop error in with declaring instance of class '{cl.Name}'. Unkown cause, might be Interperater error or faulty code");
-                                                Class cc = Classes.FirstOrDefault(x => x.Name == run.ClassName);
-                                                if (cc == null) throw new Exception("Error with finding class from name");
-                                                Vars = cc.Properties;
-                                                Methods = cc.Methods;
-                                                object result = GetValue(run);
-                                                Methods = backupMethods;
-                                                Vars = backupVars;
-                                                bool f = tokenizer.ParamIsFound([result is Var v ? v.Value : result], 0, out var param);
-                                                if (f) 
-                                                {
-                                                    run = p.Runs;
-                                                    break;
-                                                }
-                                                else
-                                                {
-                                                    throw new Exception($"The format pattern of the class, '{p.Pattern}' does not match this class instance");
-                                                }
-                                            } 
-                                            Vars = cl.Properties;
-                                            Methods = cl.Methods;
-                                            MethodRun(run.Runs, run.Parameters);
-                                            Methods = backupMethods;
-                                            Vars = backupVars;
-                                        }
-                                        else
-                                        {
-                                            throw new Exception($"The format pattern of the class, '{p.Pattern}' does not match this class instance");
-                                        }
-                                    }
-                                    else
-                                    {
-                                        string all = string.Join(" ", line.Tokens.Skip(4).Select(x => x.Value));
-                                        string[] vals = all.Split(',').Select(x => x.Trim()).ToArray();
-                                        Var[] vars = [];
-                                        if (vals.Length > 0)
-                                        {
-                                            for (int i = 0; i < vals.Length; i++)
-                                            {
-                                                string[] whole = vals[i].Split(":");
-                                                if (whole.Length < 2) throw new Exception("Expected properties to be set by syntax 'PropertyName:Value'"); 
-                                                string before = whole[0];
-                                                string after = whole[1];
-                                                if (cl.Properties.Any(x => x.Name == before))
-                                                {
-                                                    Var v = cl.Properties.FirstOrDefault(x => x.Name == before);
-                                                    after = GetValue(after).ToString();
-                                                    vars = [.. vars, new Var(v.Name, after, line.Line, v.DataType)];
-                                                }
-                                                else
-                                                {
-                                                    throw new Exception($"There is no '{before}' property in the '{cl.Name}' class");
-                                                }
-                                            }
-                                        }
-                                    }
-                                }
-                                
-                            }
-                            else
-                            {
-                                throw new Exception("Expected 'new' keyword to declare instance of class");
-                            }
-                        }
-                        else if (Vars.Any(x => x.Name == FirstToken.Value.ToString()))
-                        {
-                            Var var = Vars.FirstOrDefault(x => x.Name == FirstToken.Value.ToString());
-                            if (line.Tokens.Length == 1) return var.Value;
-                            else if (line.Tokens[1].Type == TokenType.Arrow)
-                            {
-                                line.Tokens = line.Tokens.Skip(2).ToArray();
-                                object value = SingleLine(line);
-                                var.Value = value;
-                            }
-                            else
-                            {
-                                if (var.Value is Class || (var.DataType.ObjectClass != null && var.DataType.Type != DataType.Types.NotSet))
-                                {
-                                    Class cl = var.Value is Class ? var.Value as Class : var.DataType.ObjectClass;
-                                    if (cl.Methods.Any(x => x.Name == line.Tokens[1].Value.ToString()))
-                                    {
-                                        Method[] backupMethods = Methods;
-                                        Methods = cl.Methods;
-                                        Var[] backupVars = Vars;
-                                        Vars = cl.Properties;
-                                        line.Tokens = line.Tokens.Skip(1).ToArray();
-                                        object value = SingleLine(line);
-                                        Methods = backupMethods;
-                                        Vars = backupVars;
-
-                                        var.Value = value;
-                                    }
-                                    else
-                                    {
-                                        throw new Exception($"Variable is trying to call a method '{line.Tokens[1].Value}' that doesn't exists");
-                                    }
-                                }
-                                else
-                                {
-                                    throw new Exception($"Variable type is undefined and can not call the method '{line.Tokens[1].Value}'");
-                                }
-                            }
-                        }
-                        else
-                        {
-                            throw new Exception("Unexpected identifier '" + FirstToken.Value.ToString() + "' Expects methods, object delcaration, or existing variables");
+                            default: case IdentType.Other:
+                                throw new Exception("Unexpected identifier '" + FirstToken.Value.ToString() + "' Expects methods, object delcaration, or existing variables");
                         }
                     }
                     catch (Exception ex)
@@ -358,6 +189,14 @@ namespace EZCodeLanguage
             }
             return null;
         }
+        private enum IdentType { Var, Class, Method, Other }
+        private IdentType IsType(string token)
+        {
+            if (Vars.Any(x => x.Name == token)) return IdentType.Var;
+            if (Classes.Any(x => x.Name == token)) return IdentType.Class;
+            if (Methods.Any(x => x.Name == token)) return IdentType.Method;
+            else return IdentType.Other;
+        }
         public object? MethodRun(Method method, Var[]? parameters)
         {
             if (AmDebugging) Console.WriteLine("-- " + method.Name + (method.Returns != null ? (" => " + (method.Returns.ObjectClass != null ? method.Returns.ObjectClass.Name : method.Returns.Type)) : ""));
@@ -388,7 +227,7 @@ namespace EZCodeLanguage
         {
             if (obj is string)
             {
-                Var? var = GetVar(obj.ToString()!);
+                Var? var = Vars.FirstOrDefault(x=>x.Name == obj.ToString());
                 if (var != null)
                 {
                     if (type != null && var.DataType != null)
@@ -491,7 +330,7 @@ namespace EZCodeLanguage
             if (AmDebugging) Console.WriteLine("--  " + method.Path);
             if (method.IsVar)
             {
-                string value = GetVar(method.Path).Value.ToString();
+                string value = Vars.FirstOrDefault(x => x.Name == method.Path).Value.ToString();
                 Line[] l = [new Line(value, 0)];
                 object[] o = tokenizer.SplitParts(ref l, 0, out _);
                 if (o.Length > 1) throw new Exception();
@@ -499,10 +338,6 @@ namespace EZCodeLanguage
             }
 
             return InvokeMethod(method.Path, method.Params.Select(x => x).ToArray(), EZHelp);
-        }
-        public Var? GetVar(string name)
-        {
-            return Vars.FirstOrDefault(x => x.Name == name, null);
         }
         public static object? InvokeMethod(string methodPath, object[] parameters, EZHelp e)
         {
