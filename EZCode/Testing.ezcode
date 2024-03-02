@@ -1,3 +1,24 @@
+make for {TYPE} {I1} {VAL}, {I2} {COMP} {NUM}, {I3} {METHOD} {ADD} \{ => {
+	{TYPE} {I1} new : ({VAL} - 1)
+	loop {I2} {COMP} {NUM} \{
+	{I3} {METHOD} {ADD}
+}
+
+// this means,
+for var i 0, i < 10, i + 1 {
+	// code...
+}
+
+// turns into,
+var i -1
+loop i < 10 {
+	i + 1
+	// code...
+}
+
+
+//
+
 
     make var {NAME} => var {NAME} new :
     static class reflect {

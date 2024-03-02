@@ -1,6 +1,5 @@
 ﻿using static EZCodeLanguage.Tokenizer;
 using static EZCodeLanguage.Interpreter;
-using static System.Runtime.InteropServices.JavaScript.JSType;
 
 namespace EZCodeLanguage
 {
@@ -117,6 +116,20 @@ namespace EZCodeLanguage
                 obj = Interpreter.GetValue(obj.ToString().Substring(1, obj.ToString().Length - 2).Trim(), data); 
             }
             return obj;
+        }
+        public bool Evaluate(string expression)
+        {
+            System.Data.DataTable table = new System.Data.DataTable();
+            table.Columns.Add("expression", typeof(bool), expression);
+            System.Data.DataRow row = table.NewRow();
+            table.Rows.Add(row);
+            return (bool)row["expression"];
+        }
+        public float Add(object x, object y)
+        {
+            float a = float.Parse(Format(x.ToString()));
+            float b = float.Parse(Format(y.ToString()));
+            return a + b;
         }
     }
 }

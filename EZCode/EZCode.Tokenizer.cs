@@ -27,14 +27,53 @@ namespace EZCodeLanguage
         }
         public class Argument
         {
+            public enum ArgAdds { And, Or, None }
+            public ArgAdds ArgAdd = ArgAdds.None;
             public Token[] Tokens { get; set; }
             public Line Line { get; set; }
             public string Value { get; set; }
-            public Argument(Token[] tokens, Line line, string value)
+            public Argument(Token[] tokens, Line line, string value, ArgAdds argAdds = ArgAdds.None)
             {
                 Tokens = tokens;
                 Line = line;
                 Value = value;
+                ArgAdd = argAdds;
+            }
+            public Argument[]? Args()
+            {
+                Argument[] arguments = [];
+                Token[] tokens = [];
+                for (int i = 0; i < Tokens.Length; i++)
+                {
+                    if (Tokens[i].Type == TokenType.And)
+                    {
+                        arguments = [.. arguments, new Argument(tokens, Line, string.Join(" ", tokens.Select(x=>x.Value)), ArgAdds.And)];
+                        tokens = [];
+                        continue;
+                    }
+                    else if (Tokens[i].Type == TokenType.Or)
+                    {
+                        arguments = [.. arguments, new Argument(tokens, Line, string.Join(" ", tokens.Select(x => x.Value)), ArgAdds.Or)];
+                        tokens = [];
+                        continue;
+                    }
+                    else
+                    {
+                        tokens = [.. tokens, Tokens[i]];
+                    }
+                }
+                arguments = [.. arguments, new Argument(tokens, Line, string.Join(" ", tokens.Select(x => x.Value)))];
+
+                return arguments;
+            }
+            public static bool? EvaluateTerm(string input)
+            {
+                switch (input.ToLower())
+                {
+                    case "true": case "y": case "yes": case "1": return true;
+                    case "false": case "n": case "no": case "0": return false;
+                    default: return null;
+                }
             }
         }
         public class Statement
@@ -42,8 +81,8 @@ namespace EZCodeLanguage
             public Argument? Argument { get; set; }
             public Line Line { get; set; }
             public LineWithTokens[] InBrackets { get; set; }
-            public static string[] Types = ["if", "loop", "else", "try", "fail", "elif"];
-            public static string[] ConditionalTypes = ["if", "loop", "elif"];
+            public static string[] Types = ["if", "elif", "else", "loop", "try", "fail"];
+            public static string[] ConditionalTypes = ["if", "elif", "loop"];
             public static string[] NonConditionalTypes = ["else", "try", "fail"];
             public string Type { get; set; }
             public Statement(string type, Line line, LineWithTokens[] insides, Argument? argument = null)
@@ -377,6 +416,7 @@ namespace EZCodeLanguage
             New,
             If,
             Else,
+            Elif,
             Loop,
             Try,
             Fail,
@@ -460,8 +500,8 @@ namespace EZCodeLanguage
                 {
                     default: tokenType = TokenType.Identifier; break;
                     case "!": case "not": tokenType = TokenType.Not; break;
-                    case "&": case "and": tokenType = TokenType.And; break;
-                    case "or": tokenType = TokenType.Or; break;
+                    case "&": case "&&": case "and": tokenType = TokenType.And; break;
+                    case "|": case "||": case "or": tokenType = TokenType.Or; break;
                     case "//": tokenType = TokenType.Comment; stops = true; break;
                     case "=>": tokenType = TokenType.Arrow; break;
                     case ":": tokenType = TokenType.Colon; break;
@@ -494,9 +534,11 @@ namespace EZCodeLanguage
             else if (parts[partIndex] is Statement)
             {
                 Statement part = (Statement)parts[partIndex];
+
                 switch (part.Type)
                 {
                     case "if": tokenType = TokenType.If; break;
+                    case "elif": tokenType = TokenType.Elif; break;
                     case "else": tokenType = TokenType.Else; break;
                     case "loop": tokenType = TokenType.Loop; break;
                     case "try": tokenType = TokenType.Try; break;
@@ -923,7 +965,6 @@ namespace EZCodeLanguage
             }
             return parts;
         }
-
         private static bool MakeMatch(string input, string pattern, ref string replace, out string output, bool format)
         {
             string newPat = pattern.Replace("\\{", "\\<[[>").Replace("\\}", "\\<]]>").Replace("{", "(?<").Replace("}", ">\\S+)").Replace("\\<[[>", "\\{").Replace("\\<]]>", "\\}");
@@ -1042,31 +1083,31 @@ namespace EZCodeLanguage
             LineWithTokens[] lineWithTokens = [];
             Argument? argument = null;
             bool sameLine = false, brackets = false;
+            string val = string.Join(" ", partsSpaces.Skip(1).TakeWhile(x => x != ":" && x != "{"));
+            Token[] argTokens = [];
+            for (int j = 1; j < parts.Length; j++)
+            {
+                if (parts[j].ToString() == ":")
+                {
+                    sameLine = true;
+                    break;
+                }
+                if (parts[j].ToString() == "{")
+                {
+                    brackets = true;
+                    break;
+                }
+
+                argTokens = argTokens.Append(SingleToken(parts, j)).ToArray();
+            }
             if (Statement.ConditionalTypes.Contains(parts[partIndex]))
             {
-                string val = string.Join(" ", partsSpaces.Skip(1).TakeWhile(x => x != ":" && x != "{"));
-                Token[] argTokens = [];
-                for (int j = 1; j < parts.Length; j++)
-                {
-                    if (parts[j].ToString() == ":")
-                    {
-                        sameLine = true;
-                        break;
-                    }
-                    if (parts[j].ToString() == "{")
-                    {
-                        brackets = true;
-                        break;
-                    }
-
-                    argTokens = argTokens.Append(SingleToken(parts, j)).ToArray();
-                }
-                argument = new(argTokens, lines[lineIndex], val);
+                argument = new Argument(argTokens, lines[lineIndex], val);
             }
             if (sameLine)
             {
-                string val = string.Join(" ", partsSpaces.SkipWhile(x => x != ":").Skip(1));
-                LineWithTokens inLineTokens = TokenArray(val)[0];
+                string v = string.Join(" ", partsSpaces.SkipWhile(x => x != ":").Skip(1));
+                LineWithTokens inLineTokens = TokenArray(v)[0];
                 string code = inLineTokens.Line.Value;
                 Line endline = new(code, lines[lineIndex].CodeLine);
                 lineWithTokens = [new LineWithTokens(inLineTokens.Tokens, endline)];
@@ -1090,6 +1131,7 @@ namespace EZCodeLanguage
                 {
                     List<Line> l = [.. lines];
                     int curleyBrackets = sameLineBracket ? 0 : 1;
+                    string code = "";
                     for (int i = lineIndex + 1; i < lines.Length; i++)
                     {
                         Line bracketLine = lines[i];
@@ -1099,13 +1141,13 @@ namespace EZCodeLanguage
                             curleyBrackets++;
                         if (bracketLine.Value.Contains('}'))
                             curleyBrackets--;
-                        string code = bracketLineTokens.Line.Value;
-                        lineWithTokens = [.. lineWithTokens, new(bracketLineTokens.Tokens, bracketLine)];
                         removes.Add(bracketLine);
                         l.Remove(bracketLine);
                         if (curleyBrackets == 0)
                             break;
+                        code += bracketLine.Value + Environment.NewLine;
                     }
+                    lineWithTokens = Tokenize(code);
                     if (l.Last().Value.ToString() == "}")
                     {
                         removes.Add(l[l.Count - 1]);
