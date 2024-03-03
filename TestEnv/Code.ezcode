@@ -1,5 +1,9 @@
-undefined index 
-loop 10 {
-	index => runexec => EZCodeLanguage.EZHelp.Add ~> {index}, 1
-	runexec => EZCodeLanguage.EZHelp.Print ~> {index}
+undefined index => runexec EZCodeLanguage.EZHelp.ObjectParse ~> 0, int
+loop true {
+	index => runexec EZCodeLanguage.EZHelp.Add ~> {index}, 1
+	loop 2 {
+		runexec EZCodeLanguage.EZHelp.Print ~> {index}
+	}
+	if runexec EZCodeLanguage.EZHelp.Compare ~> {index}, >, 9 : yield break
+	runexec EZCodeLanguage.EZHelp.Print ~> -
 }

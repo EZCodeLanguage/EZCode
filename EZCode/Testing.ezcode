@@ -16,6 +16,17 @@ loop i < 10 {
 	// code...
 }
 
+//
+
+undefined index => runexec EZCodeLanguage.EZHelp.ObjectParse ~> 0, int
+loop true {
+	index => runexec EZCodeLanguage.EZHelp.Add ~> {index}, 1
+	loop 2 {
+		runexec EZCodeLanguage.EZHelp.Print ~> {index}
+	}
+	if runexec EZCodeLanguage.EZHelp.Compare ~> {index}, >, 9 : yield break
+	runexec EZCodeLanguage.EZHelp.Print ~> -
+}
 
 //
 

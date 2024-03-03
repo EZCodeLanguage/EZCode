@@ -17,11 +17,11 @@ namespace EZCodeLanguage
             Interpreter.Output = [.. Interpreter.Output, text.ToString()];
             Console.WriteLine(text);
         }
-        public string Format(string text)
+        public string Format(string text, string datatype_override = "@str")
         {
             if(text.StartsWith("{")  && text.EndsWith("}"))
             {
-                DataType type = DataType.GetType("@str", Interpreter.Classes, Interpreter.Containers);
+                DataType type = DataType.GetType(datatype_override, Interpreter.Classes, Interpreter.Containers);
                 Interpreter.Vars.FirstOrDefault(x => x.Name == text.Substring(1, text.Length - 2).Trim()).DataType = type;
                 text = Interpreter.GetValue(text.Substring(1, text.Length - 2).Trim(), type).ToString()!;
             }
@@ -115,6 +115,8 @@ namespace EZCodeLanguage
                 Interpreter.Vars.FirstOrDefault(x => x.Name == obj.ToString().Substring(1, obj.ToString().Length - 2).Trim()).DataType = data;
                 obj = Interpreter.GetValue(obj.ToString().Substring(1, obj.ToString().Length - 2).Trim(), data); 
             }
+            if (int.TryParse(obj.ToString(), out int i)) obj = i;
+            if (float.TryParse(obj.ToString(), out float f)) obj = f;
             return obj;
         }
         public bool Evaluate(string expression)
@@ -127,9 +129,28 @@ namespace EZCodeLanguage
         }
         public float Add(object x, object y)
         {
-            float a = float.Parse(Format(x.ToString()));
-            float b = float.Parse(Format(y.ToString()));
+            if (x.ToString().StartsWith("{") && x.ToString().EndsWith("}"))
+                x = Interpreter.GetValue(x.ToString().Substring(1, x.ToString().Length - 2).Trim(), new DataType(DataType.Types._float, null));
+            if (y.ToString().StartsWith("{") && y.ToString().EndsWith("}"))
+                y = Interpreter.GetValue(y.ToString().Substring(1, y.ToString().Length - 2).Trim(), new DataType(DataType.Types._float, null));
+            float a = float.Parse(ObjectParse(x.ToString(), "float").ToString());
+            float b = float.Parse(ObjectParse(y.ToString(), "float").ToString());
             return a + b;
+        }
+        public bool Compare(object v1, object v2, object v3)
+        {
+            object[] values = [v1, v2, v3];
+            for (int i = 0; i < values.Length; i++)
+            {
+                if (values[i].ToString().StartsWith("{") && values[i].ToString().EndsWith("}"))
+                {
+                    DataType data = DataType.GetType("str", Interpreter.Classes, Interpreter.Containers);
+                    Interpreter.Vars.FirstOrDefault(x => x.Name == values[i].ToString().Substring(1, values[i].ToString().Length - 2).Trim()).DataType = data;
+                    values[i] = Interpreter.GetValue(values[i].ToString().Substring(1, values[i].ToString().Length - 2).Trim(), data);
+                }
+            }
+            string all = string.Join(" ", values.Select(x => x.ToString()));
+            return Evaluate(all);
         }
     }
 }

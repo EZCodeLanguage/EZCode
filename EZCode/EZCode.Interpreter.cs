@@ -36,6 +36,7 @@ namespace EZCodeLanguage
         }
         bool AmDebugging = false;
         private bool LastIfWasTrue = true;
+        private bool yielded = false;
         public Stack<string> StackTrace { get; private set; }
         public string[] Output { get; internal set; } = [];
         public Exception[] Errors { get; private set; } = [];
@@ -117,6 +118,19 @@ namespace EZCodeLanguage
                             switch (IsType(FirstToken.Value.ToString()!, out object? type))
                             {
                                 case IdentType.Var:
+                                    Var var = type as Var;
+                                    if (line.Tokens.Length > 1)
+                                    {
+                                        if (line.Tokens[1].Type == TokenType.Arrow)
+                                        {
+                                            var tok = line.Tokens.Skip(2).ToArray();
+                                            var.Value = SingleLine(new LineWithTokens(tok, line.Line));
+                                        }
+                                    }
+                                    else
+                                    {
+                                        Return = var.Value;
+                                    }
                                     break;
 
                                 case IdentType.Class:
@@ -127,7 +141,7 @@ namespace EZCodeLanguage
 
                                 default:
                                 case IdentType.Other:
-                                    throw new Exception("Unexpected identifier '" + FirstToken.Value.ToString() + "' Expects methods, object delcaration, or existing variables");
+                                    throw new Exception("Unexpected identifier '" + FirstToken.Value.ToString() + "'. Expects methods, object delcaration, or existing variables");
                             }
                         }
                         catch (Exception ex)
@@ -139,7 +153,6 @@ namespace EZCodeLanguage
                         try
                         {
                             CSharpMethod method = FirstToken.Value as CSharpMethod;
-                            if (!line.Line.Value.Contains("=>")) throw new Exception("Runexec requires identifier '=>' to set C# method path for the syntax, 'runexec => Method.Path ~> Method, Parameters'");
                             StackTrace.Push($"csharp-method: \"{(method.Path != "" ? method.Path : "Null")}\", file: \"{WorkingFile}\", line: {line.Line.CodeLine}");
                             object obj = Reflect(method!);
                             StackTrace.Pop();
@@ -206,7 +219,7 @@ namespace EZCodeLanguage
                             if (run)
                             {
                                 LastIfWasTrue = true;
-                                RunStatement(statement);
+                                RunStatement(statement, out _);
                             }
                             else
                             {
@@ -236,7 +249,7 @@ namespace EZCodeLanguage
                             if (run)
                             {
                                 LastIfWasTrue = true;
-                                RunStatement(statement);
+                                RunStatement(statement, out _);
                             }
                             else
                             {
@@ -254,7 +267,7 @@ namespace EZCodeLanguage
                             if (LastIfWasTrue) break;
                             Statement? statement = FirstToken.Value as Statement;
                             LastIfWasTrue = true;
-                            RunStatement(statement);
+                            RunStatement(statement, out _);
                         }
                         catch (Exception ex)
                         {
@@ -272,7 +285,8 @@ namespace EZCodeLanguage
                                 {
                                     for (int i = 0; i < parse; i++)
                                     {
-                                        RunStatement(statement);
+                                        RunStatement(statement, out bool broke);
+                                        if (broke) break;
                                     }
                                 }
                                 else throw new Exception("Expected integer for loop count");
@@ -290,7 +304,8 @@ namespace EZCodeLanguage
                                 bool run = EZHelp.Evaluate(string.Join(" ", parts));
                                 while (run)
                                 {
-                                    RunStatement(statement);
+                                    RunStatement(statement, out bool broke);
+                                    if(broke) break;
                                 }
                             }
                         }
@@ -312,12 +327,42 @@ namespace EZCodeLanguage
                 throw new Exception(e.Message, e);
             }
         }
-        private object? RunStatement(Statement statement)
+        private object? RunStatement(Statement statement, out bool broke)
         {
+            broke = false;
             object? result = null;
             foreach (LineWithTokens line in statement.InBrackets)
             {
-                result = SingleLine(new LineWithTokens(line));
+                result = SingleLine(new LineWithTokens(line));  
+
+                if (yielded)
+                {
+                    yielded = false;
+                    broke = true;
+                    break;
+                }
+                if (line.Tokens[0].Type == TokenType.Yield)
+                {
+                    yielded = true;
+                    if (line.Tokens.Length > 1)
+                    {
+                        if (line.Tokens[1].Type == TokenType.Break)
+                        {
+                            broke = true;
+                            break;
+                        }
+                        else throw new Exception("Expected the 'break' keyword after yield");
+                    }
+                    else
+                    {
+                        throw new Exception("Expected token after yield. yield is a modifier and can not be by itself");
+                    }
+                }
+                if (line.Tokens[0].Type == TokenType.Break)
+                {
+                    break;
+                    broke = true;
+                }
             }
             StackTrace.TryPop(out _);
             return result;
@@ -329,7 +374,7 @@ namespace EZCodeLanguage
             try { result = SingleLine(line); } catch { }
             if (result == null) result = argument.Value;
             bool? term = Argument.EvaluateTerm(result.ToString());
-            if (term == null) throw new Exception("Expected the argument section's method '{argument.Value}' to return boolean");
+            if (term == null) throw new Exception($"Expected the argument section's method '{argument.Value}' to return boolean");
             StackTrace.TryPop(out _);
             return term;
         }
@@ -394,7 +439,11 @@ namespace EZCodeLanguage
                 {
                     if (type != null && var.DataType != null)
                     {
-                        if (var.DataType.ObjectClass == null && (var.DataType.Type == DataType.Types.NotSet || var.DataType.Type == DataType.Types._object))
+                        if (var.DataType.Type == DataType.Types._null || var.DataType.ObjectClass == null)
+                        {
+                            return var.Value ?? "";
+                        }
+                        else if (var.DataType.ObjectClass == null && (var.DataType.Type == DataType.Types._null || var.DataType.Type == DataType.Types._object))
                         {
                             throw new Exception($"Error with DataType of class instance. variable '{var.Name}' has an explicit data type that is not connected to a class");
                         }
@@ -432,7 +481,7 @@ namespace EZCodeLanguage
                                 throw new Exception($"The Class of the instance does not contain a 'get' method for the expected datatype '{type.Type.ToString().Remove(0, 1)}'");
                             }
                         }
-                        else if (var.DataType.ObjectClass != null && !(var.DataType.Type == DataType.Types.NotSet || var.DataType.Type == DataType.Types._object))
+                        else if (var.DataType.ObjectClass != null && !(var.DataType.Type == DataType.Types._null || var.DataType.Type == DataType.Types._object))
                         {
                             obj = var.Value;
                             switch (var.DataType.Type)
@@ -449,10 +498,6 @@ namespace EZCodeLanguage
                                 case DataType.Types._ulong: return ulong.Parse(obj.ToString());
                                 default: throw new Exception("Error finding datatype of class instance. This may be an interpreter error or the code for the class is faulty");
                             }
-                        }
-                        else if (var.DataType.Type == DataType.Types.NotSet)
-                        {
-                            return var.Value.ToString();
                         }
                         else
                         {
@@ -499,7 +544,7 @@ namespace EZCodeLanguage
                 string value = Vars.FirstOrDefault(x => x.Name == method.Path).Value.ToString();
                 Line[] l = [new Line(value, 0)];
                 object[] o = tokenizer.SplitParts(ref l, 0, out _);
-                if (o.Length > 1) throw new Exception();
+                if (o.Length > 1) throw new Exception("Error with reflection properties");
                 method = o[0] as CSharpMethod;
             }
 

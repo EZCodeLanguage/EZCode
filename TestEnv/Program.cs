@@ -1,83 +1,28 @@
 ﻿using EZCodeLanguage;
 using System.Diagnostics;
+using Newtonsoft.Json; 
 
-string code = File.ReadAllText("Code.ezcode");
+string path = "Code.ezcode";
+string code = File.ReadAllText(path);
+string file = Path.GetFullPath(path);
 
 #if false
 
-EZCode ezcode = new EZCode();
-EZCode.LineWithTokens[] tokens = ezcode.Tokenize(code);
+// print token tree
 
-// Build the tree
-TreeNode root = TreeVisualizer.BuildTree(tokens.Select(x => (object)x));
+Tokenizer tokenizer = new Tokenizer(code);
+tokenizer.Tokenize();
 
-// Print the tree
-TreeVisualizer.PrintTree(root);
+string save = JsonConvert.SerializeObject(tokenizer, Formatting.Indented);
 
-class TreeNode
-{
-    public object Value { get; set; }
-    public List<TreeNode> Children { get; set; }
+File.WriteAllText("Code.eztokens", save);
 
-    public TreeNode(object value)
-    {
-        Value = value;
-        Children = new List<TreeNode>();
-    }
-
-    public void AddChild(TreeNode child)
-    {
-        Children.Add(child);
-    }
-}
-
-class TreeVisualizer
-{
-    public static TreeNode BuildTree(object item)
-    {
-        TreeNode root = new TreeNode(item);
-        BuildSubtree(root, item);
-        return root;
-    }
-
-    private static void BuildSubtree(TreeNode parent, object obj)
-    {
-        if (obj is IEnumerable<object> enumerable)
-        {
-            for (int i = 0; i < enumerable.Count(); i++)
-            {
-                object child = enumerable.ElementAt(i);
-                TreeNode newNode = new TreeNode(child);
-                parent.AddChild(newNode);
-
-                newNode.Value = $"{(i < enumerable.Count() - 1 ? "├──" : "└──")} {child}";
-                BuildSubtree(newNode, child);
-            }
-        }
-        else if (obj != null && !obj.GetType().IsPrimitive && obj.GetType() != typeof(string))
-        {
-            foreach (var property in obj.GetType().GetProperties())
-            {
-                object propertyValue = property.GetValue(obj);
-                TreeNode newNode = new TreeNode($"{property.Name}: {propertyValue}");
-                parent.AddChild(newNode);
-                BuildSubtree(newNode, propertyValue);
-            }
-        }
-    }
-
-    public static void PrintTree(TreeNode node, string indent = "")
-    {
-        Console.WriteLine(indent + node.Value);
-
-        for (int i = 0; i < node.Children.Count; i++)
-        {
-            PrintTree(node.Children[i], indent + (i < node.Children.Count - 1 ? "│   " : "    "));
-        }
-    }
-}
-
+Tokenizer save_test = JsonConvert.DeserializeObject<Tokenizer>(save);
+Console.WriteLine("Serialization/Deserialization Successful\n");
+Console.WriteLine(save);
 #else
+// run ezcode
+
 Stopwatch stopwatch = Stopwatch.StartNew();
 Tokenizer tokenizer = new Tokenizer();
 Tokenizer.LineWithTokens[] tokens = tokenizer.Tokenize(code);
@@ -96,25 +41,27 @@ for (int i = 0; i < tokenTypes.Count; i++)
         else
             tokenString += tokenTypes[i][j].Type.ToString() + " ";
     }
-    tokenString += "\n";
+    tokenString += "\n";    
 }
 
 string ch = "⁚";
 code = string.Join("\n", code.Split("\n").Select((x, y) => x = $"{(y + 1 < 10 ? "0" : "")}{y + 1} {ch}  {x}").Select(x => x.Replace("\t", "    ").Replace("    ", $"  {ch} ")));
+string len = new string('-', code.Split("\n")[0].Length + 5);
+code = "File:\t" + file + "\n" + len + "\n" + code;
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 stopwatch.Stop();
 long Omili = stopwatch.ElapsedMilliseconds;
-Console.WriteLine(code + "\n--------------------\n"
-    /**/+ tokenString + "--------------------\n"
+Console.WriteLine(code + "\n" + len
+    // tokenString + "\n" + len + "\n"
     );
 
 stopwatch.Restart();
 
-Interpreter interpreter = new Interpreter("C:/Test.ezcode", tokenizer);
+Interpreter interpreter = new Interpreter(file, tokenizer);
 interpreter.Interperate();
 
 
 stopwatch.Stop();
 long mili = stopwatch.ElapsedMilliseconds;
-Console.WriteLine("\n--------------------\n" + "Tokenize Miliseconds:" + Omili.ToString() + "\nInterperate Miliseconds:" + mili.ToString() + "\nOverall Miliseconds:" + (Omili + mili).ToString());
+Console.WriteLine("--------------------\n" + "Tokenize Miliseconds:" + Omili.ToString() + "\nInterperate Miliseconds:" + mili.ToString() + "\nOverall Miliseconds:" + (Omili + mili).ToString());
 #endif

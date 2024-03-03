@@ -100,7 +100,7 @@ namespace EZCodeLanguage
         public class DataType
         {
             public enum Types {
-                NotSet,
+                _null,
                 _object,
                 _string,
                 _int,
@@ -123,7 +123,7 @@ namespace EZCodeLanguage
                 ObjectContainer = container;
             }
             public DataType() { }
-            public static DataType UnSet = new DataType() { Type = Types.NotSet };
+            public static DataType UnSet = new DataType() { Type = Types._null };
             public static DataType GetType(string param, Class[] classes, Container[] containers)
             {
                 Types types = new();
@@ -136,6 +136,7 @@ namespace EZCodeLanguage
                     case "int": types = Types._int; break;
                     case "float": types = Types._float; break;
                     case "bool": types = Types._bool; break;
+                    case "null": types = Types._null; break;
                     default: types = Types._object; break;
                 }
                 _class = classes.FirstOrDefault(x => x.Name == param, null);
@@ -395,6 +396,10 @@ namespace EZCodeLanguage
             public string Path { get; set; } = path;
             public string[]? Params { get; set; } = @params;
             public bool IsVar { get; set; } = isVar;
+            public override string ToString()
+            {
+                return $"{Path}";
+            }
         }
         public class CSharpDataType(string path, string type)
         {
@@ -436,6 +441,8 @@ namespace EZCodeLanguage
             Method,
             Match,
             Container,
+            Break,
+            Yield,
             Return,
             Get,
             And,
@@ -460,10 +467,8 @@ namespace EZCodeLanguage
         {
             Code = code;
         }
-        public LineWithTokens[] Tokenize(string code)
-        {
-            return Tokens = TokenArray(code).Where(x => x.Line.Value.ToString() != "").ToArray();
-        }
+        public LineWithTokens[] Tokenize() => Tokens = Tokenize(Code);
+        public LineWithTokens[] Tokenize(string code) => Tokens = TokenArray(code).Where(x => x.Line.Value.ToString() != "").ToArray();
         private LineWithTokens[] TokenArray(string code, bool insideClass = false)
         {
             List<LineWithTokens> withTokens = new List<LineWithTokens>();
@@ -522,6 +527,8 @@ namespace EZCodeLanguage
                     case "nocol": tokenType = TokenType.NoCol; break;
                     case "method": tokenType = TokenType.Method; break;
                     case "return": tokenType = TokenType.Return; break;
+                    case "break": tokenType = TokenType.Break; break;
+                    case "yield": tokenType = TokenType.Yield; break;
                     case "is": tokenType = TokenType.Is; break;
                     case "get": tokenType = TokenType.Get; break;
                     case "new": tokenType = TokenType.New; break;
@@ -908,22 +915,18 @@ namespace EZCodeLanguage
                         string path = "";
                         string[]? vars = null;
                         int skip = 1;
-                        if (parts[i + 1].ToString() == "=>")
+                        path = parts[i + 1].ToString();
+                        if (parts.Length - 1 > 2 && parts[i + 2].ToString() == "~>")
                         {
                             skip++;
-                            path = parts[i + 2].ToString();
-                            if (parts.Length - 1 > 3 && parts[i + 3].ToString() == "~>")
+                            string[] str = parts.Select(x => x.ToString()).Skip(3 + i).ToArray();
+                            skip += str.Length;
+                            string all = string.Join(" ", str);
+                            str = all.Split(",").Select(x=>x.Trim()).ToArray();
+                            vars = [];
+                            for (int j = 0; j < str.Length; j++)
                             {
-                                skip++;
-                                string[] str = parts.Select(x => x.ToString()).Skip(4 + i).ToArray();
-                                skip += str.Length;
-                                string all = string.Join(" ", str);
-                                str = all.Split(",").Select(x=>x.Trim()).ToArray();
-                                vars = [];
-                                for (int j = 0; j < str.Length; j++)
-                                {
-                                    vars = [.. vars, str[j]];
-                                }
+                                vars = [.. vars, str[j]];
                             }
                         }
                         for (int j = 0; j <= skip; j++)
@@ -1085,20 +1088,35 @@ namespace EZCodeLanguage
             bool sameLine = false, brackets = false;
             string val = string.Join(" ", partsSpaces.Skip(1).TakeWhile(x => x != ":" && x != "{"));
             Token[] argTokens = [];
+            int end = 0;
             for (int j = 1; j < parts.Length; j++)
             {
                 if (parts[j].ToString() == ":")
                 {
+                    if (brackets)
+                        brackets = false;
                     sameLine = true;
-                    break;
+                    end = parts.Length - j;
                 }
                 if (parts[j].ToString() == "{")
                 {
+                    if (sameLine)
+                        sameLine = false;
                     brackets = true;
-                    break;
+                    end = parts.Length - j;
                 }
-
                 argTokens = argTokens.Append(SingleToken(parts, j)).ToArray();
+            }
+            argTokens = argTokens.Take(argTokens.Length - end).ToArray();
+            if (argTokens.FirstOrDefault(new Token(TokenType.None, "")).Value.ToString() == "runexec")
+            {
+                Line[] l = [new Line(lines[lineIndex].Value, lines[lineIndex].CodeLine)];
+                l[0].Value = string.Join(" ", argTokens.Select(x => x.Value.ToString()));
+                object[] objects = SplitParts(ref l, 0, out _);
+                Token[] t = [];
+                for (int i = 0; i < objects.Length; i++)
+                    t = [.. t, SingleToken(objects, i, out _)];
+                argTokens = t;
             }
             if (Statement.ConditionalTypes.Contains(parts[partIndex]))
             {
@@ -1148,6 +1166,7 @@ namespace EZCodeLanguage
                         code += bracketLine.Value + Environment.NewLine;
                     }
                     lineWithTokens = Tokenize(code);
+                    lineWithTokens = lineWithTokens.Select(x => { x.Line.CodeLine++; return x; }).ToArray();
                     if (l.Last().Value.ToString() == "}")
                     {
                         removes.Add(l[l.Count - 1]);
