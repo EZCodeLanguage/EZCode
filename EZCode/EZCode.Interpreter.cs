@@ -137,6 +137,11 @@ namespace EZCodeLanguage
                                     break;
 
                                 case IdentType.Method:
+                                    Method method = type as Method;
+                                    if (line.Tokens.Length > 1)
+                                    {
+                                        
+                                    }
                                     break;
 
                                 default:

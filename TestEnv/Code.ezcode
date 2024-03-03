@@ -1,9 +1,27 @@
-undefined index => runexec EZCodeLanguage.EZHelp.ObjectParse ~> 0, int
-loop true {
-	index => runexec EZCodeLanguage.EZHelp.Add ~> {index}, 1
-	loop 2 {
-		runexec EZCodeLanguage.EZHelp.Print ~> {index}
-	}
-	if runexec EZCodeLanguage.EZHelp.Compare ~> {index}, >, 9 : yield break
-	runexec EZCodeLanguage.EZHelp.Print ~> -
+semi class str 
+{
+    explicit typeof => EZCodeLanguage.EZCode.DataType("string")
+    explicit watch ""(.*? {text})"" => set : text
+    explicit watch .*?'(.* {text})'.*? => set : text
+    explicit params {val} => set : val
+    undefined Value \!
+    method set : text 
+    {
+        Value => format : text
+    }
+    nocol method = : => @str {
+        return set : text
+    }
+    static method format : @str:text => @str
+    {
+        return runexec EZCodeLanguage.EZHelp.Format ~> {text}
+    }
 }
+
+nocol method print : @str:text 
+{
+    runexec EZCodeLanguage.EZHelp.Print ~> {text}
+}
+
+str main new : ""this is some text""
+print 'main'

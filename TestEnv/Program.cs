@@ -46,7 +46,8 @@ for (int i = 0; i < tokenTypes.Count; i++)
 
 string ch = "⁚";
 code = string.Join("\n", code.Split("\n").Select((x, y) => x = $"{(y + 1 < 10 ? "0" : "")}{y + 1} {ch}  {x}").Select(x => x.Replace("\t", "    ").Replace("    ", $"  {ch} ")));
-string len = new string('-', code.Split("\n")[0].Length + 5);
+int[] num = []; for (int i = 0; i < code.Split("\n").Length; i++) num = [.. num, code.Split("\n")[i].Length + 5];
+string len = new string('-', num.Max());
 code = "File:\t" + file + "\n" + len + "\n" + code;
 Console.OutputEncoding = System.Text.Encoding.UTF8;
 stopwatch.Stop();
@@ -63,5 +64,5 @@ interpreter.Interperate();
 
 stopwatch.Stop();
 long mili = stopwatch.ElapsedMilliseconds;
-Console.WriteLine("--------------------\n" + "Tokenize Miliseconds:" + Omili.ToString() + "\nInterperate Miliseconds:" + mili.ToString() + "\nOverall Miliseconds:" + (Omili + mili).ToString());
+Console.WriteLine(len + "\n" + "Tokenize Miliseconds:" + Omili.ToString() + "\nInterperate Miliseconds:" + mili.ToString() + "\nOverall Miliseconds:" + (Omili + mili).ToString());
 #endif

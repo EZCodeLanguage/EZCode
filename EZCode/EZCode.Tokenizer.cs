@@ -159,7 +159,7 @@ namespace EZCodeLanguage
             public bool IsFound(string input, Class[] classes, Container[] containers)
             {
                 Match match = Regex.Match(input, Pattern);
-                if (match.Success)
+                if (match.Success && input == match.Groups[0].ToString())
                 {
                     GroupCollection groups = match.Groups;
                     int groupCount = groups.Count;
@@ -758,9 +758,10 @@ namespace EZCodeLanguage
                         }
                         parts = [@class];
                     }
-                    else if (WatchIsFound(parts, i, out ExplicitWatch? watch))
+                    else if (WatchIsFound(parts, i, out ExplicitWatch? watch, out int skip_match))
                     {
                         parts[i] = watch.Runs;
+                        parts = parts.Take(i + 1).Concat(parts.Skip(i + skip_match + 1)).ToArray();
                     }
                     else if (!insideClass && parts[i].ToString() == "method")
                     {
@@ -1015,36 +1016,27 @@ namespace EZCodeLanguage
             }
             return true;
         }
-        internal bool WatchIsFound(object[] parts, int index, out ExplicitWatch? watch)
+        internal bool WatchIsFound(object[] parts, int index, out ExplicitWatch? watch, out int skip)
         {
+            skip = 0;
             watch = null;
-
-            for (int i = 0; i < Classes.Count; i++)
+            string match = "";
+            for (int i = index; i < parts.Length; i++)
             {
-                for (int j = 0; j < Classes[i].WatchFormat.Length; j++)
+                string add = parts[i].ToString();
+                match = (match + " " + add).Trim();
+                for (int j = 0; j < Classes.Count; j++)
                 {
-                    if (Classes[i].WatchFormat[j].IsFound(parts[index].ToString(), Classes.ToArray(), Containers.ToArray()))
+                    for (int k = 0; k < Classes[j].WatchFormat.Length; k++)
                     {
-                        watch = Classes[i].WatchFormat[j];
-                        return true;
+                        if (Classes[j].WatchFormat[k].IsFound(match, Classes.ToArray(), Containers.ToArray()))
+                        {
+                            watch = Classes[j].WatchFormat[k];
+                            return true;
+                        }
                     }
-                } 
-            }
-
-            return false;
-        }
-        internal bool ParamIsFound(object[] parts, int index, out ExplicitParams? param)
-        {
-            param = null;
-
-            for (int i = 0; i < Classes.Count; i++)
-            {
-                if (Classes[i].Params == null) continue;
-                if (Classes[i].Params.IsFound(parts[index].ToString(), Classes.ToArray(), Containers.ToArray()))
-                {
-                    param = Classes[i].Params;
-                    return true;
                 }
+                skip++;
             }
 
             return false;

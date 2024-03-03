@@ -58,6 +58,9 @@ namespace EZCodeLanguage
                         chars[i] == '\\' ? '\\' :
                         chars[i] == 'n' ? '\n' :
                         chars[i] == 'c' ? ',' :
+                        chars[i] == 'p' ? '.' :
+                        chars[i] == '"' ? '\'' :
+                        chars[i] == '\'' ? '"' :
                         chars[i];
                     if (chars[i] == '!')
                     {
@@ -84,7 +87,7 @@ namespace EZCodeLanguage
                 }
                 else
                 {
-                    if (Interpreter.tokenizer.WatchIsFound([name], 0, out ExplicitWatch watch))
+                    if (Interpreter.tokenizer.WatchIsFound([name], 0, out ExplicitWatch watch, out _))
                     {
                         object val = Interpreter.MethodRun(watch.Runs.Runs, watch.Runs.Parameters);
                         format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(val, new DataType(DataType.Types._string, null)).ToString());
@@ -127,15 +130,24 @@ namespace EZCodeLanguage
             table.Rows.Add(row);
             return (bool)row["expression"];
         }
-        public float Add(object x, object y)
+        public object Add(object x, object y)
         {
             if (x.ToString().StartsWith("{") && x.ToString().EndsWith("}"))
                 x = Interpreter.GetValue(x.ToString().Substring(1, x.ToString().Length - 2).Trim(), new DataType(DataType.Types._float, null));
             if (y.ToString().StartsWith("{") && y.ToString().EndsWith("}"))
                 y = Interpreter.GetValue(y.ToString().Substring(1, y.ToString().Length - 2).Trim(), new DataType(DataType.Types._float, null));
-            float a = float.Parse(ObjectParse(x.ToString(), "float").ToString());
-            float b = float.Parse(ObjectParse(y.ToString(), "float").ToString());
-            return a + b;
+            try
+            {
+                float a = float.Parse(ObjectParse(x.ToString(), "float").ToString());
+                float b = float.Parse(ObjectParse(y.ToString(), "float").ToString());
+                return a + b;
+            }
+            catch
+            {
+                string a = ObjectParse(x.ToString(), "str").ToString();
+                string b = ObjectParse(y.ToString(), "str").ToString();
+                return a + b;
+            }
         }
         public bool Compare(object v1, object v2, object v3)
         {
