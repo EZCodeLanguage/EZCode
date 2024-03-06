@@ -11,17 +11,19 @@ namespace EZCodeLanguage
             Interpreter = interpreter;
         }
         public EZHelp() { }
-        public void Print(string text)
+        public void Print(string text, string ch)
         {
-            text = Format(text.ToString());
+            text = Format(text.ToString(), ch);
             Interpreter.Output = [.. Interpreter.Output, text.ToString()];
             Console.WriteLine(text);
         }
-        public string Format(string text, string datatype_override = "@str")
+        public string Format(object _text, object _f)
         {
+            char f = char.Parse(_f.ToString());
+            string text = _text.ToString();
             if(text.StartsWith("{")  && text.EndsWith("}"))
             {
-                DataType type = DataType.GetType(datatype_override, Interpreter.Classes, Interpreter.Containers);
+                DataType type = DataType.GetType("@str", Interpreter.Classes, Interpreter.Containers);
                 Interpreter.Vars.FirstOrDefault(x => x.Name == text.Substring(1, text.Length - 2).Trim()).DataType = type;
                 text = Interpreter.GetValue(text.Substring(1, text.Length - 2).Trim(), type).ToString()!;
             }
@@ -32,25 +34,6 @@ namespace EZCodeLanguage
             int current = 0;
             for (int i = 0, count = 0; i < chars.Length; i++, count++)
             {
-                if (chars[i] == '\'')
-                {
-                    chars = chars.ToList().Where((x, y) => y != i).ToArray();
-                    open = !open;
-                    count--;
-                    if (open)
-                    {
-                        ranges[current].Count = count;
-                        current++;
-                    }
-                    else
-                    {
-                        ranges = [.. ranges, new Range()];
-                        ranges[current].Start = i;
-                        count = 0;
-                    }
-                    i--;
-                    continue;
-                }
                 if (backslash)
                 {
                     backslash = false;
@@ -69,10 +52,32 @@ namespace EZCodeLanguage
                     count--;
                     i--;
                     chars = chars.ToList().Where((x, y) => y != i).ToArray();
+
+                    format += chars[i];
+                    continue;
                 }
                 else if (chars[i] == '\\')
                 {
                     backslash = true;
+                    continue;
+                }
+                if (chars[i] == f)
+                {
+                    chars = chars.ToList().Where((x, y) => y != i).ToArray();
+                    open = !open;
+                    count--;
+                    if (open)
+                    {
+                        ranges[current].Count = count;
+                        current++;
+                    }
+                    else
+                    {
+                        ranges = [.. ranges, new Range()];
+                        ranges[current].Start = i;
+                        count = 0;
+                    }
+                    i--;
                     continue;
                 }
                 format += chars[i];
@@ -83,7 +88,7 @@ namespace EZCodeLanguage
                 string name = format.Substring(range.Start, range.Count);
                 if (Interpreter.Vars.Any(x => x.Name == name))
                 {
-                    format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.Vars.FirstOrDefault(x => x.Name == name).Value.ToString());
+                    format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(name, DataType.GetType("str", Interpreter.Classes, Interpreter.Containers)).ToString());
                 }
                 else
                 {
@@ -101,10 +106,6 @@ namespace EZCodeLanguage
         {
             public int Start = start;
             public int Count = end;
-        }
-        public string StringParse(object str)
-        {
-            return Format(str.ToString()!);
         }
         public string StringEmpty()
         {

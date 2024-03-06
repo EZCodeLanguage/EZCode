@@ -67,13 +67,17 @@ namespace EZCodeLanguage
                 }
             }
 
+            Console.WriteLine(WorkingFile + ": Exited with code " + endcode + ".");
+
             return endcode;
         }
         private object? SingleLine(LineWithTokens line)
         {
             try
             {
-                StackTrace.Push($"codeline: \"{line.Line.Value}\", file: \"{WorkingFile}\", line: {line.Line.CodeLine}");
+                string message = $"codeline: \"{line.Line.Value}\", file: \"{WorkingFile}\", line: {line.Line.CodeLine}";
+                try { if (StackTrace.First() != message) StackTrace.Push(message); }
+                catch { StackTrace.Push(message); }
                 CurrentLine = line.Line;
                 string deb = "";
                 if (AmDebugging)
@@ -126,6 +130,34 @@ namespace EZCodeLanguage
                                             var tok = line.Tokens.Skip(2).ToArray();
                                             var.Value = SingleLine(new LineWithTokens(tok, line.Line));
                                         }
+                                        /*else
+                                        {
+                                            if (var.Value is Class || (var.DataType.ObjectClass != null && var.DataType.Type != DataType.Types._null))
+                                            {
+                                                Class cl = var.Value is Class ? var.Value as Class : var.DataType.ObjectClass;
+                                                if (cl.Methods.Any(x => x.Name == line.Tokens[1].Value.ToString()))
+                                                {
+                                                    Method[] backupMethods = Methods;
+                                                    Methods = cl.Methods;
+                                                    Var[] backupVars = Vars;
+                                                    Vars = cl.Properties;
+                                                    line.Tokens = line.Tokens.Skip(1).ToArray();
+                                                    object value = SingleLine(line);
+                                                    Methods = backupMethods;
+                                                    Vars = backupVars;
+
+                                                    var.Value = value;
+                                                }
+                                                else
+                                                {
+                                                    throw new Exception($"Variable is trying to call a method '{line.Tokens[1].Value}' that doesn't exists");
+                                                }
+                                            }
+                                            else
+                                            {
+                                                throw new Exception($"Variable type is undefined and can not call the method '{line.Tokens[1].Value}'");
+                                            }
+                                        }*/
                                     }
                                     else
                                     {
@@ -134,14 +166,160 @@ namespace EZCodeLanguage
                                     break;
 
                                 case IdentType.Class:
+                                    Class cl = type as Class;
+                                    if (line.Tokens[2].Type == TokenType.New)
+                                    {
+                                        string name = line.Tokens[1].Value.ToString();
+                                        var = new Var(name, cl, line.Line, new DataType(cl.TypeOf != null ? cl.TypeOf.Type : DataType.Types._object, cl));
+                                        Vars = [.. Vars, var];
+
+                                        if (line.Tokens.Length > 3)
+                                        {
+                                            if (line.Tokens[3].Type != TokenType.Colon)
+                                                throw new Exception("Expected colon to set instance properties");
+                                            ExplicitParams? p = cl.Params;
+                                            if (p != null)
+                                            {
+                                                if (tokenizer.ParamIsFound(line.Tokens.Select(x => x.Value).ToArray(), 4, out _))
+                                                {
+                                                    if (p.IsOverride)
+                                                    {
+                                                        RunMethod run = p.Runs;
+                                                        Method[] backupMethods = Methods;
+                                                        Var[] backupVars = Vars;
+                                                        Vars = cl.Properties;
+                                                        Methods = cl.Methods;
+                                                        MethodRun(run.Runs, run.Parameters);
+                                                        Methods = backupMethods;
+                                                        Vars = backupVars;
+                                                    }
+                                                    else if (p.All)
+                                                    {
+                                                        RunMethod run = p.Runs;
+                                                        Method[] backupMethods = Methods;
+                                                        Var[] backupVars = Vars;
+                                                        Vars = cl.Properties;
+                                                        Methods = cl.Methods;
+                                                        run.Parameters.FirstOrDefault(x => x.Name == "PARAMS").Value = string.Join(" ", line.Tokens.Select(x => x.Value).Skip(4));
+                                                        MethodRun(run.Runs, run.Parameters);
+                                                        Methods = backupMethods;
+                                                        Vars = backupVars;
+                                                    }
+                                                    /*else if (line.Tokens[4].Type == TokenType.Match)
+                                                    {
+                                                        RunMethod run = line.Tokens[4].Value as RunMethod;
+                                                        Method[] backupMethods = Methods;
+                                                        Var[] backupVars = Vars;
+
+                                                        int i = 0;
+                                                        while (run.ClassName != FirstToken.Value.ToString())
+                                                        {
+                                                            i++; if (i > 50) throw new Exception($"Infinite loop error in with declaring instance of class '{cl.Name}'. Unkown cause, might be Interperater error or faulty code");
+                                                            Class cc = Classes.FirstOrDefault(x => x.Name == run.ClassName);
+                                                            if (cc == null) throw new Exception("Error with finding class from name");
+                                                            Vars = cc.Properties;
+                                                            Methods = cc.Methods;
+                                                            object result = GetValue(run);
+                                                            Methods = backupMethods;
+                                                            Vars = backupVars;
+                                                            bool f = tokenizer.ParamIsFound([result is Var v ? v.Value : result], 0, out var param);
+                                                            if (f)
+                                                            {
+                                                                run = p.Runs;
+                                                                break;
+                                                            }
+                                                            else
+                                                            {
+                                                                throw new Exception($"The format pattern of the class, '{p.Pattern}' does not match this class instance");
+                                                            }
+                                                        }
+                                                        Vars = cl.Properties;
+                                                        Methods = cl.Methods;
+                                                        MethodRun(run.Runs, run.Parameters);
+                                                        Methods = backupMethods;
+                                                        Vars = backupVars;
+                                                    }*/
+                                                    else
+                                                    {
+
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    throw new Exception($"The format pattern of the class, '{p.Pattern}' does not match this class instance");
+                                                }
+                                            }
+                                            else
+                                            {
+                                                string all = string.Join(" ", line.Tokens.Skip(4).Select(x => x.Value));
+                                                string[] vals = all.Split(',').Select(x => x.Trim()).ToArray();
+                                                Var[] prop = [];
+                                                if (vals.Length > 0)
+                                                {
+                                                    for (int i = 0; i < vals.Length; i++)
+                                                    {
+                                                        string[] whole = vals[i].Split(":");
+                                                        if (whole.Length < 2) throw new Exception("Expected properties to be set by syntax 'PropertyName:Value'");
+                                                        string before = whole[0].Trim();
+                                                        string after = whole[1].Trim();
+                                                        if (cl.Properties.Any(x => x.Name == before))
+                                                        {
+                                                            Var v = cl.Properties.FirstOrDefault(x => x.Name == before);
+                                                            after = GetValue(after).ToString();
+                                                            prop = [.. prop, new Var(v.Name, after, line.Line, v.DataType)];
+                                                        }
+                                                        else
+                                                        {
+                                                            throw new Exception($"There is no '{before}' property in the '{cl.Name}' class");
+                                                        }
+                                                    }
+                                                }
+                                            }
+                                        }
+
+                                    }
+                                    else
+                                    {
+                                        throw new Exception("Expected 'new' keyword to declare instance of class");
+                                    }
                                     break;
 
                                 case IdentType.Method:
                                     Method method = type as Method;
-                                    if (line.Tokens.Length > 1)
+                                    Method.MethodSettings settings = method.Settings;
+                                    bool nocol = (settings & Method.MethodSettings.NoCol) != 0;
+                                    int next = nocol ? 0 : 1;
+                                    if (!nocol && line.Tokens[1].Type != TokenType.Colon)
                                     {
-                                        
+                                        throw new Exception("Expected ':' identifier to set method perameters");
                                     }
+                                    Var[] vars = [];
+
+                                    if (method.Params != null && method.Params.Length > 0)
+                                    {
+                                        string all = string.Join(" ", line.Tokens.Skip(next + 1).Select(x => GetValue(x)));
+                                        string[] vals = all.Split(',').Select(x => x.Trim()).ToArray();
+                                        if (vals.Length > 0)
+                                        {
+                                            for (int i = 0; i < method.Params.Length; i++)
+                                            {
+                                                vars = [.. vars, new Var(method.Params[i].Name, vals[i], line.Line, method.Params[i].DataType)];
+                                            }
+                                            if (vars.Length != method.Params.Select(x => x.Required).ToArray().Length)
+                                            {
+                                                throw new Exception("Not all parameters are set");
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (line.Tokens.Length > 1)
+                                            {
+                                                throw new Exception("Method does not require any parameters");
+                                            }
+                                        }
+                                    }
+
+                                    Return = MethodRun(method, vars);
                                     break;
 
                                 default:
@@ -165,7 +343,7 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Error with 'runexec' and with C# method. The reason may be because the method may not exist. C# Error Message:'{ex.Message}'");
+                            throw new Exception($"Error with 'runexec' and with C# method. The reason may be because the method may not exist. Error Message:'{ex.Message}'");
                         }
                         break;
                     case TokenType.Undefined:
@@ -432,12 +610,16 @@ namespace EZCodeLanguage
             }
             Vars = Vars.Except(parameters).ToArray();
 
-            StackTrace.Pop();
+            StackTrace.TryPop(out _);
             return result;
         }
         public object GetValue(object obj, DataType? type = null)
         {
-            if (obj is string)
+            if (obj is Class)
+            {
+                return GetValue((obj as Class).Name, type);
+            }
+            else if (obj is string)
             {
                 Var? var = Vars.FirstOrDefault(x => x.Name == obj.ToString());
                 if (var != null)
@@ -489,6 +671,10 @@ namespace EZCodeLanguage
                         else if (var.DataType.ObjectClass != null && !(var.DataType.Type == DataType.Types._null || var.DataType.Type == DataType.Types._object))
                         {
                             obj = var.Value;
+                            if (obj is Class)
+                            {
+                                obj = (var.Value as Class).Properties.FirstOrDefault(x=>x.Name == "Value", (var.Value as Class).Properties.FirstOrDefault(x => x.Name == "value", null)).Value ?? obj;
+                            }
                             switch (var.DataType.Type)
                             {
                                 case DataType.Types._string: return obj.ToString();
