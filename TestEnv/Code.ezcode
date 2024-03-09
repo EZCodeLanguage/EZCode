@@ -1,28 +1,46 @@
-semi class str 
+semi class int 
 {
-    explicit typeof => EZCodeLanguage.EZCode.DataType("string")
-    //explicit watch ""(.*? {text})"" => set : text
-    //explicit watch '(.* {text})' => set : text
+    explicit typeof => EZCodeLanguage.EZCode.DataType("int")
     explicit params => set : PARAMS
     undefined Value
-    method set : text 
+    get => @int 
     {
-        Value => format : 'text'sadf
+        return Value
     }
-    nocol method = : => @str 
+    get => @str 
     {
-        return set : text
+        return runexec => EZCodeLanguage.EZHelp.ObjectParse ~> {Value}, str
     }
-    static method format : @str:text => @str
+    method set : @int:num 
     {
-        return runexec EZCodeLanguage.EZHelp.Format ~> {text}, '
+        Value => runexec EZCodeLanguage.EZHelp.ObjectParse ~> {num}, int
+    }
+    nocol method + : @int:val
+    {
+        Value => runexec EZCodeLanguage.EZHelp.Add ~> {Value}, {val}
+    }
+    nocol method - : @int:val
+    {
+        Value => runexec EZCodeLanguage.EZHelp.Subtract ~> {Value}, {val}
+    }
+    nocol method * : @int:val
+    {
+        Value => runexec EZCodeLanguage.EZHelp.Multiply ~> {Value}, {val}
+    }
+    nocol method / : @int:val
+    {
+        Value => runexec EZCodeLanguage.EZHelp.Divide ~> {Value}, {val}
     }
 }
 
 nocol method print : @str:text 
 {
-    runexec EZCodeLanguage.EZHelp.Print ~> {text}, '
+    runexec EZCodeLanguage.EZHelp.Print ~> {text}
 }
 
-str main new : this is some text
-print 'main'
+int number new : 50
+int ten new : 10
+
+number + ten
+
+print number

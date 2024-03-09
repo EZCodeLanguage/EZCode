@@ -45,7 +45,8 @@ for (int i = 0; i < tokenTypes.Count; i++)
 }
 
 string ch = "⁚";
-code = string.Join("\n", code.Split("\n").Select((x, y) => x = $"{(y + 1 < 10 ? "0" : "")}{y + 1} {ch}  {x}").Select(x => x.Replace("\t", "    ").Replace("    ", $"  {ch} ")));
+bool overHundred = code.Split("\n").Length > 100;
+code = string.Join("\n", code.Split("\n").Select((x, y) => x = $"{(y + 1 < 10 ? (overHundred ? "  " : " ") : overHundred && y + 1 < 100 ? " " : "")}{y + 1} {ch}  {x}").Select(x => x.Replace("\t", "    ").Replace("    ", $"  {ch} ")));
 int[] num = []; for (int i = 0; i < code.Split("\n").Length; i++) num = [.. num, code.Split("\n")[i].Length + 5];
 string len = new string('-', num.Max());
 code = "File:\t" + file + "\n" + len + "\n" + code;

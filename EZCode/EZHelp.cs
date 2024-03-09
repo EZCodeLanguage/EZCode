@@ -11,22 +11,15 @@ namespace EZCodeLanguage
             Interpreter = interpreter;
         }
         public EZHelp() { }
-        public void Print(string text, string ch)
+        public void Print(string text)
         {
-            text = Format(text.ToString(), ch);
+            text = Format(text.ToString());
             Interpreter.Output = [.. Interpreter.Output, text.ToString()];
             Console.WriteLine(text);
         }
-        public string Format(object _text, object _f)
+        public string Format(object _text)
         {
-            char f = char.Parse(_f.ToString());
-            string text = _text.ToString();
-            if(text.StartsWith("{")  && text.EndsWith("}"))
-            {
-                DataType type = DataType.GetType("@str", Interpreter.Classes, Interpreter.Containers);
-                Interpreter.Vars.FirstOrDefault(x => x.Name == text.Substring(1, text.Length - 2).Trim()).DataType = type;
-                text = Interpreter.GetValue(text.Substring(1, text.Length - 2).Trim(), type).ToString()!;
-            }
+            string text = ObjectParse(_text.ToString(), "str", true).ToString();
             string format = "";
             char[] chars = text.ToCharArray();
             bool open = true, backslash = false;
@@ -61,7 +54,7 @@ namespace EZCodeLanguage
                     backslash = true;
                     continue;
                 }
-                if (chars[i] == f)
+                if (chars[i] == '\'')
                 {
                     chars = chars.ToList().Where((x, y) => y != i).ToArray();
                     open = !open;
@@ -111,16 +104,34 @@ namespace EZCodeLanguage
         {
             return string.Empty;
         }
-        public object ObjectParse(object obj, object type)
+        public object ObjectParse(object obj, object type) => ObjectParse(obj, type, false);
+        public object ObjectParse(object obj, object type, bool to_string)
         {
             if (obj.ToString().StartsWith("{") && obj.ToString().EndsWith("}"))
             {
-                DataType data = DataType.GetType(type.ToString(), Interpreter.Classes, Interpreter.Containers);
-                Interpreter.Vars.FirstOrDefault(x => x.Name == obj.ToString().Substring(1, obj.ToString().Length - 2).Trim()).DataType = data;
-                obj = Interpreter.GetValue(obj.ToString().Substring(1, obj.ToString().Length - 2).Trim(), data); 
+                try
+                {
+                    obj = obj.ToString().Substring(1, obj.ToString().Length - 2).Trim();
+                    object o = obj;
+                    do
+                    {
+                        string n = obj.ToString();
+                        o = obj;
+                        DataType data = DataType.GetType(type.ToString(), Interpreter.Classes, Interpreter.Containers);
+                        if (Interpreter.Vars.Any(x => x.Name == n)) Interpreter.Vars.FirstOrDefault(x => x.Name == n).DataType = data;
+                        obj = Interpreter.GetValue(n, data);
+                    } while (obj != o);
+                }
+                catch
+                {
+
+                }
             }
-            if (int.TryParse(obj.ToString(), out int i)) obj = i;
-            if (float.TryParse(obj.ToString(), out float f)) obj = f;
+            if (!to_string)
+            {
+                if (int.TryParse(obj.ToString(), out int i)) obj = i;
+                if (float.TryParse(obj.ToString(), out float f)) obj = f;
+            }
             return obj;
         }
         public bool Evaluate(string expression)
@@ -131,12 +142,59 @@ namespace EZCodeLanguage
             table.Rows.Add(row);
             return (bool)row["expression"];
         }
+        public object? StringMod(object x, object y, object mod)
+        {
+            try
+            {
+                string m = mod.ToString(), 
+                    a = ObjectParse(x.ToString(), "str", true).ToString(), 
+                    b = ObjectParse(y.ToString(), "str", true).ToString();
+                switch (m)
+                {
+                    case "+": return a + b;
+                    case "-":
+                        if (int.TryParse(b, out int res))
+                        {
+                            a = string.Join("", a.ToCharArray().Take(a.Length - res));
+                        }
+                        else
+                        {
+                            a = a.Replace(b, "");
+                        }
+                        return a;
+                    case "*":
+                        if (int.TryParse(b, out res))
+                        {
+                            string _a = a;
+                            for (int i = 0; i < res; i++)
+                            {
+                                _a += a;
+                            }
+                            a = _a;
+                        }
+                        else
+                        {
+                            throw new Exception("Expcted number to multiply by");
+                        }
+                        return a;
+                    case "/":
+                        if (int.TryParse(b, out res))
+                        {
+                            int len = a.Length;
+                            int newl = len / res;
+                            a = string.Join("", a.ToCharArray().Take(a.Length - newl));
+                        }
+                        else
+                        {
+                            throw new Exception("Expcted number to divide by");
+                        }
+                        return a;
+                    default: return null;
+                }
+            } catch { return null; }
+        }
         public object Add(object x, object y)
         {
-            if (x.ToString().StartsWith("{") && x.ToString().EndsWith("}"))
-                x = Interpreter.GetValue(x.ToString().Substring(1, x.ToString().Length - 2).Trim(), new DataType(DataType.Types._float, null));
-            if (y.ToString().StartsWith("{") && y.ToString().EndsWith("}"))
-                y = Interpreter.GetValue(y.ToString().Substring(1, y.ToString().Length - 2).Trim(), new DataType(DataType.Types._float, null));
             try
             {
                 float a = float.Parse(ObjectParse(x.ToString(), "float").ToString());
@@ -150,19 +208,90 @@ namespace EZCodeLanguage
                 return a + b;
             }
         }
+        public object Subtract(object x, object y)
+        {
+            try
+            {
+                float a = float.Parse(ObjectParse(x.ToString(), "float").ToString());
+                float b = float.Parse(ObjectParse(y.ToString(), "float").ToString());
+                return a - b;
+            }
+            catch
+            {
+                string a = ObjectParse(x.ToString(), "str").ToString();
+                string b = ObjectParse(y.ToString(), "str").ToString();
+                if (int.TryParse(b, out int res))
+                {
+                    a = string.Join("", a.ToCharArray().Take(a.Length - res));
+                }
+                else
+                {
+                    a = a.Replace(b, "");
+                }
+                return a;
+            }
+        }
+        public object Multiply(object x, object y)
+        {
+            try
+            {
+                float a = float.Parse(ObjectParse(x.ToString(), "float").ToString());
+                float b = float.Parse(ObjectParse(y.ToString(), "float").ToString());
+                return a * b;
+            }
+            catch
+            {
+                string a = ObjectParse(x.ToString(), "str").ToString();
+                string b = ObjectParse(y.ToString(), "str").ToString();
+                if (int.TryParse(b, out int res))
+                {
+                    string _a = a;
+                    for (int i = 0; i < res; i++)
+                    {
+                        _a += a;
+                    }
+                    a = _a;
+                }
+                else
+                {
+                    throw new Exception("Expcted number to multiply by");
+                }
+                return a;
+            }
+        }
+        public object Divide(object x, object y)
+        {
+            try
+            {
+                float a = float.Parse(ObjectParse(x.ToString(), "float").ToString());
+                float b = float.Parse(ObjectParse(y.ToString(), "float").ToString());
+                return a / b;
+            }
+            catch
+            {
+                string a = ObjectParse(x.ToString(), "str").ToString();
+                string b = ObjectParse(y.ToString(), "str").ToString();
+                if (int.TryParse(b, out int res))
+                {
+                    int len = a.Length;
+                    int newl = len / res;
+                    a = string.Join("", a.ToCharArray().Take(a.Length - newl));
+                }
+                else
+                {
+                    throw new Exception("Expcted number to divide by");
+                }
+                return a;
+            }
+        }
         public bool Compare(object v1, object v2, object v3)
         {
             object[] values = [v1, v2, v3];
             for (int i = 0; i < values.Length; i++)
             {
-                if (values[i].ToString().StartsWith("{") && values[i].ToString().EndsWith("}"))
-                {
-                    DataType data = DataType.GetType("str", Interpreter.Classes, Interpreter.Containers);
-                    Interpreter.Vars.FirstOrDefault(x => x.Name == values[i].ToString().Substring(1, values[i].ToString().Length - 2).Trim()).DataType = data;
-                    values[i] = Interpreter.GetValue(values[i].ToString().Substring(1, values[i].ToString().Length - 2).Trim(), data);
-                }
+                values[i] = ObjectParse(values[i], "str");
             }
-            string all = string.Join(" ", values.Select(x => x.ToString()));
+            string all = string.Join(" ", values.Select(x => x.ToString()), true);
             return Evaluate(all);
         }
     }

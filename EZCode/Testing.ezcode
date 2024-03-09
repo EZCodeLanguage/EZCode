@@ -1,3 +1,51 @@
+semi class str 
+{
+    explicit alias string
+    explicit typeof => EZCodeLanguage.EZCode.DataType("string")
+    explicit watch "(.*? {text})" => set : text
+    explicit params => set : PARAMS
+    undefined Value
+    get => @str 
+    {
+        return Value
+    }
+    get => @int 
+    {
+        return runexec => EZCodeLanguage.EZHelp.ObjectParse ~> {Value}, int
+    }
+    method set : text 
+    {
+        Value => format : text
+    }
+    nocol method = : @str:text => @str 
+    {
+        return set : text
+    }
+    nocol method + : @str:text
+    {
+        Value => runexec EZCodeLanguage.EZHelp.StringMod ~> {Value}, {text}, +
+    }
+    nocol method - : @str:text 
+    {
+        Value => runexec EZCodeLanguage.EZHelp.StringMod ~> {Value}, {text}, -
+    }
+    nocol method * : @str:text 
+    {
+        Value => runexec EZCodeLanguage.EZHelp.StringMod ~> {Value}, {text}, *
+    }
+    nocol method / : @str:text 
+    {
+        Value => runexec EZCodeLanguage.EZHelp.StringMod ~> {Value}, {text}, /
+    }
+    static method format : @str:text => @str
+    {
+        return runexec EZCodeLanguage.EZHelp.Format ~> {text}
+    }
+}
+
+////
+
+
 make for {TYPE} {I1} {VAL}, {I2} {COMP} {NUM}, {I3} {METHOD} {ADD} \{ => {
 	{TYPE} {I1} new : ({VAL} - 1)
 	loop {I2} {COMP} {NUM} \{

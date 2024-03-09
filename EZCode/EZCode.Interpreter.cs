@@ -1,5 +1,5 @@
-﻿using System.Reflection;
-using System.Xml.Linq;
+﻿using System.Linq.Expressions;
+using System.Reflection;
 using static EZCodeLanguage.Tokenizer;
 
 namespace EZCodeLanguage
@@ -34,8 +34,8 @@ namespace EZCodeLanguage
                 }
             }
         }
-        bool AmDebugging = false;
         private bool LastIfWasTrue = true;
+        Exception? LastTryNotFailed = null;
         private bool yielded = false;
         public Stack<string> StackTrace { get; private set; }
         public string[] Output { get; internal set; } = [];
@@ -67,12 +67,15 @@ namespace EZCodeLanguage
                 }
             }
 
+            Console.WriteLine();
             Console.WriteLine(WorkingFile + ": Exited with code " + endcode + ".");
 
             return endcode;
         }
+        internal int StackNumber = 0;
         private object? SingleLine(LineWithTokens line)
         {
+            StackNumber++;
             try
             {
                 string message = $"codeline: \"{line.Line.Value}\", file: \"{WorkingFile}\", line: {line.Line.CodeLine}";
@@ -80,39 +83,7 @@ namespace EZCodeLanguage
                 catch { StackTrace.Push(message); }
                 CurrentLine = line.Line;
                 string deb = "";
-                if (AmDebugging)
-                {
-                    foreach (var t in line.Tokens)
-                    {
-                        if (t.Value is RunMethod r)
-                        {
-                            deb += r.Runs.Name;
-                        }
-                        else if (t.Value is Var v)
-                        {
-                            deb += v.Name;
-                        }
-                        else if (t.Value is ExplicitWatch e)
-                        {
-                            deb += e.Runs.ClassName;
-                        }
-                        else if (t.Value is Class)
-                        {
-                            continue;
-                        }
-                        else if (t.Value is Method)
-                        {
-                            continue;
-                        }
-                        else
-                        {
-                            deb += t.Value.ToString();
-                        }
-                        deb += " ";
-                    }
-                    Console.WriteLine(line.Line.CodeLine + " -> " + line.Line.Value + "   ->   " + deb);
-                }
-                Token FirstToken = line.Tokens.FirstOrDefault(new Token(TokenType.None, ""));
+                Token FirstToken = line.Tokens.FirstOrDefault(new Token(TokenType.None, "", ""));
                 object? Return = null;
                 switch (FirstToken.Type)
                 {
@@ -129,35 +100,40 @@ namespace EZCodeLanguage
                                         {
                                             var tok = line.Tokens.Skip(2).ToArray();
                                             var.Value = SingleLine(new LineWithTokens(tok, line.Line));
+                                            Return = var.Value;
                                         }
-                                        /*else
+                                        else
                                         {
                                             if (var.Value is Class || (var.DataType.ObjectClass != null && var.DataType.Type != DataType.Types._null))
                                             {
-                                                Class cl = var.Value is Class ? var.Value as Class : var.DataType.ObjectClass;
-                                                if (cl.Methods.Any(x => x.Name == line.Tokens[1].Value.ToString()))
+                                                Class c = var.Value is Class ? var.Value as Class : var.DataType.ObjectClass;
+                                                if (c.Methods.Any(x => x.Name == line.Tokens[1].Value.ToString()))
                                                 {
+                                                    for (int i = 2; i < line.Tokens.Length; i++)
+                                                    {
+                                                        if (line.Tokens[i].Type == TokenType.Variable)
+                                                            line.Tokens[i].Value = GetValue(line.Tokens[i].Value);
+                                                    }
                                                     Method[] backupMethods = Methods;
-                                                    Methods = cl.Methods;
+                                                    Methods = c.Methods;
                                                     Var[] backupVars = Vars;
-                                                    Vars = cl.Properties;
+                                                    Vars = c.Properties;
                                                     line.Tokens = line.Tokens.Skip(1).ToArray();
                                                     object value = SingleLine(line);
                                                     Methods = backupMethods;
                                                     Vars = backupVars;
-
-                                                    var.Value = value;
+                                                    Return = value;
                                                 }
                                                 else
                                                 {
-                                                    throw new Exception($"Variable is trying to call a method '{line.Tokens[1].Value}' that doesn't exists");
+                                                    throw new Exception($"Variable is trying to call a method \"{line.Tokens[1].Value}\" that doesn't exists");
                                                 }
                                             }
                                             else
                                             {
-                                                throw new Exception($"Variable type is undefined and can not call the method '{line.Tokens[1].Value}'");
+                                                throw new Exception($"Variable type is undefined and can not call the method \"{line.Tokens[1].Value}\"");
                                             }
-                                        }*/
+                                        }
                                     }
                                     else
                                     {
@@ -166,18 +142,34 @@ namespace EZCodeLanguage
                                     break;
 
                                 case IdentType.Class:
-                                    Class cl = type as Class;
+                                    Class cl = new Class(type as Class);
                                     if (line.Tokens[2].Type == TokenType.New)
                                     {
                                         string name = line.Tokens[1].Value.ToString();
-                                        var = new Var(name, cl, line.Line, new DataType(cl.TypeOf != null ? cl.TypeOf.Type : DataType.Types._object, cl));
+                                        if (Vars.Any(x => x.Name == name))
+                                        {
+                                            var = Vars.FirstOrDefault(x=>x.Name == name);
+                                            if (var.Value is Class)
+                                            {
+                                                if ((var.Value as Class).Name != cl.Name)
+                                                    throw new Exception("Can not create a class instance with the same name as another class instance of another class");
+                                                else cl = (Class)var.Value;
+                                            }
+                                            else throw new Exception("Can not create a class instance with the same name as another class instance of another class");
+                                        }
+                                        else if (Methods.Any(x => x.Name == name) || Classes.Any(x => x.Name == name))
+                                            throw new Exception("Can not create a new class instance with the same name as a method or class");
+                                        else if (name == "exeption")
+                                            throw new Exception("The name \"exception\" is reserved for the try fail statement error variable");
+                                        else
+                                            var = new Var(name, cl, line.Line, stackNumber: StackNumber, type: new DataType(cl.TypeOf != null ? cl.TypeOf.Type : DataType.Types._object, cl));
                                         Vars = [.. Vars, var];
 
                                         if (line.Tokens.Length > 3)
                                         {
                                             if (line.Tokens[3].Type != TokenType.Colon)
                                                 throw new Exception("Expected colon to set instance properties");
-                                            ExplicitParams? p = cl.Params;
+                                            ExplicitParams? p = new ExplicitParams(cl.Params.Pattern, cl.Params.Runs, cl.Params.Vars, cl.Params.IsOverride, cl.Params.All);
                                             if (p != null)
                                             {
                                                 if (tokenizer.ParamIsFound(line.Tokens.Select(x => x.Value).ToArray(), 4, out _))
@@ -195,13 +187,23 @@ namespace EZCodeLanguage
                                                     }
                                                     else if (p.All)
                                                     {
-                                                        RunMethod run = p.Runs;
+                                                        RunMethod run = new RunMethod(p.Runs.Runs, p.Runs.Parameters, p.Runs.ClassName, p.Runs.Tokens);
                                                         Method[] backupMethods = Methods;
-                                                        Var[] backupVars = Vars;
+                                                        Var[] backupVars = Vars, backupParams = p.Runs.Parameters.Select(x => new Var(x.Name, x.Value, x.Line, x.StackNumber, x.DataType, x.Required)).ToArray();
                                                         Vars = cl.Properties;
                                                         Methods = cl.Methods;
-                                                        run.Parameters.FirstOrDefault(x => x.Name == "PARAMS").Value = string.Join(" ", line.Tokens.Select(x => x.Value).Skip(4));
+                                                        Var v = run.Parameters.FirstOrDefault(x => x.Name == "PARAMS");
+                                                        if (v is not null)
+                                                        {
+                                                            if (v.Value is string) v.Value = string.Join(" ", line.Tokens.Select(x => x.Value).Skip(4));
+                                                            else
+                                                            {
+                                                                v.Value = GetValue(new Token(TokenType.Identifier, line.Tokens.Skip(4).ToArray(), string.Join(" ", line.Tokens.Select(x => x.StringValue))));
+                                                                v.DataType = DataType.TypeFromValue(v.Value.ToString(), Classes, Containers);
+                                                            }
+                                                        }
                                                         MethodRun(run.Runs, run.Parameters);
+                                                        p.Runs.Parameters = backupParams; 
                                                         Methods = backupMethods;
                                                         Vars = backupVars;
                                                     }
@@ -214,7 +216,7 @@ namespace EZCodeLanguage
                                                         int i = 0;
                                                         while (run.ClassName != FirstToken.Value.ToString())
                                                         {
-                                                            i++; if (i > 50) throw new Exception($"Infinite loop error in with declaring instance of class '{cl.Name}'. Unkown cause, might be Interperater error or faulty code");
+                                                            i++; if (i > 50) throw new Exception($"Infinite loop error in with declaring instance of class \"{cl.Name}\". Unkown cause, might be Interperater error or faulty code");
                                                             Class cc = Classes.FirstOrDefault(x => x.Name == run.ClassName);
                                                             if (cc == null) throw new Exception("Error with finding class from name");
                                                             Vars = cc.Properties;
@@ -230,7 +232,7 @@ namespace EZCodeLanguage
                                                             }
                                                             else
                                                             {
-                                                                throw new Exception($"The format pattern of the class, '{p.Pattern}' does not match this class instance");
+                                                                throw new Exception($"The format pattern of the class, \"{p.Pattern}\" does not match this class instance");
                                                             }
                                                         }
                                                         Vars = cl.Properties;
@@ -246,7 +248,7 @@ namespace EZCodeLanguage
                                                 }
                                                 else
                                                 {
-                                                    throw new Exception($"The format pattern of the class, '{p.Pattern}' does not match this class instance");
+                                                    throw new Exception($"The format pattern of the class, \"{p.Pattern}\" does not match this class instance");
                                                 }
                                             }
                                             else
@@ -259,18 +261,18 @@ namespace EZCodeLanguage
                                                     for (int i = 0; i < vals.Length; i++)
                                                     {
                                                         string[] whole = vals[i].Split(":");
-                                                        if (whole.Length < 2) throw new Exception("Expected properties to be set by syntax 'PropertyName:Value'");
+                                                        if (whole.Length < 2) throw new Exception("Expected properties to be set by syntax \"PropertyName:Value\"");
                                                         string before = whole[0].Trim();
                                                         string after = whole[1].Trim();
                                                         if (cl.Properties.Any(x => x.Name == before))
                                                         {
                                                             Var v = cl.Properties.FirstOrDefault(x => x.Name == before);
                                                             after = GetValue(after).ToString();
-                                                            prop = [.. prop, new Var(v.Name, after, line.Line, v.DataType)];
+                                                            prop = [.. prop, new Var(v.Name, after, line.Line, stackNumber: StackNumber, type:v.DataType)];
                                                         }
                                                         else
                                                         {
-                                                            throw new Exception($"There is no '{before}' property in the '{cl.Name}' class");
+                                                            throw new Exception($"There is no \"{before}\" property in the \"{cl.Name}\" class");
                                                         }
                                                     }
                                                 }
@@ -280,30 +282,31 @@ namespace EZCodeLanguage
                                     }
                                     else
                                     {
-                                        throw new Exception("Expected 'new' keyword to declare instance of class");
+                                        throw new Exception("Expected \"new\" keyword to declare instance of class");
                                     }
                                     break;
 
                                 case IdentType.Method:
                                     Method method = type as Method;
+
                                     Method.MethodSettings settings = method.Settings;
                                     bool nocol = (settings & Method.MethodSettings.NoCol) != 0;
                                     int next = nocol ? 0 : 1;
                                     if (!nocol && line.Tokens[1].Type != TokenType.Colon)
                                     {
-                                        throw new Exception("Expected ':' identifier to set method perameters");
+                                        throw new Exception("Expected \":\" identifier to set method perameters");
                                     }
                                     Var[] vars = [];
 
                                     if (method.Params != null && method.Params.Length > 0)
                                     {
-                                        string all = string.Join(" ", line.Tokens.Skip(next + 1).Select(x => GetValue(x)));
-                                        string[] vals = all.Split(',').Select(x => x.Trim()).ToArray();
+                                        string all = string.Join(" ", line.Tokens.Skip(next + 1).Select(x => x.StringValue));
+                                        string[] vals = all.Split(',').Select(x => x.Trim()).Select(x => GetValue(x).ToString()).ToArray();
                                         if (vals.Length > 0)
                                         {
                                             for (int i = 0; i < method.Params.Length; i++)
                                             {
-                                                vars = [.. vars, new Var(method.Params[i].Name, vals[i], line.Line, method.Params[i].DataType)];
+                                                vars = [.. vars, new Var(method.Params[i].Name, vals[i], line.Line, stackNumber: StackNumber, type:method.Params[i].DataType)];
                                             }
                                             if (vars.Length != method.Params.Select(x => x.Required).ToArray().Length)
                                             {
@@ -324,12 +327,12 @@ namespace EZCodeLanguage
 
                                 default:
                                 case IdentType.Other:
-                                    throw new Exception("Unexpected identifier '" + FirstToken.Value.ToString() + "'. Expects methods, object delcaration, or existing variables");
+                                    throw new Exception("Unexpected identifier \"" + FirstToken.Value.ToString() + "\". Expects methods, object delcaration, or existing variables");
                             }
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Error with '{line.Line.Value}', Error Message:'{ex.Message}'");
+                            throw new Exception($"Error with \"{line.Line.Value}\", Error Message:\"{ex.Message}\"");
                         }
                         break;
                     case TokenType.RunExec:
@@ -343,7 +346,7 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Error with 'runexec' and with C# method. The reason may be because the method may not exist. Error Message:'{ex.Message}'");
+                            throw new Exception($"Error with \"runexec\" and with C# method. The reason may be because the method may not exist. Error Message:\"{ex.Message}\"");
                         }
                         break;
                     case TokenType.Undefined:
@@ -364,14 +367,14 @@ namespace EZCodeLanguage
                                 }
                                 else
                                 {
-                                    throw new Exception("Expected arrow identifier '=>' to set value");
+                                    throw new Exception("Expected arrow identifier \"=>\" to set value");
                                 }
                             }
-                            Vars = [.. Vars, new Var(tokenName.Value.ToString(), value, line.Line, null)];
+                            Vars = [.. Vars, new Var(tokenName.Value.ToString(), value, line.Line, stackNumber: StackNumber, type:null)];
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Error with 'undefined', Error Message:'{ex.Message}'");
+                            throw new Exception($"Error with \"undefined\", Error Message:\"{ex.Message}\"");
                         }
                         break;
                     case TokenType.Return:
@@ -382,14 +385,14 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Error with 'return', Error Message:'{ex.Message}'");
+                            throw new Exception($"Error with \"return\", Error Message:\"{ex.Message}\"");
                         }
                         break;
                     case TokenType.If:
                         try
                         {
                             Statement? statement = FirstToken.Value as Statement;
-                            Argument[]? arguments = statement!.Argument!.Args() ?? throw new Exception($"Problem with argument '{statement.Argument.Value}'");
+                            Argument[]? arguments = statement!.Argument!.Args() ?? throw new Exception($"Problem with argument \"{statement.Argument.Value}\"");
                             string[] parts = [];
                             for (int i = 0; i < arguments.Length; i++)
                             {
@@ -411,7 +414,7 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Error with 'if', Error Message:'{ex.Message}'");
+                            throw new Exception($"Error with \"if\", Error Message:\"{ex.Message}\"");
                         }
                         break;
                     case TokenType.Elif:
@@ -419,7 +422,7 @@ namespace EZCodeLanguage
                         {
                             if (LastIfWasTrue) break;
                             Statement? statement = FirstToken.Value as Statement;
-                            Argument[]? arguments = statement!.Argument!.Args() ?? throw new Exception($"Problem with argument '{statement.Argument.Value}'");
+                            Argument[]? arguments = statement!.Argument!.Args() ?? throw new Exception($"Problem with argument \"{statement.Argument.Value}\"");
                             string[] parts = [];
                             for (int i = 0; i < arguments.Length; i++)
                             {
@@ -441,7 +444,7 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Error with 'elif', Error Message:'{ex.Message}'");
+                            throw new Exception($"Error with \"elif\", Error Message:\"{ex.Message}\"");
                         }
                         break;
                     case TokenType.Else:
@@ -454,14 +457,14 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Error with 'else', Error Message:'{ex.Message}'");
+                            throw new Exception($"Error with \"else\", Error Message:\"{ex.Message}\"");
                         }
                         break;
                     case TokenType.Loop:
                         try
                         {
                             Statement? statement = FirstToken.Value as Statement;
-                            Argument[]? arguments = statement!.Argument!.Args() ?? throw new Exception($"Problem with argument '{statement.Argument.Value}'");
+                            Argument[]? arguments = statement!.Argument!.Args() ?? throw new Exception($"Problem with argument \"{statement.Argument.Value}\"");
                             if (statement.Argument.Tokens.Length == 1 && float.TryParse(statement.Argument.Tokens[0].Value.ToString(), out float floatParse))
                             {
                                 if (int.TryParse(floatParse.ToString(), out int parse))
@@ -494,13 +497,40 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Error with 'loop', Error Message:'{ex.Message}'");
+                            throw new Exception($"Error with \"loop\", Error Message:\"{ex.Message}\"");
                         }
                         break;
+
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     case TokenType.Try:
+                        try
+                        {
+                            Statement? statement = FirstToken.Value as Statement;
+                            LastTryNotFailed = null;
+                            RunStatement(statement, out _);
+                        }
+                        catch (Exception ex)
+                        {
+                            LastTryNotFailed = ex;
+                        }
                         break;
                     case TokenType.Fail:
+                        try
+                        {
+                            if (LastTryNotFailed == null) break;
+                            Var exception = new Var("exception", LastTryNotFailed.Message, CurrentLine, stackNumber: StackNumber, type:DataType.GetType("str", Classes, Containers));
+                            Vars = [.. Vars, exception];
+                            Statement? statement = FirstToken.Value as Statement;
+                            LastTryNotFailed = null;
+                            RunStatement(statement, out _);
+                            Vars = Vars.Where(x => x.Name != "exception").ToArray();
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Error with \"fail\", Error Message:\"{ex.Message}\"");
+                        }
                         break;
+                    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 }
                 StackTrace.TryPop(out _);
                 return Return;
@@ -534,7 +564,7 @@ namespace EZCodeLanguage
                             broke = true;
                             break;
                         }
-                        else throw new Exception("Expected the 'break' keyword after yield");
+                        else throw new Exception("Expected the \"break\" keyword after yield");
                     }
                     else
                     {
@@ -543,8 +573,8 @@ namespace EZCodeLanguage
                 }
                 if (line.Tokens[0].Type == TokenType.Break)
                 {
-                    break;
                     broke = true;
+                    break;
                 }
             }
             StackTrace.TryPop(out _);
@@ -557,7 +587,7 @@ namespace EZCodeLanguage
             try { result = SingleLine(line); } catch { }
             if (result == null) result = argument.Value;
             bool? term = Argument.EvaluateTerm(result.ToString());
-            if (term == null) throw new Exception($"Expected the argument section's method '{argument.Value}' to return boolean");
+            if (term == null) throw new Exception($"Expected the argument section's method \"{argument.Value}\" to return boolean");
             StackTrace.TryPop(out _);
             return term;
         }
@@ -569,36 +599,51 @@ namespace EZCodeLanguage
                 type = Vars.FirstOrDefault(x => x.Name == token)!;
                 return IdentType.Var;
             }
-            if (Classes.Any(x => x.Name == token))
-            {
-                type = Classes.FirstOrDefault(x => x.Name == token)!;
-                return IdentType.Class;
-            }
             if (Methods.Any(x => x.Name == token))
             {
                 type = Methods.FirstOrDefault(x => x.Name == token)!;
                 return IdentType.Method;
             }
-            else
+            if (Classes.Any(x => x.Name == token))
             {
-                type = null;
-                return IdentType.Other;
+                type = Classes.FirstOrDefault(x => x.Name == token)!;
+                return IdentType.Class;
             }
+            else if (Classes.Any(x => x.Aliases.Any(y => y == token)))
+            {
+                type = Classes.FirstOrDefault(x => x.Aliases.Any(y => y == token));
+                return IdentType.Class;
+            }
+            type = null;
+            return IdentType.Other;
         }
         public object? MethodRun(Method method, Var[]? parameters)
         {
-            if (AmDebugging) Console.WriteLine("-- " + method.Name + (method.Returns != null ? (" => " + (method.Returns.ObjectClass != null ? method.Returns.ObjectClass.Name : method.Returns.Type)) : ""));
             StackTrace.Push($"method: {method.Name}, file: {WorkingFile}, line: {method.Line.CodeLine}");
-            LineWithTokens[] lines = method.Lines;
             parameters ??= [];
+            LineWithTokens[] lines = method.Lines;
             Var[] vvars = method.Params ?? [];
+
             for (int i = 0; i < vvars.Length; i++)
             {
-                if (vvars[i].DataType != parameters[i].DataType && vvars[i].DataType != DataType.UnSet)
+                if (vvars[i].DataType.Type != parameters[i].DataType.Type && vvars[i].DataType != DataType.UnSet)
                 {
-                    throw new Exception($"Method parameters do not match. Error in method: '{method.Name}' parameter: '{vvars[i].Name}' inputted value: '{parameters[i].Value}'");
+                    throw new Exception($"Method parameters do not match. Error in method: \"{method.Name}\" parameter: \"{vvars[i].Name}\" inputted value: \"{parameters[i].Value}\"");
+                }
+                parameters[i].Name = vvars[i].Name;
+            }
+            Var[] overlap = [];
+            Var? v;
+            do
+            {
+                v = Vars.FirstOrDefault(x => parameters.Any(y => y.Name == x.Name), null);
+                if (v != null)
+                {
+                    overlap = [.. overlap, v];
+                    Vars = Vars.Where(x => x != v).ToArray();
                 }
             }
+            while (v != null);
             Vars = [.. Vars, .. parameters];
             object? result = null;
             foreach (LineWithTokens line in lines)
@@ -608,6 +653,7 @@ namespace EZCodeLanguage
                 if (line.Tokens[0].Type == TokenType.Return)
                     break;
             }
+            Vars = [.. Vars, .. overlap];
             Vars = Vars.Except(parameters).ToArray();
 
             StackTrace.TryPop(out _);
@@ -615,13 +661,28 @@ namespace EZCodeLanguage
         }
         public object GetValue(object obj, DataType? type = null)
         {
-            if (obj is Class)
+            if (obj.GetType().IsArray)
             {
-                return GetValue((obj as Class).Name, type);
+                object[] a = (object[])obj;
+                string all = "";
+                for (int i = 0; i < a.Length; i++)
+                {
+                    all += GetValue(a[i], type) + " ";
+                }
+                return all.Trim();
             }
-            else if (obj is string)
+            else if (obj is Class)
             {
-                Var? var = Vars.FirstOrDefault(x => x.Name == obj.ToString());
+                if (type == null)
+                    return GetValue((obj as Class).Name, type);
+                Var var = new Var("Intermediate Var for getting value", obj as Class, CurrentLine, stackNumber: StackNumber, type:type);
+                return GetValue(var, type);
+            }
+            else if (obj is string || obj is Var)
+            {
+                Var? var;
+                if (obj is Var)  var = obj as Var;
+                else var = Vars.FirstOrDefault(x => x.Name == obj.ToString());
                 if (var != null)
                 {
                     if (type != null && var.DataType != null)
@@ -632,7 +693,7 @@ namespace EZCodeLanguage
                         }
                         else if (var.DataType.ObjectClass == null && (var.DataType.Type == DataType.Types._null || var.DataType.Type == DataType.Types._object))
                         {
-                            throw new Exception($"Error with DataType of class instance. variable '{var.Name}' has an explicit data type that is not connected to a class");
+                            throw new Exception($"Error with DataType of class instance. variable \"{var.Name}\" has an explicit data type that is not connected to a class");
                         }
                         else if (var.DataType.ObjectClass != null && var.DataType.Type == DataType.Types._object)
                         {
@@ -649,7 +710,7 @@ namespace EZCodeLanguage
                                     object? result = MethodRun(get[t].Method, null);
                                     if (result != null)
                                         return result;
-                                    else throw new Exception("The 'get' method for this class instance does not return a value");
+                                    else throw new Exception("The \"get\" method for this class instance does not return a value");
                                 }
                                 else
                                 {
@@ -659,13 +720,13 @@ namespace EZCodeLanguage
                                     }
                                     else
                                     {
-                                        throw new Exception($"The Class of the instance does not contain a 'get' method for the expected datatype '{type.Type.ToString().Remove(0, 1)}'");
+                                        throw new Exception($"The Class of the instance does not contain a \"get\" method for the expected datatype \"{type.Type.ToString().Remove(0, 1)}\"");
                                     }
                                 }
                             }
                             else
                             {
-                                throw new Exception($"The Class of the instance does not contain a 'get' method for the expected datatype '{type.Type.ToString().Remove(0, 1)}'");
+                                throw new Exception($"The Class of the instance does not contain a \"get\" method for the expected datatype \"{type.Type.ToString().Remove(0, 1)}\"");
                             }
                         }
                         else if (var.DataType.ObjectClass != null && !(var.DataType.Type == DataType.Types._null || var.DataType.Type == DataType.Types._object))
@@ -673,7 +734,7 @@ namespace EZCodeLanguage
                             obj = var.Value;
                             if (obj is Class)
                             {
-                                obj = (var.Value as Class).Properties.FirstOrDefault(x=>x.Name == "Value", (var.Value as Class).Properties.FirstOrDefault(x => x.Name == "value", null)).Value ?? obj;
+                                obj = (var.Value as Class).Properties.FirstOrDefault(x => x.Name == "Value", (var.Value as Class).Properties.FirstOrDefault(x => x.Name == "value", null)).Value ?? obj;
                             }
                             switch (var.DataType.Type)
                             {
@@ -697,7 +758,7 @@ namespace EZCodeLanguage
                     }
                     else
                     {
-                        return var.Value ?? obj;
+                        return GetValue(var.Value, var.DataType) ?? obj;
                     }
                 }
             }
@@ -729,12 +790,11 @@ namespace EZCodeLanguage
         }
         public object Reflect(CSharpMethod method)
         {
-            if (AmDebugging) Console.WriteLine("--  " + method.Path);
             if (method.IsVar)
             {
                 string value = Vars.FirstOrDefault(x => x.Name == method.Path).Value.ToString();
                 Line[] l = [new Line(value, 0)];
-                object[] o = tokenizer.SplitParts(ref l, 0, out _);
+                object[] o = tokenizer.SplitParts(ref l, 0, 0, out _, out _);
                 if (o.Length > 1) throw new Exception("Error with reflection properties");
                 method = o[0] as CSharpMethod;
             }
@@ -760,7 +820,7 @@ namespace EZCodeLanguage
             Type type = Type.GetType(typeName);
             if (type == null)
             {
-                throw new ArgumentException($"Type '{typeName}' not found");
+                throw new ArgumentException($"Type \"{typeName}\" not found");
             }
 
             // Get the method name from the path
@@ -770,7 +830,7 @@ namespace EZCodeLanguage
             MethodInfo methodInfo = type.GetMethod(methodName, parameters.Select(p => p.GetType()).ToArray());
             if (methodInfo == null)
             {
-                throw new ArgumentException($"Method '{methodName}' not found in type '{typeName}'");
+                throw new ArgumentException($"Method \"{methodName}\" not found in type \"{typeName}\"");
             }
 
             // If the method is static, no need to create an instance
