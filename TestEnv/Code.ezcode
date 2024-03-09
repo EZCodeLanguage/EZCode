@@ -1,46 +1,68 @@
-semi class int 
-{
-    explicit typeof => EZCodeLanguage.EZCode.DataType("int")
+semi class float {
+    explicit typeof => EZCodeLanguage.EZCode.DataType("float")
     explicit params => set : PARAMS
     undefined Value
-    get => @int 
-    {
+    get => @float {
         return Value
     }
-    get => @str 
-    {
+    get => @int {
+        return Value
+    }
+    get => @str {
         return runexec => EZCodeLanguage.EZHelp.ObjectParse ~> {Value}, str
     }
-    method set : @int:num 
-    {
-        Value => runexec EZCodeLanguage.EZHelp.ObjectParse ~> {num}, int
+    method set : @float:num {
+        = num
     }
-    nocol method + : @int:val
-    {
+    nocol method = : @float:val {
+        Value => runexec EZCodeLanguage.EZHelp.ObjectParse ~> {val}, float
+    }
+    nocol method + : @float:val {
         Value => runexec EZCodeLanguage.EZHelp.Add ~> {Value}, {val}
     }
-    nocol method - : @int:val
-    {
+    nocol method - : @float:val {
         Value => runexec EZCodeLanguage.EZHelp.Subtract ~> {Value}, {val}
     }
-    nocol method * : @int:val
-    {
+    nocol method * : @float:val {
         Value => runexec EZCodeLanguage.EZHelp.Multiply ~> {Value}, {val}
     }
-    nocol method / : @int:val
-    {
+    nocol method / : @float:val {
         Value => runexec EZCodeLanguage.EZHelp.Divide ~> {Value}, {val}
     }
 }
 
-nocol method print : @str:text 
-{
+nocol method print : text {
     runexec EZCodeLanguage.EZHelp.Print ~> {text}
 }
 
-int number new : 50
-int ten new : 10
+class operations {
+    explicit watch \((.* {EXP})\) => operate : EXP
+    undefined Value
+    method operate : vals {
+        Value => runexec EZCodeLanguage.EZHelp.Operate ~> {vals}
+    }
+    get @float {
+        return Value
+    }
+}
 
-number + ten
+/*
+class expressions {
+    explicit watch \?\((.* {EXP})\)\? => expression : EXP
+    undefined Value
+    method operate : vals {
+        Value => runexec EZCodeLanguage.EZHelp.Evaluate ~> {vals}
+    }
+    get @bool {
+        return Value
+    }
+}
+*/
 
-print number
+float main new : 50
+float sub new : 10
+float result new
+
+result = (main - sub)
+
+print 'main'-'sub'='result'

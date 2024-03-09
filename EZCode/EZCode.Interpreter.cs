@@ -1,5 +1,4 @@
-﻿using System.Linq.Expressions;
-using System.Reflection;
+﻿using System.Reflection;
 using static EZCodeLanguage.Tokenizer;
 
 namespace EZCodeLanguage
@@ -67,9 +66,6 @@ namespace EZCodeLanguage
                 }
             }
 
-            Console.WriteLine();
-            Console.WriteLine(WorkingFile + ": Exited with code " + endcode + ".");
-
             return endcode;
         }
         internal int StackNumber = 0;
@@ -102,7 +98,7 @@ namespace EZCodeLanguage
                                             var.Value = SingleLine(new LineWithTokens(tok, line.Line));
                                             Return = var.Value;
                                         }
-                                        else
+                                        else 
                                         {
                                             if (var.Value is Class || (var.DataType.ObjectClass != null && var.DataType.Type != DataType.Types._null))
                                             {
@@ -111,8 +107,8 @@ namespace EZCodeLanguage
                                                 {
                                                     for (int i = 2; i < line.Tokens.Length; i++)
                                                     {
-                                                        if (line.Tokens[i].Type == TokenType.Variable)
-                                                            line.Tokens[i].Value = GetValue(line.Tokens[i].Value);
+                                                        line.Tokens[i].Value = GetValue(line.Tokens[i].Value);
+                                                        line.Tokens[i].StringValue = line.Tokens[i].Value is string or int or float ? line.Tokens[i].Value.ToString() : line.Tokens[i].StringValue;
                                                     }
                                                     Method[] backupMethods = Methods;
                                                     Methods = c.Methods;
@@ -143,7 +139,7 @@ namespace EZCodeLanguage
 
                                 case IdentType.Class:
                                     Class cl = new Class(type as Class);
-                                    if (line.Tokens[2].Type == TokenType.New)
+                                    if (line.Tokens.Length > 2 && line.Tokens[2].Type == TokenType.New)
                                     {
                                         string name = line.Tokens[1].Value.ToString();
                                         if (Vars.Any(x => x.Name == name))
@@ -500,8 +496,6 @@ namespace EZCodeLanguage
                             throw new Exception($"Error with \"loop\", Error Message:\"{ex.Message}\"");
                         }
                         break;
-
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                     case TokenType.Try:
                         try
                         {
@@ -530,7 +524,6 @@ namespace EZCodeLanguage
                             throw new Exception($"Error with \"fail\", Error Message:\"{ex.Message}\"");
                         }
                         break;
-                    ///////////////////////////////////////////////////////////////////////////////////////////////////////////////////
                 }
                 StackTrace.TryPop(out _);
                 return Return;
@@ -732,23 +725,32 @@ namespace EZCodeLanguage
                         else if (var.DataType.ObjectClass != null && !(var.DataType.Type == DataType.Types._null || var.DataType.Type == DataType.Types._object))
                         {
                             obj = var.Value;
-                            if (obj is Class)
+                            int i = 0;
+                            while (obj is Class)
                             {
-                                obj = (var.Value as Class).Properties.FirstOrDefault(x => x.Name == "Value", (var.Value as Class).Properties.FirstOrDefault(x => x.Name == "value", null)).Value ?? obj;
+                                i++; if (i > 50) break;
+                                obj = (var.Value as Class).Properties.FirstOrDefault(x => x.Name == "Value", (var.Value as Class).Properties.FirstOrDefault(x => x.Name == "value", null)).Value;
                             }
-                            switch (var.DataType.Type)
+                            try
                             {
-                                case DataType.Types._string: return obj.ToString();
-                                case DataType.Types._int: return int.Parse(obj.ToString());
-                                case DataType.Types._float: return float.Parse(obj.ToString());
-                                case DataType.Types._bool: return bool.Parse(obj.ToString());
-                                case DataType.Types._char: return char.Parse(obj.ToString());
-                                case DataType.Types._double: return double.Parse(obj.ToString());
-                                case DataType.Types._decimal: return decimal.Parse(obj.ToString());
-                                case DataType.Types._long: return long.Parse(obj.ToString());
-                                case DataType.Types._uint: return uint.Parse(obj.ToString());
-                                case DataType.Types._ulong: return ulong.Parse(obj.ToString());
-                                default: throw new Exception("Error finding datatype of class instance. This may be an interpreter error or the code for the class is faulty");
+                                switch (var.DataType.Type)
+                                {
+                                    case DataType.Types._string: return obj.ToString();
+                                    case DataType.Types._int: return int.Parse(obj.ToString());
+                                    case DataType.Types._float: return float.Parse(obj.ToString());
+                                    case DataType.Types._bool: return bool.Parse(obj.ToString());
+                                    case DataType.Types._char: return char.Parse(obj.ToString());
+                                    case DataType.Types._double: return double.Parse(obj.ToString());
+                                    case DataType.Types._decimal: return decimal.Parse(obj.ToString());
+                                    case DataType.Types._long: return long.Parse(obj.ToString());
+                                    case DataType.Types._uint: return uint.Parse(obj.ToString());
+                                    case DataType.Types._ulong: return ulong.Parse(obj.ToString());
+                                    default: throw new Exception("Error finding datatype of class instance. This may be an interpreter error or the code for the class is faulty");
+                                }
+                            }
+                            catch 
+                            {
+                                throw new Exception("Error returning correct value");
                             }
                         }
                         else
@@ -769,6 +771,16 @@ namespace EZCodeLanguage
                     Class cl = Classes.FirstOrDefault(x => x.Name == run.ClassName);
                     Method[] backupMethods = Methods;
                     Var[] backupVars = Vars;
+
+                    for (int i = 0; i < run.Parameters.Length; i++)
+                    {
+                        string[] parts = run.Parameters[i].Value.ToString().Split(" ");
+                        for (int j = 0; j < parts.Length; j++)
+                        {
+                            parts[j] = GetValue(parts[j], DataType.GetType("str", Classes, Containers)).ToString();
+                        }
+                        run.Parameters[i].Value = string.Join(" ", parts);
+                    }
 
                     Vars = cl.Properties;
                     Methods = cl.Methods;

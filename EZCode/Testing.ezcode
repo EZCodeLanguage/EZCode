@@ -1,3 +1,41 @@
+semi class int 
+{
+    explicit typeof => EZCodeLanguage.EZCode.DataType("int")
+    explicit params => set : PARAMS
+    undefined Value
+    get => @int 
+    {
+        return Value
+    }
+    get => @str 
+    {
+        return runexec => EZCodeLanguage.EZHelp.ObjectParse ~> {Value}, str
+    }
+    method set : @int:num 
+    {
+        Value => runexec EZCodeLanguage.EZHelp.ObjectParse ~> {num}, int
+    }
+    nocol method = : @int:val
+    {
+        set : val
+    }
+    nocol method + : @int:val
+    {
+        Value => runexec EZCodeLanguage.EZHelp.Add ~> {Value}, {val}
+    }
+    nocol method - : @int:val
+    {
+        Value => runexec EZCodeLanguage.EZHelp.Subtract ~> {Value}, {val}
+    }
+    nocol method * : @int:val
+    {
+        Value => runexec EZCodeLanguage.EZHelp.Multiply ~> {Value}, {val}
+    }
+    nocol method / : @int:val
+    {
+        Value => runexec EZCodeLanguage.EZHelp.Divide ~> {Value}, {val}
+    }
+}
 semi class str 
 {
     explicit alias string

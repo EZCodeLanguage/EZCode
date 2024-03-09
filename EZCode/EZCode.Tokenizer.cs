@@ -148,8 +148,8 @@ namespace EZCodeLanguage
             }
             public static DataType TypeFromValue(string value, Class[] classes, Container[] containers)
             {
-                if (int.TryParse(value, out _)) return GetType("int", classes, containers);
                 if (float.TryParse(value, out _)) return GetType("float", classes, containers);
+                if (int.TryParse(value, out _)) return GetType("int", classes, containers);
                 if (bool.TryParse(value, out _)) return GetType("bool", classes, containers);
                 return GetType("string", classes, containers);
             }
@@ -444,7 +444,7 @@ namespace EZCodeLanguage
             Override,
             Variable
         }
-        public char[] Delimeters = [' ', '{', '}', '@', ':', ',', '?', '$'];
+        public static char[] Delimeters = [' ', '{', '}', '@', ':', ',', '?', '$'];
         public string Code { get; set; }
         internal bool commentBlock = false;
         public List<Class> Classes = [];
@@ -1366,7 +1366,7 @@ namespace EZCodeLanguage
             }
             return var;
         }
-        private static string[] SplitWithDelimiters(string input, char[] delimiters)
+        internal static string[] SplitWithDelimiters(string input, char[] delimiters)
         {
             string pattern = $"({string.Join("|", delimiters.Select(c => Regex.Escape(c.ToString())))})";
             return Regex.Split(input, pattern);

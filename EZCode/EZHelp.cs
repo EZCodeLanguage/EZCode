@@ -1,5 +1,6 @@
 ﻿using static EZCodeLanguage.Tokenizer;
 using static EZCodeLanguage.Interpreter;
+using System.Data;
 
 namespace EZCodeLanguage
 {
@@ -109,24 +110,21 @@ namespace EZCodeLanguage
         {
             if (obj.ToString().StartsWith("{") && obj.ToString().EndsWith("}"))
             {
-                try
-                {
-                    obj = obj.ToString().Substring(1, obj.ToString().Length - 2).Trim();
-                    object o = obj;
-                    do
-                    {
-                        string n = obj.ToString();
-                        o = obj;
-                        DataType data = DataType.GetType(type.ToString(), Interpreter.Classes, Interpreter.Containers);
-                        if (Interpreter.Vars.Any(x => x.Name == n)) Interpreter.Vars.FirstOrDefault(x => x.Name == n).DataType = data;
-                        obj = Interpreter.GetValue(n, data);
-                    } while (obj != o);
-                }
-                catch
-                {
-
-                }
+                obj = obj.ToString().Substring(1, obj.ToString().Length - 2).Trim();
             }
+            try
+            {
+                object o = obj;
+                do
+                {
+                    string n = obj.ToString();
+                    o = obj;
+                    DataType data = DataType.GetType(type.ToString(), Interpreter.Classes, Interpreter.Containers);
+                    if (Interpreter.Vars.Any(x => x.Name == n)) Interpreter.Vars.FirstOrDefault(x => x.Name == n).DataType = data;
+                    obj = Interpreter.GetValue(n, data);
+                } while (obj != o);
+            }
+            catch { }
             if (!to_string)
             {
                 if (int.TryParse(obj.ToString(), out int i)) obj = i;
@@ -141,6 +139,20 @@ namespace EZCodeLanguage
             System.Data.DataRow row = table.NewRow();
             table.Rows.Add(row);
             return (bool)row["expression"];
+        }
+        public float Operate(string expression)
+        {
+            string[] parts = SplitWithDelimiters(ObjectParse(expression, "str").ToString(), ['-', '+', '=', '*', '/', '%', '&', '|', '!', ' ']).Where(x => x != "" && x != " ").ToArray();
+            expression = "";
+            foreach (string e in parts)
+            {
+                expression += ObjectParse(e, "float").ToString() + " ";
+            }
+            DataTable table = new DataTable();
+            table.Columns.Add("expression", typeof(string), expression);
+            DataRow row = table.NewRow();
+            table.Rows.Add(row);
+            return float.Parse((string)row["expression"]);
         }
         public object? StringMod(object x, object y, object mod)
         {
