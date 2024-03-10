@@ -1,8 +1,8 @@
 ﻿using EZCodeLanguage;
 using System.Diagnostics;
-using Newtonsoft.Json; 
 
 string path = "Code.ezcode";
+string full_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
 string code = File.ReadAllText(path);
 string file = Path.GetFullPath(path);
 
@@ -10,23 +10,24 @@ string file = Path.GetFullPath(path);
 
 // print token tree
 
-Tokenizer tokenizer = new Tokenizer(code);
-tokenizer.Tokenize();
 
-string save = JsonConvert.SerializeObject(tokenizer, Formatting.Indented);
+Parser parser = new Parser(code);
 
-File.WriteAllText("Code.eztokens", save);
+string save = Cache.SaveCache(full_path, parser);
 
-Tokenizer save_test = JsonConvert.DeserializeObject<Tokenizer>(save);
+Cache.SaveCache("D:\\EZCodeLanguage\\EZPackages\\Main\\package.json", parser);
+
+Parser save_test = Cache.OpenCache(full_path, "D:\\EZCodeLanguage\\EZPackages\\Main\\package.json");
+
 Console.WriteLine("Serialization/Deserialization Successful\n");
 Console.WriteLine(save);
 #else
 // run ezcode
 
 Stopwatch stopwatch = Stopwatch.StartNew();
-Tokenizer tokenizer = new Tokenizer();
-Tokenizer.LineWithTokens[] tokens = tokenizer.Tokenize(code);
-List<Tokenizer.Token[]> tokenTypes = [];
+Parser parser = new Parser();
+Parser.LineWithTokens[] tokens = parser.Tokenize(code);
+List<Parser.Token[]> tokenTypes = [];
 for (int i = 0; i < tokens.Length; i++)
 {
     tokenTypes.Add(tokens[i].Tokens);
@@ -36,7 +37,7 @@ for (int i = 0; i < tokenTypes.Count; i++)
 {
     for (int j = 0; j < tokenTypes[i].Length; j++)
     {
-        if (tokenTypes[i][j].Type == Tokenizer.TokenType.Identifier)
+        if (tokenTypes[i][j].Type == Parser.TokenType.Identifier)
             tokenString += $"'{tokenTypes[i][j].Value}' ";
         else
             tokenString += tokenTypes[i][j].Type.ToString() + " ";
@@ -59,7 +60,7 @@ Console.WriteLine(code + "\n" + len
 
 stopwatch.Restart();
 
-Interpreter interpreter = new Interpreter(file, tokenizer);
+Interpreter interpreter = new Interpreter(file, parser);
 interpreter.Interperate();
 
 

@@ -1,4 +1,4 @@
-﻿using static EZCodeLanguage.Tokenizer;
+﻿using static EZCodeLanguage.Parser;
 using static EZCodeLanguage.Interpreter;
 using System.Data;
 
@@ -86,7 +86,7 @@ namespace EZCodeLanguage
                 }
                 else
                 {
-                    if (Interpreter.tokenizer.WatchIsFound([name], 0, out ExplicitWatch watch, out _))
+                    if (Interpreter.parser.WatchIsFound([name], 0, out ExplicitWatch watch, out _))
                     {
                         object val = Interpreter.MethodRun(watch.Runs.Runs, watch.Runs.Parameters);
                         format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(val, new DataType(DataType.Types._string, null)).ToString());

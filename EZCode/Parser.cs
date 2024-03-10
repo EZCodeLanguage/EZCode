@@ -3,7 +3,7 @@ using System.Text.RegularExpressions;
 
 namespace EZCodeLanguage
 {
-    public class Tokenizer
+    public class Parser
     {
         public class Token
         {
@@ -161,6 +161,7 @@ namespace EZCodeLanguage
             public RunMethod Runs { get; set; }
             public ExplicitWatch(string format, RunMethod run, Var[] vars)
             {
+                format ??= "";
                 Pattern = format.Replace("{", "(?<").Replace("}", ">\\w+)");
                 Runs = run;
                 Vars = vars;
@@ -213,12 +214,6 @@ namespace EZCodeLanguage
             {
                 ExplicitWatch watch = new ExplicitWatch(Pattern, Runs, Vars);
                 return All || watch.IsFound(Regex.Escape(input), classes, containers);
-            }
-            public ExplicitParams(ExplicitWatch w)
-            {
-                Pattern = w.Pattern;
-                Vars = w.Vars;
-                Runs = w.Runs;
             }
         }
         public class RunMethod
@@ -451,8 +446,8 @@ namespace EZCodeLanguage
         public List<Container> Containers = [];
         public List<Method> Methods = [];
         public LineWithTokens[] Tokens = Array.Empty<LineWithTokens>();
-        public Tokenizer() { }
-        public Tokenizer(string code)
+        public Parser() { }
+        public Parser(string code)
         {
             Code = code;
         }

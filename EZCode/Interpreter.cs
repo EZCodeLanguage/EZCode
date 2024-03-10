@@ -1,20 +1,20 @@
 ﻿using System.Reflection;
-using static EZCodeLanguage.Tokenizer;
+using static EZCodeLanguage.Parser;
 
 namespace EZCodeLanguage
 {
     public class Interpreter
     {
-        public Tokenizer tokenizer { get; set; }
+        public Parser parser { get; set; }
         public string WorkingFile { get; set; }
         public EZHelp EZHelp { get; private set; }
-        public Interpreter(string file, Tokenizer tokenizer)
+        public Interpreter(string file, Parser parser)
         {
             StackTrace = new Stack<string>();
             WorkingFile = file;
-            this.tokenizer = tokenizer;
+            this.parser = parser;
             EZHelp = new EZHelp(this);
-            Methods = tokenizer.Methods.ToArray();
+            Methods = parser.Methods.ToArray();
 
             for (int i = 0; i < Classes.Length; i++)
             {
@@ -41,10 +41,10 @@ namespace EZCodeLanguage
         public Exception[] Errors { get; private set; } = [];
         public Var[] Vars { get; set; } = [];
         public Method[] Methods { get; set; } = [];
-        public Class[] Classes { get => tokenizer.Classes.ToArray(); }
-        public Container[] Containers { get => tokenizer.Containers.ToArray(); }
+        public Class[] Classes { get => parser.Classes.ToArray(); }
+        public Container[] Containers { get => parser.Containers.ToArray(); }
         public Line CurrentLine { get; private set; }
-        public int Interperate() => Interperate(tokenizer.Tokens);
+        public int Interperate() => Interperate(parser.Tokens);
         public int Interperate(LineWithTokens[] LineTokens)
         {
             int endcode = 0;
@@ -168,7 +168,7 @@ namespace EZCodeLanguage
                                             ExplicitParams? p = new ExplicitParams(cl.Params.Pattern, cl.Params.Runs, cl.Params.Vars, cl.Params.IsOverride, cl.Params.All);
                                             if (p != null)
                                             {
-                                                if (tokenizer.ParamIsFound(line.Tokens.Select(x => x.Value).ToArray(), 4, out _))
+                                                if (parser.ParamIsFound(line.Tokens.Select(x => x.Value).ToArray(), 4, out _))
                                                 {
                                                     if (p.IsOverride)
                                                     {
@@ -220,7 +220,7 @@ namespace EZCodeLanguage
                                                             object result = GetValue(run);
                                                             Methods = backupMethods;
                                                             Vars = backupVars;
-                                                            bool f = tokenizer.ParamIsFound([result is Var v ? v.Value : result], 0, out var param);
+                                                            bool f = parser.ParamIsFound([result is Var v ? v.Value : result], 0, out var param);
                                                             if (f)
                                                             {
                                                                 run = p.Runs;
@@ -806,7 +806,7 @@ namespace EZCodeLanguage
             {
                 string value = Vars.FirstOrDefault(x => x.Name == method.Path).Value.ToString();
                 Line[] l = [new Line(value, 0)];
-                object[] o = tokenizer.SplitParts(ref l, 0, 0, out _, out _);
+                object[] o = parser.SplitParts(ref l, 0, 0, out _, out _);
                 if (o.Length > 1) throw new Exception("Error with reflection properties");
                 method = o[0] as CSharpMethod;
             }
