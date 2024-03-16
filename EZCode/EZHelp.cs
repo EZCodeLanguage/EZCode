@@ -18,8 +18,10 @@ namespace EZCodeLanguage
             Interpreter.Output = [.. Interpreter.Output, text.ToString()];
             Console.WriteLine(text);
         }
-        public string Format(object _text)
+        public string Format(object _text) => Format(_text, "'");
+        public string Format(object _text, object _char)
         {
+            char c = char.Parse(_char.ToString());
             string text = ObjectParse(_text.ToString(), "str", true).ToString();
             string format = "";
             char[] chars = text.ToCharArray();
@@ -30,6 +32,7 @@ namespace EZCodeLanguage
             {
                 if (backslash)
                 {
+                    int minus = 0;
                     backslash = false;
                     chars[i] = 
                         chars[i] == '\\' ? '\\' :
@@ -38,16 +41,25 @@ namespace EZCodeLanguage
                         chars[i] == 'p' ? '.' :
                         chars[i] == '"' ? '\'' :
                         chars[i] == '\'' ? '"' :
+                        chars[i] == '_' ? ' ' :
+                        chars[i] == 'L' ? '{' :
+                        chars[i] == 'R' ? '}' :
+                        chars[i] == 'q' ? '?' :
+                        chars[i] == 'a' ? '@' :
+                        chars[i] == ';' ? ':' :
                         chars[i];
                     if (chars[i] == '!')
                     {
                         chars = chars.ToList().Where((x, y) => y != i).ToArray();
+                        minus++;
                     }
                     count--;
-                    i--;
+                    i--; 
                     chars = chars.ToList().Where((x, y) => y != i).ToArray();
+                    i -= minus;
 
-                    format += chars[i];
+                    if (minus == 0)
+                        format += chars[i];
                     continue;
                 }
                 else if (chars[i] == '\\')
@@ -55,7 +67,7 @@ namespace EZCodeLanguage
                     backslash = true;
                     continue;
                 }
-                if (chars[i] == '\'')
+                if (chars[i] == c)
                 {
                     chars = chars.ToList().Where((x, y) => y != i).ToArray();
                     open = !open;
@@ -127,17 +139,23 @@ namespace EZCodeLanguage
             catch { }
             if (!to_string)
             {
-                if (int.TryParse(obj.ToString(), out int i)) obj = i;
-                if (float.TryParse(obj.ToString(), out float f)) obj = f;
+                if (int.TryParse(obj.ToString(), out int i)) return i;
+                if (float.TryParse(obj.ToString(), out float f)) return f;
             }
             return obj;
         }
         public bool Evaluate(string expression)
         {
-            System.Data.DataTable table = new System.Data.DataTable();
-            table.Columns.Add("expression", typeof(bool), expression);
-            System.Data.DataRow row = table.NewRow();
+            expression = expression.Replace("||", "or").Replace("&&", "and").Replace("&", "and").Replace("|", "or");
+            DataTable table = new DataTable();
+            table.Columns.Add("expression", typeof(bool));
+
+            DataRow row = table.NewRow();
+            row["expression"] = DBNull.Value;
             table.Rows.Add(row);
+
+            table.Columns["expression"].Expression = expression;
+
             return (bool)row["expression"];
         }
         public float Operate(string expression)
@@ -153,6 +171,21 @@ namespace EZCodeLanguage
             DataRow row = table.NewRow();
             table.Rows.Add(row);
             return float.Parse((string)row["expression"]);
+        }
+        public bool Expression(string expression)
+        {
+            string[] parts = SplitWithDelimiters(ObjectParse(expression, "str").ToString(), ['-', '+', '=', '*', '/', '%', '&', '|', '!', ' ']).Where(x => x != "" && x != " ").ToArray();
+            expression = "";
+            foreach (string e in parts)
+            {
+                expression += ObjectParse(e, "str").ToString() + " ";
+            }
+            return Evaluate(expression.Trim());
+        }
+        public string StringExpression(string expression)
+        {
+            string[] parts = ObjectParse(expression, "str").ToString().Split(['+']).Where(x => x != "" && x != " ").Select(e => ObjectParse(e.Trim(), "str").ToString()).ToArray();
+            return string.Join("", parts);
         }
         public object? StringMod(object x, object y, object mod)
         {
@@ -305,6 +338,14 @@ namespace EZCodeLanguage
             }
             string all = string.Join(" ", values.Select(x => x.ToString()), true);
             return Evaluate(all);
+        }
+        public bool Compare(object v1, object v2)
+        {
+            return Compare(v1, v2, "");
+        }
+        public bool Compare(object v1)
+        {
+            return Compare(v1, "", "");
         }
     }
 }

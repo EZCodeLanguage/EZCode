@@ -1,3 +1,47 @@
+semi class float {
+    explicit typeof => EZCodeLanguage.EZCode.DataType("float")
+    explicit params => set : PARAMS
+    undefined Value
+    get => @float {
+        return Value
+    }
+    get => @int {
+        return Value
+    }
+    get => @str {
+        return runexec EZCodeLanguage.EZHelp.ObjectParse ~> {Value}, str
+    }
+    method set : @float:num {
+        = num
+    }
+    nocol method = : @float:val {
+        Value => runexec EZCodeLanguage.EZHelp.ObjectParse ~> {val}, float
+    }
+    nocol method + : @float:val {
+        Value => runexec EZCodeLanguage.EZHelp.Add ~> {Value}, {val}
+    }
+    nocol method - : @float:val {
+        Value => runexec EZCodeLanguage.EZHelp.Subtract ~> {Value}, {val}
+    }
+    nocol method * : @float:val {
+        Value => runexec EZCodeLanguage.EZHelp.Multiply ~> {Value}, {val}
+    }
+    nocol method / : @float:val {
+        Value => runexec EZCodeLanguage.EZHelp.Divide ~> {Value}, {val}
+    }
+}
+
+class operations {
+    explicit watch \((.* {EXP})\) => operate : EXP
+    undefined Value
+    method operate : vals {
+        Value => runexec EZCodeLanguage.EZHelp.Operate ~> {vals}
+    }
+    get @float {
+        return Value
+    }
+}
+
 semi class int 
 {
     explicit typeof => EZCodeLanguage.EZCode.DataType("int")
@@ -9,15 +53,15 @@ semi class int
     }
     get => @str 
     {
-        return runexec => EZCodeLanguage.EZHelp.ObjectParse ~> {Value}, str
+        return runexec EZCodeLanguage.EZHelp.ObjectParse ~> {Value}, str
     }
     method set : @int:num 
     {
-        Value => runexec EZCodeLanguage.EZHelp.ObjectParse ~> {num}, int
+        = num
     }
     nocol method = : @int:val
     {
-        set : val
+        Value => runexec EZCodeLanguage.EZHelp.ObjectParse ~> {val}, int
     }
     nocol method + : @int:val
     {

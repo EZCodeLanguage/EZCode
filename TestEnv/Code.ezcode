@@ -1,16 +1,21 @@
-semi class float {
+class bool {
+    explicit typeof => EZCodeLanguage.EZCode.DataType("bool")
+    explicit params => set : PARAMS
+    undefined Value
+    method set : val {
+        = val
+    }
+    nocol method = : @bool:val {
+        Value => runexec EZCodeLanguage.EZHelp.ObjectParse ~> {val}, bool
+    }
+    nocol method ! {
+        Value => runexec EZCodeLanguage.EZHelp.Compare ~> not, {val}
+    }
+}
+class float {
     explicit typeof => EZCodeLanguage.EZCode.DataType("float")
     explicit params => set : PARAMS
     undefined Value
-    get => @float {
-        return Value
-    }
-    get => @int {
-        return Value
-    }
-    get => @str {
-        return runexec => EZCodeLanguage.EZHelp.ObjectParse ~> {Value}, str
-    }
     method set : @float:num {
         = num
     }
@@ -30,39 +35,109 @@ semi class float {
         Value => runexec EZCodeLanguage.EZHelp.Divide ~> {Value}, {val}
     }
 }
-
-nocol method print : text {
+class int {
+    explicit typeof => EZCodeLanguage.EZCode.DataType("int")
+    explicit params => set : PARAMS
+    undefined Value
+    method set : @int:num {
+        = num
+    }
+    nocol method = : @int:val {
+        Value => runexec EZCodeLanguage.EZHelp.ObjectParse ~> {val}, int
+    }
+    nocol method + : @int:val {
+        Value => runexec EZCodeLanguage.EZHelp.Add ~> {Value}, {val}
+    }
+    nocol method - : @int:val {
+        Value => runexec EZCodeLanguage.EZHelp.Subtract ~> {Value}, {val}
+    }
+    nocol method * : @int:val {
+        Value => runexec EZCodeLanguage.EZHelp.Multiply ~> {Value}, {val}
+    }
+    nocol method / : @int:val {
+        Value => runexec EZCodeLanguage.EZHelp.Divide ~> {Value}, {val}
+    }
+}
+class str {
+    explicit alias string
+    explicit typeof => EZCodeLanguage.EZCode.DataType("string")
+    explicit watch "(.*? {text})" => set : text
+    explicit params => set : PARAMS
+    undefined Value
+    method set : text {
+        = text
+    }
+    nocol method = : @str:text => @str {
+        Value => format : text
+    }
+    nocol method + : @str:text {
+        Value => runexec EZCodeLanguage.EZHelp.StringMod ~> {Value}, {text}, +
+    }
+    nocol method - : @str:text {
+        Value => runexec EZCodeLanguage.EZHelp.StringMod ~> {Value}, {text}, -
+    }
+    nocol method * : @str:text {
+        Value => runexec EZCodeLanguage.EZHelp.StringMod ~> {Value}, {text}, *
+    }
+    nocol method / : @str:text {
+        Value => runexec EZCodeLanguage.EZHelp.StringMod ~> {Value}, {text}, /
+    }
+    method format : @str:text => @str {
+        return runexec EZCodeLanguage.EZHelp.Format ~> {text}
+    }
+}
+class expressions {
+    explicit watch \((.* {EXP})\) => expression : EXP
+    undefined Value
+    method expression : vals {
+        Value => runexec EZCodeLanguage.EZHelp.ObjectParse ~> {vals}, str
+    }
+    get => @bool {
+        return runexec EZCodeLanguage.EZHelp.Expression ~> {Value}
+    }
+    get => @float {
+        return runexec EZCodeLanguage.EZHelp.Operate ~> {Value}
+    }
+    get => @int {
+        return runexec EZCodeLanguage.EZHelp.Operate ~> {Value}
+    }
+    get => @str {
+        return runexec EZCodeLanguage.EZHelp.StringExpression ~> {Value}
+    }
+}
+nocol method print : @str:text {
     runexec EZCodeLanguage.EZHelp.Print ~> {text}
 }
 
-class operations {
-    explicit watch \((.* {EXP})\) => operate : EXP
-    undefined Value
-    method operate : vals {
-        Value => runexec EZCodeLanguage.EZHelp.Operate ~> {vals}
-    }
-    get @float {
-        return Value
+class example {
+    str name new
+    int line new
+    get => @str {
+        return (name line)
     }
 }
+example test new : name:Yes, line:50
+print test
 
-/*
-class expressions {
-    explicit watch \?\((.* {EXP})\)\? => expression : EXP
-    undefined Value
-    method operate : vals {
-        Value => runexec EZCodeLanguage.EZHelp.Evaluate ~> {vals}
-    }
-    get @bool {
-        return Value
-    }
-}
-*/
+str t new : str:format:\_'test'\_
+print t
 
-float main new : 50
-float sub new : 10
-float result new
 
-result = (main - sub)
+bool name new : true
+bool sec new : false
 
-print 'main'-'sub'='result'
+float val new : 10.6
+float n new : 50
+
+int main new : 35
+int sub new : 12
+
+str a new : Hello
+str b new : World
+
+name = (sec | name)
+val = (val - n)
+main = (main - sub)
+a = (a + b)
+
+print 'name'\c 'val'\c 'main'\c 'a'
