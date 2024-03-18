@@ -3,9 +3,11 @@ Microsoft Visual Studio Solution File, Format Version 12.00
 # Visual Studio Version 17
 VisualStudioVersion = 17.8.34330.188
 MinimumVisualStudioVersion = 10.0.40219.1
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "EZCode", "EZCode\EZCode.csproj", "{6FCDA7AB-687A-4DEB-8E97-BE9C737603F3}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "EZCode", "EZCode\EZCode.csproj", "{6FCDA7AB-687A-4DEB-8E97-BE9C737603F3}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "TestEnv", "TestEnv\TestEnv.csproj", "{ECC3A0D8-B300-4258-804A-96B4288FD74C}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestEnv", "TestEnv\TestEnv.csproj", "{ECC3A0D8-B300-4258-804A-96B4288FD74C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ez", "ez\ez.csproj", "{A9062E15-5201-47CC-917D-C210E41A1AEC}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -21,6 +23,10 @@ Global
 		{ECC3A0D8-B300-4258-804A-96B4288FD74C}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{ECC3A0D8-B300-4258-804A-96B4288FD74C}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{ECC3A0D8-B300-4258-804A-96B4288FD74C}.Release|Any CPU.Build.0 = Release|Any CPU
+		{A9062E15-5201-47CC-917D-C210E41A1AEC}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{A9062E15-5201-47CC-917D-C210E41A1AEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{A9062E15-5201-47CC-917D-C210E41A1AEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{A9062E15-5201-47CC-917D-C210E41A1AEC}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE

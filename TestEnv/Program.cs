@@ -6,18 +6,18 @@ string full_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
 string code = File.ReadAllText(path);
 string file = Path.GetFullPath(path);
 
-#if false
+#if true
 
 // print token tree
 
 
 Parser parser = new Parser(code);
 
-string save = Cache.SaveCache(full_path, parser);
+string save = Package.SaveCache(full_path, parser);
 
-Cache.SaveCache("D:\\EZCodeLanguage\\EZPackages\\Main\\package.json", parser);
+Package.SaveCache(Package.GetPackageFile("Main"), parser);
 
-Parser save_test = Cache.OpenCache(full_path, "D:\\EZCodeLanguage\\EZPackages\\Main\\package.json");
+Parser save_test = Package.OpenCache(full_path, Package.GetPackageFile("Main"));
 
 Console.WriteLine("Serialization/Deserialization Successful\n");
 Console.WriteLine(save);

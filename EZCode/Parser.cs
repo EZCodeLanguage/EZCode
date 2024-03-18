@@ -1,4 +1,5 @@
 ﻿using System.Text;
+using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace EZCodeLanguage
@@ -365,15 +366,13 @@ namespace EZCodeLanguage
             public string Path { get; set; } = path;
             public string[]? Params { get; set; } = @params;
             public bool IsVar { get; set; } = isVar;
-            public override string ToString()
-            {
-                return $"{Path}";
-            }
+            public override string ToString() => $"{Path}";
         }
         public class CSharpDataType(string path, string type)
         {
             public string Path { get; set; } = path;
             public string Type { get; set; } = type;
+            public override string ToString() => $"{Path}(\"{Type}\")";
         }
         public enum TokenType
         {

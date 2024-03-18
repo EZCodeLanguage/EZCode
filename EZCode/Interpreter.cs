@@ -5,6 +5,7 @@ namespace EZCodeLanguage
 {
     public class Interpreter
     {
+        public static string Version = "3.0.0-beta";
         public Parser parser { get; set; }
         public string WorkingFile { get; set; }
         public EZHelp EZHelp { get; private set; }
