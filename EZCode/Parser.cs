@@ -643,16 +643,19 @@ namespace EZCodeLanguage
                                 for (int k = 0; k < bracketLineTokens.Tokens.Length; k++)
                                 {
                                     bracketLineTokens.Line.CodeLine = lines[lineIndex].CodeLine + k;
-                                    if (bracketLineTokens.Tokens[k].Type == TokenType.New || bracketLineTokens.Tokens[k].Type == TokenType.Undefined) isproperty = true;
-                                    if (bracketLineTokens.Tokens[k].Type == TokenType.Method) ismethod = true;
-                                    if (bracketLineTokens.Tokens[k].Type == TokenType.Explicit) isexplicit = true;
-                                    if (bracketLineTokens.Tokens[k].Type == TokenType.Get) isget = true;
-                                    if (bracketLineTokens.Tokens[k].Type == TokenType.Class) isclass = true;
-                                    if (isexplicit && bracketLineTokens.Tokens[k].Type == TokenType.Watch) iswatch = true;
-                                    if (isexplicit && bracketLineTokens.Tokens[k].Type == TokenType.Params) isparam = true;
-                                    if (isexplicit && bracketLineTokens.Tokens[k].Type == TokenType.TypeOf) istypeof = true;
-                                    if (isexplicit && bracketLineTokens.Tokens[k].Type == TokenType.InsideOf) isinsideof = true;
-                                    if (isexplicit && bracketLineTokens.Tokens[k].Type == TokenType.Alias) isalias = true;
+                                    switch (bracketLineTokens.Tokens[k].Type)
+                                    {
+                                        case TokenType.New: case TokenType.Undefined: isproperty = true; continue;
+                                        case TokenType.Method: ismethod = true; continue;
+                                        case TokenType.Explicit: isexplicit = true; continue;
+                                        case TokenType.Get: isget = true; continue;
+                                        case TokenType.Class: isclass = true; continue;
+                                        case TokenType.Watch: if (isexplicit) iswatch = true; continue;
+                                        case TokenType.Params: if (isexplicit) isparam = true; continue;
+                                        case TokenType.TypeOf: if (isexplicit) istypeof = true; continue;
+                                        case TokenType.InsideOf: if (isexplicit) isinsideof = true; continue;
+                                        case TokenType.Alias: if (isexplicit) isalias = true; continue;
+                                    }
                                 }
                                 if (isproperty)
                                 {
@@ -663,7 +666,7 @@ namespace EZCodeLanguage
                                 {
                                     Method method = SetMethod(lines, j);
                                     methods = methods.Append(method).ToArray();
-                                    skip += method.Lines.Length;
+                                    skip += method.Lines.Length + 2;
                                 }
                                 else if (iswatch)
                                 {
@@ -707,7 +710,7 @@ namespace EZCodeLanguage
                                 {
                                     GetValueMethod getVal = SetGetVal(lines, j);
                                     getValueMethods = [.. getValueMethods, getVal];
-                                    skip += getVal.Method.Lines.Length;
+                                    skip += getVal.Method.Lines.Length + 2;
                                 }
                                 else if (isalias)
                                 {
@@ -1166,11 +1169,10 @@ namespace EZCodeLanguage
                     }
                     lineWithTokens = Tokenize(code);
                     lineWithTokens = lineWithTokens.Select(x => { x.Line.CodeLine++; return x; }).ToArray();
-                    if (l.Last().Value.ToString() == "}")
+                    if (lineWithTokens.Last().Line.Value.ToString() == "}")
                     {
-                        removes.Add(l[l.Count - 1]);
-                        l.RemoveAt(l.Count - 1);
-                        lineWithTokens = lineWithTokens.Where((x, y) => y != l.Count - 1).ToArray();
+                        removes.Add(lineWithTokens[lineWithTokens.Length - 1].Line);
+                        lineWithTokens = lineWithTokens.Where((x, y) => y != lineWithTokens.Length - 1).ToArray();
                     }
                     if (lineWithTokens[0].Line.Value == "{") lineWithTokens = lineWithTokens.Where((x, y) => y != 0).ToArray();
                     lines = [.. l];
@@ -1250,11 +1252,12 @@ namespace EZCodeLanguage
                 try
                 {
                     if (Statement.Types.Contains(bracketLineTokens[0].Value))
-                    {
-                        lines = l.ToArray();
-                        Statement statement = SetStatement(ref lines, Array.IndexOf(lines, bracketLine), 0, out List<Line> removes);
+                    {//right here
+                        lines = l.Select(x => new Line(x.Value, x.CodeLine)).ToArray();
+                        Statement statement = SetStatement(ref lines, i, 0, out List<Line> removes);
                         for (int j = 0; j < removes.Count; j++) l.Remove(removes[j]);
-                        bracketLineTokens = [SingleToken([statement], 0, string.Join(" ", statement.Argument.Tokens.Select(x=>x.StringValue)), out _)];
+                        bracketLineTokens = [SingleToken([statement], 0, string.Join(" ", statement.Line.Value), out _)];
+                        lines = l.Select(x => new Line(x.Value, x.CodeLine)).ToArray();
                     }
                 } catch { }
                 if (bracketLine.Value.Contains('{'))

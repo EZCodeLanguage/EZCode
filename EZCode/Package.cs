@@ -39,7 +39,7 @@ namespace EZCodeLanguage
             for (int i = 0; i < package_names.Length; i++)
             {
                 Parser p = GetPackageAsParser(package_names[i]);
-                parser = CombineParsers(p);
+                parser = CombineParsers(parser, p);
             }
             return parser;
         }
@@ -87,7 +87,7 @@ namespace EZCodeLanguage
                     if (cache.Classes.Count == 0 && cache.Methods.Count == 0 && cache.Containers.Count == 0 && cache.Tokens.Length == 0) 
                         cache.Tokenize(string.Join("\n\n// End of File\n\n", project.Files.Select(x => File.ReadAllText(Path.Combine(fileInfo.DirectoryName, x)))));
 
-                    CombineParsers(cache);
+                    CombineParsers(parser, cache);
                 }
 
                 FileInfo Read = new FileInfo(Path.Combine(fileInfo.DirectoryName, Folder, Path.GetFileNameWithoutExtension(fileInfo.Name) + Extension));
@@ -95,14 +95,12 @@ namespace EZCodeLanguage
 
                 cache = JsonConvert.DeserializeObject<Parser>(File.ReadAllText(Read.FullName));
 
-                parser = CombineParsers(cache);
+                parser = CombineParsers(parser, cache);
             }
             return parser;
         }
-        public static Parser CombineParsers(Parser parser)
+        public static Parser CombineParsers(Parser parser, Parser p2)
         {
-            Parser p2 = new Parser();
-
             parser.Code += p2.Code + "\n\n// End of File";
             parser.Tokens = [.. parser.Tokens, .. p2.Tokens];
             parser.Classes = [.. parser.Classes, .. p2.Classes];

@@ -347,5 +347,9 @@ namespace EZCodeLanguage
         {
             return Compare(v1, "", "");
         }
+        public string StringParse(object v) => ObjectParse(v, "str").ToString();
+        public bool BoolParse(object v) => bool.Parse(ObjectParse(v, "bool").ToString());
+        public float FloatParse(object v) => float.Parse(ObjectParse(v, "float").ToString());
+        public int IntParse(object v) => int.Parse(ObjectParse(v, "int").ToString());
     }
 }

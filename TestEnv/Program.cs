@@ -6,7 +6,7 @@ string full_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
 string code = File.ReadAllText(path);
 string file = Path.GetFullPath(path);
 
-#if true
+#if false
 
 // print token tree
 

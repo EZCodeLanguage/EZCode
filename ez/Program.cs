@@ -42,7 +42,16 @@ static class ez
                 break;
             default:
                 string path = string.Join(" ", args);
-                string contents = File.ReadAllText(path);
+                string contents;
+                try
+                {
+                    contents = File.ReadAllText(path);
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    return;
+                }
                 parser = new Parser(contents);
                 parser.Tokenize();
                 interpreter = new Interpreter(path, parser);
@@ -54,7 +63,7 @@ static class ez
     {
         if (contents == null)
         {
-            Console.WriteLine("EZCode Environment started");
+            Console.WriteLine("EZCode Environment started. 'Main' Package already included");
             Console.WriteLine("Commands: " +
                 "END to end environment, " +
                 "RUN to run program, " +

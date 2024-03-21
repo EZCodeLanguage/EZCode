@@ -83,7 +83,6 @@ namespace EZCodeLanguage
                 try { if (StackTrace.First() != message) StackTrace.Push(message); }
                 catch { StackTrace.Push(message); }
                 CurrentLine = line.Line;
-                string deb = "";
                 Token FirstToken = line.Tokens.FirstOrDefault(new Token(TokenType.None, "", ""));
                 object? Return = null;
                 switch (FirstToken.Type)
