@@ -1,8 +1,8 @@
 ﻿using EZCodeLanguage;
 using System.Diagnostics;
 
-string path = "Code.ezcode";
-string full_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
+string path = "D:/EZCodeLanguage/Packages/Main/Main.ezcode";
+string full_path = Path.Combine("D:/EZCodeLanguage/Packages/Main/", path);
 string code = File.ReadAllText(path);
 string file = Path.GetFullPath(path);
 

@@ -53,6 +53,9 @@ namespace EZCodeLanguage
 
             foreach (LineWithTokens line in LineTokens)
             {
+                if (line.Tokens.Length == 0 || (line.Tokens.Length == 1 && line.Tokens[0].Value is Class or Method))
+                    continue;
+
                 var backup_vars = Vars.Select(x => new Var(x.Name, x.Value, x.Line, x.StackNumber, x.DataType, x.Required)).ToArray();
                 var backup_methods = Methods.Select(x => new Method(x.Name, x.Line, x.Settings, x.Lines, x.Params, x.Returns)).ToArray();
                 try
@@ -817,7 +820,8 @@ namespace EZCodeLanguage
             {
                 string value = Vars.FirstOrDefault(x => x.Name == method.Path).Value.ToString();
                 Line[] l = [new Line(value, 0)];
-                object[] o = parser.SplitParts(ref l, 0, 0, out _, out _);
+                string[] r = { };
+                object[] o = parser.SplitParts(ref l, 0, 0, ref r, out _, out _);
                 if (o.Length > 1) throw new Exception("Error with reflection properties");
                 method = o[0] as CSharpMethod;
             }
