@@ -598,7 +598,7 @@ namespace EZCodeLanguage
                     if (tostring) continue;
                     else if (Statement.Types.Contains(parts[i]))
                     {
-                        Statement statement = SetStatement(ref lines, lineIndex, i);
+                        Statement statement = SetStatement(ref lines, lineIndex, i, out _);
                         parts = [statement];
                     }
                     else if (parts[i].ToString() == "class")
@@ -1078,10 +1078,9 @@ namespace EZCodeLanguage
                 return [];
             }
         }
-        private Statement SetStatement(ref Line[] lines, int lineIndex, int partIndex) => SetStatement(ref lines, lineIndex, partIndex, out List<Line> removes);
-        private Statement SetStatement(ref Line[] lines, int lineIndex, int partIndex, out List<Line> removes)
+        private Statement SetStatement(ref Line[] lines, int lineIndex, int partIndex, out int skip)
         {
-            removes = [];
+            skip = 0;
             string line = lines[lineIndex].Value;
             object[] parts = SplitWithDelimiters(line, Delimeters).Where(x => x != "" && x != " ").Select(x => (object)x).ToArray();
             string[] partsSpaces = line.Split(" ").Where(x => x != "" && x != " ").ToArray();
@@ -1144,8 +1143,8 @@ namespace EZCodeLanguage
                     lineWithTokens = [new(nextLineTokens.Tokens, nextLine)];
                     List<Line> l = [.. lines];
                     l.Remove(nextLine);
-                    removes.Add(nextLine);
                     lines = [.. l];
+                    skip++;
                 }
                 else
                 {
@@ -1161,7 +1160,7 @@ namespace EZCodeLanguage
                             curleyBrackets++;
                         if (bracketLine.Value.Contains('}'))
                             curleyBrackets--;
-                        removes.Add(bracketLine);
+                        skip++;
                         l.Remove(bracketLine);
                         if (curleyBrackets == 0)
                             break;
@@ -1171,7 +1170,6 @@ namespace EZCodeLanguage
                     lineWithTokens = lineWithTokens.Select(x => { x.Line.CodeLine++; return x; }).ToArray();
                     if (lineWithTokens.Last().Line.Value.ToString() == "}")
                     {
-                        removes.Add(lineWithTokens[lineWithTokens.Length - 1].Line);
                         lineWithTokens = lineWithTokens.Where((x, y) => y != lineWithTokens.Length - 1).ToArray();
                     }
                     if (lineWithTokens[0].Line.Value == "{") lineWithTokens = lineWithTokens.Where((x, y) => y != 0).ToArray();
@@ -1243,7 +1241,6 @@ namespace EZCodeLanguage
             LineWithTokens[] lineWithTokens = [];
             Line nextLine = lines[index + 1];
             bool sameLineBracket = nextLine.Value.StartsWith('{');
-            List<Line> l = [.. lines];
             int curleyBrackets = sameLineBracket ? 0 : 1;
             for (int i = index + 1; i < lines.Length; i++)
             {
@@ -1253,11 +1250,11 @@ namespace EZCodeLanguage
                 {
                     if (Statement.Types.Contains(bracketLineTokens[0].Value))
                     {//right here
-                        lines = l.Select(x => new Line(x.Value, x.CodeLine)).ToArray();
-                        Statement statement = SetStatement(ref lines, i, 0, out List<Line> removes);
-                        for (int j = 0; j < removes.Count; j++) l.Remove(removes[j]);
+                        Statement statement = SetStatement(ref lines, i, 0, out int skip);
+                        //i += skip;
                         bracketLineTokens = [SingleToken([statement], 0, string.Join(" ", statement.Line.Value), out _)];
-                        lines = l.Select(x => new Line(x.Value, x.CodeLine)).ToArray();
+                        lineWithTokens = [.. lineWithTokens, new LineWithTokens(bracketLineTokens, bracketLine)];
+                        continue;
                     }
                 } catch { }
                 if (bracketLine.Value.Contains('{'))
@@ -1265,7 +1262,6 @@ namespace EZCodeLanguage
                 if (bracketLine.Value.Contains('}'))
                     curleyBrackets--;
                 lineWithTokens = [.. lineWithTokens, new LineWithTokens(bracketLineTokens, bracketLine)];
-                l.Remove(bracketLine);
                 if (curleyBrackets == 0)
                     break;
             }
@@ -1275,7 +1271,6 @@ namespace EZCodeLanguage
                 lineWithTokens = lineWithTokens.Where((x, y) => y != lineWithTokens.Length - 1).ToArray();
             }
             if (lineWithTokens[0].Line.Value == "{") lineWithTokens = lineWithTokens.Where((x, y) => y != 0).ToArray();
-            lines = [.. l];
 
             for (int i = 0; i < lineWithTokens.Length; i++)
                 lineWithTokens[i].Line.CodeLine += 1;
