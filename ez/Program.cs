@@ -3,6 +3,7 @@ using System.IO;
 
 static class ez
 {
+    public static int error_message = 0;
     public static void Main(string[] args)
     {
         if (args.Length == 0)
@@ -23,12 +24,20 @@ static class ez
                     start         Starts an EZCode environment
                     [FILEPATH]    Runs file. 'Main' Package is already imported.               
                     """);
-                else throw new Exception("Error, expected nothing after 'help' command");
+                else
+                {
+                    error_message = 1;
+                    Console.WriteLine("Error, expected nothing after 'help' command");
+                }
                 break;
             case "version":
                 if (args.Length == 1)
                     Console.WriteLine(Interpreter.Version);
-                else throw new Exception("Error, expected nothing after 'version' command");
+                else
+                {
+                    error_message = 1;
+                    Console.WriteLine("Error, expected nothing after 'version' command");
+                }
                 break;
             case "run":
                 Parser parser = new Parser(string.Join(" ", args.Skip(1).ToArray()));
@@ -38,7 +47,15 @@ static class ez
                 interpreter.Interperate();
                 break;
             case "start":
-                Environment();
+                try
+                {
+                    Environment();
+                }
+                catch (Exception e)
+                {
+                    Console.WriteLine(e.Message);
+                    error_message = 1;
+                }
                 break;
             default:
                 string path = string.Join(" ", args);
@@ -50,7 +67,8 @@ static class ez
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    return;
+                    error_message = 1;
+                    break;
                 }
                 parser = new Parser(contents);
                 parser.Tokenize();
@@ -58,6 +76,8 @@ static class ez
                 interpreter.Interperate();
                 break;
         }
+
+        System.Environment.Exit(error_message);
     }
     static void Environment(string[] contents = null)
     {

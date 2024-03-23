@@ -22,6 +22,15 @@
 	<WebPage>https://ez-code.web.app</WebPage>
 	<ApplicationIcon>EZCode_Logo.ico</ApplicationIcon>
 	<RootNamespace>EZCodeLanguage</RootNamespace>
+	<GenerateDocumentationFile>True</GenerateDocumentationFile>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
+  </PropertyGroup>
+
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <GenerateAssemblyInfo>False</GenerateAssemblyInfo>
   </PropertyGroup>
 
   <ItemGroup>

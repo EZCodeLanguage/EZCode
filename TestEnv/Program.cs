@@ -68,3 +68,5 @@ stopwatch.Stop();
 long mili = stopwatch.ElapsedMilliseconds;
 Console.WriteLine(len + "\n" + "Tokenize Miliseconds:" + Omili.ToString() + "\nInterperate Miliseconds:" + mili.ToString() + "\nOverall Miliseconds:" + (Omili + mili).ToString());
 #endif
+
+Environment.Exit(0);

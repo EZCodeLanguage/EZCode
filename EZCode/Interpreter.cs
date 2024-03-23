@@ -112,9 +112,10 @@ namespace EZCodeLanguage
                                                 Class c = var.Value is Class ? var.Value as Class : var.DataType.ObjectClass;
                                                 if (c.Methods.Any(x => x.Name == line.Tokens[1].Value.ToString()))
                                                 {
-                                                    for (int i = 2; i < line.Tokens.Length; i++)
+                                                    for (int i = 2, param = 0; i < line.Tokens.Length; i++)
                                                     {
-                                                        line.Tokens[i].Value = GetValue(line.Tokens[i].Value, var.DataType);
+                                                        if (line.Tokens[i].Type == TokenType.Comma) param++;
+                                                        line.Tokens[i].Value = GetValue(line.Tokens[i].Value, var.DataType, c.Methods.FirstOrDefault(x => x.Name == line.Tokens[1].Value.ToString()).Params[param].DataType);
                                                         line.Tokens[i].StringValue = line.Tokens[i].Value is string or int or float or bool ? line.Tokens[i].Value.ToString() : line.Tokens[i].StringValue;
                                                         line.Tokens[i].Type = parser.SingleToken([line.Tokens[i].StringValue == line.Tokens[i].Value.ToString() ? line.Tokens[i].StringValue : line.Tokens[i].Value], 0, line.Tokens[i].StringValue, out _).Type;
                                                     }
@@ -642,8 +643,11 @@ namespace EZCodeLanguage
 
             return t1 != t2;
         }
-        public object GetValue(object obj, DataType? type = null)
+        public object GetValue(object obj, params DataType[]? types)
         {
+            types ??= Array.Empty<DataType>();
+            DataType? type = types.Length > 0 ? types[0] : null;
+
             if (obj.GetType().IsArray)
             {
                 object[] a = (object[])obj;
@@ -657,7 +661,7 @@ namespace EZCodeLanguage
                     }*/
                     for (int i = 0; i < a.Length; i++)
                     {
-                        all += GetValue(a[i], type) + (i < a.Length - 1 ? " ": "");
+                        all += GetValue(a[i], types) + (i < a.Length - 1 ? " ": "");
                     }
                 }
                 return all;
@@ -665,9 +669,9 @@ namespace EZCodeLanguage
             else if (obj is Class)
             {
                 if (type == null && Returning == null)
-                    return GetValue((obj as Class).Name, type);
+                    return GetValue((obj as Class).Name, types);
                 Var var = new Var("Intermediate Var for getting value", obj as Class, CurrentLine, stackNumber: StackNumber, type:type ?? Returning);
-                return GetValue(var, type);
+                return GetValue(var, types);
             }
             else if (obj is string || obj is Var)
             {
@@ -693,11 +697,14 @@ namespace EZCodeLanguage
                             if (get != null && get.Length != 0)
                             {
                                 int t = -1;
-                                for (int i = 0; i < get.Length; i++)
+                                for (int i = 0; i < types.Length; i++)
                                 {
-                                    if (get[i].DataType.ObjectClass != null && type.ObjectClass != null &&
-                                        get[i].DataType.ObjectClass.Name == type.ObjectClass.Name || get[i].DataType.Type == type.Type)
-                                        t = i;
+                                    for (int j = 0; j < get.Length; j++)
+                                    {
+                                        if (get[j].DataType.ObjectClass != null && types[i].ObjectClass != null &&
+                                            get[j].DataType.ObjectClass.Name == types[i].ObjectClass.Name || get[j].DataType.Type == types[i].Type)
+                                            t = j;
+                                    }
                                 }
                                 if (t != -1)
                                 {
@@ -797,7 +804,7 @@ namespace EZCodeLanguage
                     Vars = Vars.Except(backupVars).ToArray();
                     Methods = Methods.Except(backupMethods).ToArray();
                     object o = MethodRun(run.Runs, run.Parameters);
-                    o = GetValue(cl, type);
+                    o = GetValue(cl, types);
 
                     Methods = backupMethods;
                     Vars = backupVars;
@@ -810,7 +817,7 @@ namespace EZCodeLanguage
             }
             else if (obj is Token t)
             {
-                return GetValue(t.Value);
+                return GetValue(t.Value, types);
             }
             return obj;
         }
