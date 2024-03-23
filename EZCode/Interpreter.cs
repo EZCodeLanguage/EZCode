@@ -272,8 +272,16 @@ namespace EZCodeLanguage
 
                                     if (method.Params != null && method.Params.Length > 0)
                                     {
-                                        string all = string.Join(" ", line.Tokens.Skip(next + 1).Select(x => x.StringValue));
-                                        string[] vals = all.Split(',').Select(x => x.Trim()).Select((x, y) => GetValue(x, method.Params[y].DataType).ToString()).ToArray();
+                                        string all; string[] vals;
+                                        try 
+                                        {
+                                            all = string.Join(" ", line.Tokens.Skip(next + 1).Select(x => x.StringValue));
+                                            vals = all.Split(',').Select(x => x.Trim()).Select((x, y) => GetValue(x, method.Params[y].DataType).ToString()).ToArray();
+                                        }
+                                        catch
+                                        {
+                                            throw new Exception("Error getting values for method paramters. This is probably due to incorrect amount of parameters");
+                                        }
                                         if (vals.Length > 0)
                                         {
                                             for (int i = 0; i < method.Params.Length; i++)
@@ -695,7 +703,7 @@ namespace EZCodeLanguage
                         {
                             throw new Exception($"Error with DataType of class instance. variable \"{var.Name}\" has an explicit data type that is not connected to a class");
                         }
-                        else if (var.DataType.ObjectClass != null && (var.DataType.Type == DataType.Types._object || contains_gets))
+                        else if (var.Value is Class && var.DataType.ObjectClass != null && (var.DataType.Type == DataType.Types._object || contains_gets))
                         {
                             GetValueMethod[] get = (var.Value as Class).GetTypes;
                             if (get != null && get.Length != 0)
@@ -767,6 +775,10 @@ namespace EZCodeLanguage
                             {
                                 throw new Exception("Error returning correct value");
                             }
+                        }
+                        else if (var.Value != null)
+                        {
+                            return GetValue(var.Value, var.DataType) ?? obj;
                         }
                         else
                         {
