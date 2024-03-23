@@ -334,14 +334,14 @@ namespace EZCodeLanguage
         public class Container
         {
             public Container() { }
-            public Container(string name, Class[] classes, Line line)
+            public Container(string name, string[] classes, Line line)
             {
                 Name = name;
-                Classes = classes;
+                ClassNames = classes;
                 Line = line;
             }
             public string Name { get; set; }
-            public Class[] Classes { get; set; }
+            public string[] ClassNames { get; set; }
             public Line Line { get; set; }
         }
         public class LineWithTokens
@@ -560,174 +560,239 @@ namespace EZCodeLanguage
             {
                 try
                 {
-                    if (parts[i].ToString() == "->")
+                    if (parts[i].ToString().EndsWith("*/") && !tostring)
                     {
-                        if (i == parts.Length - 1)
-                        {
-                            parts = parts.Append(lines[i + 1].Value).ToArray();
-                            continues++;
-                        }
-                        else
-                        {
-                            arrow = i + 1 + partStart;
-                            return parts.Take(i).ToArray();
-                        }
-                    }
-                    else if (parts[i].ToString() == "@")
-                    {
-                        parts[i] = "@" + parts[i + 1];
-                        parts = parts.ToList().Where((item, index) => index != i + 1).ToArray();
-                    }
-                    else if (parts[i].ToString().StartsWith("//"))
-                    {
-                        parts[i] = string.Join(" ", parts.Skip(i));
-                        parts = parts.ToList().Where((item, index) => index <= i).ToArray();
-                        break;
-                    }
-                    else if (parts[i].ToString().EndsWith("*/") && !tostring)
-                    {
+                        // This needs to check before checking '\*'
+                        // remove the current part and end comment block
                         commentBlock = false;
                         parts = parts.ToList().Where((item, index) => index != i).ToArray();
                     }
                     else if (parts[i].ToString().StartsWith("/*") || (commentBlock && !tostring))
                     {
+                        // set comment block to true
                         commentBlock = true;
+                        // remove this part from parts
                         parts = parts.ToList().Where((item, index) => index != i).ToArray();
+                        /* decrement 'i' because removing index from parts.
+                           This keeps loop from skipping index */
                         i--;
                     }
-                    if (tostring) continue;
+                    else if(parts[i].ToString() == "->")
+                    {
+                        // check if arrow is at the end of the line
+                        if (i == parts.Length - 1)
+                        {
+                            // append next line to the current line
+                            parts = parts.Append(lines[i + 1].Value).ToArray();
+                            // increment skip line 
+                            continues++;
+                        }
+                        else
+                        {
+                            // split the line into multiple linetokens
+                            // calculate the new start of the part line
+                            arrow = i + 1 + partStart;
+                            // return parts only in the current part of the line
+                            return parts.Take(i).ToArray();
+                        }
+                    }
+                    else if (parts[i].ToString() == "@")
+                    {
+                        // append the next part to the current part
+                        parts[i] = "@" + parts[i + 1];
+                        // remove the next part
+                        parts = parts.ToList().Where((item, index) => index != i + 1).ToArray();
+                    }
+                    else if (parts[i].ToString().StartsWith("//"))
+                    {
+                        // remove all parts after '//'
+                        parts[i] = string.Join(" ", parts.Skip(i));
+                        parts = parts.ToList().Where((item, index) => index <= i).ToArray();
+                        break;
+                    }
+                    if (tostring)
+                    {
+                        /* doesn't create class or method or whatever if 
+                           just trying to get string version of parts */ 
+                        continue;
+                    }
                     else if (Statement.Types.Contains(parts[i]))
                     {
+                        // gets statement and sets it to parts
                         Statement statement = SetStatement(ref lines, ref stringParts, lineIndex, i);
                         parts = [statement];
                     }
                     else if (parts[i].ToString() == "class")
                     {
                         string name = parts[i + 1].ToString();
+                        
+                        // Class Properties
+                        Var[] properties = []; // Class Properties
+                        Method[] methods = []; // Class Methods
+                        GetValueMethod[] getValueMethods = []; // Class's Gets
+                        ExplicitWatch[]? explicitWatch = []; // Class's Explicit Watches
+                        ExplicitParams? explicitParams = null; // Class's Explicit Params
+                        DataType? typeOf = null; // Class's Explicit Typeof
+                        Class[] classes = []; // Class's internal classes
+                        DataType[] insideof = []; // Class's Explicit InsideOf for Containers
+                        int length = 0; // Class's Length
+                        string[] alias = []; // Class's Aliases
 
-                        Var[] properties = [];
-                        Method[] methods = [];
-                        GetValueMethod[] getValueMethods = [];
-                        ExplicitWatch[]? explicitWatch = [];
-                        ExplicitParams? explicitParams = null;
-                        DataType? typeOf = null;
-                        Line nextLine = lines[lineIndex + 1];
-                        bool sameLineBracket = nextLine.Value.StartsWith('{');
-                        List<Line> l = [.. lines];
-                        int curleyBrackets = sameLineBracket ? 0 : 1;
-                        string[] watchFormats = [], watchNames = [];
-                        string paramFormat = "", paramName = "";
-                        List<Var[]> watchVars = new List<Var[]>();
-                        List<Token[]> propertyTokens = new List<Token[]>();
-                        List<Line> propertyLine = new List<Line>();
-                        Var[]? paramVars = null;
-                        bool paramAll = false;
-                        Token[] paramTokens = [], watchTokens = [];
-                        DataType[] insideof = [];
-                        Class[] classes = [];
-                        int length = 0;
-                        string[] alias = [];
+                        // Initialize a bunch of variables for looping through class 
+                        Line nextLine = lines[lineIndex + 1]; // Next Line
+                        bool sameLineBracket = nextLine.Value.StartsWith('{'); // if nextline starts with '{'
+                        List<Line> l = [.. lines]; // A list version of lines that can be adjusted 
+                        int curleyBrackets = sameLineBracket ? 0 : 1; // Curley Bracket count to look for end of class
+
+                        /*
+                          These Variables are needed to for class properties by storing the data first, then setting 
+                          it after loop is finshed. This allows all values to be evaluated and stored before adding 
+                          them to class. Basically, removes the need to write certain parts of the class in order.
+                         */
+                        string[] watchFormats = [], watchNames = []; // temporary watch properties
+                        List<Var[]> watchVars = new List<Var[]>(); // temo watch property
+                        string paramFormat = "", paramName = ""; // temp param properties
+                        Var[]? paramVars = null; // temp param property
+                        bool paramAll = false; // temp param property
+                        List<Token[]> propertyTokens = new List<Token[]>(); // temp Property property. Stores Class Property's Tokens
+                        List<Line> propertyLine = new List<Line>(); // temp Property property. Stores Lines properties are on
+                        Token[] paramTokens = [], watchTokens = []; // temp properties
                         for (int j = lineIndex + 1, skip = 0; j < lines.Length; j++, skip -= skip > 0 ? 1 : 0)
                         {
+                            // gets current line in loop and the linewithtokens
                             Line bracketLine = lines[j];
                             LineWithTokens bracketLineTokens = TokenArray(bracketLine.Value, true)[0];
+                            // checks if current line is the start of a subclass
                             if (bracketLineTokens.Tokens.Length > 0 && bracketLineTokens.Tokens[0].Value.ToString() == "class")
                             {
+                                // gets LineWithTokens of the entire subclass
+                                // the [0] index is there because we assume the only line is the class itself that has all the values in it
                                 bracketLineTokens = TokenArray(string.Join(Environment.NewLine, lines.Select(x => x.Value).Skip(j)), true)[0];
+                                // skips all of the next lines that are apart of the sub class
                                 skip += (bracketLineTokens.Tokens[0].Value as Class).Length + 1;
                             }
                             if (skip == 0)
                             {
-                                bool ismethod = false, isproperty = false, isexplicit = false, iswatch = false, isparam = false,
-                                    istypeof = false, isinsideof = false, isget = false, isclass = false, isalias = false;
+                                // variable to check what type of class property is being set in the current line
+                                CurrentLineClassProperty lineType = CurrentLineClassProperty.none;
+                                // check if current line property is also explicit
+                                bool isexplicit = false;
                                 for (int k = 0; k < bracketLineTokens.Tokens.Length; k++)
                                 {
+                                    // Incrementing each token's line by 1 to ensure there is no "line 0" and instead "line 1"
                                     bracketLineTokens.Line.CodeLine = lines[lineIndex].CodeLine + k;
+                                    // Check current Line's type and set the right variable
                                     switch (bracketLineTokens.Tokens[k].Type)
                                     {
-                                        case TokenType.New: case TokenType.Undefined: isproperty = true; continue;
-                                        case TokenType.Method: ismethod = true; continue;
-                                        case TokenType.Explicit: isexplicit = true; continue;
-                                        case TokenType.Get: isget = true; continue;
-                                        case TokenType.Class: isclass = true; continue;
-                                        case TokenType.Watch: if (isexplicit) iswatch = true; continue;
-                                        case TokenType.Params: if (isexplicit) isparam = true; continue;
-                                        case TokenType.TypeOf: if (isexplicit) istypeof = true; continue;
-                                        case TokenType.InsideOf: if (isexplicit) isinsideof = true; continue;
-                                        case TokenType.Alias: if (isexplicit) isalias = true; continue;
+                                        case TokenType.New: case TokenType.Undefined: lineType = CurrentLineClassProperty.isproperty; continue;
+                                        case TokenType.Method: lineType = CurrentLineClassProperty.ismethod; continue;
+                                        case TokenType.Explicit: lineType = CurrentLineClassProperty.isexplicit; isexplicit = true; continue;
+                                        case TokenType.Get: lineType = CurrentLineClassProperty.isget; continue;
+                                        case TokenType.Class: lineType = CurrentLineClassProperty.isclass; continue;
+                                        case TokenType.Watch: if (isexplicit) lineType = CurrentLineClassProperty.iswatch; continue;
+                                        case TokenType.Params: if (isexplicit) lineType = CurrentLineClassProperty.isparam; continue;
+                                        case TokenType.TypeOf: if (isexplicit) lineType = CurrentLineClassProperty.istypeof; continue;
+                                        case TokenType.InsideOf: if (isexplicit) lineType = CurrentLineClassProperty.isinsideof; continue;
+                                        case TokenType.Alias: if (isexplicit) lineType = CurrentLineClassProperty.isalias; continue;
                                     }
                                 }
-                                if (isproperty)
+                                switch (lineType)
                                 {
-                                    propertyTokens.Add(bracketLineTokens.Tokens);
-                                    propertyLine.Add(lines[j]);
-                                }
-                                else if (ismethod)
-                                {
-                                    Method method = SetMethod(lines, ref stringParts, j);
-                                    methods = methods.Append(method).ToArray();
-                                    skip += method.Lines.Length + 2;
-                                }
-                                else if (iswatch)
-                                {
-                                    watchFormats = [.. watchFormats, string.Join("", bracketLineTokens.Tokens.Skip(2).TakeWhile(x => x.Type != TokenType.Arrow).Select(x => x.Value))];
-                                    watchNames = [.. watchNames, bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).TakeWhile(x => x.Type != TokenType.Colon).ToArray()[1].Value.ToString()];
-                                    Token[] varTokens = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).Skip(1).ToArray();
-                                    watchVars.Add(GetVarsFromParameter(varTokens, lines[j]));
-                                    watchTokens = bracketLineTokens.Tokens;
-                                }
-                                else if (isparam)
-                                {
-                                    paramFormat = string.Join("", bracketLineTokens.Tokens.Skip(2).TakeWhile(x => x.Type != TokenType.Arrow).Select(x => x.Value));
-                                    paramName = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).TakeWhile(x => x.Type != TokenType.Colon).ToArray()[1].Value.ToString();
-                                    Token[] varTokens = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).Skip(1).ToArray();
-                                    paramVars = GetVarsFromParameter(varTokens, lines[j]);
-                                    paramTokens = bracketLineTokens.Tokens;
-                                    paramAll = paramFormat == "";
-                                }
-                                else if (istypeof)
-                                {
-                                    Token token = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).Skip(1).ToArray()[0];
-                                    if (token.Type == TokenType.EZCodeDataType)
-                                    {
-                                        string type = (token.Value as CSharpDataType).Type;
-                                        typeOf = DataType.GetType(type, Classes.ToArray(), Containers.ToArray());
-                                    }
-                                }
-                                else if (isinsideof)
-                                {
-                                    Token token = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).Skip(1).ToArray()[0];
-                                    if (token.Type == TokenType.DataType)
-                                    {
-                                        insideof = [.. insideof, DataType.GetType(token.Value.ToString(), Classes.ToArray(), Containers.ToArray())];
-                                    }
-                                }
-                                else if (isclass)
-                                {
-                                    classes = [.. classes, bracketLineTokens.Tokens[0].Value as Class];
-                                }
-                                else if (isget)
-                                {
-                                    GetValueMethod getVal = SetGetVal(lines, j);
-                                    getValueMethods = [.. getValueMethods, getVal];
-                                    skip += getVal.Method.Lines.Length + 2;
-                                }
-                                else if (isalias)
-                                {
-                                    alias = [.. alias, bracketLineTokens.Tokens[2].Value.ToString()];
+                                    case CurrentLineClassProperty.isproperty:
+                                        // Add Property Values to temp property variables
+                                        propertyTokens.Add(bracketLineTokens.Tokens);
+                                        propertyLine.Add(lines[j]);
+                                        break;
+                                    case CurrentLineClassProperty.ismethod:
+                                        // get method and append it to methods
+                                        Method method = SetMethod(lines, ref stringParts, j);
+                                        methods = methods.Append(method).ToArray();
+                                        // skip the methods length
+                                        skip += method.Lines.Length + 2;
+                                        break;
+                                    case CurrentLineClassProperty.iswatch:
+                                        // get watch formats
+                                        watchFormats = [.. watchFormats, string.Join("", bracketLineTokens.Tokens.Skip(2).TakeWhile(x => x.Type != TokenType.Arrow).Select(x => x.Value))];
+                                        // get the name of the method the watch calls
+                                        watchNames = [.. watchNames, bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).TakeWhile(x => x.Type != TokenType.Colon).ToArray()[1].Value.ToString()];
+                                        // get the variable tokens for calling the method
+                                        Token[] varTokens = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).Skip(1).ToArray();
+                                        // append the watchformat to the temp var
+                                        watchVars.Add(GetVarsFromParameter(varTokens, lines[j]));
+                                        watchTokens = bracketLineTokens.Tokens;
+                                        break;
+                                    case CurrentLineClassProperty.isparam:
+                                        // get param formats
+                                        paramFormat = string.Join("", bracketLineTokens.Tokens.Skip(2).TakeWhile(x => x.Type != TokenType.Arrow).Select(x => x.Value));
+                                        // get the name of the method the param calls
+                                        paramName = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).TakeWhile(x => x.Type != TokenType.Colon).ToArray()[1].Value.ToString();
+                                        // get the variable tokens for calling the method
+                                        varTokens = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).Skip(1).ToArray();
+                                        // set the param to the temp var
+                                        paramVars = GetVarsFromParameter(varTokens, lines[j]);
+                                        paramTokens = bracketLineTokens.Tokens;
+                                        paramAll = paramFormat == "";
+                                        break;
+                                    case CurrentLineClassProperty.istypeof:
+                                        // gets the tokens after the arrow (TYPE in this example) explicit typeof => TYPE
+                                        Token token = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).Skip(1).ToArray()[0];
+                                        // check if it is a correct datatype
+                                        if (token.Type == TokenType.EZCodeDataType)
+                                        {
+                                            // set it to the type
+                                            string type = (token.Value as CSharpDataType).Type;
+                                            typeOf = DataType.GetType(type, Classes.ToArray(), Containers.ToArray());
+                                        }
+                                        else
+                                        {
+                                            // throw error
+                                        }
+                                        break;
+                                    case CurrentLineClassProperty.isinsideof:
+                                        // gets the tokens after the arrow 
+                                        token = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).Skip(1).ToArray()[0];
+                                        // check if it is a correct datatype
+                                        if (token.Type == TokenType.DataType)
+                                        {
+                                            // set what container class is apart of
+                                            insideof = [.. insideof, DataType.GetType(token.Value.ToString(), Classes.ToArray(), Containers.ToArray())];
+                                        }
+                                        else
+                                        {
+                                            // throw error
+                                        }
+                                        break;
+                                    case CurrentLineClassProperty.isclass:
+                                        // Add class to the subclasses
+                                        classes = [.. classes, bracketLineTokens.Tokens[0].Value as Class];
+                                        break;
+                                    case CurrentLineClassProperty.isget:
+                                        // get the get method
+                                        GetValueMethod getVal = SetGetVal(lines, j);
+                                        getValueMethods = [.. getValueMethods, getVal];
+                                        // skip the method's length
+                                        skip += getVal.Method.Lines.Length + 2;
+                                        break;
+                                    case CurrentLineClassProperty.isalias:
+                                        // gets class alias
+                                        alias = [.. alias, bracketLineTokens.Tokens[2].Value.ToString()];
+                                        break;
                                 }
                             }
-                            if (bracketLine.Value.Contains('{'))
-                                curleyBrackets++;
-                            if (bracketLine.Value.Contains('}'))
-                                curleyBrackets--;
-                            string code = bracketLineTokens.Line.Value;
+                            // adjust curleyBracket
+                            if (bracketLine.Value.Contains('{')) curleyBrackets++;
+                            if (bracketLine.Value.Contains('}')) curleyBrackets--;
+                            // remove line from Lines so it doesn't get tokenized after class has finished loop
                             l.Remove(bracketLine);
+                            // set class length
                             length = j;
+                            // check if class has ended
                             if (curleyBrackets == 0)
                                 break;
                         }
+                        // set Lines to the temp List<Line>
                         lines = [.. l];
+                        // Create Watch, Params, and Properties for class based off of temp variables
                         for (int j = 0; j < watchFormats.Length; j++)
                             explicitWatch = [.. explicitWatch, new ExplicitWatch(watchFormats[j], new(methods.FirstOrDefault(x => x.Name == watchNames[j], null), watchVars[j] != null ? watchVars[j] : null, name, watchTokens), watchVars[j])];
                         if (paramName != "")
@@ -735,51 +800,89 @@ namespace EZCodeLanguage
                         for (int j = 0; j < propertyTokens.Count; j++)
                             properties = [.. properties, SetVar(propertyLine[j], propertyTokens[j])];
 
-                        Class @class = new(name, lines[lineIndex], methods, properties, explicitWatch, explicitParams, typeOf, getValueMethods, classes, insideof, length, alias);
+                        // Create class
+                        Class _class = new(name, lines[lineIndex], methods, properties, explicitWatch, explicitParams, typeOf, getValueMethods, classes, insideof, length, alias);
+                        // Check if class already exists
                         if (Classes.Any(x => x.Name == name) != false)
                         {
+                            // If class already exists, overide it
                             Class oc = Classes.FirstOrDefault(x => x.Name == name);
-                            oc = @class;
+                            oc = _class;
                         }
                         else
                         {
-                            Classes.Add(@class);
+                            // Else, Add it to the Class List
+                            Classes.Add(_class);
                         }
-                        parts = [@class];
+                        // set part to class
+                        parts = [_class];
                     }
                     else if (WatchIsFound(parts, i, out ExplicitWatch? watch, out int skip_match))
                     {
+                        // get runmethod and put into parts
                         parts[i] = new RunMethod(watch.Runs.Runs, watch.Runs.Parameters, watch.Runs.ClassName, watch.Runs.Tokens);
+                        // remove some of parts that go with runmethod
                         parts = parts.Take(i + 1).Concat(parts.Skip(i + skip_match + 1)).ToArray();
-                        stringParts = [.. stringParts.Take(i + 1), string.Join(" ", stringParts.Skip(i + skip_match))];//working on tyhiss
+                        // make stringParts corelate with parts
+                        // find string match of parts and remove found watch
+                        var except = stringParts.Skip(i).Take(skip_match + 1).ToArray();
+                        stringParts = stringParts.Except(except).ToArray();
+                        // create list and insert match into stringParts
+                        var sp = stringParts.ToList();
+                        sp.Insert(i, string.Join(" ", except));
+                        // ser stringParts to temp list
+                        stringParts = sp.ToArray();
                     }
                     else if (!insideClass && parts[i].ToString() == "method")
                     {
+                        // Get method
                         Method method = SetMethod(ref lines, ref stringParts, lineIndex);
                         parts = [method];
+                        // Check if method already exists
                         if (Methods.Any(x => x.Name == method.Name) != false)
                         {
+                            // If so, overide method
                             Method om = Methods.FirstOrDefault(x => x.Name == method.Name);
                             om = method;
                         }
                         else
                         {
+                            // Else, add it to Method List
                             Methods.Add(method);
                         }
                     }
                     else if (parts[i].ToString() == "make")
                     {
+                        // syntax,
+                        // make A => B
+                        // make A {VAR} A => B {VAR} B
+                        /*  make {
+                         *      A
+                         *      A
+                         *  } => {
+                         *      B
+                         *      B
+                         *  }
+                         */
+
+                        // Gets both sides of the make function
                         string[] both = string.Join(" ", partsSpaces.Skip(1)).Split("=>").Select(x => x.Trim()).ToArray();
+                        // the take part
                         string take = both[0];
+                        // the replace part
                         string replace = both.Length == (0 | 1) ? "" : both[1];
+                        // the next line's index
                         int next = lineIndex + 1;
+                        // if the make is multiline, these are the variabls to store them
                         string takeMulti = "", replaceMulti = "";
+                        // if the take part starts with '{'
                         if (take.Trim() == "{")
                         {
                             // Handle multi-line matching
                             StringBuilder multiLineTake = new StringBuilder();
                             int braceCount = 1;
 
+                            // Go through every line until it incounters a closing bracket
                             for (int j = next; j < lines.Length; j++)
                             {
                                 braceCount -= lines[j].Value.Trim().StartsWith('}') ? 1 : 0;
@@ -791,12 +894,15 @@ namespace EZCodeLanguage
 
                                 next++;
                             }
+                            // if the last line of take does not contain '=>'
                             if (!lines[next].Value.Contains("=>"))
                             {
+                                // throw error
                                 return null;
                             }
                             else
                             {
+                                // set replace to everything after '=>'. This is if the replace part is a single line.
                                 replace = lines[next].Value.Split("=>")[1];
                             }
 
@@ -804,12 +910,14 @@ namespace EZCodeLanguage
                             take = multiLineTake.ToString();
                             takeMulti = take.Split(['\n', '\r']).Select(x => x.Trim()).ToArray()[0];
                         }
+                        // if the replace part starts with '{'
                         if (replace.Trim() == "{")
                         {
                             // Handle multi-line matching
                             StringBuilder multiLineTake = new StringBuilder();
                             int braceCount = 1;
 
+                            // Go through every line until it incounters a closing bracket
                             for (int j = next; j < lines.Length; j++)
                             {
                                 braceCount -= lines[j].Value.Trim().StartsWith('}') ? 1 : 0;
@@ -821,16 +929,21 @@ namespace EZCodeLanguage
                                 next++;
                             }
 
+                            // increment next
                             next++;
+                            // set replace to the multi line
                             replace = multiLineTake.ToString();
-                            replaceMulti = replace.Split('\n').Select(x => x.Trim()).ToArray()[0];
                         }
+                        // create new array for all of the take lines
                         string[] takeLines = take.Split("\n").Select(x => x.Trim()).Where(y => y != "").ToArray();
+                        // integer to remove lines if the take or replace is multi line so it doesn't get parsed later
                         int line_removes = 0, lr = -1;
+                        // The temp lines
                         var _LINES = lines.ToList();
 
                         for (int j = lineIndex + 1; j < lines.Length; j++)
                         {
+                            // remove line if the next variable is greater than the line index
                             if (next > lineIndex + 1)
                             {
                                 lr = lr == -1 ? j : lr;
@@ -838,23 +951,33 @@ namespace EZCodeLanguage
                                 next--;
                                 continue;
                             }
-                            string input = lines[j].Value.ToString();
+                            string input = lines[j].Value.ToString(); // the string part of the line that will be replaced
+                            // if the take is multi line
                             if (takeMulti != "")
                             {
-                                string rep = replace;
+                                string rep = replace; // temp replace that can be changed
+                                // checks if input is a match
                                 if (MakeMatch(input, takeLines[0], ref rep, out string output, false))
                                 {
                                     bool match = false;
                                     Line[] takes = [new Line(output, j)];
+                                    // checks if all of the lines in takemulti match
                                     for (int k = 1; k < takeLines.Length; k++)
                                     {
                                         match = MakeMatch(lines[j + k].Value.ToString(), takeLines[k], ref rep, out string o, false);
+                                        // if it doesn't match, continue the outer loop
                                         if (!match) goto OuterLoop;
+                                        // append takes 
                                         takes = takes.Append(new Line(o, j + k)).ToArray();
                                     }
+                                    // Remove line from temp lines
                                     _LINES.RemoveRange(takes[0].CodeLine, takes[takes.Length - 1].CodeLine - takes[0].CodeLine + 1);
+                                    // set rep back to replace
                                     rep = replace;
+                                    // Make the multi match replace
                                     bool m = MakeMatchMulti(string.Join(Environment.NewLine, takes.Select(x => x.Value.ToString())), take, ref rep, out string val, true);
+
+                                    // Insert the new converted lines at the correct spot
                                     var vals = val.Split(Environment.NewLine).Where(x => x != "").ToArray();
                                     for (int k = vals.Length - 1; k >= 0; k--)
                                     {
@@ -864,12 +987,19 @@ namespace EZCodeLanguage
                             }
                             else
                             {
+                                // If take is a single line
+
                                 string _ref = replace;
+                                // If input is a match
                                 if (MakeMatch(input, take, ref _ref, out string output, true))
                                 {
+                                    // if replace is multi line
                                     if (replaceMulti != "")
                                     {
+                                        // Make replacement
                                         bool m = MakeMatchMulti(input, take, ref _ref, out string val, true);
+
+                                        // Insert the new converted lines at the correct spot
                                         var vals = val.Split(Environment.NewLine).Where(x => x != "").ToArray();
                                         _LINES.RemoveAt(j);
                                         for (int k = vals.Length - 1; k >= 0; k--)
@@ -879,6 +1009,7 @@ namespace EZCodeLanguage
                                     }
                                     else
                                     {
+                                        // replace line with outputs
                                         lines[j].Value = output;
                                     }
                                 }
@@ -887,69 +1018,88 @@ namespace EZCodeLanguage
                         OuterLoop:
                             continue;
                         }
-                        for (int j = 0; j < line_removes; j++)
-                            _LINES.RemoveAt(lr);
+                        // Skip lines
+                        for (int j = 0; j < line_removes; j++) _LINES.RemoveAt(lr);
+                        // Set lines and part
                         lines = _LINES.ToArray();
                         parts = ["make"];
                     }
                     else if (parts[i].ToString().StartsWith("EZCodeLanguage.EZCode.DataType("))
                     {
-                        string part = parts[i].ToString();
-                        int ch = Array.IndexOf(part.ToCharArray(), '(');
-                        string path = part[..ch];
-                        string type = part.Substring(ch + 1, part.Length - ch - 2).Replace("\"", "");
+                        // Example, EZCodeLanguage.EZCode.DataType("int")
 
+                        // get entire part
+                        string part = parts[i].ToString();
+                        // get where '(' starts
+                        int ch = Array.IndexOf(part.ToCharArray(), '(');
+                        // gets the path from the part
+                        string path = part[..ch];
+                        // gets the type from inside the ""
+                        string type = part.Substring(ch + 1, part.Length - ch - 2).Replace("\"", "");
+                        // sets part to datattype
                         parts[i] = new CSharpDataType(path, type);
                     }
                     else if (parts[i].ToString() == "runexec")
                     {
-                        string path = "";
+                        // path of the CSharp Method
+                        string path = parts[i + 1].ToString();
+                        // parameters of the method
                         string[]? vars = null;
-                        int skip = 1;
-                        path = parts[i + 1].ToString();
+                        int skip = 1; // what to skip for the rest of the line
+                        // checks if there are any parameters and if the arrow '~>' is used. Similar to ':' in normal methods
                         if (parts.Length - 1 > 2 && parts[i + 2].ToString() == "~>")
                         {
+                            // increment skip
                             skip++;
-                            string[] str = parts.Select(x => x.ToString()).Skip(3 + i).ToArray();
-                            skip += str.Length;
-                            string all = string.Join(" ", str);
-                            str = all.Split(",").Select(x => x.Trim()).ToArray();
-                            vars = [];
-                            for (int j = 0; j < str.Length; j++)
+
+                            string[] str = parts.Select(x => x.ToString()).Skip(3 + i).ToArray(); // get string array of all of the parameters
+                            skip += str.Length; // skip according to the length of the parameters
+                            string all = string.Join(" ", str); // get single string from 'str'
+                            var paams = all.Split(",").Select(x => x.Trim()).ToArray(); // set 'parms' to 'all' split by commas. This is to get all parameters
+                            vars = []; // sets the var array to empty
+                            for (int j = 0; j < paams.Length; j++)
                             {
-                                vars = [.. vars, str[j]];
+                                // adds the paramter to the array
+                                vars = [.. vars, paams[j]];
                             }
                         }
                         for (int j = 0; j <= skip; j++)
                         {
+                            // Remove the parts skipped by 'skip'
                             parts = parts.ToList().Where((item, index) => index != i + 1).ToArray();
                         }
+                        // Set part to CSharp method
                         parts[i] = new CSharpMethod(path, vars, path.Contains('\''));
                     }
                     else if (parts[i].ToString() == "container")
                     {
-                        string name = parts[i + 1].ToString();
-                        Class[] classes = [];
-                        Line nextLine = lines[lineIndex + 1];
-                        bool sameLineBracket = nextLine.Value.StartsWith('{');
-                        List<Line> l = [.. lines];
-                        int curleyBrackets = sameLineBracket ? 0 : 1;
+                        // gets all of the classes in the container
+                        string name = parts[i + 1].ToString(); // name of container
+                        string[] classNames = []; // all of the class names inside it
+                        Line nextLine = lines[lineIndex + 1]; // the next line
+                        bool sameLineBracket = nextLine.Value.StartsWith('{'); // if next line starts with '{'
+                        List<Line> l = [.. lines]; // temp List<Line> for lines
+                        int curleyBrackets = sameLineBracket ? 0 : 1; // variable to check when loop ends by looking at '{' '}'
                         for (int j = lineIndex + 1; j < lines.Length; j++)
                         {
                             Line bracketLine = lines[j];
-                            if (bracketLine.Value.Contains('{'))
-                                curleyBrackets++;
-                            if (bracketLine.Value.Contains('}'))
-                                curleyBrackets--;
 
-                            classes = classes.Append(Classes.FirstOrDefault(x => x.Name == bracketLine.Value)).ToArray();
+                            // adjusts curleyBracket accordingly
+                            if (bracketLine.Value.Contains('{')) curleyBrackets++;
+                            if (bracketLine.Value.Contains('}')) curleyBrackets--;
 
+                            // adds class name to list
+                            classNames = [.. classNames, bracketLine.Value];
+
+                            // removes current line and checks for end of container
                             l.Remove(bracketLine);
                             if (curleyBrackets == 0)
                                 break;
                         }
+                        // sets lines to temp 'l' to keep lines from inside container to be parsed
                         lines = [.. l];
-                        parts = [new Container(name, classes, lines[lineIndex])];
+                        // set part to container
+                        parts = [new Container(name, classNames, lines[lineIndex])];
                     }
                 }
                 catch
@@ -958,6 +1108,20 @@ namespace EZCodeLanguage
                 }
             }
             return parts;
+        }
+        internal enum CurrentLineClassProperty
+        {
+            none,
+            ismethod,
+            isproperty, 
+            isexplicit, 
+            iswatch,
+            isparam,
+            istypeof, 
+            isinsideof, 
+            isget, 
+            isclass, 
+            isalias
         }
         private static bool MakeMatch(string input, string pattern, ref string replace, out string output, bool format)
         {
