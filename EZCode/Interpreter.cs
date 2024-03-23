@@ -32,6 +32,14 @@ namespace EZCodeLanguage
                         }
                     }
                 }
+                for (int j = 0; j < Classes[i].GetTypes.Length; j++)
+                {
+                    GetValueMethod get = Classes[i].GetTypes[j];
+                    if (get.DataType == null || get.DataType.ObjectClass == null)
+                    {
+                        get.DataType = DataType.GetType(get.Returns, Classes, Containers);
+                    }
+                }
             }
         }
         private bool LastIfWasTrue = true;
@@ -105,17 +113,16 @@ namespace EZCodeLanguage
                                             var.Value = SingleLine(new LineWithTokens(tok, line.Line));
                                             Return = var.Value;
                                         }
-                                        else 
+                                        else
                                         {
                                             if (var.Value is Class || (var.DataType.ObjectClass != null && var.DataType.Type != DataType.Types._null))
                                             {
                                                 Class c = var.Value is Class ? var.Value as Class : var.DataType.ObjectClass;
                                                 if (c.Methods.Any(x => x.Name == line.Tokens[1].Value.ToString()))
                                                 {
-                                                    for (int i = 2, param = 0; i < line.Tokens.Length; i++)
+                                                    for (int i = 2; i < line.Tokens.Length; i++)
                                                     {
-                                                        if (line.Tokens[i].Type == TokenType.Comma) param++;
-                                                        line.Tokens[i].Value = GetValue(line.Tokens[i].Value, var.DataType, c.Methods.FirstOrDefault(x => x.Name == line.Tokens[1].Value.ToString()).Params[param].DataType);
+                                                        line.Tokens[i].Value = GetValue(line.Tokens[i].Value, var.DataType);
                                                         line.Tokens[i].StringValue = line.Tokens[i].Value is string or int or float or bool ? line.Tokens[i].Value.ToString() : line.Tokens[i].StringValue;
                                                         line.Tokens[i].Type = parser.SingleToken([line.Tokens[i].StringValue == line.Tokens[i].Value.ToString() ? line.Tokens[i].StringValue : line.Tokens[i].Value], 0, line.Tokens[i].StringValue, out _).Type;
                                                     }
@@ -153,7 +160,7 @@ namespace EZCodeLanguage
                                         string name = line.Tokens[1].Value.ToString();
                                         if (Vars.Any(x => x.Name == name))
                                         {
-                                            var = Vars.FirstOrDefault(x=>x.Name == name);
+                                            var = Vars.FirstOrDefault(x => x.Name == name);
                                             if (var.Value is Class)
                                             {
                                                 if ((var.Value as Class).Name != cl.Name)
@@ -197,7 +204,7 @@ namespace EZCodeLanguage
                                                             }
                                                         }
                                                         MethodRun(run.Runs, run.Parameters);
-                                                        p.Runs.Parameters = backupParams; 
+                                                        p.Runs.Parameters = backupParams;
                                                         Methods = backupMethods;
                                                         Vars = backupVars;
                                                     }
@@ -228,7 +235,7 @@ namespace EZCodeLanguage
                                                         {
                                                             Var v = cl.Properties.FirstOrDefault(x => x.Name == before);
                                                             after = GetValue(after).ToString();
-                                                            prop = [.. prop, new Var(v.Name, after, line.Line, stackNumber: StackNumber, type:v.DataType)];
+                                                            prop = [.. prop, new Var(v.Name, after, line.Line, stackNumber: StackNumber, type: v.DataType)];
                                                         }
                                                         else
                                                         {
@@ -271,7 +278,7 @@ namespace EZCodeLanguage
                                         {
                                             for (int i = 0; i < method.Params.Length; i++)
                                             {
-                                                vars = [.. vars, new Var(method.Params[i].Name, vals[i], line.Line, stackNumber: StackNumber, type:method.Params[i].DataType)];
+                                                vars = [.. vars, new Var(method.Params[i].Name, vals[i], line.Line, stackNumber: StackNumber, type: method.Params[i].DataType)];
                                             }
                                             if (vars.Length != method.Params.Select(x => x.Required).ToArray().Length)
                                             {
@@ -335,7 +342,7 @@ namespace EZCodeLanguage
                                     throw new Exception("Expected arrow identifier \"=>\" to set value");
                                 }
                             }
-                            Vars = [.. Vars, new Var(tokenName.Value.ToString(), value, line.Line, stackNumber: StackNumber, type:null)];
+                            Vars = [.. Vars, new Var(tokenName.Value.ToString(), value, line.Line, stackNumber: StackNumber, type: null)];
                         }
                         catch (Exception ex)
                         {
@@ -456,7 +463,7 @@ namespace EZCodeLanguage
                                 while (run)
                                 {
                                     RunStatement(statement, out bool broke);
-                                    if(broke) break;
+                                    if (broke) break;
                                 }
                             }
                         }
@@ -481,7 +488,7 @@ namespace EZCodeLanguage
                         try
                         {
                             if (LastTryNotFailed == null) break;
-                            Var exception = new Var("exception", LastTryNotFailed.Message, CurrentLine, stackNumber: StackNumber, type:DataType.GetType("str", Classes, Containers));
+                            Var exception = new Var("exception", LastTryNotFailed.Message, CurrentLine, stackNumber: StackNumber, type: DataType.GetType("str", Classes, Containers));
                             Vars = [.. Vars, exception];
                             Statement? statement = FirstToken.Value as Statement;
                             LastTryNotFailed = null;
@@ -508,7 +515,7 @@ namespace EZCodeLanguage
             object? result = null;
             foreach (LineWithTokens line in statement.InBrackets)
             {
-                result = SingleLine(new LineWithTokens(line));  
+                result = SingleLine(new LineWithTokens(line));
 
                 if (yielded)
                 {
@@ -630,24 +637,21 @@ namespace EZCodeLanguage
             DataType.Types t1 = v1.DataType.Type;
             DataType.Types t2 = v2.DataType.Type;
 
-            if (t1 == DataType.Types._float && t2 == DataType.Types._int) 
+            if (t1 == DataType.Types._float && t2 == DataType.Types._int)
                 return false;
-            if (t1 == DataType.Types._int && t2 == DataType.Types._uint) 
+            if (t1 == DataType.Types._int && t2 == DataType.Types._uint)
                 return false;
-            if (t1 == DataType.Types._int && t2 == DataType.Types._long) 
+            if (t1 == DataType.Types._int && t2 == DataType.Types._long)
                 return false;
-            if (t1 == DataType.Types._float && t2 == DataType.Types._decimal) 
+            if (t1 == DataType.Types._float && t2 == DataType.Types._decimal)
                 return false;
-            if (t1 == DataType.Types._float && t2 == DataType.Types._double) 
+            if (t1 == DataType.Types._float && t2 == DataType.Types._double)
                 return false;
 
             return t1 != t2;
         }
-        public object GetValue(object obj, params DataType[]? types)
+        public object GetValue(object obj, DataType? type = null)
         {
-            types ??= Array.Empty<DataType>();
-            DataType? type = types.Length > 0 ? types[0] : null;
-
             if (obj.GetType().IsArray)
             {
                 object[] a = (object[])obj;
@@ -661,7 +665,7 @@ namespace EZCodeLanguage
                     }*/
                     for (int i = 0; i < a.Length; i++)
                     {
-                        all += GetValue(a[i], types) + (i < a.Length - 1 ? " ": "");
+                        all += GetValue(a[i], type) + (i < a.Length - 1 ? " " : "");
                     }
                 }
                 return all;
@@ -669,14 +673,14 @@ namespace EZCodeLanguage
             else if (obj is Class)
             {
                 if (type == null && Returning == null)
-                    return GetValue((obj as Class).Name, types);
-                Var var = new Var("Intermediate Var for getting value", obj as Class, CurrentLine, stackNumber: StackNumber, type:type ?? Returning);
-                return GetValue(var, types);
+                    return GetValue((obj as Class).Name, type);
+                Var var = new Var("Intermediate Var for getting value", obj as Class, CurrentLine, stackNumber: StackNumber, type: type ?? Returning);
+                return GetValue(var, type);
             }
             else if (obj is string || obj is Var)
             {
                 Var? var;
-                if (obj is Var)  var = obj as Var;
+                if (obj is Var) var = obj as Var;
                 else var = Vars.FirstOrDefault(x => x.Name == obj.ToString());
                 if (var != null)
                 {
@@ -697,14 +701,11 @@ namespace EZCodeLanguage
                             if (get != null && get.Length != 0)
                             {
                                 int t = -1;
-                                for (int i = 0; i < types.Length; i++)
+                                for (int i = 0; i < get.Length; i++)
                                 {
-                                    for (int j = 0; j < get.Length; j++)
-                                    {
-                                        if (get[j].DataType.ObjectClass != null && types[i].ObjectClass != null &&
-                                            get[j].DataType.ObjectClass.Name == types[i].ObjectClass.Name || get[j].DataType.Type == types[i].Type)
-                                            t = j;
-                                    }
+                                    if (get[i].DataType.ObjectClass != null && type.ObjectClass != null &&
+                                        get[i].DataType.ObjectClass.Name == type.ObjectClass.Name || get[i].DataType.Type == type.Type)
+                                        t = i;
                                 }
                                 if (t != -1)
                                 {
@@ -762,7 +763,7 @@ namespace EZCodeLanguage
                                     default: throw new Exception("Error finding datatype of class instance. This may be an interpreter error or the code for the class is faulty");
                                 }
                             }
-                            catch 
+                            catch
                             {
                                 throw new Exception("Error returning correct value");
                             }
@@ -804,7 +805,7 @@ namespace EZCodeLanguage
                     Vars = Vars.Except(backupVars).ToArray();
                     Methods = Methods.Except(backupMethods).ToArray();
                     object o = MethodRun(run.Runs, run.Parameters);
-                    o = GetValue(cl, types);
+                    o = GetValue(cl, type);
 
                     Methods = backupMethods;
                     Vars = backupVars;
@@ -817,7 +818,7 @@ namespace EZCodeLanguage
             }
             else if (obj is Token t)
             {
-                return GetValue(t.Value, types);
+                return GetValue(t.Value);
             }
             return obj;
         }

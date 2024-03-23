@@ -257,9 +257,11 @@ namespace EZCodeLanguage
         {
             public DataType DataType { get; set; }
             public Method Method { get; set; }
+            public string Returns { get; set; }
             public GetValueMethod() { }
-            public GetValueMethod(DataType dataType, Method method)
+            public GetValueMethod(DataType dataType, Method method, string returns)
             {
+                Returns = returns;
                 DataType = dataType; 
                 Method = method;
             }
@@ -304,7 +306,7 @@ namespace EZCodeLanguage
                 WatchFormat = cl.WatchFormat?.Select(w => new ExplicitWatch(w.Pattern, w.Runs, w.Vars)).ToArray() ?? Array.Empty<ExplicitWatch>();
                 Params = cl.Params;
                 TypeOf = cl.TypeOf;
-                GetTypes = cl.GetTypes?.Select(t => new GetValueMethod(t.DataType, t.Method)).ToArray() ?? Array.Empty<GetValueMethod>();
+                GetTypes = cl.GetTypes?.Select(t => new GetValueMethod(t.DataType, t.Method, t.Returns)).ToArray() ?? Array.Empty<GetValueMethod>();
                 Classes = cl.Classes?.Select(c => new Class(c)).ToArray() ?? Array.Empty<Class>();
                 InsideOf = cl.InsideOf?.Select(i => new DataType(i.Type, i.ObjectClass, i.ObjectContainer)).ToArray() ?? Array.Empty<DataType>();
                 Length = cl.Length;
@@ -436,6 +438,7 @@ namespace EZCodeLanguage
         public LineWithTokens[] Tokenize(string code) => Tokens = TokenArray(code).Where(x => x.Line.Value.ToString() != "").ToArray();
         private LineWithTokens[] TokenArray(string code, bool insideClass = false)
         {
+            Code ??= code;
             List<LineWithTokens> withTokens = new List<LineWithTokens>();
             Line[] Lines = SplitLine(code);
 
@@ -805,9 +808,24 @@ namespace EZCodeLanguage
                         // Check if class already exists
                         if (Classes.Any(x => x.Name == name) != false)
                         {
-                            // If class already exists, overide it
-                            Class oc = Classes.FirstOrDefault(x => x.Name == name);
-                            oc = _class;
+                            // If class already exists, append any new values to the end of it
+                            Class cl = Classes.FirstOrDefault(x => x.Name == name);
+                            _class = new Class()
+                            {
+
+                                Name = _class.Name,
+                                Line = _class.Line,
+                                Methods = [.. _class.Methods, .. cl.Methods?.Select(m => new Method(m.Name, m.Line, m.Settings, m.Lines, m.Params, m.Returns)).ToArray() ?? Array.Empty<Method>()],
+                                Properties = [.. _class.Properties, .. cl.Properties?.Select(p => new Var(p.Name, p.Value, p.Line, p.StackNumber, p.DataType, p.Required)).ToArray() ?? Array.Empty<Var>()],
+                                WatchFormat = [.. _class.WatchFormat, .. cl.WatchFormat?.Select(w => new ExplicitWatch(w.Pattern, w.Runs, w.Vars)).ToArray() ?? Array.Empty<ExplicitWatch>()],
+                                Params = cl.Params ?? _class.Params,
+                                TypeOf = cl.TypeOf ?? _class.TypeOf,
+                                GetTypes = [.. _class.GetTypes, .. cl.GetTypes?.Select(t => new GetValueMethod(t.DataType, t.Method, t.Returns)).ToArray() ?? Array.Empty<GetValueMethod>()],
+                                Classes = [.. _class.Classes, .. cl.Classes?.Select(c => new Class(c)).ToArray() ?? Array.Empty<Class>()],
+                                InsideOf = [.. _class.InsideOf, .. cl.InsideOf?.Select(i => new DataType(i.Type, i.ObjectClass, i.ObjectContainer)).ToArray() ?? Array.Empty<DataType>()],
+                                Length = cl.Length + _class.Length,
+                                Aliases = [.. _class.Aliases, .. cl.Aliases]
+                            };
                         }
                         else
                         {
@@ -836,7 +854,7 @@ namespace EZCodeLanguage
                     else if (!insideClass && parts[i].ToString() == "method")
                     {
                         // Get method
-                        Method method = SetMethod(ref lines, ref stringParts, lineIndex);
+                        Method method = SetMethod(ref lines, ref stringParts, lineIndex, out _);
                         parts = [method];
                         // Check if method already exists
                         if (Methods.Any(x => x.Name == method.Name) != false)
@@ -1343,15 +1361,16 @@ namespace EZCodeLanguage
                 lineWithTokens[i].Line.CodeLine += 1;
             return new Statement(parts[partIndex].ToString(), lines[lineIndex], lineWithTokens, argument);
         }
-        private Method SetMethod(Line[] lines, ref string[] strParts, int index) => SetMethod(ref lines, ref strParts, index);
-        private Method SetMethod(ref Line[] lines, ref string[] strParts, int index)
+        private Method SetMethod(Line[] lines, ref string[] strParts, int index) => SetMethod(ref lines, ref strParts, index, out _);
+        private Method SetMethod(Line[] lines, ref string[] strParts, int index, out string returns) => SetMethod(ref lines, ref strParts, index, out returns);
+        private Method SetMethod(ref Line[] lines, ref string[] strParts, int index, out string returns)
         {
             Line line = lines[index];
             line.CodeLine += 1;
-
+            returns = "";
             Method.MethodSettings settings =
                 (line.Value.Trim().StartsWith("nocol ") ? Method.MethodSettings.NoCol : Method.MethodSettings.None);
-            DataType? returns = null;
+            DataType? _returns = null;
             Var[]? param = [];
             Token[] fistLineTokens = TokenArray(string.Join(" ", line.Value.Split(" ").SkipWhile(x => x != "method").Skip(1)))[0].Tokens;
             string name = fistLineTokens[0].Value.ToString()!;
@@ -1363,7 +1382,8 @@ namespace EZCodeLanguage
                 {
                     if(token.Type == TokenType.DataType)
                     {
-                        returns = DataType.GetType(token.Value.ToString()!, Classes.ToArray(), Containers.ToArray());
+                        returns = token.Value.ToString();
+                        _returns = DataType.GetType(token.Value.ToString()!, Classes.ToArray(), Containers.ToArray());
                         break;
                     }
                 }
@@ -1438,7 +1458,7 @@ namespace EZCodeLanguage
 
             for (int i = 0; i < lineWithTokens.Length; i++)
                 lineWithTokens[i].Line.CodeLine += 1;
-            return new Method(name, line, settings, lineWithTokens, param, returns);
+            return new Method(name, line, settings, lineWithTokens, param, _returns);
         }
         private GetValueMethod SetGetVal(Line[] lines, int index)
         {
@@ -1446,10 +1466,10 @@ namespace EZCodeLanguage
             line.CodeLine += 1;
             Line[] liness = lines.Select((x, y) => y == index ? line : x).ToArray();
             string[] r = { };
-            Method method = SetMethod(liness, ref r, index);
+            Method method = SetMethod(liness, ref r, index, out string returns);
             method.Line = lines[index];
             method.Name = null;
-            GetValueMethod getValue = new GetValueMethod(method.Returns, method);
+            GetValueMethod getValue = new GetValueMethod(method.Returns, method, returns);
             return getValue;
         }
         private Var? SetVar(Line line, Token[] tokens)
