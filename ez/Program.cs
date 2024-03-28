@@ -22,7 +22,7 @@ static class ez
                     version       Writes the current version of EZCode installed
                     run [CODE]    Runs a line of code. 'Main' Package is already imported
                     start         Starts an EZCode environment
-                    [FILEPATH]    Runs file. 'Main' Package is already imported.               
+                    [FILEPATH]    Runs file
                     """);
                 else
                 {

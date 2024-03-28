@@ -43,8 +43,11 @@ namespace EZCodeLanguage
             }
         }
         private bool LastIfWasTrue = true;
-        Exception? LastTryNotFailed = null;
+        private Exception? LastTryNotFailed = null;
         private bool yielded = false;
+        private object? returned = null;
+        private DataType? Returning = null;
+        private int StackNumber = 0;
         public Stack<string> StackTrace { get; private set; }
         public string[] Output { get; internal set; } = [];
         public Exception[] Errors { get; private set; } = [];
@@ -84,7 +87,8 @@ namespace EZCodeLanguage
                 }
                 catch (Exception ex)
                 {
-                    string message = ex.Message + ", StackTrace: \n\t" + string.Join("\n\t", StackTrace.Reverse());
+                    string stack = string.Join("\n\t", StackTrace.Reverse());
+                    string message = ex.Message + ", StackTrace: \n\t" + (stack != "" ? stack : "Stack Empty");
                     Console.WriteLine(message);
                     Errors = Errors.Append(ex).ToArray();
                     StackTrace = temp_stack;
@@ -95,15 +99,15 @@ namespace EZCodeLanguage
 
             return endcode;
         }
-        internal int StackNumber = 0;
-        private object? SingleLine(LineWithTokens line)
+        internal object? SingleLine(LineWithTokens line)
         {
             StackNumber++;
             try
             {
                 string message = $"codeline: \"{line.Line.Value}\", file: \"{WorkingFile}\", line: {line.Line.CodeLine}";
-                try { if (StackTrace.First() != message) StackTrace.Push(message); }
-                catch { StackTrace.Push(message); }
+                bool duplicate_stack = false;
+                try { duplicate_stack = StackTrace.First() != message; } catch { }
+                if (!duplicate_stack) StackTrace.Push(message);
                 CurrentLine = line.Line;
                 Token FirstToken = line.Tokens.FirstOrDefault(new Token(TokenType.None, "", ""));
                 object? Return = null;
@@ -336,12 +340,12 @@ namespace EZCodeLanguage
                             CSharpMethod method = FirstToken.Value as CSharpMethod;
                             StackTrace.Push($"csharp-method: \"{(method.Path != "" ? method.Path : "Null")}\", file: \"{WorkingFile}\", line: {line.Line.CodeLine}");
                             object obj = Reflect(method!);
-                            StackTrace.Pop();
+                            StackTrace.TryPop(out _);
                             Return = obj;
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Error with \"runexec\" and with C# method. The reason may be because the method may not exist. Error Message:\"{ex.Message}\"");
+                            throw new Exception($"Error with \"runexec\" and with C# method. The reason may be because the method does not exist. Error Message:\"{ex.Message}\"");
                         }
                         break;
                     case TokenType.Undefined:
@@ -379,6 +383,7 @@ namespace EZCodeLanguage
                         {
                             line.Tokens = line.Tokens.Skip(1).ToArray();
                             Return = SingleLine(line) ?? GetValue(line.Tokens);
+                            returned = Return;
                         }
                         catch (Exception ex)
                         {
@@ -490,20 +495,24 @@ namespace EZCodeLanguage
                             }
                             else
                             {
-                                string[] parts = [];
-                                for (int i = 0; i < arguments.Length; i++)
+                                bool run;
+                                do
                                 {
-                                    Argument arg = arguments[i];
-                                    bool? istrue = ArgumentIsTrue(arg);
-                                    parts = [.. parts, istrue.ToString()];
-                                    if (arg.ArgAdd != Argument.ArgAdds.None) parts = [.. parts, arg.ArgAdd.ToString()];
-                                }
-                                bool run = EZHelp.Evaluate(string.Join(" ", parts));
-                                while (run)
-                                {
-                                    RunStatement(statement, out bool broke);
-                                    if (broke) break;
-                                }
+                                    string[] parts = [];
+                                    for (int i = 0; i < arguments.Length; i++)
+                                    {
+                                        Argument arg = arguments[i];
+                                        bool? istrue = ArgumentIsTrue(arg);
+                                        parts = [.. parts, istrue.ToString()];
+                                        if (arg.ArgAdd != Argument.ArgAdds.None) parts = [.. parts, arg.ArgAdd.ToString()];
+                                    }
+                                    run = EZHelp.Evaluate(string.Join(" ", parts));
+                                    if (run)
+                                    {
+                                        RunStatement(statement, out bool broke);
+                                        if (broke) break;
+                                    }
+                                } while (run);
                             }
                         }
                         catch (Exception ex)
@@ -540,7 +549,8 @@ namespace EZCodeLanguage
                         }
                         break;
                 }
-                StackTrace.TryPop(out _);
+                if (!duplicate_stack)
+                    StackTrace.TryPop(out _);
                 return Return;
             }
             catch (Exception e)
@@ -596,7 +606,6 @@ namespace EZCodeLanguage
             if (result == null) result = argument.Value;
             bool? term = Argument.EvaluateTerm(result.ToString());
             if (term == null) throw new Exception($"Expected the argument section's method \"{argument.Value}\" to return boolean");
-            StackTrace.TryPop(out _);
             return term;
         }
         private enum IdentType { Var, Class, Method, Other }
@@ -625,7 +634,6 @@ namespace EZCodeLanguage
             type = null;
             return IdentType.Other;
         }
-        internal DataType? Returning = null;
         public object? MethodRun(Method method, Var[]? parameters)
         {
             StackTrace.Push($"method: {method.Name}, file: {WorkingFile}, line: {method.Line.CodeLine}");
@@ -662,15 +670,19 @@ namespace EZCodeLanguage
             Vars = [.. Vars, .. parameters];
             object? result = null;
             var _returning = Returning != null ? new DataType(Returning.Type, Returning.ObjectClass, Returning.ObjectContainer) : null;
+            var _returned = returned;
             Returning = method.Returns;
+            returned = null;
             foreach (LineWithTokens line in lines)
             {
                 result = SingleLine(new LineWithTokens(line));
 
-                if (line.Tokens[0].Type == TokenType.Return)
+                if (line.Tokens[0].Type == TokenType.Return || returned != null)
                     break;
             }
+            result ??= returned;
             Returning = _returning;
+            returned = _returned;
             Vars = [.. Vars, .. overlap];
             Vars = Vars.Except(parameters).ToArray();
 
@@ -794,7 +806,7 @@ namespace EZCodeLanguage
                                     Methods = backup_methods;
                                     if (result != null)
                                         return result;
-                                    else throw new Exception("The \"get\" method for this class instance does not return a value");
+                                    else throw new Exception($"The Class of the instance does not contain a \"get\" method for the expected datatype \"{type.Type.ToString().Remove(0, 1)}\"");
                                 }
                                 else
                                 {

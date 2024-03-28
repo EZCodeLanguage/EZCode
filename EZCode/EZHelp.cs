@@ -100,7 +100,7 @@ namespace EZCodeLanguage
                 {
                     if (Interpreter.parser.WatchIsFound([name], 0, out ExplicitWatch watch, out _))
                     {
-                        object val = Interpreter.MethodRun(watch.Runs.Runs, watch.Runs.Parameters);
+                        object val = Interpreter.GetValue(watch.Runs, DataType.GetType("str", Interpreter.Classes, Interpreter.Containers));
                         format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(val, new DataType(DataType.Types._string, null)).ToString());
                     }
                 }
@@ -141,8 +141,8 @@ namespace EZCodeLanguage
             {
                 if (int.TryParse(obj.ToString(), out int i)) return i;
                 if (float.TryParse(obj.ToString(), out float f)) return f;
-                try { obj = Operate(obj.ToString(), false); } catch { }
-                try { obj = Evaluate(obj.ToString()); } catch { }
+                try { obj = Operate(obj.ToString(), false); return obj; } catch { }
+                try { obj = Evaluate(obj.ToString()); return obj; } catch { }
             }
             return obj;
         }
@@ -339,7 +339,7 @@ namespace EZCodeLanguage
             {
                 values[i] = ObjectParse(values[i], "str");
             }
-            string all = string.Join(" ", values.Select(x => x.ToString()), true);
+            string all = string.Join(" ", values.Select(x => x.ToString()));
             return Evaluate(all);
         }
         public bool Compare(object v1, object v2)
