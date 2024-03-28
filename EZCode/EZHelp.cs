@@ -141,6 +141,8 @@ namespace EZCodeLanguage
             {
                 if (int.TryParse(obj.ToString(), out int i)) return i;
                 if (float.TryParse(obj.ToString(), out float f)) return f;
+                try { obj = Operate(obj.ToString(), false); } catch { }
+                try { obj = Evaluate(obj.ToString()); } catch { }
             }
             return obj;
         }
@@ -158,13 +160,14 @@ namespace EZCodeLanguage
 
             return (bool)row["expression"];
         }
-        public float Operate(string expression)
+        public float Operate(string expression) => Operate(expression, true);
+        public float Operate(string expression, bool object_parse)
         {
-            string[] parts = SplitWithDelimiters(ObjectParse(expression, "str").ToString(), ['-', '+', '=', '*', '/', '%', '&', '|', '!', ' ']).Where(x => x != "" && x != " ").ToArray();
+            string[] parts = SplitWithDelimiters(object_parse ? (ObjectParse(expression, "str").ToString()) : expression, ['-', '+', '=', '*', '/', '%', '&', '|', '!', ' ']).Where(x => x != "" && x != " ").ToArray();
             expression = "";
             foreach (string e in parts)
             {
-                expression += ObjectParse(e, "float").ToString() + " ";
+                expression += object_parse ? (ObjectParse(e, "float").ToString() + " ") : e + " ";
             }
             DataTable table = new DataTable();
             table.Columns.Add("expression", typeof(string), expression);

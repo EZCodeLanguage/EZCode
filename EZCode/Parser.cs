@@ -237,6 +237,7 @@ namespace EZCodeLanguage
             {
                 None = 0,
                 NoCol = 1,
+                Global = 2
             }
             public MethodSettings Settings { get; set; }
             public LineWithTokens[] Lines { get; set; }
@@ -320,17 +321,19 @@ namespace EZCodeLanguage
             public DataType? DataType { get; set; }
             public Line Line { get; set; }
             public bool Required { get; set; }
+            public bool Global { get; set; }
             public int StackNumber = 0;
             public Var() { }
-            public Var(string? name, object? value, Line line, int stackNumber = 0, DataType? type = null, bool optional = true)
+            public Var(string? name, object? value, Line line, int stackNumber = 0, DataType? type = null, bool required = true, bool global = false)
             {
                 type ??= DataType.UnSet;
                 Name = name;
                 Value = value;
                 Line = line;
                 DataType = type;
-                Required = optional;
+                Required = required;
                 StackNumber = stackNumber;
+                Global = global;
             }
         }
         public class Container
@@ -420,7 +423,7 @@ namespace EZCodeLanguage
             RunExec,
             EZCodeDataType,
             Include,
-            Exclude,
+            Global
         }
         public static char[] Delimeters = [' ', '{', '}', '@', ':', ',', '?'];
         public string Code { get; set; }
@@ -503,6 +506,7 @@ namespace EZCodeLanguage
                     case "return": tokenType = TokenType.Return; break;
                     case "break": tokenType = TokenType.Break; break;
                     case "yield": tokenType = TokenType.Yield; break;
+                    case "global": tokenType = TokenType.Global; break;
                     case "is": tokenType = TokenType.Is; break;
                     case "get": tokenType = TokenType.Get; break;
                     case "new": tokenType = TokenType.New; break;
@@ -1368,16 +1372,22 @@ namespace EZCodeLanguage
             Line line = lines[index];
             line.CodeLine += 1;
             returns = "";
+            bool global = false;
+            if (new string(line.Value.Trim().Prepend(':').ToArray()).Contains(":global ") || 
+                new string(line.Value.Trim().Prepend(':').ToArray()).Contains(":nocol global ")) global = true;
             Method.MethodSettings settings =
-                (line.Value.Trim().StartsWith("nocol ") ? Method.MethodSettings.NoCol : Method.MethodSettings.None);
+                line.Value.Trim().StartsWith("nocol ") && !global ? Method.MethodSettings.NoCol :
+                line.Value.Contains(" nocol ") && global ? Method.MethodSettings.NoCol | Method.MethodSettings.Global :
+                global ? Method.MethodSettings.Global :
+                Method.MethodSettings.None;
             DataType? _returns = null;
             Var[]? param = [];
-            Token[] fistLineTokens = TokenArray(string.Join(" ", line.Value.Split(" ").SkipWhile(x => x != "method").Skip(1)))[0].Tokens;
-            string name = fistLineTokens[0].Value.ToString()!;
+            Token[] firstLineTokens = TokenArray(string.Join(" ", line.Value.Split(" ").SkipWhile(x => x != "method").Skip(1)))[0].Tokens;
+            string name = firstLineTokens[0].Value.ToString()!;
             bool ret = false, req = true;
-            for (int i = 1; i < fistLineTokens.Length; i++)
+            for (int i = 1; i < firstLineTokens.Length; i++)
             {
-                Token token = fistLineTokens[i];
+                Token token = firstLineTokens[i];
                 if (ret)
                 {
                     if(token.Type == TokenType.DataType)
@@ -1401,22 +1411,35 @@ namespace EZCodeLanguage
 
                 if ((token.Type == TokenType.Comma || i == 1) && token.Type != TokenType.Arrow && token.Type != TokenType.OpenCurlyBracket)
                 {
-                    bool pTypeDef = fistLineTokens[i + 1].Type == TokenType.DataType;
-                    string pName = "";
+                    if (firstLineTokens[i + 1].Type == TokenType.QuestionMark)
+                    {
+                        req = false;
+                        i++;
+                    }
+                    bool pTypeDef = firstLineTokens[i + 1].Type == TokenType.DataType;
+                    string pName = ""; 
+                    object? pVal = null;
                     DataType pType = DataType.UnSet;
                     if(pTypeDef)
                     {
-                        pType = DataType.GetType(fistLineTokens[i + 1].Value.ToString()!, Classes.ToArray(), Containers.ToArray());
-                        if (fistLineTokens[i + 2].Type == TokenType.Colon)
+                        pType = DataType.GetType(firstLineTokens[i + 1].Value.ToString()!, Classes.ToArray(), Containers.ToArray());
+                        if (firstLineTokens[i + 2].Type == TokenType.Colon)
                         {
-                            pName = fistLineTokens[i + 3].Value.ToString()!;
+                            pName = firstLineTokens[i + 3].Value.ToString()!;
+                            i += 3;
                         }
+                        else i += 1;
                     }
                     else
                     {
-                        pName = fistLineTokens[i + 1].Value.ToString()!;
+                        pName = firstLineTokens[i + 1].Value.ToString()!;
+                        i += 1;
                     }
-                    param = param.Append(new Var(pName, null, line, type:pType, optional:req)).ToArray();
+                    if (firstLineTokens.Length - 1 > i + 1 && firstLineTokens[i + 1].Type == TokenType.Identifier)
+                    {
+                        pVal = string.Join(" ", firstLineTokens.Skip(i + 1).TakeWhile(x => x.Type == TokenType.Identifier).Select(x => x.Value));
+                    }
+                    param = param.Append(new Var(pName, pVal, line, type:pType, required:req)).ToArray();
                 }
             }
 
@@ -1432,7 +1455,7 @@ namespace EZCodeLanguage
                 try
                 {
                     if (Statement.Types.Contains(bracketLineTokens[0].Value))
-                    {//right here
+                    {
                         Statement statement = SetStatement(ref lines, ref strParts, i, 0);
                         bracketLineTokens = [SingleToken([statement], 0, string.Join(" ", statement.Line.Value), out _)];
                         if (bracketLine.Value.Contains("{") && !bracketLine.Value.Contains("}")) curleyBrackets--;
