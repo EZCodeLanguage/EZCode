@@ -1,54 +1,34 @@
-class var {
-    explicit params => set : PARAMS
-    undefined Value
-    method set : val {
-        = val
+make ^var {Name} {VALUE} => var {Name} new : {VALUE}
+make ^int {NAME} {VALUE} => int {NAME} new : {VALUE}
+make ^float {NAME} {VALUE} => float {NAME} new : {VALUE}
+make ^bool {NAME} {VALUE} => bool {NAME} new : {VALUE}
+make ^str {NAME} {VALUE} => str {NAME} new : {VALUE}
+make ^global {TYPE} {NAME} {VALUE} => global {TYPE} {NAME} new : {VALUE}
+
+/*make for {TYPE} {I1} {VAL}, {I2} {COMP} {NUM}, {I3} {METHOD} {ADD} \{ => {
+	{TYPE} {I1} new : {VAL}
+	loop {I2} {COMP} {NUM} \{
+	{I3} {METHOD} {ADD}
+}
+for var i 0, i < test, i + 1 {
+    print '(i + 1)'\; '(i * i * i)'
+}*/
+
+global var test 20
+
+method Start {
+    var i 0
+    loop i < test {
+        print '(i + 1)'\; '(i * i * i)'
+        i + 1
     }
-    nocol method = : val {
-        Value => runexec EZCodeLanguage.EZHelp.ObjectParse ~> {val}, str
+    bool result (test < 50)
+    if result {
+        print result
     }
-    nocol method + : val {
-        try {
-            Value => runexec EZCodeLanguage.EZHelp.Add ~> {Value}, {val}
-        }
-        fail {
-            Value => runexec EZCodeLanguage.EZHelp.StringMod ~> {Value}, {val}, +
-        }
-    }
-    nocol method - : val {
-        try {
-            Value => runexec EZCodeLanguage.EZHelp.Subtract ~> {Value}, {val}
-        }
-        fail {
-            Value => runexec EZCodeLanguage.EZHelp.StringMod ~> {Value}, {val}, -
-        }
-    }
-    nocol method * : val {
-        try {
-            Value => runexec EZCodeLanguage.EZHelp.Multiply ~> {Value}, {val}
-        }
-        fail {
-            Value => runexec EZCodeLanguage.EZHelp.StringMod ~> {Value}, {val}, *
-        }
-    }
-    nocol method / : val {
-        try {
-            Value => runexec EZCodeLanguage.EZHelp.Divide ~> {Value}, {val}
-        }
-        fail {
-            Value => runexec EZCodeLanguage.EZHelp.StringMod ~> {Value}, {val}, /
-        }
-    }
-    get => @str {
-        return Value
-    }
-    get => @bool {
-        return runexec EZCodeLanguage.EZHelp.ObjectParse ~> {Value}, bool
-    }
-    get => @int {
-        return runexec EZCodeLanguage.EZHelp.ObjectParse ~> {Value}, int
-    }
-    get => @float {
-        return runexec EZCodeLanguage.EZHelp.ObjectParse ~> {Value}, float
-    }
+    other
+}
+
+method other {
+    print other
 }

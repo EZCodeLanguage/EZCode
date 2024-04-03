@@ -1,8 +1,8 @@
 ﻿using EZCodeLanguage;
 using System.Diagnostics;
 
-string path = "D:/EZCodeLanguage/Packages/Main/Main.ezcode";
-string full_path = Path.Combine("D:/EZCodeLanguage/Packages/Main/", path);
+string path = "Code.ezcode";
+string full_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
 string code = File.ReadAllText(path);
 string file = Path.GetFullPath(path);
 
@@ -26,7 +26,8 @@ Console.WriteLine(save);
 
 Stopwatch stopwatch = Stopwatch.StartNew();
 Parser parser = new Parser();
-Parser.LineWithTokens[] tokens = parser.Tokenize(code);
+parser = Package.ReturnParserWithPackages(parser, ["main"]);
+Parser.LineWithTokens[] tokens = parser.Parse(code);
 List<Parser.Token[]> tokenTypes = [];
 for (int i = 0; i < tokens.Length; i++)
 {

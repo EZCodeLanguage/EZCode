@@ -431,52 +431,67 @@ namespace EZCodeLanguage
         public List<Class> Classes = [];
         public List<Container> Containers = [];
         public List<Method> Methods = [];
-        public LineWithTokens[] Tokens = Array.Empty<LineWithTokens>();
+        public LineWithTokens[] LinesWithTokens = Array.Empty<LineWithTokens>();
         public Parser() { }
         public Parser(string code)
         {
             Code = code;
         }
-        public LineWithTokens[] Tokenize() => Tokens = Tokenize(Code);
-        public LineWithTokens[] Tokenize(string code) => Tokens = TokenArray(code).Where(x => x.Line.Value.ToString() != "").ToArray();
+        public LineWithTokens[] Parse() => LinesWithTokens = Parse(Code);
+        public LineWithTokens[] Parse(string code) => LinesWithTokens = TokenArray(code).Where(x => x.Line.Value.ToString() != "").ToArray();
         private LineWithTokens[] TokenArray(string code, bool insideClass = false)
         {
+            // Set the Code property to the parameter if it isn't null
             Code ??= code;
-            List<LineWithTokens> withTokens = new List<LineWithTokens>();
-            Line[] Lines = SplitLine(code);
+            // The LineWithTokens list that gets returned
+            List<LineWithTokens> lineWithTokens = new List<LineWithTokens>();
+            // Splits the code into lines
+            Line[] Lines = SplitLine(Code);
 
+            // loops through each line
             for (int i = 0; i < Lines.Length; i++)
             {
-                List<Token> tokens;
-                Line line = Lines[i];
-                int continues = 0, arrow, ar = 0;
-                string[] stringParts = { };
+                // Some empty variables before looping through tokens
+                List<Token> tokens; // tokens in the line
+                Line line = Lines[i]; // current line
+                string[] stringParts = []; // Needed for the 'SplitParts' method. each token as a string value
+                int continues = 0, // used with the '->' token to continue the line to the next line
+                    // These are used to check if the line contains the '->' and there is still code after it. 2 code lines in 1 line
+                    arrow_output_index, // The output of the index after the '->' 
+                    arrow_input_index = 0; // The input index for after the '->'
                 do
                 {
-                    tokens = new List<Token>();
-                    arrow = 0;
-                    stringParts = SplitParts(ref Lines, i, ar, ref stringParts, out _, out _, insideClass, true).Select(x=>x.ToString()).ToArray();
-                    object[] parts = SplitParts(ref Lines, i, ar, ref stringParts, out continues, out arrow, insideClass);
+                    tokens = new List<Token>(); // sets tokens to empty
+                    arrow_output_index = 0; // sets the arrow output to zero
+                    // gets the parts split by spaces. Tokens as strings
+                    stringParts = SplitParts(ref Lines, i, arrow_input_index, ref stringParts, out _, out _, insideClass, true).Select(x => x.ToString()).ToArray();
+                    // gets the token's values
+                    object[] parts = SplitParts(ref Lines, i, arrow_input_index, ref stringParts, out continues, out arrow_output_index, insideClass);
+                    // loops through each part and creates the token from it
                     for (int j = 0; j < parts.Length; j++)
                     {
-                        Token token = SingleToken(parts, j, stringParts.Length > j ? stringParts[j] : "", out bool stops);
-                        if (token.Type != TokenType.None && token.Type != TokenType.Comment) tokens.Add(token);
-                        if (stops) continue;
-                    }
-                    ar = arrow;
+                        // Creates the appropriate token for the part
+                        Token token = SingleToken(parts, j, stringParts.Length > j ? stringParts[j] : "");
 
-                    withTokens.Add(new(tokens.ToArray(), line));
+                        // if the token is a comment or invalid, don't append the token to 'tokens'
+                        if (token.Type != TokenType.None || token.Type != TokenType.Comment) continue;
+                        tokens.Add(token);
+                    }
+                    arrow_input_index = arrow_output_index; // sets the arrow input to the arrow output
+
+                    // adds the line with the 'tokens' to 'lineWithTokens' list
+                    lineWithTokens.Add(new(tokens.ToArray(), line));
                 }
-                while (arrow != 0);
-                i += continues;
-                line.CodeLine += 1;
+                while (arrow_output_index != 0); // checks if there isn't anymore arrows spliting lines
+
+                i += continues; // skips any lines that are apart of the line before it with the '->' token
+                line.CodeLine += 1; // increments the line number by 1 so the first line is not 0
             }
 
-            return withTokens.ToArray();
+            return lineWithTokens.ToArray();
         }
-        internal Token SingleToken(object[] parts, int partIndex, string stringPart, out bool stops)
+        internal Token SingleToken(object[] parts, int partIndex, string stringPart)
         {
-            stops = false;
             TokenType tokenType = TokenType.None;
             if (parts[partIndex] is string)
             {
@@ -487,7 +502,7 @@ namespace EZCodeLanguage
                     case "!": case "not": tokenType = TokenType.Not; break;
                     case "&": case "&&": case "and": tokenType = TokenType.And; break;
                     case "|": case "||": case "or": tokenType = TokenType.Or; break;
-                    case "//": tokenType = TokenType.Comment; stops = true; break;
+                    case "//": tokenType = TokenType.Comment; break;
                     case "=>": tokenType = TokenType.Arrow; break;
                     case ":": tokenType = TokenType.Colon; break;
                     case "{": tokenType = TokenType.OpenCurlyBracket; break;
@@ -559,9 +574,12 @@ namespace EZCodeLanguage
         }
         public object[] SplitParts(ref Line[] lines, int lineIndex, int partStart, ref string[] stringParts, out int continues, out int arrow, bool insideClass = false, bool tostring = false)
         {
+            // Current Line
             string line = lines[lineIndex].Value;
+            // Get each token from the line. 'parts' is split by the token delimeters. 'partSpaces' is split by spaces
             object[] parts = SplitWithDelimiters(line, Delimeters).Where(x => x != "" && x != " ").Select(x => (object)x).Skip(partStart).ToArray();
             string[] partsSpaces = line.Split(" ").Where(x => x != "" && x != " ").ToArray();
+            // Sets the out parameters to default
             continues = 0; arrow = 0;
             for (int i = 0; i < parts.Length; i++)
             {
@@ -1292,7 +1310,7 @@ namespace EZCodeLanguage
                     brackets = true;
                     end = parts.Length - j;
                 }
-                argTokens = argTokens.Append(SingleToken(parts, j, parts[partIndex].ToString(), out _)).ToArray();
+                argTokens = argTokens.Append(SingleToken(parts, j, parts[partIndex].ToString())).ToArray();
             }
             argTokens = argTokens.Take(argTokens.Length - end).ToArray();
             if (argTokens.FirstOrDefault(new Token(TokenType.None, "", "")).Value.ToString() == "runexec")
@@ -1303,7 +1321,7 @@ namespace EZCodeLanguage
                 object[] objects = SplitParts(ref l, 0, 0, ref strParts, out _, out _);
                 Token[] t = [];
                 for (int i = 0; i < objects.Length; i++)
-                    t = [.. t, SingleToken(objects, i, parts[partIndex].ToString(), out _)];
+                    t = [.. t, SingleToken(objects, i, parts[partIndex].ToString())];
                 argTokens = t;
             }
             if (Statement.ConditionalTypes.Contains(parts[partIndex]))
@@ -1351,7 +1369,7 @@ namespace EZCodeLanguage
                             break;
                         code += bracketLine.Value + Environment.NewLine;
                     }
-                    lineWithTokens = Tokenize(code);
+                    lineWithTokens = Parse(code);
                     lineWithTokens = lineWithTokens.Select(x => { x.Line.CodeLine++; return x; }).ToArray();
                     if (lineWithTokens.Last().Line.Value.ToString() == "}")
                     {
@@ -1369,6 +1387,7 @@ namespace EZCodeLanguage
         private Method SetMethod(Line[] lines, ref string[] strParts, int index, out string returns) => SetMethod(ref lines, ref strParts, index, out returns);
         private Method SetMethod(ref Line[] lines, ref string[] strParts, int index, out string returns)
         {
+            // Get the current line
             Line line = lines[index];
             line.CodeLine += 1;
             returns = "";
@@ -1442,13 +1461,12 @@ namespace EZCodeLanguage
                     param = param.Append(new Var(pName, pVal, line, type:pType, required:req)).ToArray();
                 }
             }
-
+            int start = index + 1;
             LineWithTokens[] lineWithTokens = [];
-            Line nextLine = lines[index + 1];
+            Line nextLine = lines[start];
             bool sameLineBracket = nextLine.Value.StartsWith('{');
             int curleyBrackets = sameLineBracket ? 0 : 1;
-            int[] indexes = [];
-            for (int i = index + 1; i < lines.Length; i++)
+            for (int i = start; i < lines.Length; i++)
             {
                 Line bracketLine = lines[i];
                 Token[] bracketLineTokens = TokenArray(bracketLine.Value)[0].Tokens;
@@ -1457,7 +1475,7 @@ namespace EZCodeLanguage
                     if (Statement.Types.Contains(bracketLineTokens[0].Value))
                     {
                         Statement statement = SetStatement(ref lines, ref strParts, i, 0);
-                        bracketLineTokens = [SingleToken([statement], 0, string.Join(" ", statement.Line.Value), out _)];
+                        bracketLineTokens = [SingleToken([statement], 0, string.Join(" ", statement.Line.Value))];
                         if (bracketLine.Value.Contains("{") && !bracketLine.Value.Contains("}")) curleyBrackets--;
                     }
                 } catch { }
@@ -1466,12 +1484,11 @@ namespace EZCodeLanguage
                 if (bracketLine.Value.Contains('}'))
                     curleyBrackets--;
                 lineWithTokens = [.. lineWithTokens, new LineWithTokens(bracketLineTokens, bracketLine)];
-                indexes = [.. indexes, i];
                 if (curleyBrackets == 0)
                     break;
             }
-            for (int i = 0; i < indexes.Length; i++)
-                lines = lines.Where((x, y) => y != indexes[i]).ToArray();
+            for (int i = 0; i < lineWithTokens.Length; i++)
+                lines = lines.Where((x, y) => y != start).ToArray();
             
             if (lineWithTokens.Last().Line.Value.ToString() == "}")
             {
@@ -1535,13 +1552,17 @@ namespace EZCodeLanguage
         }
         private static Line[] SplitLine(string code)
         {
+            // Generates an empty Line array to return
             Line[] lines = Array.Empty<Line>();
-            int i = 0;
-            foreach (var item in code.Split(Environment.NewLine).Select(s => s.Trim()).ToArray())
+
+            int index = 0; // index of loop
+            string[] string_lines = code.Split('\n').Select(s => s.Trim()).ToArray(); // splits code by each line
+            foreach (var item in string_lines)
             {
-                lines = lines.Append(new Line(item, i)).ToArray();
-                i++;
-            };
+                // Append line to the array, 'lines'
+                lines = lines.Append(new Line(item, index)).ToArray();
+                index++; // increment the index by one
+            }
             return lines;
         }
     }

@@ -57,7 +57,7 @@ namespace EZCodeLanguage
         public Container[] Containers { get => parser.Containers.ToArray(); }
         public Line CurrentLine { get; private set; }
         private bool StartMethodEntry = false;
-        public int Interperate() => Interperate(parser.Tokens);
+        public int Interperate() => Interperate(parser.LinesWithTokens);
         public int Interperate(LineWithTokens[] LineTokens)
         {
             int endcode = 0;
@@ -572,6 +572,10 @@ namespace EZCodeLanguage
                     broke = true;
                     break;
                 }
+
+                if (line.Tokens.Length == 0) 
+                    continue;
+                
                 if (line.Tokens[0].Type == TokenType.Yield)
                 {
                     yielded = true;
@@ -603,7 +607,10 @@ namespace EZCodeLanguage
             LineWithTokens line = new LineWithTokens(argument.Tokens, argument.Line);
             object? result = null;
             try { result = SingleLine(line); } catch { }
-            if (result == null) result = argument.Value;
+            if (result is Class c)
+                result = Argument.EvaluateTerm(c.Properties.FirstOrDefault(x => x.Name.ToLower() == "value").Value.ToString());
+            if (result == null)
+                result = argument.Value;
             bool? term = Argument.EvaluateTerm(result.ToString());
             if (term == null) throw new Exception($"Expected the argument section's method \"{argument.Value}\" to return boolean");
             return term;
@@ -763,6 +770,7 @@ namespace EZCodeLanguage
                             }
                             try
                             {
+                                if (obj == null) throw new Exception();
                                 switch (var.DataType.Type)
                                 {
                                     case DataType.Types._string: return obj.ToString();

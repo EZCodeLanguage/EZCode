@@ -29,8 +29,8 @@ namespace EZCodeLanguage
 
             // CACHE SYSTEM NOT WORKING PROPERLY
 
-            if (parser.Classes.Count == 0 && parser.Methods.Count == 0 && parser.Containers.Count == 0 && parser.Tokens.Length == 0)
-                parser.Tokenize(string.Join("\n\n// End of File\n\n", project.Files.Select(x => File.ReadAllText(Path.Combine(pack_dir, x)))));
+            if (parser.Classes.Count == 0 && parser.Methods.Count == 0 && parser.Containers.Count == 0 && parser.LinesWithTokens.Length == 0)
+                parser.Parse(string.Join("\n\n// End of File\n\n", project.Files.Select(x => File.ReadAllText(Path.Combine(pack_dir, x)))));
 
             return parser;
         }
@@ -45,8 +45,8 @@ namespace EZCodeLanguage
         }
         public static string SaveCache(string file, Parser parser)
         {
-            if (parser.Tokens == null || parser.Tokens.Length == 0)
-                parser.Tokenize();
+            if (parser.LinesWithTokens == null || parser.LinesWithTokens.Length == 0)
+                parser.Parse();
 
             FileInfo fileInfo = new FileInfo(file);
             if (fileInfo.Name == "package.json")
@@ -54,8 +54,8 @@ namespace EZCodeLanguage
                 Project project = JsonConvert.DeserializeObject<Project>(File.ReadAllText(fileInfo.FullName));
                 Parser parse = OpenCache(project.Files.Select(x => Path.Combine(fileInfo.DirectoryName, x)).ToArray());
 
-                if (parse.Classes.Count == 0 && parse.Methods.Count == 0 && parse.Containers.Count == 0 && parse.Tokens.Length == 0)
-                    parse.Tokenize(string.Join("\n\n// End of File\n\n", project.Files.Select(x => File.ReadAllText(Path.Combine(fileInfo.DirectoryName, x)))));
+                if (parse.Classes.Count == 0 && parse.Methods.Count == 0 && parse.Containers.Count == 0 && parse.LinesWithTokens.Length == 0)
+                    parse.Parse(string.Join("\n\n// End of File\n\n", project.Files.Select(x => File.ReadAllText(Path.Combine(fileInfo.DirectoryName, x)))));
 
                 parser = parse;
             }
@@ -84,8 +84,8 @@ namespace EZCodeLanguage
                     Project project = JsonConvert.DeserializeObject<Project>(File.ReadAllText(fileInfo.FullName));
                     cache = OpenCache(project.Files.Select(x=> Path.Combine(fileInfo.DirectoryName, x)).ToArray());
 
-                    if (cache.Classes.Count == 0 && cache.Methods.Count == 0 && cache.Containers.Count == 0 && cache.Tokens.Length == 0) 
-                        cache.Tokenize(string.Join("\n\n// End of File\n\n", project.Files.Select(x => File.ReadAllText(Path.Combine(fileInfo.DirectoryName, x)))));
+                    if (cache.Classes.Count == 0 && cache.Methods.Count == 0 && cache.Containers.Count == 0 && cache.LinesWithTokens.Length == 0) 
+                        cache.Parse(string.Join("\n\n// End of File\n\n", project.Files.Select(x => File.ReadAllText(Path.Combine(fileInfo.DirectoryName, x)))));
 
                     CombineParsers(parser, cache);
                 }
@@ -102,7 +102,7 @@ namespace EZCodeLanguage
         public static Parser CombineParsers(Parser parser, Parser p2)
         {
             parser.Code += p2.Code + "\n\n// End of File";
-            parser.Tokens = [.. parser.Tokens, .. p2.Tokens];
+            parser.LinesWithTokens = [.. parser.LinesWithTokens, .. p2.LinesWithTokens];
             parser.Classes = [.. parser.Classes, .. p2.Classes];
             parser.Methods = [.. parser.Methods, .. p2.Methods];
             parser.Containers = [.. parser.Containers, .. p2.Containers];

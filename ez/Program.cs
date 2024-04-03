@@ -20,7 +20,7 @@ static class ez
                     
                     help          Writes all of the possible commands
                     version       Writes the current version of EZCode installed
-                    run [CODE]    Runs a line of code. 'Main' Package is already imported
+                    run [CODE]    Runs a line of code. 'main' Package is already imported
                     start         Starts an EZCode environment
                     [FILEPATH]    Runs file
                     """);
@@ -41,8 +41,8 @@ static class ez
                 break;
             case "run":
                 Parser parser = new Parser(string.Join(" ", args.Skip(1).ToArray()));
-                parser.Tokenize();
-                parser = Package.ReturnParserWithPackages(parser, ["Main"]);
+                parser = Package.ReturnParserWithPackages(parser, ["main"]);
+                parser.Parse();
                 Interpreter interpreter = new Interpreter(AppDomain.CurrentDomain.BaseDirectory, parser);
                 interpreter.Interperate();
                 break;
@@ -71,7 +71,7 @@ static class ez
                     break;
                 }
                 parser = new Parser(contents);
-                parser.Tokenize();
+                parser.Parse();
                 interpreter = new Interpreter(path, parser);
                 interpreter.Interperate();
                 break;
@@ -83,7 +83,7 @@ static class ez
     {
         if (contents == null)
         {
-            Console.WriteLine("EZCode Environment started. 'Main' Package already included");
+            Console.WriteLine("EZCode Environment started. 'main' Package already included");
             Console.WriteLine("Commands: " +
                 "END to end environment, " +
                 "RUN to run program, " +
@@ -101,8 +101,8 @@ static class ez
             if (line == "RUN")
             {
                 Parser parser = new Parser();
-                parser.Tokenize(string.Join(System.Environment.NewLine, contents));
-                parser = Package.ReturnParserWithPackages(parser, ["Main"]);
+                parser = Package.ReturnParserWithPackages(parser, ["main"]);
+                parser.Parse(string.Join(System.Environment.NewLine, contents));
                 Interpreter interpreter = new Interpreter(AppDomain.CurrentDomain.BaseDirectory, parser);
                 interpreter.Interperate();
                 again = true;

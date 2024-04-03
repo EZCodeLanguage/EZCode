@@ -37,6 +37,7 @@ namespace EZCodeLanguage
                     chars[i] = 
                         chars[i] == '\\' ? '\\' :
                         chars[i] == 'n' ? '\n' :
+                        chars[i] == 'r' ? '\r' :
                         chars[i] == 'c' ? ',' :
                         chars[i] == 'p' ? '.' :
                         chars[i] == '"' ? '\'' :
@@ -354,5 +355,23 @@ namespace EZCodeLanguage
         public bool BoolParse(object v) => bool.Parse(ObjectParse(v, "bool").ToString());
         public float FloatParse(object v) => float.Parse(ObjectParse(v, "float").ToString());
         public int IntParse(object v) => int.Parse(ObjectParse(v, "int").ToString());
+        public int RunEZCodeWithPackage(string code, string package)
+        {
+            code = ObjectParse(code, "str").ToString() + Environment.NewLine;
+            package = ObjectParse(package, "str").ToString();
+            Parser parser = new Parser(string.Join(" ", code));
+            parser = Package.ReturnParserWithPackages(parser, [package]);
+            parser.Parse();
+            Interpreter interpreter = new Interpreter($"{Interpreter.WorkingFile}(instance running from inside file)", parser);
+            return interpreter.Interperate();
+        }
+        public int RunEZCode(string code)
+        {
+            code = ObjectParse(code, "str").ToString();
+            Parser parser = new Parser(string.Join(" ", code));
+            parser.Parse();
+            Interpreter interpreter = new Interpreter($"{Interpreter.WorkingFile}(instance running from inside file)", parser);
+            return interpreter.Interperate();
+        }
     }
 }
