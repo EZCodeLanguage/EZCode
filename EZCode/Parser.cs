@@ -445,7 +445,7 @@ namespace EZCodeLanguage
             // The LineWithTokens list that gets returned
             List<LineWithTokens> lineWithTokens = new List<LineWithTokens>();
             // Splits the code into lines
-            Line[] Lines = SplitLine(Code);
+            Line[] Lines = SplitLine(code);
 
             // loops through each line
             for (int i = 0; i < Lines.Length; i++)
@@ -473,7 +473,7 @@ namespace EZCodeLanguage
                         Token token = SingleToken(parts, j, stringParts.Length > j ? stringParts[j] : "");
 
                         // if the token is a comment or invalid, don't append the token to 'tokens'
-                        if (token.Type != TokenType.None || token.Type != TokenType.Comment) continue;
+                        if (token.Type == TokenType.None || token.Type == TokenType.Comment) continue;
                         tokens.Add(token);
                     }
                     arrow_input_index = arrow_output_index; // sets the arrow input to the arrow output
@@ -1566,7 +1566,8 @@ namespace EZCodeLanguage
             Line[] lines = Array.Empty<Line>();
 
             int index = 0; // index of loop
-            string[] string_lines = code.Split('\n').Select(s => s.Trim()).ToArray(); // splits code by each line
+            string[] string_lines = code.Split('\n');
+            string_lines = string_lines.Select(s => s.Trim()).ToArray(); // splits code by each line
             foreach (var item in string_lines)
             {
                 // Append line to the array, 'lines'

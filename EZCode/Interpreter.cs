@@ -139,7 +139,7 @@ namespace EZCodeLanguage
                                                     {
                                                         line.Tokens[i].Value = GetValue(line.Tokens[i].Value, var.DataType);
                                                         line.Tokens[i].StringValue = line.Tokens[i].Value is string or int or float or bool ? line.Tokens[i].Value.ToString() : line.Tokens[i].StringValue;
-                                                        line.Tokens[i].Type = parser.SingleToken([line.Tokens[i].StringValue == line.Tokens[i].Value.ToString() ? line.Tokens[i].StringValue : line.Tokens[i].Value], 0, line.Tokens[i].StringValue, out _).Type;
+                                                        line.Tokens[i].Type = parser.SingleToken([line.Tokens[i].StringValue == line.Tokens[i].Value.ToString() ? line.Tokens[i].StringValue : line.Tokens[i].Value], 0, line.Tokens[i].StringValue).Type;
                                                     }
                                                     Method[] backupMethods = Methods;
                                                     Methods = c.Methods.Concat(Methods.Where(x => (x.Settings & Method.MethodSettings.Global) == Method.MethodSettings.Global)).ToArray();
