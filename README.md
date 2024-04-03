@@ -1,5 +1,5 @@
 ## \*\**Version 3.0.0 Currently in Development*\*\*
-*What EZCode is going to look like,*
+*What EZCode v3 is going to look like,*
 ```
 make ^int {NAME} {VALUE} => var {NAME} new : {VALUE}
 // turns: var name 0
