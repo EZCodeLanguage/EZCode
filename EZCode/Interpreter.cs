@@ -278,46 +278,56 @@ namespace EZCodeLanguage
                                     Method.MethodSettings settings = method.Settings;
                                     bool nocol = (settings & Method.MethodSettings.NoCol) != 0;
                                     int next = nocol ? 0 : 1;
-                                    if (!nocol && line.Tokens[1].Type != TokenType.Colon)
-                                    {
-                                        throw new Exception("Expected \":\" identifier to set method perameters");
-                                    }
                                     Var[] vars = [];
-
-                                    if (method.Params != null && method.Params.Length > 0)
+                                    if (line.Tokens.Length != 1)
                                     {
-                                        string all; string[] vals;
-                                        try 
+                                        if (!nocol && line.Tokens[1].Type != TokenType.Colon)
                                         {
-                                            all = string.Join(" ", line.Tokens.Skip(next + 1).Select(x => x.StringValue));
-                                            if (all.Split(',').Length > method.Params.Select(x => x.Required).ToArray().Length)
-                                                throw new Exception($"Expects {(method.Params.Any(x=>x.Required) ? "at least" : "")} {(method.Params.Any(x => x.Required) ? method.Params.Select(x=>x.Required).ToArray().Length : method.Params.Length)} parameter for method \"{method.Name}\" but {all.Split(',').Length} were inputted");
-                                            vals = all.Split(',').Select(x => x.Trim()).Select((x, y) => GetValue(x, method.Params[y].DataType).ToString()).Where(x => x != "").ToArray();
+                                            throw new Exception("Expected \":\" identifier to set method perameters");
                                         }
-                                        catch (Exception e)
+
+                                        if (method.Params != null && method.Params.Length > 0)
                                         {
-                                            if (e.Message.StartsWith("Expects ")) throw new Exception(e.Message);
-                                            throw new Exception("Error getting values for method paramters");
+                                            string all; string[] vals;
+                                            try 
+                                            {
+                                                all = string.Join(" ", line.Tokens.Skip(next + 1).Select(x => x.StringValue));
+                                                if (all.Split(',').Length > method.Params.Select(x => x.Required).ToArray().Length)
+                                                    throw new Exception($"Expects {(method.Params.Any(x=>x.Required) ? "at least" : "")} {(method.Params.Any(x => x.Required) ? method.Params.Select(x=>x.Required).ToArray().Length : method.Params.Length)} parameter for method \"{method.Name}\" but {all.Split(',').Length} were inputted");
+                                                vals = all.Split(',').Select(x => x.Trim()).Select((x, y) => GetValue(x, method.Params[y].DataType).ToString()).Where(x => x != "").ToArray();
+                                            }
+                                            catch (Exception e)
+                                            {
+                                                if (e.Message.StartsWith("Expects ")) throw new Exception(e.Message);
+                                                throw new Exception("Error getting values for method paramters");
+                                            }
+                                            if (vals.Length > 0)
+                                            {
+                                                for (int i = 0; i < method.Params.Length; i++)
+                                                {
+                                                    if (!method.Params[i].Required && vals.Length - 1 < i)
+                                                        continue;
+                                                    vars = [.. vars, new Var(method.Params[i].Name, vals[i], line.Line, stackNumber: StackNumber, type: method.Params[i].DataType, required: method.Params[i].Required)];
+                                                }
+                                                if (vars.Where(x => x.Required).ToArray().Length != method.Params.Where(x => x.Required).ToArray().Length)
+                                                {
+                                                    throw new Exception("Not all parameters are set");
+                                                }
+                                            }
+                                            else
+                                            {
+                                                if (line.Tokens.Length > 1)
+                                                {
+                                                    throw new Exception("Method does not require any parameters");
+                                                }
+                                            }
                                         }
-                                        if (vals.Length > 0)
+                                    }
+                                    else
+                                    {
+                                        if (method.Params != null && method.Params.Select(x => x.Required).ToArray().Length > 0)
                                         {
-                                            for (int i = 0; i < method.Params.Length; i++)
-                                            {
-                                                if (!method.Params[i].Required && vals.Length - 1 < i)
-                                                    continue;
-                                                vars = [.. vars, new Var(method.Params[i].Name, vals[i], line.Line, stackNumber: StackNumber, type: method.Params[i].DataType, required: method.Params[i].Required)];
-                                            }
-                                            if (vars.Where(x => x.Required).ToArray().Length != method.Params.Where(x => x.Required).ToArray().Length)
-                                            {
-                                                throw new Exception("Not all parameters are set");
-                                            }
-                                        }
-                                        else
-                                        {
-                                            if (line.Tokens.Length > 1)
-                                            {
-                                                throw new Exception("Method does not require any parameters");
-                                            }
+                                            throw new Exception($"Method \"{method.Name}\" expects parameters");
                                         }
                                     }
 
