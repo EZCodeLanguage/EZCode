@@ -419,7 +419,6 @@ namespace EZCodeLanguage
             Not,
             Or,
             Make,
-            Is,
             RunExec,
             EZCodeDataType,
             Include,
@@ -492,10 +491,14 @@ namespace EZCodeLanguage
         }
         internal Token SingleToken(object[] parts, int partIndex, string stringPart)
         {
-            TokenType tokenType = TokenType.None;
+            TokenType tokenType = TokenType.None; // the output token type
+
+            // checks if the part is a string
             if (parts[partIndex] is string)
             {
-                string part = parts[partIndex] as string;
+                string part = parts[partIndex] as string; // the part from parts
+
+                // sets the tokenType to the correct type
                 switch (part)
                 {
                     default: tokenType = TokenType.Identifier; break;
@@ -522,19 +525,20 @@ namespace EZCodeLanguage
                     case "break": tokenType = TokenType.Break; break;
                     case "yield": tokenType = TokenType.Yield; break;
                     case "global": tokenType = TokenType.Global; break;
-                    case "is": tokenType = TokenType.Is; break;
                     case "get": tokenType = TokenType.Get; break;
                     case "new": tokenType = TokenType.New; break;
                     case "make": tokenType = TokenType.Make; break;
                     case "null": tokenType = TokenType.Null; parts[partIndex] = ""; break;
                 }
-                if (part.StartsWith("//")) tokenType = TokenType.Comment;
-                if (part.StartsWith('@')) tokenType = TokenType.DataType;
+                if (part.StartsWith("//")) tokenType = TokenType.Comment; // If the part starts with '//', it is comment
+                if (part.StartsWith('@')) tokenType = TokenType.DataType; // If the part starts with '@', it is a datatype
             }
+            // If the part is a statement 
             else if (parts[partIndex] is Statement)
             {
                 Statement part = (Statement)parts[partIndex];
 
+                // sets the tokenType to the type of statement 'part' is
                 switch (part.Type)
                 {
                     case "if": tokenType = TokenType.If; break;
@@ -545,26 +549,32 @@ namespace EZCodeLanguage
                     case "fail": tokenType = TokenType.Fail; break;
                 }
             }
+            // If it is Class, set the part to the appropriate type
             else if (parts[partIndex] is Class)
             {
                 tokenType = TokenType.Class;
             }
+            // If it is RunMethod (A match), set the part to the appropriate type
             else if (parts[partIndex] is RunMethod)
             {
                 tokenType = TokenType.Match;
             }
+            // If it is Method, set the part to the appropriate type
             else if (parts[partIndex] is Method)
             {
                 tokenType = TokenType.Method;
             }
+            // If it is C# method, set the part to the appropriate type
             else if (parts[partIndex] is CSharpMethod)
             {
                 tokenType = TokenType.RunExec;
             }
+            // If it is C# datatype, set the part to the appropriate type
             else if (parts[partIndex] is CSharpDataType)
             {
                 tokenType = TokenType.EZCodeDataType;
             }
+            // If it is Container, set the part to the appropriate type
             else if (parts[partIndex] is Container)
             {
                 tokenType = TokenType.Container;
