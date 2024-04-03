@@ -904,13 +904,16 @@ namespace EZCodeLanguage
                     else if (parts[i].ToString() == "make")
                     {
                         // syntax,
-                        // make A => B
-                        // make A {VAR} A => B {VAR} B
-                        /*  make {
-                         *      A
+                        /* 
+                         * make A => B
+                         * 
+                         * make A {VAR} A => B {VAR} B
+                         * 
+                         *  make {
+                         *      A {VAR}
                          *      A
                          *  } => {
-                         *      B
+                         *      B {VAR}
                          *      B
                          *  }
                          */
@@ -983,6 +986,7 @@ namespace EZCodeLanguage
                             next++;
                             // set replace to the multi line
                             replace = multiLineTake.ToString();
+                            replaceMulti = replace.Split('\n').Select(x => x.Trim()).ToArray()[0];
                         }
                         // create new array for all of the take lines
                         string[] takeLines = take.Split("\n").Select(x => x.Trim()).Where(y => y != "").ToArray();

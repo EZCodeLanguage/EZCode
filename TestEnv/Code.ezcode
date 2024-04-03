@@ -5,23 +5,28 @@ make ^bool {NAME} {VALUE} => bool {NAME} new : {VALUE}
 make ^str {NAME} {VALUE} => str {NAME} new : {VALUE}
 make ^global {TYPE} {NAME} {VALUE} => global {TYPE} {NAME} new : {VALUE}
 
-/*make for {TYPE} {I1} {VAL}, {I2} {COMP} {NUM}, {I3} {METHOD} {ADD} \{ => {
-	{TYPE} {I1} new : {VAL}
+make {
+    ^for {TYPE} {I1} {VAL}, {I2} {COMP} {NUM}, {I3} {METHOD} {ADD} 
+    \{ 
+} => {
+    {TYPE} {I1} new : ({VAL} - 1)
 	loop {I2} {COMP} {NUM} \{
 	{I3} {METHOD} {ADD}
 }
-for var i 0, i < test, i + 1 {
-    print '(i + 1)'\; '(i * i * i)'
-}*/
+make ^for {TYPE} {I1} {VAL}, {I2} {COMP} {NUM}, {I3} {METHOD} {ADD} \{ => {
+    {TYPE} {I1} new : ({VAL} - 1)
+	loop {I2} {COMP} {NUM} \{
+	{I3} {METHOD} {ADD}
+}
 
 global var test 20
 
 method Start {
-    var i 0
-    loop i < test {
+
+    for var i 0, i < test, i + 1 {
         print '(i + 1)'\; '(i * i * i)'
-        i + 1
     }
+
     bool result (test < 50)
     if result {
         print result
@@ -30,5 +35,6 @@ method Start {
 }
 
 method other {
-    print other
+    test * 150
+    print other 'test'
 }
