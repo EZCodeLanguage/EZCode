@@ -1,4 +1,4 @@
-# *Version 3.0.0 Currently in Development*
+## *Version 3.0.0 Currently in Development*
 
 ![Main Image](https://raw.githubusercontent.com/JBrosDevelopment/EZCode/master/docs/Images/EZCode_Wide_Logo.png)
 ---
