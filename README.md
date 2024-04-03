@@ -1,4 +1,35 @@
 ## \*\**Version 3.0.0 Currently in Development*\*\*
+*What EZCode is going to look like,*
+```
+make ^int {NAME} {VALUE} => var {NAME} new : {VALUE}
+// turns: var name 0
+// into: var name new : 0
+// which is the valid way to create class instance
+
+// color class that stores R, G, B values
+// looks for c[R, G, B] and turns that into a new color instance
+class color {
+    explicit watch c\[{R}, {G}, {B}\] => set : R, G, B
+    int R 0
+    int G 0
+    int B 0
+    method set : @int:r, @int:g, @int:b {
+        R = r
+        G = g
+        B = b
+    }
+}
+
+// prints color with the new instance of color class c[50, 60, 90]
+printColor : c[50, 60, 90]
+
+method printColor : @color:c {
+    print The color: 'c:r' 'c:g' 'c:b'
+}
+// Outputs:
+// The color: 50 60 90 
+```
+
 
 ![Main Image](https://raw.githubusercontent.com/JBrosDevelopment/EZCode/master/docs/Images/EZCode_Wide_Logo.png)
 ---
