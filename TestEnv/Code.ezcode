@@ -1,40 +1,30 @@
-make ^var {Name} {VALUE} => var {Name} new : {VALUE}
-make ^int {NAME} {VALUE} => int {NAME} new : {VALUE}
-make ^float {NAME} {VALUE} => float {NAME} new : {VALUE}
-make ^bool {NAME} {VALUE} => bool {NAME} new : {VALUE}
-make ^str {NAME} {VALUE} => str {NAME} new : {VALUE}
-make ^global {TYPE} {NAME} {VALUE} => global {TYPE} {NAME} new : {VALUE}
+include main
 
-make {
-    ^for {TYPE} {I1} {VAL}, {I2} {COMP} {NUM}, {I3} {METHOD} {ADD} 
-    \{ 
-} => {
-    {TYPE} {I1} new : ({VAL} - 1)
-	loop {I2} {COMP} {NUM} \{
-	{I3} {METHOD} {ADD}
-}
-make ^for {TYPE} {I1} {VAL}, {I2} {COMP} {NUM}, {I3} {METHOD} {ADD} \{ => {
-    {TYPE} {I1} new : ({VAL} - 1)
-	loop {I2} {COMP} {NUM} \{
-	{I3} {METHOD} {ADD}
-}
+make ^int {NAME} {VALUE} => var {NAME} new : {VALUE}
+// turns: var name 0
+// into: var name new : 0
+// which is the valid way to create class instance
 
-global var test 20
-
-method Start {
-
-    for var i 0, i < test, i + 1 {
-        print '(i + 1)'\; '(i * i * i)'
+// color class that stores R, G, B values
+// looks for c[R;G;B] and turns that into a new color instance
+class color {
+    explicit watch c\[{@int:R};{@int:G};{@int:B}\] => set : R, G, B
+    int R 0
+    int G 0
+    int B 0
+    method set : @int:r, @int:g, @int:b {
+        R = r
+        G = g
+        B = b
     }
-
-    bool result (test < 50)
-    if result {
-        print result
-    }
-    other
 }
 
-method other {
-    test * 150
-    print other 'test'
+// prints color with the new instance of color class c[50;60;90]
+int red 40
+printColor : c[red;60;90]
+
+method printColor : @color:c {
+    print The color: 'c:R', 'c:G', 'c:B'
 }
+// Outputs:
+// The color: 50 60 90

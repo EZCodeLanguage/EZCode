@@ -92,8 +92,13 @@ namespace EZCodeLanguage
             for (int i = ranges.Length - 1; i >= 0; i--)
             {
                 Range range = ranges[i];
-                string name = format.Substring(range.Start, range.Count);
-                if (Interpreter.Vars.Any(x => x.Name == name))
+                string name = format.Substring(range.Start, range.Count), 
+                    instance_name = name;
+                if (name.Contains(':'))
+                {
+                    instance_name = name.Split(':')[0].Trim();
+                }
+                if (Interpreter.Vars.Any(x => x.Name == instance_name))
                 {
                     format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(name, DataType.GetType("str", Interpreter.Classes, Interpreter.Containers)).ToString());
                 }

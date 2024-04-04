@@ -1,5 +1,4 @@
 ﻿using System.Text;
-using System.Text.Json.Serialization;
 using System.Text.RegularExpressions;
 
 namespace EZCodeLanguage
@@ -10,7 +9,7 @@ namespace EZCodeLanguage
         {
             public TokenType Type { get; set; }
             public object Value { get; set; }
-            public string StringValue { get; set; } 
+            public string StringValue { get; set; }
             public Token(TokenType type, object value, string stringValue)
             {
                 Type = type;
@@ -50,7 +49,7 @@ namespace EZCodeLanguage
                 {
                     if (Tokens[i].Type == TokenType.And)
                     {
-                        arguments = [.. arguments, new Argument(tokens, Line, string.Join(" ", tokens.Select(x=>x.Value)), ArgAdds.And)];
+                        arguments = [.. arguments, new Argument(tokens, Line, string.Join(" ", tokens.Select(x => x.Value)), ArgAdds.And)];
                         tokens = [];
                         continue;
                     }
@@ -98,7 +97,7 @@ namespace EZCodeLanguage
                     Argument = argument;
                 }
             }
-            
+
         }
         public class DataType
         {
@@ -174,21 +173,21 @@ namespace EZCodeLanguage
                 {
                     GroupCollection groups = match.Groups;
                     int groupCount = groups.Count;
-                    string[] capturedValues = new string[groupCount - 2];
-                    for (int i = 1; i < groupCount - 1; i++)
+                    string[] capturedValues = new string[groupCount - 1];
+                    string[] types = new string[groupCount - 1];
+                    for (int i = 1; i < groupCount; i++)
                     {
+                        var val = groups[i].Name.Replace("AAA_AA_____hdfosdofdsof32472348923748923749823__________AIKSUDFGHAIKUDSFHAIKUDFGHIKSHDHUASDFH_AA_AAA__", "@").Replace("BBB_AA_____hdfosdofdsof32472348923748923749823__________AIKSUDFGHAIKUDSFHAIKUDFGHIKSHDHUASDFH_AA_B__", ":");
+                        types[i - 1] = val.Split(":").Length == 2 ? val.Split(":")[0] : null;
                         capturedValues[i - 1] = groups[i].Value;
                     }
                     Var[] vars = [];
                     for (int i = 0; i < capturedValues.Length; i++)
                     {
-                        string name = capturedValues[i], type = "";
-                        if (capturedValues[i].Contains(":"))
-                        {
-                            type = capturedValues[i].Split(":")[0];
-                            name = capturedValues[i].Split(":")[1];
-                        }
-                        vars = vars.Append(new Var(Vars[i].Name, capturedValues[i], Vars[i].Line, type:(type != "" ? DataType.GetType(type, classes, containers) : DataType.UnSet))).ToArray();
+                        capturedValues[i] = capturedValues[i];
+                        string? type = types[i];
+
+                        vars = vars.Append(new Var(Vars[i].Name, capturedValues[i], Vars[i].Line, type: (type != null ? DataType.GetType(type, classes, containers) : DataType.UnSet))).ToArray();
                     }
                     Runs.Parameters = vars;
                     return true;
@@ -241,15 +240,15 @@ namespace EZCodeLanguage
             }
             public MethodSettings Settings { get; set; }
             public LineWithTokens[] Lines { get; set; }
-            public DataType? Returns { get; set; } 
-            public Var[]? Params { get; set; }
+            public DataType? Returns { get; set; }
+            public Var[]? Parameters { get; set; }
             public Method(string name, Line line, MethodSettings methodSettings, LineWithTokens[] lines, Var[]? param = null, DataType? returns = null)
             {
                 Name = name;
                 Line = line;
                 Settings = methodSettings;
                 Lines = lines;
-                Params = param;
+                Parameters = param;
                 Returns = returns;
             }
             public Method() { }
@@ -263,7 +262,7 @@ namespace EZCodeLanguage
             public GetValueMethod(DataType dataType, Method method, string returns)
             {
                 Returns = returns;
-                DataType = dataType; 
+                DataType = dataType;
                 Method = method;
             }
         }
@@ -302,7 +301,7 @@ namespace EZCodeLanguage
             {
                 Name = cl.Name;
                 Line = cl.Line;
-                Methods = cl.Methods?.Select(m => new Method(m.Name, m.Line, m.Settings, m.Lines, m.Params, m.Returns)).ToArray() ?? Array.Empty<Method>();
+                Methods = cl.Methods?.Select(m => new Method(m.Name, m.Line, m.Settings, m.Lines, m.Parameters, m.Returns)).ToArray() ?? Array.Empty<Method>();
                 Properties = cl.Properties?.Select(p => new Var(p.Name, p.Value, p.Line, p.StackNumber, p.DataType, p.Required)).ToArray() ?? Array.Empty<Var>();
                 WatchFormat = cl.WatchFormat?.Select(w => new ExplicitWatch(w.Pattern, w.Runs, w.Vars)).ToArray() ?? Array.Empty<ExplicitWatch>();
                 Params = cl.Params;
@@ -321,10 +320,11 @@ namespace EZCodeLanguage
             public DataType? DataType { get; set; }
             public Line Line { get; set; }
             public bool Required { get; set; }
+            public bool IsParams { get; set; }
             public bool Global { get; set; }
             public int StackNumber = 0;
             public Var() { }
-            public Var(string? name, object? value, Line line, int stackNumber = 0, DataType? type = null, bool required = true, bool global = false)
+            public Var(string? name, object? value, Line line, int stackNumber = 0, DataType? type = null, bool required = true, bool global = false, bool @params = false)
             {
                 type ??= DataType.UnSet;
                 Name = name;
@@ -334,6 +334,7 @@ namespace EZCodeLanguage
                 Required = required;
                 StackNumber = stackNumber;
                 Global = global;
+                IsParams = @params;
             }
         }
         public class Container
@@ -422,7 +423,7 @@ namespace EZCodeLanguage
             RunExec,
             EZCodeDataType,
             Include,
-            Global
+            Global,
         }
         public static char[] Delimeters = [' ', '{', '}', '@', ':', ',', '?'];
         public string Code { get; set; }
@@ -455,7 +456,7 @@ namespace EZCodeLanguage
                 Line line = Lines[i]; // current line
                 string[] stringParts = []; // Needed for the 'SplitParts' method. each token as a string value
                 int continues = 0, // used with the '->' token to continue the line to the next line
-                    // These are used to check if the line contains the '->' and there is still code after it. 2 code lines in 1 line
+                                   // These are used to check if the line contains the '->' and there is still code after it. 2 code lines in 1 line
                     arrow_output_index, // The output of the index after the '->' 
                     arrow_input_index = 0; // The input index for after the '->'
                 do
@@ -612,7 +613,7 @@ namespace EZCodeLanguage
                            This keeps loop from skipping index */
                         i--;
                     }
-                    else if(parts[i].ToString() == "->")
+                    else if (parts[i].ToString() == "->")
                     {
                         // check if arrow is at the end of the line
                         if (i == parts.Length - 1)
@@ -645,10 +646,10 @@ namespace EZCodeLanguage
                         parts = parts.ToList().Where((item, index) => index <= i).ToArray();
                         break;
                     }
-                    if (tostring)
+                    else if (tostring)
                     {
                         /* doesn't create class or method or whatever if 
-                           just trying to get string version of parts */ 
+                           just trying to get string version of parts */
                         continue;
                     }
                     else if (Statement.Types.Contains(parts[i]))
@@ -660,7 +661,7 @@ namespace EZCodeLanguage
                     else if (parts[i].ToString() == "class")
                     {
                         string name = parts[i + 1].ToString();
-                        
+
                         // Class Properties
                         Var[] properties = []; // Class Properties
                         Method[] methods = []; // Class Methods
@@ -680,10 +681,11 @@ namespace EZCodeLanguage
                         int curleyBrackets = sameLineBracket ? 0 : 1; // Curley Bracket count to look for end of class
 
                         /*
-                          These Variables are needed to for class properties by storing the data first, then setting 
-                          it after loop is finshed. This allows all values to be evaluated and stored before adding 
-                          them to class. Basically, removes the need to write certain parts of the class in order.
+                         * These Variables are needed to for class properties by storing the data first, then setting 
+                         * it after loop is finshed. This allows all values to be evaluated and stored before adding 
+                         * them to class. Basically, in EZCode, removes the need to write certain parts of the class in order.
                          */
+
                         string[] watchFormats = [], watchNames = []; // temporary watch properties
                         List<Var[]> watchVars = new List<Var[]>(); // temo watch property
                         string paramFormat = "", paramName = ""; // temp param properties
@@ -747,7 +749,7 @@ namespace EZCodeLanguage
                                         break;
                                     case CurrentLineClassProperty.iswatch:
                                         // get watch formats
-                                        watchFormats = [.. watchFormats, string.Join("", bracketLineTokens.Tokens.Skip(2).TakeWhile(x => x.Type != TokenType.Arrow).Select(x => x.Value))];
+                                        watchFormats = [.. watchFormats, string.Join("", bracketLineTokens.Tokens.Skip(2).TakeWhile(x => x.Type != TokenType.Arrow).Select(x => x.Value)).Replace("@", "AAA_AA_____hdfosdofdsof32472348923748923749823__________AIKSUDFGHAIKUDSFHAIKUDFGHIKSHDHUASDFH_AA_AAA__").Replace(":", "BBB_AA_____hdfosdofdsof32472348923748923749823__________AIKSUDFGHAIKUDSFHAIKUDFGHIKSHDHUASDFH_AA_B__")];
                                         // get the name of the method the watch calls
                                         watchNames = [.. watchNames, bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).TakeWhile(x => x.Type != TokenType.Colon).ToArray()[1].Value.ToString()];
                                         // get the variable tokens for calling the method
@@ -825,15 +827,21 @@ namespace EZCodeLanguage
                             if (curleyBrackets == 0)
                                 break;
                         }
-                        // set Lines to the temp List<Line>
+                        // set Lines to the 'temp' line list
                         lines = [.. l];
                         // Create Watch, Params, and Properties for class based off of temp variables
                         for (int j = 0; j < watchFormats.Length; j++)
-                            explicitWatch = [.. explicitWatch, new ExplicitWatch(watchFormats[j], new(methods.FirstOrDefault(x => x.Name == watchNames[j], null), watchVars[j] != null ? watchVars[j] : null, name, watchTokens), watchVars[j])];
+                        {
+                            explicitWatch = [.. explicitWatch, new ExplicitWatch(watchFormats[j], new RunMethod(methods.FirstOrDefault(x => x.Name == watchNames[j], null), watchVars[j] ?? null, name, watchTokens), watchVars[j])];
+                        }
                         if (paramName != "")
-                            explicitParams = new ExplicitParams(paramFormat, new RunMethod(methods.FirstOrDefault(x => x.Name == paramName, null), paramVars != null ? paramVars : null, name, paramTokens), paramVars, paramAll);
+                        {
+                            explicitParams = new ExplicitParams(paramFormat, new RunMethod(methods.FirstOrDefault(x => x.Name == paramName, null), paramVars ?? null, name, paramTokens), paramVars, paramAll);
+                        }
                         for (int j = 0; j < propertyTokens.Count; j++)
+                        {
                             properties = [.. properties, SetVar(propertyLine[j], propertyTokens[j])];
+                        }
 
                         // Create class
                         Class _class = new(name, lines[lineIndex], methods, properties, explicitWatch, explicitParams, typeOf, getValueMethods, classes, insideof, length, alias);
@@ -847,7 +855,7 @@ namespace EZCodeLanguage
 
                                 Name = _class.Name,
                                 Line = _class.Line,
-                                Methods = [.. _class.Methods, .. cl.Methods?.Select(m => new Method(m.Name, m.Line, m.Settings, m.Lines, m.Params, m.Returns)).ToArray() ?? Array.Empty<Method>()],
+                                Methods = [.. _class.Methods, .. cl.Methods?.Select(m => new Method(m.Name, m.Line, m.Settings, m.Lines, m.Parameters, m.Returns)).ToArray() ?? Array.Empty<Method>()],
                                 Properties = [.. _class.Properties, .. cl.Properties?.Select(p => new Var(p.Name, p.Value, p.Line, p.StackNumber, p.DataType, p.Required)).ToArray() ?? Array.Empty<Var>()],
                                 WatchFormat = [.. _class.WatchFormat, .. cl.WatchFormat?.Select(w => new ExplicitWatch(w.Pattern, w.Runs, w.Vars)).ToArray() ?? Array.Empty<ExplicitWatch>()],
                                 Params = cl.Params ?? _class.Params,
@@ -877,6 +885,8 @@ namespace EZCodeLanguage
                         // find string match of parts and remove found watch
                         var except = stringParts.Skip(i).Take(skip_match + 1).ToArray();
                         stringParts = stringParts.Except(except).ToArray();
+                        // replace any commas with '\c' to keep from causing multiple parameters
+                        except = except.Select(x => x.Replace(",", "\\c")).ToArray();
                         // create list and insert match into stringParts
                         var sp = stringParts.ToList();
                         sp.Insert(i, string.Join(" ", except));
@@ -1228,23 +1238,31 @@ namespace EZCodeLanguage
         {
             skip = 0;
             watch = null;
-            string match = "";
-            for (int i = index; i < parts.Length; i++)
+            try
             {
-                string add = parts[i].ToString();
-                match = (match + " " + add).Trim();
-                for (int j = 0; j < Classes.Count; j++)
+                string match = "";
+                for (int i = index; i < parts.Length; i++)
                 {
-                    for (int k = 0; k < Classes[j].WatchFormat.Length; k++)
+                    string add = parts[i].ToString();
+                    match = (match + " " + add).Trim();
+                    for (int j = 0; j < Classes.Count; j++)
                     {
-                        if (Classes[j].WatchFormat[k].IsFound(match, Classes.ToArray(), Containers.ToArray()))
+                        if (Classes[j].WatchFormat == null) continue;
+                        for (int k = 0; k < Classes[j].WatchFormat.Length; k++)
                         {
-                            watch = Classes[j].WatchFormat[k];
-                            return true;
+                            if (Classes[j].WatchFormat[k].IsFound(match, Classes.ToArray(), Containers.ToArray()))
+                            {
+                                watch = new ExplicitWatch(Classes[j].WatchFormat[k].Pattern, Classes[j].WatchFormat[k].Runs, Classes[j].WatchFormat[k].Vars);
+                                return true;
+                            }
                         }
                     }
+                    skip++;
                 }
-                skip++;
+            }
+            catch
+            {
+
             }
 
             return false;
@@ -1283,7 +1301,7 @@ namespace EZCodeLanguage
                     DataType? type = null;
                     string name = all[i];
                     string[] sides = all[i].Split(":");
-                    if(sides.Length > 1)
+                    if (sides.Length > 1)
                     {
                         type = DataType.GetType(sides[0], Classes.ToArray(), Containers.ToArray());
                         name = sides[1];
@@ -1417,7 +1435,7 @@ namespace EZCodeLanguage
             Var[]? param = [];
             Token[] firstLineTokens = TokenArray(string.Join(" ", line.Value.Split(" ").SkipWhile(x => x != "method").Skip(1)))[0].Tokens;
             string name = firstLineTokens[0].Value.ToString()!;
-            bool ret = false, req = true;
+            bool ret = false, req = true, para = false;
             for (int i = 1; i < firstLineTokens.Length; i++)
             {
                 Token token = firstLineTokens[i];
@@ -1435,7 +1453,6 @@ namespace EZCodeLanguage
                     ret = true;
                     continue;
                 }
-
                 if (token.Type == TokenType.QuestionMark)
                 {
                     req = false;
@@ -1444,35 +1461,51 @@ namespace EZCodeLanguage
 
                 if ((token.Type == TokenType.Comma || i == 1) && token.Type != TokenType.Arrow && token.Type != TokenType.OpenCurlyBracket)
                 {
-                    if (firstLineTokens[i + 1].Type == TokenType.QuestionMark)
+                    if (!para)
                     {
-                        req = false;
-                        i++;
-                    }
-                    bool pTypeDef = firstLineTokens[i + 1].Type == TokenType.DataType;
-                    string pName = ""; 
-                    object? pVal = null;
-                    DataType pType = DataType.UnSet;
-                    if(pTypeDef)
-                    {
-                        pType = DataType.GetType(firstLineTokens[i + 1].Value.ToString()!, Classes.ToArray(), Containers.ToArray());
-                        if (firstLineTokens[i + 2].Type == TokenType.Colon)
+                        if (firstLineTokens[i + 1].Type == TokenType.QuestionMark)
                         {
-                            pName = firstLineTokens[i + 3].Value.ToString()!;
-                            i += 3;
+                            req = false;
+                            i++;
                         }
-                        else i += 1;
+                        bool pTypeDef = firstLineTokens[i + 1].Type == TokenType.DataType;
+                        string pName = "";
+                        object? pVal = null;
+                        DataType pType = DataType.UnSet;
+                        if (pTypeDef)
+                        {
+                            pType = DataType.GetType(firstLineTokens[i + 1].Value.ToString()!, Classes.ToArray(), Containers.ToArray());
+                            if (firstLineTokens[i + 2].Type == TokenType.Colon)
+                            {
+                                if (firstLineTokens[i + 3].Type == TokenType.Colon)
+                                {
+                                    pName = firstLineTokens[i + 4].Value.ToString()!;
+                                    para = true;
+                                    i += 4;
+                                }
+                                else
+                                {
+                                    pName = firstLineTokens[i + 3].Value.ToString()!;
+                                    i += 3;
+                                }
+                            }
+                            else i += 1;
+                        }
+                        else
+                        {
+                            pName = firstLineTokens[i + 1].Value.ToString()!;
+                            i += 1;
+                        }
+                        if (firstLineTokens.Length - 1 > i + 1 && firstLineTokens[i + 1].Type == TokenType.Identifier)
+                        {
+                            pVal = string.Join(" ", firstLineTokens.Skip(i + 1).TakeWhile(x => x.Type == TokenType.Identifier).Select(x => x.Value));
+                        }
+                        param = param.Append(new Var(name: pName, value: pVal, line: line, type: pType, required: req, @params: para)).ToArray();
                     }
                     else
                     {
-                        pName = firstLineTokens[i + 1].Value.ToString()!;
-                        i += 1;
+                        // throw error
                     }
-                    if (firstLineTokens.Length - 1 > i + 1 && firstLineTokens[i + 1].Type == TokenType.Identifier)
-                    {
-                        pVal = string.Join(" ", firstLineTokens.Skip(i + 1).TakeWhile(x => x.Type == TokenType.Identifier).Select(x => x.Value));
-                    }
-                    param = param.Append(new Var(pName, pVal, line, type:pType, required:req)).ToArray();
                 }
             }
             int start = index + 1;

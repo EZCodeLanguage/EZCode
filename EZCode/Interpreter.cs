@@ -79,7 +79,7 @@ namespace EZCodeLanguage
                     continue;
 
                 var backup_vars = Vars.Select(x => new Var(x.Name, x.Value, x.Line, x.StackNumber, x.DataType, x.Required)).ToArray();
-                var backup_methods = Methods.Select(x => new Method(x.Name, x.Line, x.Settings, x.Lines, x.Params, x.Returns)).ToArray();
+                var backup_methods = Methods.Select(x => new Method(x.Name, x.Line, x.Settings, x.Lines, x.Parameters, x.Returns)).ToArray();
                 try
                 {
                     temp_stack = new Stack<string>(StackTrace);
@@ -286,30 +286,56 @@ namespace EZCodeLanguage
                                             throw new Exception("Expected \":\" identifier to set method perameters");
                                         }
 
-                                        if (method.Params != null && method.Params.Length > 0)
+                                        if (method.Parameters != null && method.Parameters.Length > 0)
                                         {
-                                            string all; string[] vals;
-                                            try 
+                                            string all; 
+                                            object[] vals;
+
+                                            try
                                             {
-                                                all = string.Join(" ", line.Tokens.Skip(next + 1).Select(x => x.StringValue));
-                                                if (all.Split(',').Length > method.Params.Select(x => x.Required).ToArray().Length)
-                                                    throw new Exception($"Expects {(method.Params.Any(x=>x.Required) ? "at least" : "")} {(method.Params.Any(x => x.Required) ? method.Params.Select(x=>x.Required).ToArray().Length : method.Params.Length)} parameter for method \"{method.Name}\" but {all.Split(',').Length} were inputted");
-                                                vals = all.Split(',').Select(x => x.Trim()).Select((x, y) => GetValue(x, method.Params[y].DataType).ToString()).Where(x => x != "").ToArray();
+                                                all = string.Join(" ", line.Tokens.Select((x, y) => x.Value is RunMethod r ? "@:|" + y.ToString() + "{}" : x.StringValue).Skip(next + 1));
+                                                string[] all_parts = all.Split(',');
+                                                if (all_parts.Length > method.Parameters.Select(x => x.Required).ToArray().Length && !method.Parameters.Any(x => x.IsParams))
+                                                    throw new Exception($"Expects {(method.Parameters.Any(x=>x.Required) ? "at least" : "")} {(method.Parameters.Any(x => x.Required) ? method.Parameters.Select(x=>x.Required).ToArray().Length : method.Parameters.Length)} parameter for method \"{method.Name}\" but {all_parts.Length} were given");
+                                                if (method.Parameters.Any(x => x.IsParams))
+                                                {
+                                                    string[] new_parts = [];
+                                                    for (int j = 0; j < method.Parameters.Length; j++)
+                                                    {
+                                                        if (method.Parameters[j].IsParams)
+                                                        {
+                                                            new_parts = [.. new_parts, string.Join(",", all_parts.Skip(j)).Replace(" ,", ",")];
+                                                            break;
+                                                        }
+                                                        new_parts = [.. new_parts, all_parts[j]];
+                                                    }
+                                                    all_parts = new_parts;
+                                                }
+                                                vals = all_parts.Select(x => x.Trim()).Select((x, y) => x.StartsWith("@:|") && x.EndsWith("{}") ? line.Tokens[int.Parse(x.Substring(3, x.Length - 5))].Value : GetValue(x, method.Parameters[y].DataType).ToString()).Where(x => x.ToString() != "").ToArray();
                                             }
                                             catch (Exception e)
                                             {
-                                                if (e.Message.StartsWith("Expects ")) throw new Exception(e.Message);
+                                                if (e.Message.StartsWith("Expects "))
+                                                    throw new Exception(e.Message);
                                                 throw new Exception("Error getting values for method paramters");
+                                            }
+                                            if (vals.FirstOrDefault(x => x is RunMethod) is RunMethod r)
+                                            {
+                                                for (int i = 0; i < r.Parameters.Length; i++)
+                                                {
+                                                    r.Parameters[i].Value = GetValue(r.Parameters[i], r.Parameters[i].DataType);
+                                                }
                                             }
                                             if (vals.Length > 0)
                                             {
-                                                for (int i = 0; i < method.Params.Length; i++)
+                                                for (int i = 0; i < method.Parameters.Length; i++)
                                                 {
-                                                    if (!method.Params[i].Required && vals.Length - 1 < i)
+                                                    if (!method.Parameters[i].Required && vals.Length - 1 < i)
                                                         continue;
-                                                    vars = [.. vars, new Var(method.Params[i].Name, vals[i], line.Line, stackNumber: StackNumber, type: method.Params[i].DataType, required: method.Params[i].Required)];
+                                                    object value = method.Parameters[i].IsParams ? string.Join(",", vals.Skip(i)) : vals[i];
+                                                    vars = [.. vars, new Var(method.Parameters[i].Name, value, line.Line, stackNumber: StackNumber, type: method.Parameters[i].DataType, required: method.Parameters[i].Required)];
                                                 }
-                                                if (vars.Where(x => x.Required).ToArray().Length != method.Params.Where(x => x.Required).ToArray().Length)
+                                                if (vars.Where(x => x.Required).ToArray().Length != method.Parameters.Where(x => x.Required).ToArray().Length)
                                                 {
                                                     throw new Exception("Not all parameters are set");
                                                 }
@@ -325,7 +351,7 @@ namespace EZCodeLanguage
                                     }
                                     else
                                     {
-                                        if (method.Params != null && method.Params.Select(x => x.Required).ToArray().Length > 0)
+                                        if (method.Parameters != null && method.Parameters.Select(x => x.Required).ToArray().Length > 0)
                                         {
                                             throw new Exception($"Method \"{method.Name}\" expects parameters");
                                         }
@@ -656,7 +682,7 @@ namespace EZCodeLanguage
             StackTrace.Push($"method: {method.Name}, file: {WorkingFile}, line: {method.Line.CodeLine}");
             parameters ??= [];
             LineWithTokens[] lines = method.Lines;
-            Var[] vvars = method.Params ?? [];
+            Var[] vvars = method.Parameters ?? [];
 
             for (int i = 0; i < vvars.Length; i++)
             {
@@ -798,6 +824,11 @@ namespace EZCodeLanguage
                             }
                             catch
                             {
+                                try
+                                {
+                                    return GetValue(var.Value, type);
+                                }
+                                catch { }
                                 throw new Exception("Error returning correct value");
                             }
                         }
@@ -816,7 +847,7 @@ namespace EZCodeLanguage
                                 if (t != -1)
                                 {
                                     var backup_vars = Vars.Select(x => new Var(x.Name, x.Value, x.Line, x.StackNumber, x.DataType, x.Required)).ToArray();
-                                    var backup_methods = Methods.Select(x => new Method(x.Name, x.Line, x.Settings, x.Lines, x.Params, x.Returns)).ToArray();
+                                    var backup_methods = Methods.Select(x => new Method(x.Name, x.Line, x.Settings, x.Lines, x.Parameters, x.Returns)).ToArray();
                                     Vars = (var.Value as Class).Properties.Concat(Vars.Where(x => x.Global)).ToArray();
                                     Methods = (var.Value as Class).Methods.Concat(Methods.Where(x => (x.Settings & Method.MethodSettings.Global) == Method.MethodSettings.Global)).ToArray();
                                     object? result = MethodRun(get[t].Method, null);
@@ -866,9 +897,43 @@ namespace EZCodeLanguage
                         return GetValue(var.Value, var.DataType) ?? obj;
                     }
                 }
-                else if (Classes.Any(x => x.Name == obj.ToString()))
+                else if (obj.ToString().Contains(':'))
                 {
+                    string firstpart = obj.ToString().Split(':')[0].ToString().Trim();
+                    if (Vars.Any(x => x.Name == firstpart))
+                    {
+                        string property_name = string.Join(":", obj.ToString().Split(':').Skip(1)).Trim();
+                        if (Vars.FirstOrDefault(x => x.Name == firstpart).Value is Class c)
+                        {
+                            if (c.Properties.FirstOrDefault(x => x.Name == property_name) is Var v)
+                            {
+                                return v.Value;
+                            }
+                            else
+                            {
+                                throw new Exception($"Could not find the property \"{property_name}\" in the class instance \"{firstpart}\"");
+                            }
+                        }
+                        if (Vars.FirstOrDefault(x => x.Name == firstpart).Value is RunMethod m)
+                        {
+                            if (m.Parameters.FirstOrDefault(x => x.Name == property_name) is Var v)
+                            {
+                                return v.Value;
+                            }
+                            else
+                            {
+                                throw new Exception($"Could not find the property \"{property_name}\" in the class instance \"{firstpart}\"");
+                            }
+                        }
+                        else
+                        {
+                            throw new Exception($"Variable \"{firstpart}\" is not a class instance");
+                        }
+                    }
+                    else if (Classes.Any(x => x.Name == firstpart))
+                    {
 
+                    }
                 }
             }
             else if (obj is RunMethod run)

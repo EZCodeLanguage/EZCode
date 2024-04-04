@@ -103,7 +103,7 @@ static class ez
                 Parser parser = new Parser();
                 parser = Package.ReturnParserWithPackages(parser, ["main"]);
                 parser.Parse(string.Join(System.Environment.NewLine, contents));
-                Interpreter interpreter = new Interpreter(AppDomain.CurrentDomain.BaseDirectory, parser);
+                Interpreter interpreter = new Interpreter(AppDomain.CurrentDomain.BaseDirectory + "ez.exe", parser);
                 interpreter.Interperate();
                 again = true;
                 Console.WriteLine("RUN ENDED");

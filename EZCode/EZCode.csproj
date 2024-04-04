@@ -21,7 +21,8 @@
 	<WebPage>https://ez-code.web.app</WebPage>
 	<ApplicationIcon>EZCode_Logo.ico</ApplicationIcon>
 	<RootNamespace>EZCodeLanguage</RootNamespace>
-	<GenerateDocumentationFile>True</GenerateDocumentationFile>
+	<GenerateDocumentationFile>False</GenerateDocumentationFile>
+	<Nullable>Enable</Nullable>
   </PropertyGroup>
 
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
