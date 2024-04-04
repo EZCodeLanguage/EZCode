@@ -7,7 +7,7 @@
 ```ezcode
 include main
 
-make ^int {NAME} {VALUE} => var {NAME} new : {VALUE}
+make ^int {NAME} {VALUE} => int {NAME} new : {VALUE}
 // turns: var name 0
 // into: var name new : 0
 // which is the valid way to create class instance
