@@ -70,10 +70,16 @@ namespace EZCodeLanguage
             }
             public static bool? EvaluateTerm(string input)
             {
-                switch (input.ToLower())
+                bool not = false;
+                if (input.StartsWith("!"))
                 {
-                    case "true": case "y": case "yes": case "1": return true;
-                    case "false": case "n": case "no": case "0": return false;
+                    input = input.Remove(0,1);
+                    not = true;
+                }
+                switch (input.ToLower().Trim())
+                {
+                    case "true": case "y": case "yes": case "1": case "!": return true && !not;
+                    case "false": case "n": case "no": case "0": return false || not;
                     default: return null;
                 }
             }
@@ -184,10 +190,12 @@ namespace EZCodeLanguage
                     Var[] vars = [];
                     for (int i = 0; i < capturedValues.Length; i++)
                     {
-                        capturedValues[i] = capturedValues[i];
                         string? type = types[i];
-
-                        vars = vars.Append(new Var(Vars[i].Name, capturedValues[i], Vars[i].Line, type: (type != null ? DataType.GetType(type, classes, containers) : DataType.UnSet))).ToArray();
+                        try
+                        {
+                            vars = vars.Append(new Var(Vars[i].Name, capturedValues[i], Vars[i].Line, type: (type != null ? DataType.GetType(type, classes, containers) : DataType.UnSet))).ToArray();
+                        }
+                        catch { }
                     }
                     Runs.Parameters = vars;
                     return true;
@@ -424,8 +432,10 @@ namespace EZCodeLanguage
             EZCodeDataType,
             Include,
             Global,
+            True, 
+            False
         }
-        public static char[] Delimeters = [' ', '{', '}', '@', ':', ',', '?'];
+        public static char[] Delimeters = [' ', '{', '}', '@', ':', ',', '?', '!'];
         public string Code { get; set; }
         internal bool commentBlock = false;
         public List<Class> Classes = [];
@@ -529,6 +539,8 @@ namespace EZCodeLanguage
                     case "get": tokenType = TokenType.Get; break;
                     case "new": tokenType = TokenType.New; break;
                     case "make": tokenType = TokenType.Make; break;
+                    case "true": case "True": tokenType = TokenType.True; break;
+                    case "false": case "False": tokenType = TokenType.False; break;
                     case "null": tokenType = TokenType.Null; parts[partIndex] = ""; break;
                 }
                 if (part.StartsWith("//")) tokenType = TokenType.Comment; // If the part starts with '//', it is comment
@@ -1358,6 +1370,7 @@ namespace EZCodeLanguage
             }
             if (Statement.ConditionalTypes.Contains(parts[partIndex]))
             {
+                argTokens = TokenArray(string.Join(" ", argTokens.Select(x => x.Value.ToString())))[0].Tokens;
                 argument = new Argument(argTokens, lines[lineIndex], val);
             }
             if (sameLine)

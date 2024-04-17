@@ -1,5 +1,4 @@
 ﻿using static EZCodeLanguage.Parser;
-using static EZCodeLanguage.Interpreter;
 using System.Data;
 
 namespace EZCodeLanguage
@@ -7,6 +6,7 @@ namespace EZCodeLanguage
     public class EZHelp
     {
         public Interpreter Interpreter { get; set; }
+        public string? Error = null;
         public EZHelp(Interpreter interpreter)
         {
             Interpreter = interpreter;
@@ -18,101 +18,119 @@ namespace EZCodeLanguage
             Interpreter.Output = [.. Interpreter.Output, text.ToString()];
             Console.WriteLine(text);
         }
+        public void Clear()
+        {
+            Console.Clear();
+            Interpreter.Output = [];
+        }
+        public string Input()
+        {
+            string input = Interpreter.ConsoleInput();
+            return input;
+        }
         public string Format(object _text) => Format(_text, "'");
         public string Format(object _text, object _char)
         {
-            char c = char.Parse(_char.ToString());
-            string text = ObjectParse(_text.ToString(), "str", true).ToString();
-            string format = "";
-            char[] chars = text.ToCharArray();
-            bool open = true, backslash = false;
-            Range[] ranges = [];
-            int current = 0;
-            for (int i = 0, count = 0; i < chars.Length; i++, count++)
+            try
             {
-                if (backslash)
+                char c = char.Parse(_char.ToString());
+                string text = ObjectParse(_text.ToString(), "str", true).ToString();
+                string format = "";
+                char[] chars = text.ToCharArray();
+                bool open = true, backslash = false;
+                Range[] ranges = [];
+                int current = 0;
+                for (int i = 0, count = 0; i < chars.Length; i++, count++)
                 {
-                    int minus = 0;
-                    backslash = false;
-                    chars[i] = 
-                        chars[i] == '\\' ? '\\' :
-                        chars[i] == 'n' ? '\n' :
-                        chars[i] == 'r' ? '\r' :
-                        chars[i] == 'c' ? ',' :
-                        chars[i] == 'p' ? '.' :
-                        chars[i] == '"' ? '\'' :
-                        chars[i] == '\'' ? '"' :
-                        chars[i] == '_' ? ' ' :
-                        chars[i] == 'L' ? '{' :
-                        chars[i] == 'R' ? '}' :
-                        chars[i] == 'q' ? '?' :
-                        chars[i] == 'a' ? '@' :
-                        chars[i] == ';' ? ':' :
-                        chars[i];
-                    if (chars[i] == '!')
+                    if (backslash)
+                    {
+                        int minus = 0;
+                        backslash = false;
+                        chars[i] =
+                            chars[i] == '\\' ? '\\' :
+                            chars[i] == 'n' ? '\n' :
+                            chars[i] == 'r' ? '\r' :
+                            chars[i] == 'c' ? ',' :
+                            chars[i] == 'p' ? '.' :
+                            chars[i] == '"' ? '\'' :
+                            chars[i] == '\'' ? '"' :
+                            chars[i] == '_' ? ' ' :
+                            chars[i] == 'L' ? '{' :
+                            chars[i] == 'R' ? '}' :
+                            chars[i] == 'q' ? '?' :
+                            chars[i] == 'a' ? '@' :
+                            chars[i] == ';' ? ':' :
+                            chars[i];
+                        if (chars[i] == '!')
+                        {
+                            chars = chars.ToList().Where((x, y) => y != i).ToArray();
+                            minus++;
+                        }
+                        count--;
+                        i--;
+                        chars = chars.ToList().Where((x, y) => y != i).ToArray();
+                        i -= minus;
+
+                        if (minus == 0)
+                            format += chars[i];
+                        continue;
+                    }
+                    else if (chars[i] == '\\')
+                    {
+                        backslash = true;
+                        continue;
+                    }
+                    if (chars[i] == c)
                     {
                         chars = chars.ToList().Where((x, y) => y != i).ToArray();
-                        minus++;
+                        open = !open;
+                        count--;
+                        if (open)
+                        {
+                            ranges[current].Count = count;
+                            current++;
+                        }
+                        else
+                        {
+                            ranges = [.. ranges, new Range()];
+                            ranges[current].Start = i;
+                            count = 0;
+                        }
+                        i--;
+                        continue;
                     }
-                    count--;
-                    i--; 
-                    chars = chars.ToList().Where((x, y) => y != i).ToArray();
-                    i -= minus;
-
-                    if (minus == 0)
-                        format += chars[i];
-                    continue;
+                    format += chars[i];
                 }
-                else if (chars[i] == '\\')
+                for (int i = ranges.Length - 1; i >= 0; i--)
                 {
-                    backslash = true;
-                    continue;
-                }
-                if (chars[i] == c)
-                {
-                    chars = chars.ToList().Where((x, y) => y != i).ToArray();
-                    open = !open;
-                    count--;
-                    if (open)
+                    Range range = ranges[i];
+                    string name = format.Substring(range.Start, range.Count),
+                        instance_name = name;
+                    if (name.Contains(':'))
                     {
-                        ranges[current].Count = count;
-                        current++;
+                        instance_name = name.Split(':')[0].Trim();
+                    }
+                    if (Interpreter.Vars.Any(x => x.Name == instance_name))
+                    {
+                        format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(name, DataType.GetType("str", Interpreter.Classes, Interpreter.Containers)).ToString());
                     }
                     else
                     {
-                        ranges = [.. ranges, new Range()];
-                        ranges[current].Start = i;
-                        count = 0;
-                    }
-                    i--;
-                    continue;
-                }
-                format += chars[i];
-            }
-            for (int i = ranges.Length - 1; i >= 0; i--)
-            {
-                Range range = ranges[i];
-                string name = format.Substring(range.Start, range.Count), 
-                    instance_name = name;
-                if (name.Contains(':'))
-                {
-                    instance_name = name.Split(':')[0].Trim();
-                }
-                if (Interpreter.Vars.Any(x => x.Name == instance_name))
-                {
-                    format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(name, DataType.GetType("str", Interpreter.Classes, Interpreter.Containers)).ToString());
-                }
-                else
-                {
-                    if (Interpreter.parser.WatchIsFound([name], 0, out ExplicitWatch watch, out _))
-                    {
-                        object val = Interpreter.GetValue(watch.Runs, DataType.GetType("str", Interpreter.Classes, Interpreter.Containers));
-                        format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(val, new DataType(DataType.Types._string, null)).ToString());
+                        if (Interpreter.parser.WatchIsFound([name], 0, out ExplicitWatch watch, out _))
+                        {
+                            object val = Interpreter.GetValue(watch.Runs, DataType.GetType("str", Interpreter.Classes, Interpreter.Containers));
+                            format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(val, new DataType(DataType.Types._string, null)).ToString());
+                        }
                     }
                 }
-            }
 
-            return format;
+                return format;
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+                throw;
+            }
         }
         struct Range(int start, int end)
         {
@@ -126,60 +144,86 @@ namespace EZCodeLanguage
         public object ObjectParse(object obj, object type) => ObjectParse(obj, type, false);
         public object ObjectParse(object obj, object type, bool to_string)
         {
-            if (obj.ToString().StartsWith("{") && obj.ToString().EndsWith("}"))
-            {
-                obj = obj.ToString().Substring(1, obj.ToString().Length - 2).Trim();
-            }
             try
             {
-                object o = obj;
-                do
+
+                if (obj.ToString().StartsWith("{") && obj.ToString().EndsWith("}"))
                 {
-                    string n = obj.ToString();
-                    o = obj;
-                    DataType data = DataType.GetType(type.ToString(), Interpreter.Classes, Interpreter.Containers);
-                    if (Interpreter.Vars.Any(x => x.Name == n)) Interpreter.Vars.FirstOrDefault(x => x.Name == n).DataType = data;
-                    obj = Interpreter.GetValue(n, data);
-                } while (obj != o);
+                    obj = obj.ToString().Substring(1, obj.ToString().Length - 2).Trim();
+                }
+                try
+                {
+                    object o = obj;
+                    do
+                    {
+                        string n = obj.ToString();
+                        o = obj;
+                        DataType data = DataType.GetType(type.ToString(), Interpreter.Classes, Interpreter.Containers);
+                        if (Interpreter.Vars.Any(x => x.Name == n)) Interpreter.Vars.FirstOrDefault(x => x.Name == n).DataType = data;
+                        obj = Interpreter.GetValue(n, data);
+                    } while (obj != o);
+                }
+                catch { }
+                if (!to_string)
+                {
+                    if (int.TryParse(obj.ToString(), out int i)) return i;
+                    if (float.TryParse(obj.ToString(), out float f)) return f;
+                    try { obj = Operate(obj.ToString(), false); return obj; } catch { }
+                    try { obj = Evaluate(obj.ToString()); return obj; } catch { }
+                }
+                return obj;
             }
-            catch { }
-            if (!to_string)
+            catch (Exception e)
             {
-                if (int.TryParse(obj.ToString(), out int i)) return i;
-                if (float.TryParse(obj.ToString(), out float f)) return f;
-                try { obj = Operate(obj.ToString(), false); return obj; } catch { }
-                try { obj = Evaluate(obj.ToString()); return obj; } catch { }
+                Error = e.Message;
+                throw;
             }
-            return obj;
         }
         public bool Evaluate(string expression)
         {
-            expression = expression.Replace("||", "or").Replace("&&", "and").Replace("&", "and").Replace("|", "or");
-            DataTable table = new DataTable();
-            table.Columns.Add("expression", typeof(bool));
+            try
+            {
+                expression = expression.Replace("||", "or").Replace("&&", "and").Replace("&", "and").Replace("|", "or").Replace("!=", "<>");
+                DataTable table = new DataTable();
+                table.Columns.Add("expression", typeof(bool));
 
-            DataRow row = table.NewRow();
-            row["expression"] = DBNull.Value;
-            table.Rows.Add(row);
+                DataRow row = table.NewRow();
+                row["expression"] = DBNull.Value;
+                table.Rows.Add(row);
 
-            table.Columns["expression"].Expression = expression;
+                table.Columns["expression"].Expression = expression;
 
-            return (bool)row["expression"];
+                return (bool)row["expression"];
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+                throw;
+            }
         }
         public float Operate(string expression) => Operate(expression, true);
         public float Operate(string expression, bool object_parse)
         {
-            string[] parts = SplitWithDelimiters(object_parse ? (ObjectParse(expression, "str").ToString()) : expression, ['-', '+', '=', '*', '/', '%', '&', '|', '!', ' ']).Where(x => x != "" && x != " ").ToArray();
-            expression = "";
-            foreach (string e in parts)
+            try
             {
-                expression += object_parse ? (ObjectParse(e, "float").ToString() + " ") : e + " ";
+
+                string[] parts = SplitWithDelimiters(object_parse ? (ObjectParse(expression, "str").ToString()) : expression, ['-', '+', '=', '*', '/', '%', '&', '|', '!', ' ']).Where(x => x != "" && x != " ").ToArray();
+                expression = "";
+                foreach (string e in parts)
+                {
+                    expression += object_parse ? (ObjectParse(e, "float").ToString() + " ") : e + " ";
+                }
+                DataTable table = new DataTable();
+                table.Columns.Add("expression", typeof(string), expression);
+                DataRow row = table.NewRow();
+                table.Rows.Add(row);
+                return float.Parse((string)row["expression"]);
             }
-            DataTable table = new DataTable();
-            table.Columns.Add("expression", typeof(string), expression);
-            DataRow row = table.NewRow();
-            table.Rows.Add(row);
-            return float.Parse((string)row["expression"]);
+            catch (Exception e)
+            {
+                Error = e.Message;
+                throw;
+            }
         }
         public bool Expression(string expression)
         {
@@ -245,7 +289,12 @@ namespace EZCodeLanguage
                         return a;
                     default: return null;
                 }
-            } catch { return null; }
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+                throw;
+            }
         }
         public object Add(object x, object y)
         {
@@ -340,13 +389,21 @@ namespace EZCodeLanguage
         }
         public bool Compare(object v1, object v2, object v3)
         {
-            object[] values = [v1, v2, v3];
-            for (int i = 0; i < values.Length; i++)
+            try
             {
-                values[i] = ObjectParse(values[i], "str");
+                object[] values = [v1, v2, v3];
+                for (int i = 0; i < values.Length; i++)
+                {
+                    values[i] = ObjectParse(values[i], "str");
+                }
+                string all = string.Join(" ", values.Select(x => x.ToString()));
+                return Expression(all);
             }
-            string all = string.Join(" ", values.Select(x => x.ToString()));
-            return Evaluate(all);
+            catch (Exception e)
+            {
+                Error = e.Message;
+                throw;
+            }
         }
         public bool Compare(object v1, object v2)
         {
@@ -360,23 +417,22 @@ namespace EZCodeLanguage
         public bool BoolParse(object v) => bool.Parse(ObjectParse(v, "bool").ToString());
         public float FloatParse(object v) => float.Parse(ObjectParse(v, "float").ToString());
         public int IntParse(object v) => int.Parse(ObjectParse(v, "int").ToString());
-        public int RunEZCodeWithPackage(string code, string package)
-        {
-            code = ObjectParse(code, "str").ToString() + Environment.NewLine;
-            package = ObjectParse(package, "str").ToString();
-            Parser parser = new Parser(string.Join(" ", code));
-            parser = Package.ReturnParserWithPackages(parser, [package]);
-            parser.Parse();
-            Interpreter interpreter = new Interpreter($"{Interpreter.WorkingFile}(instance running from inside file)", parser);
-            return interpreter.Interperate();
-        }
+        public int StringLength(object str) => StringParse(str).Length;
         public int RunEZCode(string code)
         {
-            code = ObjectParse(code, "str").ToString();
-            Parser parser = new Parser(string.Join(" ", code));
-            parser.Parse();
-            Interpreter interpreter = new Interpreter($"{Interpreter.WorkingFile}(instance running from inside file)", parser);
-            return interpreter.Interperate();
+            try
+            {
+                code = ObjectParse(code, "str").ToString();
+                Parser parser = new Parser(string.Join(" ", code));
+                parser.Parse();
+                Interpreter interpreter = new Interpreter($"{Interpreter.WorkingFile}(instance running from inside file)", parser);
+                return interpreter.Interperate();
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+                throw;
+            }
         }
     }
 }

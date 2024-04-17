@@ -1,11 +1,54 @@
 ﻿using System.Reflection;
 using static EZCodeLanguage.Parser;
+using static System.Net.Mime.MediaTypeNames;
 
 namespace EZCodeLanguage
 {
     public class Interpreter
     {
         public static string Version = "3.0.0-beta";
+        public event EventHandler OutputWrote;
+        public event EventHandler OutputCleared;
+        private string[] _output = [];
+        public string[] Output
+        {
+            get => _output;
+            internal set
+            {
+                _output = value ?? [];
+                if (_output.Length == 0 && OutputCleared != null)
+                {
+                    OutputCleared.Invoke(this, EventArgs.Empty);
+                }
+                else if (OutputWrote != null)
+                {
+                    OutputWrote.Invoke(this, EventArgs.Empty);
+                }
+            }
+        }
+        private string? Input = null;
+        public enum EZInputType { Console, InputMethod }
+        public EZInputType InputType { get; set; } = EZInputType.Console;
+        public void SetInput(string input, EZInputType inputType = EZInputType.InputMethod) 
+        {
+            InputType = inputType;
+            Input = input; 
+        }
+        public string ConsoleInput()
+        {
+            string input = "";
+            if (InputType == EZInputType.Console) input = Console.ReadLine();
+            else
+            {
+                while (Input == null)
+                {
+                    Task.Delay(100);
+                }
+                input = Input;
+            }
+            Input = null;
+            return input;
+        }
         public Parser parser { get; set; }
         public string WorkingFile { get; set; }
         public EZHelp EZHelp { get; private set; }
@@ -49,7 +92,6 @@ namespace EZCodeLanguage
         private DataType? Returning = null;
         private int StackNumber = 0;
         public Stack<string> StackTrace { get; private set; }
-        public string[] Output { get; internal set; } = [];
         public Exception[] Errors { get; private set; } = [];
         public Var[] Vars { get; set; } = [];
         public Method[] Methods { get; set; } = [];
@@ -89,6 +131,7 @@ namespace EZCodeLanguage
                 {
                     string stack = string.Join("\n\t", StackTrace.Reverse());
                     string message = ex.Message + ", StackTrace: \n\t" + (stack != "" ? stack : "Stack Empty");
+                    Output = [.. Output, message];
                     Console.WriteLine(message);
                     Errors = Errors.Append(ex).ToArray();
                     StackTrace = temp_stack;
@@ -187,7 +230,7 @@ namespace EZCodeLanguage
                                         else if (Methods.Any(x => x.Name == name) || Classes.Any(x => x.Name == name))
                                             throw new Exception("Can not create a new class instance with the same name as a method or class");
                                         else if (name == "exeption")
-                                            throw new Exception("The name \"exception\" is reserved for the try fail statement error variable");
+                                            throw new Exception("The name \"error\" is reserved for the fail statement error message");
                                         else
                                             var = new Var(name, cl, line.Line, stackNumber: StackNumber, type: new DataType(cl.TypeOf != null ? cl.TypeOf.Type : DataType.Types._object, cl));
                                         Vars = [.. Vars, var];
@@ -277,7 +320,6 @@ namespace EZCodeLanguage
 
                                     Method.MethodSettings settings = method.Settings;
                                     bool nocol = (settings & Method.MethodSettings.NoCol) != 0;
-                                    int next = nocol ? 0 : 1;
                                     Var[] vars = [];
                                     if (line.Tokens.Length != 1)
                                     {
@@ -288,65 +330,7 @@ namespace EZCodeLanguage
 
                                         if (method.Parameters != null && method.Parameters.Length > 0)
                                         {
-                                            string all; 
-                                            object[] vals;
-
-                                            try
-                                            {
-                                                all = string.Join(" ", line.Tokens.Select((x, y) => x.Value is RunMethod r ? "@:|" + y.ToString() + "{}" : x.StringValue).Skip(next + 1));
-                                                string[] all_parts = all.Split(',');
-                                                if (all_parts.Length > method.Parameters.Select(x => x.Required).ToArray().Length && !method.Parameters.Any(x => x.IsParams))
-                                                    throw new Exception($"Expects {(method.Parameters.Any(x=>x.Required) ? "at least" : "")} {(method.Parameters.Any(x => x.Required) ? method.Parameters.Select(x=>x.Required).ToArray().Length : method.Parameters.Length)} parameter for method \"{method.Name}\" but {all_parts.Length} were given");
-                                                if (method.Parameters.Any(x => x.IsParams))
-                                                {
-                                                    string[] new_parts = [];
-                                                    for (int j = 0; j < method.Parameters.Length; j++)
-                                                    {
-                                                        if (method.Parameters[j].IsParams)
-                                                        {
-                                                            new_parts = [.. new_parts, string.Join(",", all_parts.Skip(j)).Replace(" ,", ",")];
-                                                            break;
-                                                        }
-                                                        new_parts = [.. new_parts, all_parts[j]];
-                                                    }
-                                                    all_parts = new_parts;
-                                                }
-                                                vals = all_parts.Select(x => x.Trim()).Select((x, y) => x.StartsWith("@:|") && x.EndsWith("{}") ? line.Tokens[int.Parse(x.Substring(3, x.Length - 5))].Value : GetValue(x, method.Parameters[y].DataType).ToString()).Where(x => x.ToString() != "").ToArray();
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                if (e.Message.StartsWith("Expects "))
-                                                    throw new Exception(e.Message);
-                                                throw new Exception("Error getting values for method paramters");
-                                            }
-                                            if (vals.FirstOrDefault(x => x is RunMethod) is RunMethod r)
-                                            {
-                                                for (int i = 0; i < r.Parameters.Length; i++)
-                                                {
-                                                    r.Parameters[i].Value = GetValue(r.Parameters[i], r.Parameters[i].DataType);
-                                                }
-                                            }
-                                            if (vals.Length > 0)
-                                            {
-                                                for (int i = 0; i < method.Parameters.Length; i++)
-                                                {
-                                                    if (!method.Parameters[i].Required && vals.Length - 1 < i)
-                                                        continue;
-                                                    object value = method.Parameters[i].IsParams ? string.Join(",", vals.Skip(i)) : vals[i];
-                                                    vars = [.. vars, new Var(method.Parameters[i].Name, value, line.Line, stackNumber: StackNumber, type: method.Parameters[i].DataType, required: method.Parameters[i].Required)];
-                                                }
-                                                if (vars.Where(x => x.Required).ToArray().Length != method.Parameters.Where(x => x.Required).ToArray().Length)
-                                                {
-                                                    throw new Exception("Not all parameters are set");
-                                                }
-                                            }
-                                            else
-                                            {
-                                                if (line.Tokens.Length > 1)
-                                                {
-                                                    throw new Exception("Method does not require any parameters");
-                                                }
-                                            }
+                                            vars = GetMethodParameters(line, method);
                                         }
                                     }
                                     else
@@ -572,16 +556,36 @@ namespace EZCodeLanguage
                         try
                         {
                             if (LastTryNotFailed == null) break;
-                            Var exception = new Var("exception", LastTryNotFailed.Message, CurrentLine, stackNumber: StackNumber, type: DataType.GetType("str", Classes, Containers));
+                            Var exception = new Var("error", LastTryNotFailed.Message, CurrentLine, stackNumber: StackNumber, type: DataType.GetType("str", Classes, Containers));
                             Vars = [.. Vars, exception];
                             Statement? statement = FirstToken.Value as Statement;
                             LastTryNotFailed = null;
                             RunStatement(statement, out _);
-                            Vars = Vars.Where(x => x.Name != "exception").ToArray();
+                            Vars = Vars.Where(x => x.Name != "error").ToArray();
                         }
                         catch (Exception ex)
                         {
                             throw new Exception($"Error with \"fail\", Error Message:\"{ex.Message}\"");
+                        }
+                        break;
+
+                    case TokenType.True:
+                    case TokenType.False:
+                        try
+                        {
+                            if (line.Tokens.Length == 1)
+                            {
+                                Return = bool.Parse(FirstToken.Value.ToString());
+                            }
+                            else
+                            {
+                                line.Tokens[0].Type = TokenType.Identifier;
+                                Return = SingleLine(line);
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Error with boolean, Error Message:\"{ex.Message}\"");
                         }
                         break;
                 }
@@ -593,6 +597,72 @@ namespace EZCodeLanguage
             {
                 throw new Exception(e.Message, e);
             }
+        }
+        private Var[] GetMethodParameters(LineWithTokens line, Method method)
+        {
+            bool nocol = (method.Settings & Method.MethodSettings.NoCol) != 0;
+            int next = nocol ? 0 : 1;
+            Var[] vars = [];
+            string all;
+            object[] vals;
+
+            try
+            {
+                all = string.Join(" ", line.Tokens.Select((x, y) => x.Value is RunMethod r ? "@:|" + y.ToString() + "{}" : x.StringValue).Skip(next + 1));
+                string[] all_parts = all.Split(',');
+                if (all_parts.Length > method.Parameters.Select(x => x.Required).ToArray().Length && !method.Parameters.Any(x => x.IsParams))
+                    throw new Exception($"Expects {(method.Parameters.Any(x => x.Required) ? "at least" : "")} {(method.Parameters.Any(x => x.Required) ? method.Parameters.Select(x => x.Required).ToArray().Length : method.Parameters.Length)} parameter for method \"{method.Name}\" but {all_parts.Length} were given");
+                if (method.Parameters.Any(x => x.IsParams))
+                {
+                    string[] new_parts = [];
+                    for (int j = 0; j < method.Parameters.Length; j++)
+                    {
+                        if (method.Parameters[j].IsParams)
+                        {
+                            new_parts = [.. new_parts, string.Join(",", all_parts.Skip(j)).Replace(" ,", ",")];
+                            break;
+                        }
+                        new_parts = [.. new_parts, all_parts[j]];
+                    }
+                    all_parts = new_parts;
+                }
+                vals = all_parts.Select(x => x.Trim()).Select((x, y) => x.StartsWith("@:|") && x.EndsWith("{}") ? line.Tokens[int.Parse(x.Substring(3, x.Length - 5))].Value : GetValue(x, method.Parameters[y].DataType).ToString()).Where(x => x.ToString() != "").ToArray();
+            }
+            catch (Exception e)
+            {
+                if (e.Message.StartsWith("Expects "))
+                    throw new Exception(e.Message);
+                throw new Exception("Error getting values for method paramters");
+            }
+            if (vals.FirstOrDefault(x => x is RunMethod) is RunMethod r)
+            {
+                for (int i = 0; i < r.Parameters.Length; i++)
+                {
+                    r.Parameters[i].Value = GetValue(r.Parameters[i], r.Parameters[i].DataType);
+                }
+            }
+            if (vals.Length > 0)
+            {
+                for (int i = 0; i < method.Parameters.Length; i++)
+                {
+                    if (!method.Parameters[i].Required && vals.Length - 1 < i)
+                        continue;
+                    object value = method.Parameters[i].IsParams ? string.Join(",", vals.Skip(i)) : vals[i];
+                    vars = [.. vars, new Var(method.Parameters[i].Name, value, line.Line, stackNumber: StackNumber, type: method.Parameters[i].DataType, required: method.Parameters[i].Required)];
+                }
+                if (vars.Where(x => x.Required).ToArray().Length != method.Parameters.Where(x => x.Required).ToArray().Length)
+                {
+                    throw new Exception("Not all parameters are set");
+                }
+            }
+            else
+            {
+                if (line.Tokens.Length > 1)
+                {
+                    throw new Exception("Method does not require any parameters");
+                }
+            }
+            return vars;
         }
         private object? RunStatement(Statement statement, out bool broke)
         {
@@ -642,7 +712,7 @@ namespace EZCodeLanguage
         {
             LineWithTokens line = new LineWithTokens(argument.Tokens, argument.Line);
             object? result = null;
-            try { result = SingleLine(line); } catch { }
+            try { result = SingleLine(line) ?? throw new Exception(); } catch { result = GetValue(argument.Tokens, DataType.GetType("bool", Classes, Containers)); }
             if (result is Class c)
                 result = Argument.EvaluateTerm(c.Properties.FirstOrDefault(x => x.Name.ToLower() == "value").Value.ToString());
             if (result == null)
@@ -932,7 +1002,72 @@ namespace EZCodeLanguage
                     }
                     else if (Classes.Any(x => x.Name == firstpart))
                     {
+                        throw new NotImplementedException(); // ////////////////////////////////////////////////////////////////////////////////////////////////////////NEXT
+                    }
+                }
+                if (obj.ToString().Split(' ').Length > 0)
+                {
+                    string input = obj.ToString();
+                    string[] parts = input.Split(' ').Select(x => x.Trim()).ToArray();
+                    if (parts.Length > 1)
+                    {
+                        string first = parts.First();
+                        string second = parts[1];
+                        if (Vars.FirstOrDefault(x => x.Name == first) is Var v)
+                        {
+                            if (v.Value is Class c)
+                            {
+                                if (c.Properties != null && c.Properties.FirstOrDefault(x => x.Name == second) is Var s)
+                                {
+                                    if (parts.Length < 3)
+                                    {
+                                        obj = s.Value;
+                                    }
+                                } 
+                                else if (c.Methods != null && c.Methods.FirstOrDefault(x => x.Name == second) is Method m)
+                                {
+                                    Methods = [.. Methods, .. c.Methods];
+                                    Vars = [.. Vars, .. c.Properties];
+                                    DoMethod(m);
+                                    Methods = Methods.Except(c.Methods).ToArray();
+                                    Vars = Vars.Except(c.Properties).ToArray();
+                                }
+                                else if (c.Classes != null && c.Classes.FirstOrDefault(x => x.Name == second) is Class _c)
+                                {
+                                    Methods = [.. Methods, .. _c.Methods];
+                                    Vars = [.. Vars, .. _c.Properties];
+                                    DoClass(_c);
+                                    Methods = Methods.Except(_c.Methods).ToArray();
+                                    Vars = Vars.Except(_c.Properties).ToArray();
+                                }
+                            }
+                        }
+                        else if (Methods.FirstOrDefault(x => x.Name == first) is Method m)
+                        {
+                            DoMethod(m);
+                        }
+                        else if (Classes.FirstOrDefault(x => x.Name == first) is Class c)
+                        {
+                            DoClass(c);
+                        }
+                        void DoMethod(Method m)
+                        {
+                            Var[] parameters = [];
+                            if (m.Parameters != null && m.Parameters.Select(x=>x.Required).ToArray().Length != 0)
+                            {
+                                LineWithTokens lineWithTokens = new LineWithTokens();
+                                parameters = GetMethodParameters(lineWithTokens, m);
+                            }
+                            else if (parts[2] == ":")
+                            {
+                                throw new Exception($"Method \"{m.Name}\" does not expect parameters");
+                            }
+                            MethodRun(m, parameters);
+                        }
+                        void DoClass(Class c)
+                        {
 
+                        }
                     }
                 }
             }
@@ -987,7 +1122,7 @@ namespace EZCodeLanguage
                 method = o[0] as CSharpMethod;
             }
 
-            return InvokeMethod(method.Path, method.Params.Select(x => x).ToArray(), EZHelp);
+            return InvokeMethod(method.Path, method.Params != null ? method.Params.Select(x => x).ToArray() : [], EZHelp);
         }
         public static object? InvokeMethod(string methodPath, object[] parameters, EZHelp e)
         {
@@ -1035,8 +1170,17 @@ namespace EZCodeLanguage
                 if (typeName == "EZCodeLanguage.EZHelp") instance = e;
 
                 // Invoke the non-static method with the specified parameters
-                object result = methodInfo.Invoke(instance, parameters);
-                return result;
+                try
+                {
+                    object result = methodInfo.Invoke(instance, parameters);
+                    return result;
+                }
+                catch
+                {
+                    string? message = e.Error;
+                    e.Error = null;
+                    throw new Exception(message ?? $"Error occured in \"{methodPath}\"");
+                }
             }
         }
     }

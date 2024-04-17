@@ -1,30 +1,10 @@
-include main
+//include main
 
-make ^int {NAME} {VALUE} => var {NAME} new : {VALUE}
-// turns: var name 0
-// into: var name new : 0
-// which is the valid way to create class instance
+str value new
+int number new : 25
 
-// color class that stores R, G, B values
-// looks for c[R;G;B] and turns that into a new color instance
-class color {
-    explicit watch c\[{@int:R};{@int:G};{@int:B}\] => set : R, G, B
-    int R 0
-    int G 0
-    int B 0
-    method set : @int:r, @int:g, @int:b {
-        R = r
-        G = g
-        B = b
-    }
-}
+value = str parse : number 
+||
+str value2 new : str parse : number
 
-// prints color with the new instance of color class c[50;60;90]
-int red 40
-printColor : c[red;60;90]
-
-method printColor : @color:c {
-    print The color: 'c:R', 'c:G', 'c:B'
-}
-// Outputs:
-// The color: 50 60 90
+print val1\;'value', val2\;'value2', num\;'number'
