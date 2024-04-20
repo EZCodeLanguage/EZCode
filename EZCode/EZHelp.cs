@@ -116,11 +116,10 @@ namespace EZCodeLanguage
                     }
                     else
                     {
-                        if (Interpreter.parser.WatchIsFound([name], 0, out ExplicitWatch watch, out _))
-                        {
-                            object val = Interpreter.GetValue(watch.Runs, DataType.GetType("str", Interpreter.Classes, Interpreter.Containers));
-                            format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(val, new DataType(DataType.Types._string, null)).ToString());
-                        }
+                        Interpreter.parser.WatchIsFound([name], 0, out ExplicitWatch watch, out _);
+
+                        object val = Interpreter.GetValue(watch != null ? watch.Runs : name, DataType.GetType("str", Interpreter.Classes, Interpreter.Containers));
+                        format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(val, new DataType(DataType.Types._string, null)).ToString());
                     }
                 }
 

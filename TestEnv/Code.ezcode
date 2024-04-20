@@ -4,7 +4,14 @@ str value new
 int number new : 25
 
 value = str parse : number 
-||
+
 str value2 new : str parse : number
 
-print val1\;'value', val2\;'value2', num\;'number'
+class a {
+	undefined val => hi
+}
+method met : @str:in => @str {
+	return (hello + in)
+}
+
+print val1\;'value', val2\;'value2', num\;'number', equation\;'str parse : 33', a\;'a val', method\;'met : hr'
