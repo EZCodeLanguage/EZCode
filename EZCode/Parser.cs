@@ -5,6 +5,7 @@ namespace EZCodeLanguage
 {
     public class Parser
     {
+        #region classes
         public class Token
         {
             public TokenType Type { get; set; }
@@ -138,6 +139,7 @@ namespace EZCodeLanguage
                 Class _class = null;
                 Container container = null;
                 param = param.Replace("@", "");
+                if (param == "string") param = "str";
                 switch (param)
                 {
                     case "string": case "str": types = Types._string; break;
@@ -387,6 +389,8 @@ namespace EZCodeLanguage
             public string Type { get; set; } = type;
             public override string ToString() => $"{Path}(\"{Type}\")";
         }
+        #endregion
+        #region
         public enum TokenType
         {
             None,
@@ -1201,23 +1205,34 @@ namespace EZCodeLanguage
         }
         private static bool MakeMatch(string input, string pattern, ref string replace, out string output, bool format)
         {
+            // updated pattern replacing '{}' with regex '(?<>\S+)'
             string newPat = pattern.Replace("\\{", "\\<[[>").Replace("\\}", "\\<]]>").Replace("{", "(?<").Replace("}", ">\\S+)").Replace("\\<[[>", "\\{").Replace("\\<]]>", "\\}");
+            // check if pattern and input match using regex
             Match match = Regex.Match(input, newPat);
             if (match.Success)
             {
+                // get all matches
                 GroupCollection groups = match.Groups;
                 for (int k = 1; k < groups.Count; k++)
                 {
+                    // placeholder for group match
                     string placeholder = $"{{{groups[k].Name}}}";
+                    // the value captured
                     string capturedValue = groups[k].Value;
+                    // replace the placeholder with the captured value
                     replace = replace.Replace(placeholder, capturedValue);
                 }
+                // split the replacement by new lines
                 var l = replace.Split(Environment.NewLine);
                 for (int i = 0; i < l.Length; i++)
+                {
+                    // update the line with the correct regex match
                     l[i] = string.Join(" ", l[i].Split(" ").Select(x => x.Replace("\\\\{", "\\<[[>").Replace("\\\\}", "\\<]]>").Replace("\\{", "{").Replace("\\}", "}").Replace("\\<[[>", "\\{").Replace("\\<]]>", "\\}")));
+                }
+                // join all the lines together
                 replace = string.Join(Environment.NewLine, l);
-                if (format) output = input.Substring(0, match.Index) + replace + input.Substring(match.Index + match.Length);
-                else output = input;
+                // set output to replace
+                output = format ? input.Substring(0, match.Index) + replace + input.Substring(match.Index + match.Length) : replace;
                 return true;
             }
             output = "";
@@ -1225,51 +1240,59 @@ namespace EZCodeLanguage
         }
         private static bool MakeMatchMulti(string input, string pattern, ref string replace, out string output, bool format)
         {
+            // the input line array
             string[] inputLines = input.Split('\n').Select(x => x.Trim()).ToArray();
+            // the pattern line array being checked by
             string[] patternLines = pattern.Split('\n').Select(x => x.Trim()).ToArray();
             output = "";
 
             for (int i = 0; i < inputLines.Length; i++)
             {
-                string line = inputLines[i];
-                string lineOutput;
-                bool lineMatch = MakeMatch(line, patternLines[i], ref replace, out lineOutput, format);
+                string line = inputLines[i]; // the current line being checked
+                string lineOutput; // the output line
+                bool lineMatch = MakeMatch(line, patternLines[i], ref replace, out lineOutput, format); // check if the regex matches
 
                 if (lineMatch)
                 {
-                    output = lineOutput;
+                    output = lineOutput; // set the output to lineOutput
                 }
                 else
                 {
-                    return false;
+                    return false; // if the line doesn't match, return false
                 }
             }
             return true;
         }
         internal bool WatchIsFound(object[] parts, int index, out ExplicitWatch? watch, out int skip)
         {
-            skip = 0;
-            watch = null;
+            // set out parameters to default
+            skip = default; // 0
+            watch = default; // null
             try
             {
-                string match = "";
-                for (int i = index; i < parts.Length; i++)
+                string match = ""; // variable to check by
+                for (int i = index; i < parts.Length; i++) // go over each token in the line
                 {
-                    string add = parts[i].ToString();
+                    // add token part to match var
+                    string add = parts[i].ToString(); 
                     match = (match + " " + add).Trim();
-                    for (int j = 0; j < Classes.Count; j++)
+                    
+                    // go over each class if watch format is not null
+                    for (int j = 0; j < Classes.Count && Classes[j].WatchFormat != null; j++) 
                     {
-                        if (Classes[j].WatchFormat == null) continue;
-                        for (int k = 0; k < Classes[j].WatchFormat.Length; k++)
+                        for (int k = 0; k < Classes[j].WatchFormat.Length; k++) // go over each watch format
                         {
-                            if (Classes[j].WatchFormat[k].IsFound(match, Classes.ToArray(), Containers.ToArray()))
+                            // check if the current class watch format matches the 'match' vars
+                            if (Classes[j].WatchFormat[k].IsFound(match, Classes.ToArray(), Containers.ToArray())) 
                             {
+                                // set watch var to the matching explicit watch
                                 watch = new ExplicitWatch(Classes[j].WatchFormat[k].Pattern, Classes[j].WatchFormat[k].Runs, Classes[j].WatchFormat[k].Vars);
                                 return true;
                             }
                         }
                     }
-                    skip++;
+                    // increment 'skip' for 'parts' index
+                    skip++; 
                 }
             }
             catch
@@ -1471,6 +1494,11 @@ namespace EZCodeLanguage
                     req = false;
                     continue;
                 }
+                if (token.Value.ToString() == "!")
+                {
+                    para = true;
+                    continue;
+                }
 
                 if ((token.Type == TokenType.Comma || i == 1) && token.Type != TokenType.Arrow && token.Type != TokenType.OpenCurlyBracket)
                 {
@@ -1479,6 +1507,11 @@ namespace EZCodeLanguage
                         if (firstLineTokens[i + 1].Type == TokenType.QuestionMark)
                         {
                             req = false;
+                            i++;
+                        }
+                        if (firstLineTokens[i + 1].Value.ToString() == "!")
+                        {
+                            para = true;
                             i++;
                         }
                         bool pTypeDef = firstLineTokens[i + 1].Type == TokenType.DataType;
@@ -1490,17 +1523,8 @@ namespace EZCodeLanguage
                             pType = DataType.GetType(firstLineTokens[i + 1].Value.ToString()!, Classes.ToArray(), Containers.ToArray());
                             if (firstLineTokens[i + 2].Type == TokenType.Colon)
                             {
-                                if (firstLineTokens[i + 3].Type == TokenType.Colon)
-                                {
-                                    pName = firstLineTokens[i + 4].Value.ToString()!;
-                                    para = true;
-                                    i += 4;
-                                }
-                                else
-                                {
-                                    pName = firstLineTokens[i + 3].Value.ToString()!;
-                                    i += 3;
-                                }
+                                pName = firstLineTokens[i + 3].Value.ToString()!;
+                                i += 3;
                             }
                             else i += 1;
                         }
@@ -1626,5 +1650,6 @@ namespace EZCodeLanguage
             }
             return lines;
         }
+        #endregion
     }
 }

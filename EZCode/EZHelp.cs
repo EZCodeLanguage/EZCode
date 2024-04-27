@@ -60,6 +60,7 @@ namespace EZCodeLanguage
                             chars[i] == 'q' ? '?' :
                             chars[i] == 'a' ? '@' :
                             chars[i] == ';' ? ':' :
+                            chars[i] == 's' ? ';' :
                             chars[i];
                         if (chars[i] == '!')
                         {
@@ -141,11 +142,10 @@ namespace EZCodeLanguage
             return string.Empty;
         }
         public object ObjectParse(object obj, object type) => ObjectParse(obj, type, false);
-        public object ObjectParse(object obj, object type, bool to_string)
+        public object ObjectParse(object obj, object type, bool to_string, string arraySeperator = " ", bool returnNull = false)
         {
             try
             {
-
                 if (obj.ToString().StartsWith("{") && obj.ToString().EndsWith("}"))
                 {
                     obj = obj.ToString().Substring(1, obj.ToString().Length - 2).Trim();
@@ -159,10 +159,10 @@ namespace EZCodeLanguage
                         o = obj;
                         DataType data = DataType.GetType(type.ToString(), Interpreter.Classes, Interpreter.Containers);
                         if (Interpreter.Vars.Any(x => x.Name == n)) Interpreter.Vars.FirstOrDefault(x => x.Name == n).DataType = data;
-                        obj = Interpreter.GetValue(n, data);
+                        obj = Interpreter.GetValue(n, data, arraySeperator);
                     } while (obj != o);
                 }
-                catch { }
+                catch when(returnNull) { return null; }
                 if (!to_string)
                 {
                     if (int.TryParse(obj.ToString(), out int i)) return i;
@@ -226,12 +226,31 @@ namespace EZCodeLanguage
         }
         public bool Expression(string expression)
         {
-            string[] parts = SplitWithDelimiters(ObjectParse(expression, "str").ToString(), ['-', '+', '=', '*', '/', '%', '&', '|', '!', ' ']).Where(x => x != "" && x != " ").ToArray();
-            expression = "";
-            foreach (string e in parts)
+            char[] symbols = ['-', '+', '=', '*', '/', '%', '&', '|', '!', ' '];
+            string[] parts = SplitWithDelimiters(ObjectParse(expression, "str", true).ToString(), symbols).Where(x => x != "" && x != " ").ToArray();
+            bool allIsText = false;
+            for (int i = 0; i < parts.Length; i++)
             {
-                expression += ObjectParse(e, "str").ToString() + " ";
+                string e = parts[i];
+                if ((new[] { "=", ">", "<", "=", "!=", "!", ">=", "<=" }).Any(x => x == e))
+                {
+                    if (!allIsText && !(float.TryParse(parts[i + 1], out _) || bool.TryParse(parts[i + 1], out _) || symbols.Any(x => x.ToString() == parts[i + 1])))
+                    {
+                        parts[i - 1] = $"'{StringParse(parts[i - 1])}'";
+                    }
+                    continue;
+                }
+                if ((new[] { "&", "|", "and", "or", "&&", "||" }).Any(x => x == e))
+                {
+                    allIsText = false;
+                    continue;
+                }
+                bool isText = !(float.TryParse(e, out _) || bool.TryParse(e, out _) || symbols.Any(x => x.ToString() == e)) || allIsText;
+                if (isText) allIsText = true;
+                e = !isText ? StringParse(e) : $"'{StringParse(e)}'";
+                parts[i] = e;
             }
+            expression = string.Join(" ", parts);
             return Evaluate(expression.Trim());
         }
         public string StringExpression(string expression)
@@ -396,7 +415,14 @@ namespace EZCodeLanguage
                     values[i] = ObjectParse(values[i], "str");
                 }
                 string all = string.Join(" ", values.Select(x => x.ToString()));
-                return Expression(all);
+                try
+                {
+                    return Expression(all);
+                }
+                catch
+                {
+                    return false;
+                }
             }
             catch (Exception e)
             {
@@ -412,10 +438,28 @@ namespace EZCodeLanguage
         {
             return Compare(v1, "", "");
         }
-        public string StringParse(object v) => ObjectParse(v, "str").ToString();
+        public string StringParse(object v) => ObjectParse(v, "str", true).ToString();
         public bool BoolParse(object v) => bool.Parse(ObjectParse(v, "bool").ToString());
         public float FloatParse(object v) => float.Parse(ObjectParse(v, "float").ToString());
         public int IntParse(object v) => int.Parse(ObjectParse(v, "int").ToString());
+        public bool SameType(object a, object b)
+        {
+            if (a is Var va && b is Var vb)
+            {
+                if (va.Value is Class ca && vb.Value is Class cb)
+                {
+                    return ca.Name == cb.Name;
+                }
+                else
+                {
+                    return va.Value.GetType() == vb.Value.GetType();
+                }
+            }
+            else
+            {
+                return a.GetType() == b.GetType();
+            }
+        }
         public int StringLength(object str) => StringParse(str).Length;
         public int RunEZCode(string code)
         {
@@ -426,6 +470,114 @@ namespace EZCodeLanguage
                 parser.Parse();
                 Interpreter interpreter = new Interpreter($"{Interpreter.WorkingFile}(instance running from inside file)", parser);
                 return interpreter.Interperate();
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+                throw;
+            }
+        }
+        public bool IsType(object obj, object type)
+        {
+            try
+            {
+                type = StringParse(type);
+                if (obj.ToString().StartsWith("{") && obj.ToString().EndsWith("}"))
+                {
+                    obj = obj.ToString().Substring(1, obj.ToString().Length - 2).Trim();
+                    if (Interpreter.Vars.FirstOrDefault(x => x.Name == obj.ToString()) is Var var) obj = var;
+                    else
+                    {
+                        throw new Exception($"Could not find variable \"{obj}\"");
+                    }
+                    if (!var.Value.ToString().StartsWith('#'))
+                    {
+                        throw new Exception($"For IsType method, use \"#varName\" with # sign");
+                    }
+                    else
+                    {
+                        if (var.Value is Class c)
+                        {
+                            c.Properties.First(x => x.Name.ToString() == "value").Value = var.Value.ToString().Remove(0, 1);
+                        }
+                        else
+                        {
+                            var.Value = var.Value.ToString().Remove(0, 1);
+                        }
+                    }
+                    if (Interpreter.Vars.FirstOrDefault(x => x.Name == var.Value.ToString()) is Var v2) obj = v2;
+                    else
+                    {
+                        throw new Exception($"Could not find variable \"{var.Value}\"");
+                    }
+                }
+                if (obj is Var v)
+                {
+                    if (v.Value is Class c)
+                    {
+                        return c.Name == type.ToString();
+                    }
+                    else if (v.DataType.ObjectClass is Class cl)
+                    {
+                        return cl.Name == type.ToString();
+                    }
+                    else
+                    {
+                        throw new Exception($"Variable \"{v.Name}\" is not defined");
+                    }
+                }
+                else if (obj is Class c)
+                {
+                    return c.Name == type.ToString();
+                }
+                else
+                {
+                    throw new Exception($"Object \"{obj}\" is not a variable");
+                }
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+                throw;
+            }
+        }
+        public object ArrayParse(object array, object separator) => ObjectParse(array, "list").ToString().Split(StringParse(separator)).Select(x => x.Trim()).ToArray();
+        public string ArrayStringParse(object array) => ObjectParse(array, "list", to_string:false, arraySeperator:", ").ToString();
+        public int ArrayLength(object array)
+        {
+            try
+            {
+                string sep = "|\\@@@@@__~>=>=//\\:@@@@@@#:#####{}}{sd\\___gpgdfpsg14702580690, ";
+                return ObjectParse(array, "list", to_string: false, arraySeperator: sep).ToString().Split(sep).Length;
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+                throw;
+            }
+        }
+        public object ArrayAppend(object array, object appends, object separator)
+        {
+            try
+            {
+                string sep = "|\\@@@@@__~>=>=//\\:@@@@@@#:#####{}}{sd\\___gpgdfpsg14702580690, ";
+                var tempA = ObjectParse(array, "list", to_string: false, arraySeperator: sep, returnNull: true);
+                object[] a = (tempA != null) ? tempA.ToString().Split(sep) : [];
+                object[] b = (object[])ArrayParse(appends, separator);
+                return a.Concat(b).ToArray();
+            }
+            catch (Exception e)
+            {
+                Error = e.Message;
+                throw;
+            }
+        }
+        public object ArrayIndex(object array, object index)
+        {
+            try
+            {
+                string sep = "|\\@@@@@__~>=>=//\\:@@@@@@#:#####{}}{sd\\___gpgdfpsg14702580690, ";
+                return ObjectParse(array, "list", to_string: false, arraySeperator: sep).ToString().Split(sep)[int.Parse(StringParse(index))];
             }
             catch (Exception e)
             {

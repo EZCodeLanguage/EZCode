@@ -1,17 +1,28 @@
 //include main
 
-str value new
-int number new : 25
+bool running new : true
+int index new : 0
+list grades new
+loop 5 {
+	print Please input your grade \(Type END to end\)
+	var in new => input
+	
+	if in == END {
+		yield break
+	}
 
-value = str parse : number 
-
-str value2 new : str parse : number
-
-class a {
-	undefined val => hi
+	grades append : in
+	index + 1
 }
-method met : @str:in => @str {
-	return (hello + in)
-}
 
-print val1\;'value', val2\;'value2', num\;'number', equation\;'str parse : 33', a\;'a val', method\;'met : hr'
+print grades
+
+int length new => grades length
+float added new => addAll : grades
+float result new : (added / length)
+
+print Your Grade: 'result'
+
+method addAll : array => @float {
+	return 5
+}

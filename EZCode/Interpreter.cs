@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using Newtonsoft.Json.Linq;
+using System.Reflection;
 using static EZCodeLanguage.Parser;
 using static System.Net.Mime.MediaTypeNames;
 
@@ -146,6 +147,7 @@ namespace EZCodeLanguage
                     StackTrace = temp_stack;
                     Vars = backup_vars;
                     Methods = backup_methods;
+                    EZHelp.Error = null;
                 }
             }
 
@@ -168,263 +170,294 @@ namespace EZCodeLanguage
                     case TokenType.Identifier:
                         try
                         {
-                            switch (IsType(FirstToken.Value.ToString()!, out object? type))
+                            if (float.TryParse(FirstToken.StringValue, out float val) && line.Tokens.Length == 1)
                             {
-                                case IdentType.Var:
-                                    Var var = type as Var;
-                                    if (line.Tokens.Length > 1)
-                                    {
-                                        if (line.Tokens[1].Type == TokenType.Arrow)
+                                Return = val;
+                            }
+                            else
+                            {
+                                switch (IsType(FirstToken.Value.ToString()!, out object? type))
+                                {
+                                    case IdentType.Var:
+                                        Var var = type as Var;
+                                        if (line.Tokens.Length > 1)
                                         {
-                                            var tok = line.Tokens.Skip(2).ToArray();
-                                            var.Value = SingleLine(new LineWithTokens(tok, line.Line));
-                                            Return = var.Value;
-                                        }
-                                        else
-                                        {
-                                            if (var.Value is Class || (var.DataType.ObjectClass != null && var.DataType.Type != DataType.Types._null))
+                                            if (line.Tokens[1].Type == TokenType.Arrow)
                                             {
-                                                Class c = var.Value is Class ? var.Value as Class : var.DataType.ObjectClass;
-                                                if (c.Methods.Any(x => x.Name == line.Tokens[1].Value.ToString()))
-                                                {
-                                                    for (int i = 2; i < line.Tokens.Length; i++)
-                                                    {
-                                                        line.Tokens[i].Value = GetValue(line.Tokens[i].Value, var.DataType);
-                                                        line.Tokens[i].StringValue = line.Tokens[i].Value is string or int or float or bool ? line.Tokens[i].Value.ToString() : line.Tokens[i].StringValue;
-                                                        line.Tokens[i].Type = parser.SingleToken([line.Tokens[i].StringValue == line.Tokens[i].Value.ToString() ? line.Tokens[i].StringValue : line.Tokens[i].Value], 0, line.Tokens[i].StringValue).Type;
-                                                    }
-                                                    Method[] backupMethods = Methods;
-                                                    Methods = c.Methods.Concat(Methods.Where(x => (x.Settings & Method.MethodSettings.Global) == Method.MethodSettings.Global)).ToArray();
-                                                    Var[] backupVars = Vars.Concat(Vars.Where(x => x.Global)).ToArray();
-                                                    Vars = c.Properties;
-                                                    line.Tokens = line.Tokens.Skip(1).ToArray();
-                                                    object value = SingleLine(line);
-                                                    Methods = backupMethods;
-                                                    Vars = backupVars;
-                                                    Return = value;
-                                                }
-                                                else
-                                                {
-                                                    throw new Exception($"Variable is trying to call a method \"{line.Tokens[1].Value}\" that doesn't exists");
-                                                }
+                                                var tok = line.Tokens.Skip(2).ToArray();
+                                                var.Value = SingleLine(new LineWithTokens(tok, line.Line));
+                                                Return = var.Value;
                                             }
                                             else
                                             {
-                                                throw new Exception($"Variable type is undefined and can not call the method \"{line.Tokens[1].Value}\"");
-                                            }
-                                        }
-                                    }
-                                    else
-                                    {
-                                        Return = var.Value;
-                                    }
-                                    break;
-
-                                case IdentType.Class:
-                                    Class cl = new Class(type as Class);
-                                    if (line.Tokens.Length > 2 && line.Tokens[2].Type == TokenType.New)
-                                    {
-                                        string name = line.Tokens[1].Value.ToString();
-                                        if (Vars.Any(x => x.Name == name))
-                                        {
-                                            var = Vars.FirstOrDefault(x => x.Name == name);
-                                            if (var.Value is Class)
-                                            {
-                                                if ((var.Value as Class).Name != cl.Name)
-                                                    throw new Exception("Can not create a class instance with the same name as another class instance of another class");
-                                                else cl = (Class)var.Value;
-                                            }
-                                            else throw new Exception("Can not create a class instance with the same name as another class instance of another class");
-                                        }
-                                        else if (Methods.Any(x => x.Name == name) || Classes.Any(x => x.Name == name))
-                                            throw new Exception("Can not create a new class instance with the same name as a method or class");
-                                        else if (name == "exeption")
-                                            throw new Exception("The name \"error\" is reserved for the fail statement error message");
-                                        else
-                                            var = new Var(name, cl, line.Line, stackNumber: StackNumber, type: new DataType(cl.TypeOf != null ? cl.TypeOf.Type : DataType.Types._object, cl));
-                                        Vars = [.. Vars, var];
-
-                                        if (line.Tokens.Length > 3)
-                                        {
-                                            if (line.Tokens[3].Type != TokenType.Colon)
-                                                throw new Exception("Expected colon to set instance properties");
-                                            if (cl.Params != null)
-                                            {
-                                                ExplicitParams? p = new ExplicitParams(cl.Params.Pattern, cl.Params.Runs, cl.Params.Vars, cl.Params.All);
-                                                if (parser.ParamIsFound(line.Tokens.Select(x => x.Value).ToArray(), 4, out _))
+                                                if (var.Value is Class || (var.DataType.ObjectClass != null && var.DataType.Type != DataType.Types._null))
                                                 {
-                                                    if (p.All)
+                                                    Class c = var.Value is Class ? var.Value as Class : var.DataType.ObjectClass;
+                                                    if (c.Methods.Any(x => x.Name == line.Tokens[1].Value.ToString()))
                                                     {
-                                                        RunMethod run = new RunMethod(p.Runs.Runs, p.Runs.Parameters, p.Runs.ClassName, p.Runs.Tokens);
-                                                        Method[] backupMethods = Methods;
-                                                        Var[] backupVars = Vars, backupParams = p.Runs.Parameters.Select(x => new Var(x.Name, x.Value, x.Line, x.StackNumber, x.DataType, x.Required)).ToArray();
-                                                        Vars = [.. cl.Properties.Concat(Vars.Where(x => x.Global)), ..Vars];
-                                                        Methods = [.. cl.Methods.Concat(Methods.Where(x => (x.Settings & Method.MethodSettings.Global) == Method.MethodSettings.Global)), ..Methods];
-                                                        Var v = run.Parameters.FirstOrDefault(x => x.Name == "PARAMS");
-                                                        if (v is not null)
+                                                        Token[] backup_tokens = line.Tokens.Select(x => new Token(x.Type, x.Value, x.StringValue)).ToArray();
+                                                        for (int i = 2; i < line.Tokens.Length; i++)
                                                         {
-                                                            if (v.Value is string) v.Value = string.Join(" ", line.Tokens.Select(x => x.Value).Skip(4));
-                                                            else
-                                                            {
-                                                                v.Value = GetValue(new Token(TokenType.Identifier, line.Tokens.Skip(4).ToArray(), string.Join(" ", line.Tokens.Select(x => x.StringValue))));
-                                                                v.DataType = DataType.TypeFromValue(v.Value.ToString(), Classes, Containers);
-                                                            }
+                                                            line.Tokens[i].Value = GetValue(line.Tokens[i].Value, var.DataType);
+                                                            line.Tokens[i].StringValue = line.Tokens[i].Value is string or int or float or bool ? line.Tokens[i].Value.ToString() : line.Tokens[i].StringValue;
+                                                            line.Tokens[i].Type = parser.SingleToken([line.Tokens[i].StringValue == line.Tokens[i].Value.ToString() ? line.Tokens[i].StringValue : line.Tokens[i].Value], 0, line.Tokens[i].StringValue).Type;
                                                         }
-                                                        MethodRun(run.Runs, run.Parameters);
-                                                        p.Runs.Parameters = backupParams;
+                                                        Method[] backupMethods = Methods;
+                                                        Methods = c.Methods.Concat(Methods.Where(x => (x.Settings & Method.MethodSettings.Global) == Method.MethodSettings.Global)).ToArray();
+                                                        Var[] backupVars = Vars.Concat(Vars.Where(x => x.Global)).ToArray();
+                                                        Vars = c.Properties;
+                                                        line.Tokens = line.Tokens.Skip(1).ToArray();
+                                                        object value = SingleLine(line);
+                                                        line.Tokens = backup_tokens;
                                                         Methods = backupMethods;
                                                         Vars = backupVars;
+                                                        Return = value;
                                                     }
                                                     else
                                                     {
-                                                        throw new Exception($"Params format is not implemented in the current version of EZCode");
+                                                        throw new Exception($"Variable is trying to call a method \"{line.Tokens[1].Value}\" that doesn't exists");
                                                     }
                                                 }
                                                 else
                                                 {
-                                                    throw new Exception($"The format pattern of the class, \"{p.Pattern}\" does not match this class instance");
+                                                    throw new Exception($"Variable type is undefined and can not call the method \"{line.Tokens[1].Value}\"");
                                                 }
                                             }
-                                            else if (cl.Properties != null)
+                                        }
+                                        else
+                                        {
+                                            Return = var.Value;
+                                        }
+                                        break;
+
+                                    case IdentType.Class:
+                                        Class cl = new Class(type as Class);
+                                        if (line.Tokens.Length > 2 && line.Tokens[2].Type == TokenType.New)
+                                        {
+                                            string name = line.Tokens[1].Value.ToString();
+                                            if (Vars.Any(x => x.Name == name))
                                             {
-                                                string all = string.Join(" ", line.Tokens.Skip(4).Select(x => x.Value));
-                                                string[] vals = all.Split(',').Select(x => x.Trim()).ToArray();
-                                                Var[] prop = [];
-                                                if (vals.Length > 0)
+                                                var = Vars.FirstOrDefault(x => x.Name == name);
+                                                if (var.Value is Class)
                                                 {
-                                                    for (int i = 0; i < vals.Length; i++)
+                                                    if ((var.Value as Class).Name != cl.Name)
+                                                        throw new Exception("Can not create a class instance with the same name as another class instance of another class");
+                                                    else cl = (Class)var.Value;
+                                                }
+                                                else throw new Exception("Can not create a class instance with the same name as another class instance of another class");
+                                            }
+                                            else if (Methods.Any(x => x.Name == name) || Classes.Any(x => x.Name == name))
+                                                throw new Exception("Can not create a new class instance with the same name as a method or class");
+                                            else if (name == "exeption")
+                                                throw new Exception("The name \"error\" is reserved for the fail statement error message");
+                                            else
+                                                var = new Var(name, cl, line.Line, stackNumber: StackNumber, type: new DataType(cl.TypeOf != null ? cl.TypeOf.Type : DataType.Types._object, cl));
+                                            Vars = [.. Vars, var];
+
+                                            if (line.Tokens.Length > 3)
+                                            {
+                                                if (line.Tokens[3].Type == TokenType.Colon)
+                                                {
+                                                    if (cl.Params != null)
                                                     {
-                                                        string[] whole = vals[i].Split(":");
-                                                        if (whole.Length < 2) throw new Exception("Expected properties to be set by syntax \"PropertyName:Value\"");
-                                                        string before = whole[0].Trim();
-                                                        string after = whole[1].Trim();
-                                                        if (cl.Properties.Any(x => x.Name == before))
+                                                        ExplicitParams? p = new ExplicitParams(cl.Params.Pattern, cl.Params.Runs, cl.Params.Vars, cl.Params.All);
+                                                        if (parser.ParamIsFound(line.Tokens.Select(x => x.Value).ToArray(), 4, out _))
                                                         {
-                                                            Var v = cl.Properties.FirstOrDefault(x => x.Name == before);
-                                                            after = GetValue(after).ToString();
-                                                            prop = [.. prop, new Var(v.Name, after, line.Line, stackNumber: StackNumber, type: v.DataType)];
+                                                            if (p.All)
+                                                            {
+                                                                RunMethod run = new RunMethod(p.Runs.Runs, p.Runs.Parameters, p.Runs.ClassName, p.Runs.Tokens);
+                                                                Method[] backupMethods = Methods;
+                                                                Var[] backupVars = Vars, backupParams = p.Runs.Parameters.Select(x => new Var(x.Name, x.Value, x.Line, x.StackNumber, x.DataType, x.Required)).ToArray();
+                                                                Vars = [.. cl.Properties.Concat(Vars.Where(x => x.Global)), .. Vars];
+                                                                Methods = [.. cl.Methods.Concat(Methods.Where(x => (x.Settings & Method.MethodSettings.Global) == Method.MethodSettings.Global)), .. Methods];
+                                                                Var v = run.Parameters.FirstOrDefault(x => x.Name == "PARAMS");
+                                                                if (v is not null)
+                                                                {
+                                                                    if (v.Value is string) v.Value = string.Join(" ", line.Tokens.Select(x => x.Value).Skip(4));
+                                                                    else
+                                                                    {
+                                                                        v.Value = GetValue(new Token(TokenType.Identifier, line.Tokens.Skip(4).ToArray(), string.Join(" ", line.Tokens.Select(x => x.StringValue))));
+                                                                        v.DataType = DataType.TypeFromValue(v.Value.ToString(), Classes, Containers);
+                                                                    }
+                                                                }
+                                                                MethodRun(run.Runs, run.Parameters);
+                                                                p.Runs.Parameters = backupParams;
+                                                                Methods = backupMethods;
+                                                                Vars = backupVars;
+                                                            }
+                                                            else
+                                                            {
+                                                                throw new Exception($"Params format is not implemented in the current version of EZCode");
+                                                            }
                                                         }
                                                         else
                                                         {
-                                                            throw new Exception($"There is no \"{before}\" property in the \"{cl.Name}\" class");
+                                                            throw new Exception($"The format pattern of the class, \"{p.Pattern}\" does not match this class instance");
                                                         }
                                                     }
-                                                }
-                                                (var.Value as Class).Properties = (var.Value as Class).Properties.Where(x => !prop.Any(y => y.Name == x.Name)).Concat(prop).ToArray();
-                                            }
-                                            else
-                                            {
-                                                throw new Exception($"Class \"{cl.Name}\" does not have any properties");
-                                            }
-                                        }
-                                        Return = var;
-                                    }
-                                    else if (line.Tokens.Length > 1)
-                                    {
-                                        Methods = [.. Methods, .. cl.Methods];
-                                        Vars = [.. Vars, .. cl.Properties];
-                                        line.Tokens = line.Tokens.Skip(1).ToArray();
-                                        Return = SingleLine(line);
-                                        Methods = Methods.Except(cl.Methods).ToArray();
-                                        Vars = Vars.Except(cl.Properties).ToArray();
-                                    }
-                                    else
-                                    {
-                                        throw new Exception("Expected \"new\" keyword to declare instance of class");
-                                    }
-                                    break;
-
-                                case IdentType.Method:
-                                    Method method = type as Method;
-
-                                    Method.MethodSettings settings = method.Settings;
-                                    bool nocol = (settings & Method.MethodSettings.NoCol) != 0;
-                                    Var[] vars = [];
-                                    if (line.Tokens.Length != 1)
-                                    {
-                                        if (!nocol && line.Tokens[1].Type != TokenType.Colon)
-                                        {
-                                            throw new Exception("Expected \":\" identifier to set method perameters");
-                                        }
-
-                                        if (method.Parameters != null && method.Parameters.Length > 0)
-                                        {
-                                            int next = nocol ? 0 : 1;
-                                            string all;
-                                            object[] vals;
-
-                                            try
-                                            {
-                                                all = string.Join(" ", line.Tokens.Select((x, y) => x.Value is RunMethod r ? "@:|" + y.ToString() + "{}" : x.StringValue).Skip(next + 1));
-                                                string[] all_parts = all.Split(',');
-                                                if (all_parts.Length > method.Parameters.Select(x => x.Required).ToArray().Length && !method.Parameters.Any(x => x.IsParams))
-                                                    throw new Exception($"Expects {(method.Parameters.Any(x => x.Required) ? "at least" : "")} {(method.Parameters.Any(x => x.Required) ? method.Parameters.Select(x => x.Required).ToArray().Length : method.Parameters.Length)} parameter for method \"{method.Name}\" but {all_parts.Length} were given");
-                                                if (method.Parameters.Any(x => x.IsParams))
-                                                {
-                                                    string[] new_parts = [];
-                                                    for (int j = 0; j < method.Parameters.Length; j++)
+                                                    else if (cl.Properties != null)
                                                     {
-                                                        if (method.Parameters[j].IsParams)
+                                                        string all = string.Join(" ", line.Tokens.Skip(4).Select(x => x.Value));
+                                                        string[] vals = all.Split(',').Select(x => x.Trim()).ToArray();
+                                                        Var[] prop = [];
+                                                        if (vals.Length > 0)
                                                         {
-                                                            new_parts = [.. new_parts, string.Join(",", all_parts.Skip(j)).Replace(" ,", ",")];
-                                                            break;
+                                                            for (int i = 0; i < vals.Length; i++)
+                                                            {
+                                                                string[] whole = vals[i].Split(":");
+                                                                if (whole.Length < 2) throw new Exception("Expected properties to be set by syntax \"PropertyName:Value\"");
+                                                                string before = whole[0].Trim();
+                                                                string after = whole[1].Trim();
+                                                                if (cl.Properties.Any(x => x.Name == before))
+                                                                {
+                                                                    Var v = cl.Properties.FirstOrDefault(x => x.Name == before);
+                                                                    after = GetValue(after).ToString();
+                                                                    prop = [.. prop, new Var(v.Name, after, line.Line, stackNumber: StackNumber, type: v.DataType)];
+                                                                }
+                                                                else
+                                                                {
+                                                                    throw new Exception($"There is no \"{before}\" property in the \"{cl.Name}\" class");
+                                                                }
+                                                            }
                                                         }
-                                                        new_parts = [.. new_parts, all_parts[j]];
+                                                        (var.Value as Class).Properties = (var.Value as Class).Properties.Where(x => !prop.Any(y => y.Name == x.Name)).Concat(prop).ToArray();
                                                     }
-                                                    all_parts = new_parts;
+                                                    else
+                                                    {
+                                                        throw new Exception($"Class \"{cl.Name}\" does not have any properties");
+                                                    }
                                                 }
-                                                vals = all_parts.Select(x => x.Trim()).Select((x, y) => x.StartsWith("@:|") && x.EndsWith("{}") ? line.Tokens[int.Parse(x.Substring(3, x.Length - 5))].Value : GetValue(x, method.Parameters[y].DataType).ToString()).Where(x => x.ToString() != "").ToArray();
-                                            }
-                                            catch (Exception e)
-                                            {
-                                                if (e.Message.StartsWith("Expects "))
-                                                    throw new Exception(e.Message);
-                                                throw new Exception("Error getting values for method paramters");
-                                            }
-                                            if (vals.FirstOrDefault(x => x is RunMethod) is RunMethod r)
-                                            {
-                                                for (int i = 0; i < r.Parameters.Length; i++)
+                                                else if (line.Tokens[3].Type == TokenType.Arrow)
                                                 {
-                                                    r.Parameters[i].Value = GetValue(r.Parameters[i], r.Parameters[i].DataType);
+                                                    line.Tokens = line.Tokens.Skip(4).ToArray();
+                                                    var value = SingleLine(line);
+                                                    if (value == null)
+                                                    {
+                                                        throw new Exception("Expected method that returns value");
+                                                    }
+                                                    if (var.Value is Class c && c.Properties.FirstOrDefault(x => x.Name.ToLower() == "value") is Var v)
+                                                    {
+                                                        v.Value = value;
+                                                    }
+                                                    else
+                                                    {
+                                                        var.Value = value;
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    throw new Exception("Expected colon or arrow to set instance properties");
                                                 }
                                             }
-                                            if (vals.Length > 0)
-                                            {
-                                                for (int i = 0; i < method.Parameters.Length; i++)
-                                                {
-                                                    if (!method.Parameters[i].Required && vals.Length - 1 < i)
-                                                        continue;
-                                                    object value = method.Parameters[i].IsParams ? string.Join(",", vals.Skip(i)) : vals[i];
-                                                    vars = [.. vars, new Var(method.Parameters[i].Name, value, line.Line, stackNumber: StackNumber, type: method.Parameters[i].DataType, required: method.Parameters[i].Required)];
-                                                }
-                                                if (vars.Where(x => x.Required).ToArray().Length != method.Parameters.Where(x => x.Required).ToArray().Length)
-                                                {
-                                                    throw new Exception("Not all parameters are set");
-                                                }
-                                            }
-                                            else
-                                            {
-                                                if (line.Tokens.Length > 1)
-                                                {
-                                                    throw new Exception("Method does not require any parameters");
-                                                }
-                                            }
+                                            Return = var;
                                         }
-                                    }
-                                    else
-                                    {
-                                        if (method.Parameters != null && method.Parameters.Select(x => x.Required).ToArray().Length > 0)
+                                        else if (line.Tokens.Length > 1)
                                         {
-                                            throw new Exception($"Method \"{method.Name}\" expects parameters");
+                                            Methods = [.. Methods, .. cl.Methods];
+                                            Vars = [.. Vars, .. cl.Properties];
+                                            line.Tokens = line.Tokens.Skip(1).ToArray();
+                                            Return = SingleLine(line);
+                                            Methods = Methods.Except(cl.Methods).ToArray();
+                                            Vars = Vars.Except(cl.Properties).ToArray();
                                         }
-                                    }
+                                        else
+                                        {
+                                            throw new Exception("Expected \"new\" keyword to declare instance of class");
+                                        }
+                                        break;
 
-                                    Return = MethodRun(method, vars);
-                                    break;
+                                    case IdentType.Method:
+                                        Method method = (type is Method m) ? new Method(m.Name, m.Line, m.Settings, m.Lines.Select(x => new LineWithTokens(x.Tokens.Select(y => new Token(y.Type, y.Value, y.StringValue)).ToArray(), x.Line)).ToArray(), m.Parameters, m.Returns) : null;
 
-                                default:
-                                case IdentType.Other:
-                                    throw new Exception("The identifier \"" + FirstToken.Value.ToString() + "\" does not exist in this current context");
+                                        Method.MethodSettings settings = method.Settings;
+                                        bool nocol = (settings & Method.MethodSettings.NoCol) != 0;
+                                        Var[] vars = [];
+                                        if (line.Tokens.Length != 1)
+                                        {
+                                            if (!nocol && line.Tokens[1].Type != TokenType.Colon)
+                                            {
+                                                throw new Exception("Expected \":\" identifier to set method perameters");
+                                            }
+
+                                            if (method.Parameters != null && method.Parameters.Length > 0)
+                                            {
+                                                int next = nocol ? 0 : 1;
+                                                string all;
+                                                object[] vals;
+
+                                                try
+                                                {
+                                                    all = string.Join(" ", line.Tokens.Select((x, y) => x.Value is RunMethod r ? "@:|" + y.ToString() + "{}" : x.StringValue).Skip(next + 1));
+                                                    string[] all_parts = all.Split(',');
+                                                    if (all_parts.Length > method.Parameters.Select(x => x.Required).ToArray().Length && !method.Parameters.Any(x => x.IsParams))
+                                                        throw new Exception($"Expects {(method.Parameters.Any(x => x.Required) ? "at least" : "")} {(method.Parameters.Any(x => x.Required) ? method.Parameters.Select(x => x.Required).ToArray().Length : method.Parameters.Length)} parameter for method \"{method.Name}\" but {all_parts.Length} were given");
+                                                    if (method.Parameters.Any(x => x.IsParams))
+                                                    {
+                                                        string[] new_parts = [];
+                                                        for (int j = 0; j < method.Parameters.Length; j++)
+                                                        {
+                                                            if (method.Parameters[j].IsParams)
+                                                            {
+                                                                new_parts = [.. new_parts, string.Join(",", all_parts.Skip(j)).Replace(" ,", ",")];
+                                                                break;
+                                                            }
+                                                            new_parts = [.. new_parts, all_parts[j]];
+                                                        }
+                                                        all_parts = new_parts;
+                                                    }
+                                                    vals = all_parts.Select(x => x.Trim()).Select((x, y) => x.StartsWith("@:|") && x.EndsWith("{}") ? line.Tokens[int.Parse(x.Substring(3, x.Length - 5))].Value : GetValue(x, method.Parameters[y].DataType).ToString()).Where(x => x.ToString() != "").ToArray();
+                                                }
+                                                catch (Exception e)
+                                                {
+                                                    if (e.Message.StartsWith("Expects "))
+                                                        throw new Exception(e.Message);
+                                                    throw new Exception("Error getting values for method paramters");
+                                                }
+                                                if (vals.FirstOrDefault(x => x is RunMethod) is RunMethod r)
+                                                {
+                                                    for (int i = 0; i < r.Parameters.Length; i++)
+                                                    {
+                                                        r.Parameters[i].Value = GetValue(r.Parameters[i], r.Parameters[i].DataType);
+                                                    }
+                                                }
+                                                if (vals.Length > 0)
+                                                {
+                                                    for (int i = 0; i < method.Parameters.Length; i++)
+                                                    {
+                                                        if (!method.Parameters[i].Required && vals.Length - 1 < i)
+                                                            continue;
+                                                        object value = method.Parameters[i].IsParams ? string.Join(",", vals.Skip(i)) : vals[i];
+                                                        vars = [.. vars, new Var(method.Parameters[i].Name, value, line.Line, stackNumber: StackNumber, type: method.Parameters[i].DataType, required: method.Parameters[i].Required)];
+                                                    }
+                                                    if (vars.Where(x => x.Required).ToArray().Length != method.Parameters.Where(x => x.Required).ToArray().Length)
+                                                    {
+                                                        throw new Exception("Not all parameters are set");
+                                                    }
+                                                }
+                                                else
+                                                {
+                                                    if (line.Tokens.Length > 1)
+                                                    {
+                                                        throw new Exception("Method does not require any parameters");
+                                                    }
+                                                }
+                                            }
+                                        }
+                                        else
+                                        {
+                                            if (method.Parameters != null && method.Parameters.Select(x => x.Required).ToArray().Length > 0)
+                                            {
+                                                throw new Exception($"Method \"{method.Name}\" expects parameters");
+                                            }
+                                        }
+
+                                        Return = MethodRun(method, vars);
+                                        break;
+
+                                    default:
+                                    case IdentType.Other:
+                                        throw new Exception("The identifier \"" + FirstToken.Value.ToString() + "\" does not exist in this current context");
+                                }
                             }
                         }
                         catch (Exception ex)
@@ -627,6 +660,7 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
+                            EZHelp.Error = null;
                             LastTryNotFailed = ex;
                         }
                         break;
@@ -678,6 +712,7 @@ namespace EZCodeLanguage
         }
         private object? RunStatement(Statement statement, out bool broke)
         {
+            statement = new Statement(statement.Type, statement.Line, statement.InBrackets.Select(x => new LineWithTokens(x.Tokens.Select(y => new Token(y.Type, y.Value, y.StringValue)).ToArray(), x.Line)).ToArray());
             broke = false;
             object? result = null;
             foreach (LineWithTokens line in statement.InBrackets)
@@ -724,13 +759,14 @@ namespace EZCodeLanguage
         {
             LineWithTokens line = new LineWithTokens(argument.Tokens, argument.Line);
             object? result = null;
-            try { result = SingleLine(line) ?? throw new Exception(); } catch { result = GetValue(argument.Tokens, DataType.GetType("bool", Classes, Containers)); }
+            string exc = "";
+            try { result = SingleLine(line) ?? throw new Exception(); } catch (Exception e) { exc = EZHelp.Error; EZHelp.Error = null; result = GetValue(argument.Tokens, DataType.GetType("bool", Classes, Containers)); }
             if (result is Class c)
                 result = Argument.EvaluateTerm(c.Properties.FirstOrDefault(x => x.Name.ToLower() == "value").Value.ToString());
             if (result == null)
                 result = argument.Value;
             bool? term = Argument.EvaluateTerm(result.ToString());
-            if (term == null) throw new Exception($"Expected the argument section's method \"{argument.Value}\" to return boolean");
+            if (term == null) throw new Exception($"Expected the argument section's method \"{argument.Value}\" to return boolean{(exc != "" ? $", Message: \"{exc}\"" : "")}");
             return term;
         }
         private enum IdentType { Var, Class, Method, Other }
@@ -800,7 +836,7 @@ namespace EZCodeLanguage
             returned = null;
             foreach (LineWithTokens line in lines)
             {
-                result = SingleLine(new LineWithTokens(line));
+                result = SingleLine(line);
 
                 if (line.Tokens[0].Type == TokenType.Return || returned != null)
                     break;
@@ -832,7 +868,7 @@ namespace EZCodeLanguage
 
             return t1 != t2;
         }
-        public object GetValue(object obj, DataType? type = null)
+        public object GetValue(object obj, DataType? type = null, string arraySeperator = " ")
         {
             if (obj.GetType().IsArray)
             {
@@ -847,7 +883,11 @@ namespace EZCodeLanguage
                     }*/
                     for (int i = 0; i < a.Length; i++)
                     {
-                        all += GetValue(a[i], type) + (i < a.Length - 1 ? " " : "");
+                        if (a[i].GetType().IsArray)
+                        {
+                            return (a[i] as object[])[0];
+                        }
+                        all += GetValue(a[i], type, arraySeperator) + (i < a.Length - 1 ? arraySeperator : "");
                     }
                 }
                 return all;
@@ -857,7 +897,7 @@ namespace EZCodeLanguage
                 if (type == null && Returning == null)
                     throw new Exception("Can not get value of class instance");
                 Var var = new Var("Intermediate Var for getting value", obj as Class, CurrentLine, stackNumber: StackNumber, type: type ?? Returning);
-                return GetValue(var, type);
+                return GetValue(var, type, arraySeperator);
             }
             else if (obj is string || obj is Var)
             {
@@ -908,7 +948,7 @@ namespace EZCodeLanguage
                             {
                                 try
                                 {
-                                    return GetValue(var.Value, type);
+                                    return GetValue(var.Value, type, arraySeperator);
                                 }
                                 catch { }
                                 throw new Exception("Error returning correct value");
@@ -967,7 +1007,7 @@ namespace EZCodeLanguage
                         }
                         else if (var.Value != null)
                         {
-                            return GetValue(var.Value, var.DataType) ?? obj;
+                            return GetValue(var.Value, var.DataType, arraySeperator) ?? obj;
                         }
                         else
                         {
@@ -976,7 +1016,7 @@ namespace EZCodeLanguage
                     }
                     else
                     {
-                        return GetValue(var.Value, var.DataType) ?? obj;
+                        return GetValue(var.Value, var.DataType, arraySeperator) ?? obj;
                     }
                 }
                 else if (obj.ToString().Contains(':'))
@@ -1090,14 +1130,14 @@ namespace EZCodeLanguage
                         string[] parts = run.Parameters[i].Value.ToString().Split(" ");
                         for (int j = 0; j < parts.Length; j++)
                         {
-                            parts[j] = GetValue(parts[j], DataType.GetType("str", Classes, Containers)).ToString();
+                            parts[j] = GetValue(parts[j], DataType.GetType("str", Classes, Containers), arraySeperator).ToString();
                         }
                         run.Parameters[i].Value = string.Join(" ", parts);
                     }
                     Vars = Vars.Except(backupVars).ToArray();
                     Methods = Methods.Except(backupMethods).ToArray();
                     object o = MethodRun(run.Runs, run.Parameters);
-                    try { o = GetValue(cl, type); } catch { }
+                    try { o = GetValue(cl, type, arraySeperator); } catch { }
 
                     Methods = backupMethods;
                     Vars = backupVars;
@@ -1110,7 +1150,7 @@ namespace EZCodeLanguage
             }
             else if (obj is Token t)
             {
-                return GetValue(t.Value);
+                return GetValue(t.Value, type, arraySeperator);
             }
             return obj;
         }
@@ -1182,7 +1222,6 @@ namespace EZCodeLanguage
                 catch
                 {
                     string? message = e.Error;
-                    e.Error = null;
                     throw new Exception(message ?? $"Error occured in \"{methodPath}\"");
                 }
             }
