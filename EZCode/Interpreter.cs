@@ -1,7 +1,5 @@
-﻿using Newtonsoft.Json.Linq;
-using System.Reflection;
+﻿using System.Reflection;
 using static EZCodeLanguage.Parser;
-using static System.Net.Mime.MediaTypeNames;
 
 namespace EZCodeLanguage
 {
@@ -69,8 +67,8 @@ namespace EZCodeLanguage
                     Var var = Classes[i].Properties[j];
                     if (var.DataType.ObjectClass == null)
                     {
-                        var.DataType = DataType.GetType(var.Line.Value.Split(" ")[0], Classes, Containers);
-                        if (var.DataType.ObjectClass == null && var.DataType.ObjectContainer == null)
+                        var.DataType = DataType.GetType(var.Line.Value.Split(" ")[0], Classes);
+                        if (var.DataType.ObjectClass == null)
                         {
                             var.DataType.ObjectClass = Classes[i];
                         }
@@ -90,7 +88,7 @@ namespace EZCodeLanguage
                     GetValueMethod get = Classes[i].GetTypes[j];
                     if (get.DataType == null || get.DataType.ObjectClass == null)
                     {
-                        get.DataType = DataType.GetType(get.Returns, Classes, Containers);
+                        get.DataType = DataType.GetType(get.Returns, Classes);
                     }
                 }
             }
@@ -106,7 +104,6 @@ namespace EZCodeLanguage
         public Var[] Vars { get; set; } = [];
         public Method[] Methods { get; set; } = [];
         public Class[] Classes { get => parser.Classes.ToArray(); }
-        public Container[] Containers { get => parser.Containers.ToArray(); }
         public Line CurrentLine { get; private set; }
         private bool StartMethodEntry = false;
         public int Interperate() => Interperate(parser.LinesWithTokens);
@@ -277,7 +274,7 @@ namespace EZCodeLanguage
                                                                     else
                                                                     {
                                                                         v.Value = GetValue(new Token(TokenType.Identifier, line.Tokens.Skip(4).ToArray(), string.Join(" ", line.Tokens.Select(x => x.StringValue))));
-                                                                        v.DataType = DataType.TypeFromValue(v.Value.ToString(), Classes, Containers);
+                                                                        v.DataType = DataType.TypeFromValue(v.Value.ToString(), Classes);
                                                                     }
                                                                 }
                                                                 MethodRun(run.Runs, run.Parameters);
@@ -668,7 +665,7 @@ namespace EZCodeLanguage
                         try
                         {
                             if (LastTryNotFailed == null) break;
-                            Var exception = new Var("error", LastTryNotFailed.Message, CurrentLine, stackNumber: StackNumber, type: DataType.GetType("str", Classes, Containers));
+                            Var exception = new Var("error", LastTryNotFailed.Message, CurrentLine, stackNumber: StackNumber, type: DataType.GetType("str", Classes));
                             Vars = [.. Vars, exception];
                             Statement? statement = FirstToken.Value as Statement;
                             LastTryNotFailed = null;
@@ -760,7 +757,7 @@ namespace EZCodeLanguage
             LineWithTokens line = new LineWithTokens(argument.Tokens, argument.Line);
             object? result = null;
             string exc = "";
-            try { result = SingleLine(line) ?? throw new Exception(); } catch (Exception e) { exc = EZHelp.Error; EZHelp.Error = null; result = GetValue(argument.Tokens, DataType.GetType("bool", Classes, Containers)); }
+            try { result = SingleLine(line) ?? throw new Exception(); } catch (Exception e) { exc = EZHelp.Error; EZHelp.Error = null; result = GetValue(argument.Tokens, DataType.GetType("bool", Classes)); }
             if (result is Class c)
                 result = Argument.EvaluateTerm(c.Properties.FirstOrDefault(x => x.Name.ToLower() == "value").Value.ToString());
             if (result == null)
@@ -830,7 +827,7 @@ namespace EZCodeLanguage
             while (v != null);
             Vars = [.. Vars, .. parameters];
             object? result = null;
-            var _returning = Returning != null ? new DataType(Returning.Type, Returning.ObjectClass, Returning.ObjectContainer) : null;
+            var _returning = Returning != null ? new DataType(Returning.Type, Returning.ObjectClass) : null;
             var _returned = returned;
             Returning = method.Returns;
             returned = null;
@@ -1130,7 +1127,7 @@ namespace EZCodeLanguage
                         string[] parts = run.Parameters[i].Value.ToString().Split(" ");
                         for (int j = 0; j < parts.Length; j++)
                         {
-                            parts[j] = GetValue(parts[j], DataType.GetType("str", Classes, Containers), arraySeperator).ToString();
+                            parts[j] = GetValue(parts[j], DataType.GetType("str", Classes), arraySeperator).ToString();
                         }
                         run.Parameters[i].Value = string.Join(" ", parts);
                     }

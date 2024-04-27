@@ -124,20 +124,17 @@ namespace EZCodeLanguage
             }
             public Types Type { get; set; }
             public Class? ObjectClass { get; set; }
-            public Container? ObjectContainer { get; set; }
-            public DataType(Types type, Class? _class, Container? container = null)
+            public DataType(Types type, Class? _class)
             {
                 Type = type;
                 ObjectClass = _class;
-                ObjectContainer = container;
             }
             public DataType() { }
             public static DataType UnSet = new DataType() { Type = Types._null };
-            public static DataType GetType(string param, Class[] classes, Container[] containers)
+            public static DataType GetType(string param, Class[] classes)
             {
                 Types types = new();
                 Class _class = null;
-                Container container = null;
                 param = param.Replace("@", "");
                 if (param == "string") param = "str";
                 switch (param)
@@ -150,16 +147,15 @@ namespace EZCodeLanguage
                     default: types = Types._object; break;
                 }
                 _class = classes.FirstOrDefault(x => x.Name == param, null);
-                if (_class == null) container = containers.FirstOrDefault(x => x.Name == param, null);
 
-                return new(types, _class, container);
+                return new(types, _class);
             }
-            public static DataType TypeFromValue(string value, Class[] classes, Container[] containers)
+            public static DataType TypeFromValue(string value, Class[] classes)
             {
-                if (float.TryParse(value, out _) && !int.TryParse(value, out _)) return GetType("float", classes, containers);
-                if (int.TryParse(value, out _)) return GetType("int", classes, containers);
-                if (bool.TryParse(value, out _)) return GetType("bool", classes, containers);
-                return GetType("string", classes, containers);
+                if (float.TryParse(value, out _) && !int.TryParse(value, out _)) return GetType("float", classes);
+                if (int.TryParse(value, out _)) return GetType("int", classes);
+                if (bool.TryParse(value, out _)) return GetType("bool", classes);
+                return GetType("string", classes);
             }
         }
         public class ExplicitWatch
@@ -174,7 +170,7 @@ namespace EZCodeLanguage
                 Runs = run;
                 Vars = vars;
             }
-            public bool IsFound(string input, Class[] classes, Container[] containers)
+            public bool IsFound(string input, Class[] classes)
             {
                 Match match = Regex.Match(input, Pattern);
                 if (match.Success && input == match.Groups[0].ToString())
@@ -195,7 +191,7 @@ namespace EZCodeLanguage
                         string? type = types[i];
                         try
                         {
-                            vars = vars.Append(new Var(Vars[i].Name, capturedValues[i], Vars[i].Line, type: (type != null ? DataType.GetType(type, classes, containers) : DataType.UnSet))).ToArray();
+                            vars = vars.Append(new Var(Vars[i].Name, capturedValues[i], Vars[i].Line, type: (type != null ? DataType.GetType(type, classes) : DataType.UnSet))).ToArray();
                         }
                         catch { }
                     }
@@ -218,10 +214,10 @@ namespace EZCodeLanguage
                 Vars = vars;
                 All = all;
             }
-            public bool IsFound(string input, Class[] classes, Container[] containers)
+            public bool IsFound(string input, Class[] classes)
             {
                 ExplicitWatch watch = new ExplicitWatch(Pattern, Runs, Vars);
-                return All || watch.IsFound(Regex.Escape(input), classes, containers);
+                return All || watch.IsFound(Regex.Escape(input), classes);
             }
         }
         public class RunMethod
@@ -287,12 +283,11 @@ namespace EZCodeLanguage
             public Method[]? Methods { get; set; }
             public Var[]? Properties { get; set; }
             public Class[]? Classes { get; set; }
-            public DataType[] InsideOf { get; set; }
             public string[] Aliases { get; set; }
             public int Length { get; set; }
             public Class() { }
             public Class(string name, Line line, Method[]? methods = null, Var[]? properties = null, ExplicitWatch[]? watchForamt = null, ExplicitParams? explicitParams = null,
-                DataType? datatype = null, GetValueMethod[]? getValue = null, Class[]? classes = null, DataType[]? insideof = null, int length = 0, string[]? aliases = null)
+                DataType? datatype = null, GetValueMethod[]? getValue = null, Class[]? classes = null, int length = 0, string[]? aliases = null)
             {
                 Name = name;
                 Line = line;
@@ -303,7 +298,6 @@ namespace EZCodeLanguage
                 TypeOf = datatype;
                 GetTypes = getValue ?? [];
                 Classes = classes ?? [];
-                InsideOf = insideof ?? [];
                 Length = length;
                 Aliases = aliases ?? [];
             }
@@ -318,7 +312,6 @@ namespace EZCodeLanguage
                 TypeOf = cl.TypeOf;
                 GetTypes = cl.GetTypes?.Select(t => new GetValueMethod(t.DataType, t.Method, t.Returns)).ToArray() ?? Array.Empty<GetValueMethod>();
                 Classes = cl.Classes?.Select(c => new Class(c)).ToArray() ?? Array.Empty<Class>();
-                InsideOf = cl.InsideOf?.Select(i => new DataType(i.Type, i.ObjectClass, i.ObjectContainer)).ToArray() ?? Array.Empty<DataType>();
                 Length = cl.Length;
                 Aliases = cl.Aliases;
             }
@@ -346,19 +339,6 @@ namespace EZCodeLanguage
                 Global = global;
                 IsParams = @params;
             }
-        }
-        public class Container
-        {
-            public Container() { }
-            public Container(string name, string[] classes, Line line)
-            {
-                Name = name;
-                ClassNames = classes;
-                Line = line;
-            }
-            public string Name { get; set; }
-            public string[] ClassNames { get; set; }
-            public Line Line { get; set; }
         }
         public class LineWithTokens
         {
@@ -419,11 +399,9 @@ namespace EZCodeLanguage
             Watch,
             Params,
             TypeOf,
-            InsideOf,
             NoCol,
             Method,
             Match,
-            Container,
             Break,
             Yield,
             Return,
@@ -443,7 +421,6 @@ namespace EZCodeLanguage
         public string Code { get; set; }
         internal bool commentBlock = false;
         public List<Class> Classes = [];
-        public List<Container> Containers = [];
         public List<Method> Methods = [];
         public LineWithTokens[] LinesWithTokens = Array.Empty<LineWithTokens>();
         public Parser() { }
@@ -531,7 +508,6 @@ namespace EZCodeLanguage
                     case "explicit": tokenType = TokenType.Explicit; break;
                     case "watch": tokenType = TokenType.Watch; break;
                     case "params": tokenType = TokenType.Params; break;
-                    case "insideof": tokenType = TokenType.InsideOf; break;
                     case "typeof": tokenType = TokenType.TypeOf; break;
                     case "alias": tokenType = TokenType.Alias; break;
                     case "nocol": tokenType = TokenType.NoCol; break;
@@ -590,11 +566,6 @@ namespace EZCodeLanguage
             else if (parts[partIndex] is CSharpDataType)
             {
                 tokenType = TokenType.EZCodeDataType;
-            }
-            // If it is Container, set the part to the appropriate type
-            else if (parts[partIndex] is Container)
-            {
-                tokenType = TokenType.Container;
             }
 
             return new Token(tokenType, parts[partIndex], stringPart);
@@ -686,7 +657,6 @@ namespace EZCodeLanguage
                         ExplicitParams? explicitParams = null; // Class's Explicit Params
                         DataType? typeOf = null; // Class's Explicit Typeof
                         Class[] classes = []; // Class's internal classes
-                        DataType[] insideof = []; // Class's Explicit InsideOf for Containers
                         int length = 0; // Class's Length
                         string[] alias = []; // Class's Aliases
 
@@ -745,7 +715,6 @@ namespace EZCodeLanguage
                                         case TokenType.Watch: if (isexplicit) lineType = CurrentLineClassProperty.iswatch; continue;
                                         case TokenType.Params: if (isexplicit) lineType = CurrentLineClassProperty.isparam; continue;
                                         case TokenType.TypeOf: if (isexplicit) lineType = CurrentLineClassProperty.istypeof; continue;
-                                        case TokenType.InsideOf: if (isexplicit) lineType = CurrentLineClassProperty.isinsideof; continue;
                                         case TokenType.Alias: if (isexplicit) lineType = CurrentLineClassProperty.isalias; continue;
                                     }
                                 }
@@ -794,21 +763,7 @@ namespace EZCodeLanguage
                                         {
                                             // set it to the type
                                             string type = (token.Value as CSharpDataType).Type;
-                                            typeOf = DataType.GetType(type, Classes.ToArray(), Containers.ToArray());
-                                        }
-                                        else
-                                        {
-                                            // throw error
-                                        }
-                                        break;
-                                    case CurrentLineClassProperty.isinsideof:
-                                        // gets the tokens after the arrow 
-                                        token = bracketLineTokens.Tokens.SkipWhile(x => x.Type != TokenType.Arrow).Skip(1).ToArray()[0];
-                                        // check if it is a correct datatype
-                                        if (token.Type == TokenType.DataType)
-                                        {
-                                            // set what container class is apart of
-                                            insideof = [.. insideof, DataType.GetType(token.Value.ToString(), Classes.ToArray(), Containers.ToArray())];
+                                            typeOf = DataType.GetType(type, Classes.ToArray());
                                         }
                                         else
                                         {
@@ -860,7 +815,7 @@ namespace EZCodeLanguage
                         }
 
                         // Create class
-                        Class _class = new(name, lines[lineIndex], methods, properties, explicitWatch, explicitParams, typeOf, getValueMethods, classes, insideof, length, alias);
+                        Class _class = new(name, lines[lineIndex], methods, properties, explicitWatch, explicitParams, typeOf, getValueMethods, classes, length, alias);
                         // Check if class already exists
                         if (Classes.Any(x => x.Name == name) != false)
                         {
@@ -878,7 +833,6 @@ namespace EZCodeLanguage
                                 TypeOf = cl.TypeOf ?? _class.TypeOf,
                                 GetTypes = [.. _class.GetTypes, .. cl.GetTypes?.Select(t => new GetValueMethod(t.DataType, t.Method, t.Returns)).ToArray() ?? Array.Empty<GetValueMethod>()],
                                 Classes = [.. _class.Classes, .. cl.Classes?.Select(c => new Class(c)).ToArray() ?? Array.Empty<Class>()],
-                                InsideOf = [.. _class.InsideOf, .. cl.InsideOf?.Select(i => new DataType(i.Type, i.ObjectClass, i.ObjectContainer)).ToArray() ?? Array.Empty<DataType>()],
                                 Length = cl.Length + _class.Length,
                                 Aliases = [.. _class.Aliases, .. cl.Aliases]
                             };
@@ -1151,36 +1105,6 @@ namespace EZCodeLanguage
                         // Set part to CSharp method
                         parts[i] = new CSharpMethod(path, vars, path.Contains('\''));
                     }
-                    else if (parts[i].ToString() == "container")
-                    {
-                        // gets all of the classes in the container
-                        string name = parts[i + 1].ToString(); // name of container
-                        string[] classNames = []; // all of the class names inside it
-                        Line nextLine = lines[lineIndex + 1]; // the next line
-                        bool sameLineBracket = nextLine.Value.StartsWith('{'); // if next line starts with '{'
-                        List<Line> l = [.. lines]; // temp List<Line> for lines
-                        int curleyBrackets = sameLineBracket ? 0 : 1; // variable to check when loop ends by looking at '{' '}'
-                        for (int j = lineIndex + 1; j < lines.Length; j++)
-                        {
-                            Line bracketLine = lines[j];
-
-                            // adjusts curleyBracket accordingly
-                            if (bracketLine.Value.Contains('{')) curleyBrackets++;
-                            if (bracketLine.Value.Contains('}')) curleyBrackets--;
-
-                            // adds class name to list
-                            classNames = [.. classNames, bracketLine.Value];
-
-                            // removes current line and checks for end of container
-                            l.Remove(bracketLine);
-                            if (curleyBrackets == 0)
-                                break;
-                        }
-                        // sets lines to temp 'l' to keep lines from inside container to be parsed
-                        lines = [.. l];
-                        // set part to container
-                        parts = [new Container(name, classNames, lines[lineIndex])];
-                    }
                 }
                 catch
                 {
@@ -1198,7 +1122,6 @@ namespace EZCodeLanguage
             iswatch,
             isparam,
             istypeof, 
-            isinsideof, 
             isget, 
             isclass, 
             isalias
@@ -1283,7 +1206,7 @@ namespace EZCodeLanguage
                         for (int k = 0; k < Classes[j].WatchFormat.Length; k++) // go over each watch format
                         {
                             // check if the current class watch format matches the 'match' vars
-                            if (Classes[j].WatchFormat[k].IsFound(match, Classes.ToArray(), Containers.ToArray())) 
+                            if (Classes[j].WatchFormat[k].IsFound(match, Classes.ToArray())) 
                             {
                                 // set watch var to the matching explicit watch
                                 watch = new ExplicitWatch(Classes[j].WatchFormat[k].Pattern, Classes[j].WatchFormat[k].Runs, Classes[j].WatchFormat[k].Vars);
@@ -1314,7 +1237,7 @@ namespace EZCodeLanguage
                 for (int j = 0; j < Classes.Count; j++)
                 {
                     if (Classes[j].Params == null) continue;
-                    if (Classes[j].Params.IsFound(match, Classes.ToArray(), Containers.ToArray()))
+                    if (Classes[j].Params.IsFound(match, Classes.ToArray()))
                     {
                         param = Classes[j].Params;
                         return true;
@@ -1338,7 +1261,7 @@ namespace EZCodeLanguage
                     string[] sides = all[i].Split(":");
                     if (sides.Length > 1)
                     {
-                        type = DataType.GetType(sides[0], Classes.ToArray(), Containers.ToArray());
+                        type = DataType.GetType(sides[0], Classes.ToArray());
                         name = sides[1];
                     }
                     vars = [.. vars, new Var(name, null, line, type:type)];
@@ -1480,7 +1403,7 @@ namespace EZCodeLanguage
                     if(token.Type == TokenType.DataType)
                     {
                         returns = token.Value.ToString();
-                        _returns = DataType.GetType(token.Value.ToString()!, Classes.ToArray(), Containers.ToArray());
+                        _returns = DataType.GetType(token.Value.ToString()!, Classes.ToArray());
                         break;
                     }
                 }
@@ -1520,7 +1443,7 @@ namespace EZCodeLanguage
                         DataType pType = DataType.UnSet;
                         if (pTypeDef)
                         {
-                            pType = DataType.GetType(firstLineTokens[i + 1].Value.ToString()!, Classes.ToArray(), Containers.ToArray());
+                            pType = DataType.GetType(firstLineTokens[i + 1].Value.ToString()!, Classes.ToArray());
                             if (firstLineTokens[i + 2].Type == TokenType.Colon)
                             {
                                 pName = firstLineTokens[i + 3].Value.ToString()!;
