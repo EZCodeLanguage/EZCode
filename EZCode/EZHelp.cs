@@ -113,13 +113,13 @@ namespace EZCodeLanguage
                     }
                     if (Interpreter.Vars.Any(x => x.Name == instance_name))
                     {
-                        format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(name, DataType.GetType("str", Interpreter.Classes, Interpreter.Containers)).ToString());
+                        format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(name, DataType.GetType("str", Interpreter.Classes)).ToString());
                     }
                     else
                     {
                         Interpreter.parser.WatchIsFound([name], 0, out ExplicitWatch watch, out _);
 
-                        object val = Interpreter.GetValue(watch != null ? watch.Runs : name, DataType.GetType("str", Interpreter.Classes, Interpreter.Containers));
+                        object val = Interpreter.GetValue(watch != null ? watch.Runs : name, DataType.GetType("str", Interpreter.Classes));
                         format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(val, new DataType(DataType.Types._string, null)).ToString());
                     }
                 }
@@ -157,7 +157,7 @@ namespace EZCodeLanguage
                     {
                         string n = obj.ToString();
                         o = obj;
-                        DataType data = DataType.GetType(type.ToString(), Interpreter.Classes, Interpreter.Containers);
+                        DataType data = DataType.GetType(type.ToString(), Interpreter.Classes);
                         if (Interpreter.Vars.Any(x => x.Name == n)) Interpreter.Vars.FirstOrDefault(x => x.Name == n).DataType = data;
                         obj = Interpreter.GetValue(n, data, arraySeperator);
                     } while (obj != o);
