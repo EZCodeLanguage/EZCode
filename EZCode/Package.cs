@@ -4,8 +4,6 @@ namespace EZCodeLanguage
 {
     public static class Package
     {
-        internal static string Extension = ".cache.json";
-        internal static string Folder = "cache";
         public static string PackagesDirectory = "D:\\EZCodeLanguage\\Packages\\";
         public static string GetPackageDirectory(string package_name)
         {
@@ -24,13 +22,28 @@ namespace EZCodeLanguage
             string file = GetPackageFile(package_name);
             string pack_dir = GetPackageDirectory(package_name);
             Project project = JsonConvert.DeserializeObject<Project>(File.ReadAllText(file));
-            Parser parser = new Parser();
-            if (project.Configuration.Cache) parser = OpenCache(project.Files.Select(x => Path.Combine(pack_dir, x)).ToArray());
-
-            // CACHE SYSTEM NOT WORKING PROPERLY
+            string[] global_packages = project.Configuration.GlobalPackages ?? [];
+            Parser[] parsers = [];
+            foreach (var pack in global_packages)
+            {
+                string path = GetPackageFile(pack);
+                string contents = File.ReadAllText(path);
+                Parser p = new Parser(contents, path);
+                p.Parse();
+                parsers = [.. parsers, p];
+            }
+            foreach (string f in project.Files)
+            {
+                string path = Path.Combine(pack_dir, f);
+                string contents = File.ReadAllText(path);
+                Parser p = new Parser(contents, path);
+                p.Parse();
+                parsers = [.. parsers, p];
+            }
+            Parser parser = CombineParsers(parsers);
 
             if (parser.Classes.Count == 0 && parser.Methods.Count == 0 && parser.LinesWithTokens.Length == 0)
-                parser.Parse(string.Join("\n\n// End of File\n\n", project.Files.Select(x => File.ReadAllText(Path.Combine(pack_dir, x)))));
+                parser.Parse();
 
             return parser;
         }
@@ -43,65 +56,24 @@ namespace EZCodeLanguage
             }
             return parser;
         }
-        public static string SaveCache(string file, Parser parser)
+        public static Parser RemovePackageFromParser(Parser main_parser, Parser remove)
         {
-            if (parser.LinesWithTokens == null || parser.LinesWithTokens.Length == 0)
-                parser.Parse();
-
-            FileInfo fileInfo = new FileInfo(file);
-            if (fileInfo.Name == "package.json")
-            {
-                Project project = JsonConvert.DeserializeObject<Project>(File.ReadAllText(fileInfo.FullName));
-                Parser parse = OpenCache(project.Files.Select(x => Path.Combine(fileInfo.DirectoryName, x)).ToArray());
-
-                if (parse.Classes.Count == 0 && parse.Methods.Count == 0 && parse.LinesWithTokens.Length == 0)
-                    parse.Parse(string.Join("\n\n// End of File\n\n", project.Files.Select(x => File.ReadAllText(Path.Combine(fileInfo.DirectoryName, x)))));
-
-                parser = parse;
-            }
-
-            string cache = JsonConvert.SerializeObject(parser, Formatting.Indented);
-            string path = Path.Combine(fileInfo.DirectoryName, Folder, fileInfo.Directory.Name) + Extension; 
-            if (!Directory.Exists(Path.Combine(fileInfo.DirectoryName, Folder))) Directory.CreateDirectory(Path.Combine(fileInfo.DirectoryName, Folder));
-            File.WriteAllText(path, cache);
-            return cache;
+            main_parser.Classes = main_parser.Classes.Where(x => !remove.Classes.Any(y => y.Name == x.Name)).ToList();
+            main_parser.Methods = main_parser.Methods.Where(x => !remove.Methods.Any(y => y.Name == x.Name)).ToList();
+            return main_parser;
         }
-        public static Parser OpenCache(string file, params string[] files) => 
-            OpenCache(files.Prepend(file).ToArray());
-        public static Parser OpenCache(string[] files)
+        public static Parser CombineParsers(Parser[] parsers)
         {
-            Parser parser = new Parser();
-
-            for (int i = 0; i < files.Length; i++)
+            Parser parser = parsers.First();
+            foreach(var p in parsers.Skip(1))
             {
-                FileInfo fileInfo = new FileInfo(files[i]);
-                if (!fileInfo.Exists) continue;
-
-                Parser cache;
-
-                if (fileInfo.Name == "package.json")
-                {
-                    Project project = JsonConvert.DeserializeObject<Project>(File.ReadAllText(fileInfo.FullName));
-                    cache = OpenCache(project.Files.Select(x=> Path.Combine(fileInfo.DirectoryName, x)).ToArray());
-
-                    if (cache.Classes.Count == 0 && cache.Methods.Count == 0 && cache.LinesWithTokens.Length == 0) 
-                        cache.Parse(string.Join("\n\n// End of File\n\n", project.Files.Select(x => File.ReadAllText(Path.Combine(fileInfo.DirectoryName, x)))));
-
-                    CombineParsers(parser, cache);
-                }
-
-                FileInfo Read = new FileInfo(Path.Combine(fileInfo.DirectoryName, Folder, Path.GetFileNameWithoutExtension(fileInfo.Name) + Extension));
-                if (!Read.Exists) continue;
-
-                cache = JsonConvert.DeserializeObject<Parser>(File.ReadAllText(Read.FullName));
-
-                parser = CombineParsers(parser, cache);
+                parser = CombineParsers(parser, p);
             }
             return parser;
         }
         public static Parser CombineParsers(Parser parser, Parser p2)
         {
-            parser.Code += p2.Code + "\n\n// End of File";
+            parser.Code += "\n\n//NextFile\n\n" + p2.Code + "\n\n";
             parser.LinesWithTokens = [.. parser.LinesWithTokens, .. p2.LinesWithTokens];
             parser.Classes = [.. parser.Classes, .. p2.Classes];
             parser.Methods = [.. parser.Methods, .. p2.Methods];

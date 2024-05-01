@@ -25,9 +25,9 @@ Console.WriteLine(save);
 // run ezcode
 
 Stopwatch stopwatch = Stopwatch.StartNew();
-Parser parser = new Parser();
-parser = Package.ReturnParserWithPackages(parser, ["main"]);
-Parser.LineWithTokens[] tokens = parser.Parse(code);
+Parser parser = new Parser(code, file);
+parser.Parse();
+Parser.LineWithTokens[] tokens = parser.Parse();
 List<Parser.Token[]> tokenTypes = [];
 for (int i = 0; i < tokens.Length; i++)
 {
@@ -61,7 +61,7 @@ Console.WriteLine(code + "\n" + len
 
 stopwatch.Restart();
 
-Interpreter interpreter = new Interpreter(file, parser);
+Interpreter interpreter = new Interpreter(parser);
 interpreter.Interperate();
 
 

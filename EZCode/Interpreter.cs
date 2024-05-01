@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Linq;
+using System.Reflection;
 using static EZCodeLanguage.Parser;
 
 namespace EZCodeLanguage
@@ -35,7 +36,7 @@ namespace EZCodeLanguage
         }
         public string ConsoleInput()
         {
-            string input = "";
+            string input;
             if (InputType == EZInputType.Console) input = Console.ReadLine();
             else
             {
@@ -49,15 +50,14 @@ namespace EZCodeLanguage
             return input;
         }
         public Parser parser { get; set; }
-        public string WorkingFile { get; set; }
         public EZHelp EZHelp { get; private set; }
-        public Interpreter(string file, Parser parser)
+        public Interpreter(Parser parser)
         {
             StackTrace = new Stack<string>();
-            WorkingFile = file;
             this.parser = parser;
             EZHelp = new EZHelp(this);
             Methods = parser.Methods.ToArray();
+            Classes = parser.Classes.ToArray();
 
             for (int i = 0; i < Classes.Length; i++)
             {
@@ -75,8 +75,8 @@ namespace EZCodeLanguage
                     }
                     if (var.Value == null)
                     {
-                        Parser p = new Parser();
-                        Token[] parsertokens = p.Parse(var.Line.Value)[0].Tokens;
+                        Parser p = new Parser(var.Line.Value, var.Line.FilePath);
+                        Token[] parsertokens = p.Parse()[0].Tokens;
                         LineWithTokens lineWithTokens = new LineWithTokens(parsertokens.Skip(0).ToArray(), var.Line);
                         object obj = null;
                         try { obj = GetValue(lineWithTokens.Tokens.Skip(var.Line.Value.Contains("new :") ? 4 : 3).ToArray()); } catch { }
@@ -103,7 +103,7 @@ namespace EZCodeLanguage
         public Exception[] Errors { get; private set; } = [];
         public Var[] Vars { get; set; } = [];
         public Method[] Methods { get; set; } = [];
-        public Class[] Classes { get => parser.Classes.ToArray(); }
+        public Class[] Classes { get; set; }
         public Line CurrentLine { get; private set; }
         private bool StartMethodEntry = false;
         public int Interperate() => Interperate(parser.LinesWithTokens);
@@ -155,7 +155,7 @@ namespace EZCodeLanguage
             StackNumber++;
             try
             {
-                string message = $"codeline: \"{line.Line.Value}\", file: \"{WorkingFile}\", line: {line.Line.CodeLine}";
+                string message = $"codeline: \"{line.Line.Value}\", file: \"{line.Line.FilePath}\", line: {line.Line.CodeLine}";
                 bool duplicate_stack = false;
                 try { duplicate_stack = StackTrace.First() != message; } catch { }
                 if (!duplicate_stack) StackTrace.Push(message);
@@ -164,6 +164,20 @@ namespace EZCodeLanguage
                 object? Return = null;
                 switch (FirstToken.Type)
                 {
+                    case TokenType.Include:
+                        string[] packages = ["main"];
+                        parser = Package.ReturnParserWithPackages(parser, packages);
+                        Methods = [.. Methods, .. parser.Methods];
+                        Classes = [.. Classes, .. parser.Classes];
+                        break;
+                    case TokenType.Exclude:
+                        packages = ["main"];
+                        Parser except = Package.ReturnParserWithPackages(new Parser("", ""), packages);
+                        parser = Package.RemovePackageFromParser(parser, except);
+                        Methods = parser.Methods.ToArray();
+                        Classes = parser.Classes.ToArray();
+                        break;
+
                     case TokenType.Identifier:
                         try
                         {
@@ -466,7 +480,7 @@ namespace EZCodeLanguage
                         try
                         {
                             CSharpMethod method = FirstToken.Value as CSharpMethod;
-                            StackTrace.Push($"csharp-method: \"{(method.Path != "" ? method.Path : "Null")}\", file: \"{WorkingFile}\", line: {line.Line.CodeLine}");
+                            StackTrace.Push($"csharp-method: \"{(method.Path != "" ? method.Path : "Null")}\", file: \"{line.Line.FilePath}\", line: {line.Line.CodeLine}");
                             object obj = Reflect(method!);
                             StackTrace.TryPop(out _);
                             Return = obj;
@@ -515,7 +529,16 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Error with \"return\", Error Message:\"{ex.Message}\"");
+                            string stringReturns = string.Join(" ", line.Tokens.Select(x => x.StringValue));
+                            if (stringReturns != string.Empty && ex.Message.Contains($"Error Message:\"The identifier \"{line.Tokens.First().StringValue}\" does not exist in this current context\""))
+                            {
+                                Return = stringReturns;
+                                returned = Return;
+                            }
+                            else
+                            {
+                                throw new Exception($"Error with \"return\", Error Message:\"{ex.Message}\"");
+                            }
                         }
                         break;
                     case TokenType.Global:
@@ -794,7 +817,7 @@ namespace EZCodeLanguage
         }
         public object? MethodRun(Method method, Var[]? parameters)
         {
-            StackTrace.Push($"method: {method.Name}, file: {WorkingFile}, line: {method.Line.CodeLine}");
+            StackTrace.Push($"method: {method.Name}, file: {method.Line.FilePath}, line: {method.Line.CodeLine}");
             parameters ??= [];
             LineWithTokens[] lines = method.Lines;
             Var[] vvars = method.Parameters ?? [];
@@ -872,12 +895,7 @@ namespace EZCodeLanguage
                 object[] a = (object[])obj;
                 string all = "";
                 if (a.Length > 0)
-                {/*
-                    if (Classes.Any(x => x.Name == GetValue(a[0]).ToString()))
-                    {
-                        all = GetValue(string.Join(" ", a), type).ToString();
-                        if (all != null) return all;
-                    }*/
+                {
                     for (int i = 0; i < a.Length; i++)
                     {
                         if (a[i].GetType().IsArray)
@@ -1033,7 +1051,7 @@ namespace EZCodeLanguage
                                 throw new Exception($"Could not find the property \"{property_name}\" in the class instance \"{firstpart}\"");
                             }
                         }
-                        if (Vars.FirstOrDefault(x => x.Name == firstpart).Value is RunMethod m)
+                        else if (Vars.FirstOrDefault(x => x.Name == firstpart).Value is RunMethod m)
                         {
                             if (m.Parameters.FirstOrDefault(x => x.Name == property_name) is Var v)
                             {
@@ -1049,9 +1067,24 @@ namespace EZCodeLanguage
                             throw new Exception($"Variable \"{firstpart}\" is not a class instance");
                         }
                     }
-                    else if (Classes.Any(x => x.Name == firstpart))
+                    else if (Classes.FirstOrDefault(x => x.Name == firstpart) is Class c)
                     {
-                        throw new NotImplementedException(); // ////////////////////////////////////////////////////////////////////////////////////////////////////////NEXT
+                        string property_name = string.Join(":", obj.ToString().Split(':').Skip(1)).Trim();
+                        if (c.Properties.FirstOrDefault(x => x.Name == property_name) is Var v)
+                        {
+                            return v.Value;
+                        }
+                        if (c.Methods.FirstOrDefault(x => x.Name == property_name) is Method m)
+                        {
+                            if (m.Parameters.Select(x => x.Required).ToArray().Length != 0) 
+                                throw new Exception($"Method \"{property_name}\" can not have any required parameters if being called like a property");
+                            
+                            return MethodRun(m, []);
+                        }
+                        else
+                        {
+                            throw new Exception($"Class path \"{obj}\" is not correct");
+                        }
                     }
                 }
                 if (obj.ToString().Split(' ').Length > 0)
@@ -1093,8 +1126,8 @@ namespace EZCodeLanguage
                         }
                         void DoMethod(Method m, int skip = 1)
                         {
-                            Parser parser = new Parser();
-                            Token[] parsertokens = parser.Parse(input)[0].Tokens;
+                            Parser parser = new Parser(input, m.Line.FilePath);
+                            Token[] parsertokens = parser.Parse()[0].Tokens;
                             LineWithTokens lineWithTokens = new LineWithTokens(parsertokens.Skip(skip).ToArray(), CurrentLine);
                             obj = SingleLine(lineWithTokens);
                         }
@@ -1102,8 +1135,8 @@ namespace EZCodeLanguage
                         {
                             Methods = [.. Methods, .. c.Methods];
                             Vars = [.. Vars, .. c.Properties];
-                            Parser parser = new Parser();
-                            Token[] parsertokens = parser.Parse(input)[0].Tokens;
+                            Parser parser = new Parser(input, c.Line.FilePath);
+                            Token[] parsertokens = parser.Parse()[0].Tokens;
                             LineWithTokens lineWithTokens = new LineWithTokens(parsertokens.Skip(skip).ToArray(), CurrentLine);
                             obj = SingleLine(lineWithTokens);
                             Methods = Methods.Except(c.Methods).ToArray();
@@ -1156,7 +1189,7 @@ namespace EZCodeLanguage
             if (method.IsVar)
             {
                 string value = Vars.FirstOrDefault(x => x.Name == method.Path).Value.ToString();
-                Line[] l = [new Line(value, 0)];
+                Line[] l = [new Line(value, 0, method.Line.FilePath)];
                 string[] r = { };
                 object[] o = parser.SplitParts(ref l, 0, 0, ref r, out _, out _);
                 if (o.Length > 1) throw new Exception("Error with reflection properties");

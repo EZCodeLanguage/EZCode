@@ -42,8 +42,8 @@ static class ez
             case "run":
                 Parser parser = new Parser(string.Join(" ", args.Skip(1).ToArray()));
                 parser = Package.ReturnParserWithPackages(parser, ["main"]);
-                parser.Parse();
-                Interpreter interpreter = new Interpreter(AppDomain.CurrentDomain.BaseDirectory, parser);
+                parser.Parse(AppDomain.CurrentDomain.BaseDirectory);
+                Interpreter interpreter = new Interpreter(parser);
                 interpreter.Interperate();
                 break;
             case "start":
@@ -71,8 +71,8 @@ static class ez
                     break;
                 }
                 parser = new Parser(contents);
-                parser.Parse();
-                interpreter = new Interpreter(path, parser);
+                parser.Parse(path);
+                interpreter = new Interpreter(parser);
                 interpreter.Interperate();
                 break;
         }
@@ -102,8 +102,8 @@ static class ez
             {
                 Parser parser = new Parser();
                 parser = Package.ReturnParserWithPackages(parser, ["main"]);
-                parser.Parse(string.Join(System.Environment.NewLine, contents));
-                Interpreter interpreter = new Interpreter(AppDomain.CurrentDomain.BaseDirectory + "ez.exe", parser);
+                parser.Parse(AppDomain.CurrentDomain.BaseDirectory + "ez.exe", string.Join(System.Environment.NewLine, contents));
+                Interpreter interpreter = new Interpreter(parser);
                 interpreter.Interperate();
                 again = true;
                 Console.WriteLine("RUN ENDED");

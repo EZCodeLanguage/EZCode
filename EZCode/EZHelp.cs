@@ -466,9 +466,9 @@ namespace EZCodeLanguage
             try
             {
                 code = ObjectParse(code, "str").ToString();
-                Parser parser = new Parser(string.Join(" ", code));
+                Parser parser = new Parser(string.Join(" ", code), "(instance running from inside file)");
                 parser.Parse();
-                Interpreter interpreter = new Interpreter($"{Interpreter.WorkingFile}(instance running from inside file)", parser);
+                Interpreter interpreter = new Interpreter(parser);
                 return interpreter.Interperate();
             }
             catch (Exception e)

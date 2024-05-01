@@ -22,10 +22,12 @@ namespace EZCodeLanguage
         {
             public string Value { get; set; }
             public int CodeLine { get; set; }
-            public Line(string code, int line)
+            public string FilePath { get; set; }
+            public Line(string value, int codeLine, string file)
             {
-                this.Value = code;
-                this.CodeLine = line;
+                FilePath = file;
+                Value = value;
+                CodeLine = codeLine;
             }
         }
         public class Argument
@@ -356,9 +358,10 @@ namespace EZCodeLanguage
                 Tokens = line.Tokens;
             }
         }
-        public class CSharpMethod(string path, string[]? @params, bool isVar)
+        public class CSharpMethod(string path, string[]? @params, bool isVar, Line line)
         {
             public string Path { get; set; } = path;
+            public Line Line { get; set; } = line;
             public string[]? Params { get; set; } = @params;
             public bool IsVar { get; set; } = isVar;
             public override string ToString() => $"{Path}";
@@ -413,41 +416,44 @@ namespace EZCodeLanguage
             RunExec,
             EZCodeDataType,
             Include,
+            Exclude,
             Global,
             True, 
             False
         }
         public static char[] Delimeters = [' ', '{', '}', '@', ':', ',', '?', '!'];
         public string Code { get; set; }
+        public string FilePath { get; set; }
         internal bool commentBlock = false;
         public List<Class> Classes = [];
         public List<Method> Methods = [];
-        public LineWithTokens[] LinesWithTokens = Array.Empty<LineWithTokens>();
-        public Parser() { }
-        public Parser(string code)
+        public LineWithTokens[] LinesWithTokens = [];
+        public Parser(string code, string file)
         {
             Code = code;
+            FilePath = file;
         }
-        public LineWithTokens[] Parse() => LinesWithTokens = Parse(Code);
-        public LineWithTokens[] Parse(string code) => LinesWithTokens = TokenArray(code).Where(x => x.Line.Value.ToString() != "").ToArray();
-        private LineWithTokens[] TokenArray(string code, bool insideClass = false)
+        public LineWithTokens[] Parse() => LinesWithTokens = TokenArray(Code, FilePath).Where(x => x.Line.Value.ToString() != "").ToArray();
+        private LineWithTokens[] TokenArray(string code, string file, bool insideClass = false)
         {
+            // Set the file path property
+            FilePath = file;
             // Set the Code property to the parameter if it isn't null
             Code ??= code;
             // The LineWithTokens list that gets returned
             List<LineWithTokens> lineWithTokens = new List<LineWithTokens>();
-            // Splits the code into lines
-            Line[] Lines = SplitLine(code);
+            // Splits the value into lines
+            Line[] Lines = SplitLine(code, FilePath);
 
-            // loops through each line
+            // loops through each codeLine
             for (int i = 0; i < Lines.Length; i++)
             {
                 // Some empty variables before looping through tokens
-                List<Token> tokens; // tokens in the line
-                Line line = Lines[i]; // current line
+                List<Token> tokens; // tokens in the codeLine
+                Line line = Lines[i]; // current codeLine
                 string[] stringParts = []; // Needed for the 'SplitParts' method. each token as a string value
-                int continues = 0, // used with the '->' token to continue the line to the next line
-                                   // These are used to check if the line contains the '->' and there is still code after it. 2 code lines in 1 line
+                int continues = 0, // used with the '->' token to continue the codeLine to the next codeLine
+                                   // These are used to check if the codeLine contains the '->' and there is still value after it. 2 value lines in 1 codeLine
                     arrow_output_index, // The output of the index after the '->' 
                     arrow_input_index = 0; // The input index for after the '->'
                 do
@@ -470,13 +476,13 @@ namespace EZCodeLanguage
                     }
                     arrow_input_index = arrow_output_index; // sets the arrow input to the arrow output
 
-                    // adds the line with the 'tokens' to 'lineWithTokens' list
-                    lineWithTokens.Add(new(tokens.ToArray(), line));
+                    // adds the codeLine with the 'tokens' to 'lineWithTokens' list
+                    lineWithTokens.Add(new LineWithTokens(tokens.ToArray(), line));
                 }
                 while (arrow_output_index != 0); // checks if there isn't anymore arrows spliting lines
 
-                i += continues; // skips any lines that are apart of the line before it with the '->' token
-                line.CodeLine += 1; // increments the line number by 1 so the first line is not 0
+                i += continues; // skips any lines that are apart of the codeLine before it with the '->' token
+                line.CodeLine += 1; // increments the codeLine number by 1 so the first codeLine is not 0
             }
 
             return lineWithTokens.ToArray();
@@ -522,6 +528,8 @@ namespace EZCodeLanguage
                     case "true": case "True": tokenType = TokenType.True; break;
                     case "false": case "False": tokenType = TokenType.False; break;
                     case "null": tokenType = TokenType.Null; parts[partIndex] = ""; break;
+                    case "include": tokenType = TokenType.Include; break;
+                    case "exclude": tokenType = TokenType.Exclude; break;
                 }
                 if (part.StartsWith("//")) tokenType = TokenType.Comment; // If the part starts with '//', it is comment
                 if (part.StartsWith('@')) tokenType = TokenType.DataType; // If the part starts with '@', it is a datatype
@@ -574,7 +582,7 @@ namespace EZCodeLanguage
         {
             // Current Line
             string line = lines[lineIndex].Value;
-            // Get each token from the line. 'parts' is split by the token delimeters. 'partSpaces' is split by spaces
+            // Get each token from the codeLine. 'parts' is split by the token delimeters. 'partSpaces' is split by spaces
             object[] parts = SplitWithDelimiters(line, Delimeters).Where(x => x != "" && x != " ").Select(x => (object)x).Skip(partStart).ToArray();
             string[] partsSpaces = line.Split(" ").Where(x => x != "" && x != " ").ToArray();
             // Sets the out parameters to default
@@ -602,20 +610,20 @@ namespace EZCodeLanguage
                     }
                     else if (parts[i].ToString() == "->")
                     {
-                        // check if arrow is at the end of the line
+                        // check if arrow is at the end of the codeLine
                         if (i == parts.Length - 1)
                         {
-                            // append next line to the current line
+                            // append next codeLine to the current codeLine
                             parts = parts.Append(lines[i + 1].Value).ToArray();
-                            // increment skip line 
+                            // increment skip codeLine 
                             continues++;
                         }
                         else
                         {
-                            // split the line into multiple linetokens
-                            // calculate the new start of the part line
+                            // split the codeLine into multiple linetokens
+                            // calculate the new start of the part codeLine
                             arrow = i + 1 + partStart;
-                            // return parts only in the current part of the line
+                            // return parts only in the current part of the codeLine
                             return parts.Take(i).ToArray();
                         }
                     }
@@ -682,27 +690,27 @@ namespace EZCodeLanguage
                         Token[] paramTokens = [], watchTokens = []; // temp properties
                         for (int j = lineIndex + 1, skip = 0; j < lines.Length; j++, skip -= skip > 0 ? 1 : 0)
                         {
-                            // gets current line in loop and the linewithtokens
+                            // gets current codeLine in loop and the linewithtokens
                             Line bracketLine = lines[j];
-                            LineWithTokens bracketLineTokens = TokenArray(bracketLine.Value, true)[0];
-                            // checks if current line is the start of a subclass
+                            LineWithTokens bracketLineTokens = TokenArray(bracketLine.Value, FilePath, true)[0];
+                            // checks if current codeLine is the start of a subclass
                             if (bracketLineTokens.Tokens.Length > 0 && bracketLineTokens.Tokens[0].Value.ToString() == "class")
                             {
                                 // gets LineWithTokens of the entire subclass
-                                // the [0] index is there because we assume the only line is the class itself that has all the values in it
-                                bracketLineTokens = TokenArray(string.Join(Environment.NewLine, lines.Select(x => x.Value).Skip(j)), true)[0];
+                                // the [0] index is there because we assume the only codeLine is the class itself that has all the values in it
+                                bracketLineTokens = TokenArray(string.Join(Environment.NewLine, lines.Select(x => x.Value).Skip(j)), FilePath, true)[0];
                                 // skips all of the next lines that are apart of the sub class
                                 skip += (bracketLineTokens.Tokens[0].Value as Class).Length + 1;
                             }
                             if (skip == 0)
                             {
-                                // variable to check what type of class property is being set in the current line
+                                // variable to check what type of class property is being set in the current codeLine
                                 CurrentLineClassProperty lineType = CurrentLineClassProperty.none;
-                                // check if current line property is also explicit
+                                // check if current codeLine property is also explicit
                                 bool isexplicit = false;
                                 for (int k = 0; k < bracketLineTokens.Tokens.Length; k++)
                                 {
-                                    // Incrementing each token's line by 1 to ensure there is no "line 0" and instead "line 1"
+                                    // Incrementing each token's codeLine by 1 to ensure there is no "codeLine 0" and instead "codeLine 1"
                                     bracketLineTokens.Line.CodeLine = lines[lineIndex].CodeLine + k;
                                     // Check current Line's type and set the right variable
                                     switch (bracketLineTokens.Tokens[k].Type)
@@ -790,7 +798,7 @@ namespace EZCodeLanguage
                             // adjust curleyBracket
                             if (bracketLine.Value.Contains('{')) curleyBrackets++;
                             if (bracketLine.Value.Contains('}')) curleyBrackets--;
-                            // remove line from Lines so it doesn't get tokenized after class has finished loop
+                            // remove codeLine from Lines so it doesn't get tokenized after class has finished loop
                             l.Remove(bracketLine);
                             // set class length
                             length = j;
@@ -798,7 +806,7 @@ namespace EZCodeLanguage
                             if (curleyBrackets == 0)
                                 break;
                         }
-                        // set Lines to the 'temp' line list
+                        // set Lines to the 'temp' codeLine list
                         lines = [.. l];
                         // Create Watch, Params, and Properties for class based off of temp variables
                         for (int j = 0; j < watchFormats.Length; j++)
@@ -904,18 +912,18 @@ namespace EZCodeLanguage
                         string take = both[0];
                         // the replace part
                         string replace = both.Length == (0 | 1) ? "" : both[1];
-                        // the next line's index
+                        // the next codeLine's index
                         int next = lineIndex + 1;
                         // if the make is multiline, these are the variabls to store them
                         string takeMulti = "", replaceMulti = "";
                         // if the take part starts with '{'
                         if (take.Trim() == "{")
                         {
-                            // Handle multi-line matching
+                            // Handle multi-codeLine matching
                             StringBuilder multiLineTake = new StringBuilder();
                             int braceCount = 1;
 
-                            // Go through every line until it incounters a closing bracket
+                            // Go through every codeLine until it incounters a closing bracket
                             for (int j = next; j < lines.Length; j++)
                             {
                                 braceCount -= lines[j].Value.Trim().StartsWith('}') ? 1 : 0;
@@ -927,7 +935,7 @@ namespace EZCodeLanguage
 
                                 next++;
                             }
-                            // if the last line of take does not contain '=>'
+                            // if the last codeLine of take does not contain '=>'
                             if (!lines[next].Value.Contains("=>"))
                             {
                                 // throw error
@@ -935,7 +943,7 @@ namespace EZCodeLanguage
                             }
                             else
                             {
-                                // set replace to everything after '=>'. This is if the replace part is a single line.
+                                // set replace to everything after '=>'. This is if the replace part is a single codeLine.
                                 replace = lines[next].Value.Split("=>")[1];
                             }
 
@@ -946,11 +954,11 @@ namespace EZCodeLanguage
                         // if the replace part starts with '{'
                         if (replace.Trim() == "{")
                         {
-                            // Handle multi-line matching
+                            // Handle multi-codeLine matching
                             StringBuilder multiLineTake = new StringBuilder();
                             int braceCount = 1;
 
-                            // Go through every line until it incounters a closing bracket
+                            // Go through every codeLine until it incounters a closing bracket
                             for (int j = next; j < lines.Length; j++)
                             {
                                 braceCount -= lines[j].Value.Trim().StartsWith('}') ? 1 : 0;
@@ -964,20 +972,20 @@ namespace EZCodeLanguage
 
                             // increment next
                             next++;
-                            // set replace to the multi line
+                            // set replace to the multi codeLine
                             replace = multiLineTake.ToString();
                             replaceMulti = replace.Split('\n').Select(x => x.Trim()).ToArray()[0];
                         }
                         // create new array for all of the take lines
                         string[] takeLines = take.Split("\n").Select(x => x.Trim()).Where(y => y != "").ToArray();
-                        // integer to remove lines if the take or replace is multi line so it doesn't get parsed later
+                        // integer to remove lines if the take or replace is multi codeLine so it doesn't get parsed later
                         int line_removes = 0, lr = -1;
                         // The temp lines
                         var _LINES = lines.ToList();
 
                         for (int j = lineIndex + 1; j < lines.Length; j++)
                         {
-                            // remove line if the next variable is greater than the line index
+                            // remove codeLine if the next variable is greater than the codeLine index
                             if (next > lineIndex + 1)
                             {
                                 lr = lr == -1 ? j : lr;
@@ -985,8 +993,8 @@ namespace EZCodeLanguage
                                 next--;
                                 continue;
                             }
-                            string input = lines[j].Value.ToString(); // the string part of the line that will be replaced
-                            // if the take is multi line
+                            string input = lines[j].Value.ToString(); // the string part of the codeLine that will be replaced
+                            // if the take is multi codeLine
                             if (takeMulti != "")
                             {
                                 string rep = replace; // temp replace that can be changed
@@ -994,7 +1002,7 @@ namespace EZCodeLanguage
                                 if (MakeMatch(input, takeLines[0], ref rep, out string output, false))
                                 {
                                     bool match = false;
-                                    Line[] takes = [new Line(output, j)];
+                                    Line[] takes = [new Line(output, j, FilePath)];
                                     // checks if all of the lines in takemulti match
                                     for (int k = 1; k < takeLines.Length; k++)
                                     {
@@ -1002,9 +1010,9 @@ namespace EZCodeLanguage
                                         // if it doesn't match, continue the outer loop
                                         if (!match) goto OuterLoop;
                                         // append takes 
-                                        takes = takes.Append(new Line(o, j + k)).ToArray();
+                                        takes = takes.Append(new Line(o, j + k, FilePath)).ToArray();
                                     }
-                                    // Remove line from temp lines
+                                    // Remove codeLine from temp lines
                                     _LINES.RemoveRange(takes[0].CodeLine, takes[takes.Length - 1].CodeLine - takes[0].CodeLine + 1);
                                     // set rep back to replace
                                     rep = replace;
@@ -1015,19 +1023,19 @@ namespace EZCodeLanguage
                                     var vals = val.Split(Environment.NewLine).Where(x => x != "").ToArray();
                                     for (int k = vals.Length - 1; k >= 0; k--)
                                     {
-                                        _LINES.Insert(takes[0].CodeLine, new Line(vals[k], takes[0].CodeLine + k));
+                                        _LINES.Insert(takes[0].CodeLine, new Line(vals[k], takes[0].CodeLine + k, FilePath));
                                     }
                                 }
                             }
                             else
                             {
-                                // If take is a single line
+                                // If take is a single codeLine
 
                                 string _ref = replace;
                                 // If input is a match
                                 if (MakeMatch(input, take, ref _ref, out string output, true))
                                 {
-                                    // if replace is multi line
+                                    // if replace is multi codeLine
                                     if (replaceMulti != "")
                                     {
                                         // Make replacement
@@ -1038,12 +1046,12 @@ namespace EZCodeLanguage
                                         _LINES.RemoveAt(j);
                                         for (int k = vals.Length - 1; k >= 0; k--)
                                         {
-                                            _LINES.Insert(j, new Line(vals[k], j + k));
+                                            _LINES.Insert(j, new Line(vals[k], j + k, FilePath));
                                         }
                                     }
                                     else
                                     {
-                                        // replace line with outputs
+                                        // replace codeLine with outputs
                                         lines[j].Value = output;
                                     }
                                 }
@@ -1079,7 +1087,7 @@ namespace EZCodeLanguage
                         string path = parts[i + 1].ToString();
                         // parameters of the method
                         string[]? vars = null;
-                        int skip = 1; // what to skip for the rest of the line
+                        int skip = 1; // what to skip for the rest of the codeLine
                         // checks if there are any parameters and if the arrow '~>' is used. Similar to ':' in normal methods
                         if (parts.Length - 1 > 2 && parts[i + 2].ToString() == "~>")
                         {
@@ -1103,7 +1111,7 @@ namespace EZCodeLanguage
                             parts = parts.ToList().Where((item, index) => index != i + 1).ToArray();
                         }
                         // Set part to CSharp method
-                        parts[i] = new CSharpMethod(path, vars, path.Contains('\''));
+                        parts[i] = new CSharpMethod(path, vars, path.Contains('\''), lines[lineIndex]);
                     }
                 }
                 catch
@@ -1149,7 +1157,7 @@ namespace EZCodeLanguage
                 var l = replace.Split(Environment.NewLine);
                 for (int i = 0; i < l.Length; i++)
                 {
-                    // update the line with the correct regex match
+                    // update the codeLine with the correct regex match
                     l[i] = string.Join(" ", l[i].Split(" ").Select(x => x.Replace("\\\\{", "\\<[[>").Replace("\\\\}", "\\<]]>").Replace("\\{", "{").Replace("\\}", "}").Replace("\\<[[>", "\\{").Replace("\\<]]>", "\\}")));
                 }
                 // join all the lines together
@@ -1163,16 +1171,16 @@ namespace EZCodeLanguage
         }
         private static bool MakeMatchMulti(string input, string pattern, ref string replace, out string output, bool format)
         {
-            // the input line array
+            // the input codeLine array
             string[] inputLines = input.Split('\n').Select(x => x.Trim()).ToArray();
-            // the pattern line array being checked by
+            // the pattern codeLine array being checked by
             string[] patternLines = pattern.Split('\n').Select(x => x.Trim()).ToArray();
             output = "";
 
             for (int i = 0; i < inputLines.Length; i++)
             {
-                string line = inputLines[i]; // the current line being checked
-                string lineOutput; // the output line
+                string line = inputLines[i]; // the current codeLine being checked
+                string lineOutput; // the output codeLine
                 bool lineMatch = MakeMatch(line, patternLines[i], ref replace, out lineOutput, format); // check if the regex matches
 
                 if (lineMatch)
@@ -1181,7 +1189,7 @@ namespace EZCodeLanguage
                 }
                 else
                 {
-                    return false; // if the line doesn't match, return false
+                    return false; // if the codeLine doesn't match, return false
                 }
             }
             return true;
@@ -1194,7 +1202,7 @@ namespace EZCodeLanguage
             try
             {
                 string match = ""; // variable to check by
-                for (int i = index; i < parts.Length; i++) // go over each token in the line
+                for (int i = index; i < parts.Length; i++) // go over each token in the codeLine
                 {
                     // add token part to match var
                     string add = parts[i].ToString(); 
@@ -1227,19 +1235,21 @@ namespace EZCodeLanguage
         }
         internal bool ParamIsFound(object[] parts, int index, out ExplicitParams? param)
         {
+            // set out parameter 'param' to null
             param = null;
 
-            string match = "";
-            for (int i = index; i < parts.Length; i++)
+            string match = ""; // match var to check by
+            for (int i = index; i < parts.Length; i++) // loop through tokens
             {
-                string add = parts[i].ToString();
-                match = (match + " " + add).Trim();
-                for (int j = 0; j < Classes.Count; j++)
+                string add = parts[i].ToString(); // add to match
+                match = (match + " " + add).Trim(); // set match
+                for (int j = 0; j < Classes.Count; j++) // loop through classes
                 {
-                    if (Classes[j].Params == null) continue;
-                    if (Classes[j].Params.IsFound(match, Classes.ToArray()))
+                    if (Classes[j].Params == null) continue; // if params is null, continue
+                    if (Classes[j].Params.IsFound(match, Classes.ToArray())) // if param format matches 'match'
                     {
-                        param = Classes[j].Params;
+                        // set 'param' to explicit param
+                        param = Classes[j].Params; 
                         return true;
                     }
                 }
@@ -1248,23 +1258,27 @@ namespace EZCodeLanguage
         }
         private Var[] GetVarsFromParameter(Token[] tokens, Line line)
         {
+            // increment codeline
             line.CodeLine += 1;
+            // if the token array contains a colon and is longer that 1
             if (tokens.Length > 1 && tokens.Select(x => x.Type).Contains(TokenType.Colon))
             {
+                // trim tokens to before '=>' and after ':'
                 tokens = tokens.Skip(2).TakeWhile(x => x.Type != TokenType.Arrow).ToArray();
-                string[] all = string.Join("", tokens.Select(x=>x.Value.ToString())).Split(",");
-                Var[] vars = [];
+                // string version of parameters
+                string[] all = string.Join("", tokens.Select(x => x.Value.ToString())).Split(",");
+                Var[] vars = []; // parameters
                 for (int i = 0; i < all.Length ; i++)
                 {
-                    DataType? type = null;
-                    string name = all[i];
-                    string[] sides = all[i].Split(":");
-                    if (sides.Length > 1)
+                    DataType? type = null; // datatype of parameter
+                    string name = all[i]; // name of parameter
+                    string[] sides = all[i].Split(":"); // before and after the colon of parameter 'type:name'
+                    if (sides.Length > 1) // if it contains ':' and has explicit type
                     {
-                        type = DataType.GetType(sides[0], Classes.ToArray());
-                        name = sides[1];
+                        type = DataType.GetType(sides[0], Classes.ToArray()); // set type
+                        name = sides[1]; // set name
                     }
-                    vars = [.. vars, new Var(name, null, line, type:type)];
+                    vars = [.. vars, new Var(name, null, line, type:type)]; // add var to array
                 }
                 return vars;
             }
@@ -1275,191 +1289,231 @@ namespace EZCodeLanguage
         }
         private Statement SetStatement(ref Line[] lines, ref string[] strParts, int lineIndex, int partIndex)
         {
-            string line = lines[lineIndex].Value;
-            object[] parts = SplitWithDelimiters(line, Delimeters).Where(x => x != "" && x != " ").Select(x => (object)x).ToArray();
-            string[] partsSpaces = line.Split(" ").Where(x => x != "" && x != " ").ToArray();
-            LineWithTokens[] lineWithTokens = [];
-            Argument? argument = null;
-            bool sameLine = false, brackets = false;
-            string val = string.Join(" ", partsSpaces.Skip(1).TakeWhile(x => x != ":" && x != "{"));
-            Token[] argTokens = [];
-            int end = 0;
+            string line = lines[lineIndex].Value; // current codeLine
+            object[] parts = SplitWithDelimiters(line, Delimeters).Where(x => x != "" && x != " ").Select(x => (object)x).ToArray(); // split codeLine into parts
+            string[] partsSpaces = line.Split(" ").Where(x => x != "" && x != " ").ToArray(); // parts split by spaces
+            LineWithTokens[] lineWithTokens = []; // lines inside statement
+            Argument? argument = null; // statement's argument 
+            bool oneLine = false /* if statement is just one codeLine */, brackets = false /* if codeLine ends with '{' */;
+            string val = string.Join(" ", partsSpaces.Skip(1).TakeWhile(x => x != ":" && x != "{")); // statement as a string
+            Token[] argTokens = []; // argument tokens
+            int end = 0; // end of argument
             for (int j = 1; j < parts.Length; j++)
             {
-                if (parts[j].ToString() == ":")
+                if (parts[j].ToString() == ":") // if token is ':'
                 {
-                    if (brackets)
-                        brackets = false;
-                    sameLine = true;
-                    end = parts.Length - j;
+                    if (brackets) // if brackets is true
+                        brackets = false; // set brackets to false because from what is now known, statement is one codeLine
+                    oneLine = true; // set oneline to true
+                    end = parts.Length - j; // calculate end
                 }
-                if (parts[j].ToString() == "{")
+                if (parts[j].ToString() == "{") // if token is '{'
                 {
-                    if (sameLine)
-                        sameLine = false;
-                    brackets = true;
-                    end = parts.Length - j;
+                    if (oneLine) // if oneline is true
+                        oneLine = false; // oneline is false becasue from what is know now, statament is bracketed
+                    brackets = true; // brackets is true
+                    end = parts.Length - j; // calculate end
                 }
-                argTokens = argTokens.Append(SingleToken(parts, j, parts[partIndex].ToString())).ToArray();
+                argTokens = argTokens.Append(SingleToken(parts, j, parts[partIndex].ToString())).ToArray(); // add argument token to array
             }
-            argTokens = argTokens.Take(argTokens.Length - end).ToArray();
-            if (argTokens.FirstOrDefault(new Token(TokenType.None, "", "")).Value.ToString() == "runexec")
+            argTokens = argTokens.Take(argTokens.Length - end).ToArray(); // take only the tokens before the end
+            if (argTokens.FirstOrDefault(new Token(TokenType.None, "", "")).Value.ToString() == "runexec") // If the first token is runexec
             {
-                Line[] l = [new Line(lines[lineIndex].Value, lines[lineIndex].CodeLine)];
-                l[0].Value = string.Join(" ", argTokens.Select(x => x.Value.ToString()));
+                Line[] l = [new Line(lines[lineIndex].Value, lines[lineIndex].CodeLine, FilePath)]; // codeLine array of current codeLine
+                l[0].Value = string.Join(" ", argTokens.Select(x => x.Value.ToString())); // set the current codeLine's value to the argument tokens
                 
-                object[] objects = SplitParts(ref l, 0, 0, ref strParts, out _, out _);
-                Token[] t = [];
-                for (int i = 0; i < objects.Length; i++)
-                    t = [.. t, SingleToken(objects, i, parts[partIndex].ToString())];
-                argTokens = t;
+                object[] objects = SplitParts(ref l, 0, 0, ref strParts, out _, out _); // split the parts into tokens
+                Token[] t = []; // token array
+                for (int i = 0; i < objects.Length; i++) // for each part
+                    t = [.. t, SingleToken(objects, i, parts[partIndex].ToString())]; // add the token
+                argTokens = t; // set argument tokens to token array
             }
-            if (Statement.ConditionalTypes.Contains(parts[partIndex]))
+            if (Statement.ConditionalTypes.Contains(parts[partIndex])) // if statement is conditional
             {
-                argTokens = TokenArray(string.Join(" ", argTokens.Select(x => x.Value.ToString())))[0].Tokens;
-                argument = new Argument(argTokens, lines[lineIndex], val);
+                argTokens = TokenArray(string.Join(" ", argTokens.Select(x => x.Value.ToString())), FilePath)[0].Tokens; // bring argTokens through TokenArray Function
+                argument = new Argument(argTokens, lines[lineIndex], val); // set argument
             }
-            if (sameLine)
+            if (oneLine) // if statament is one codeLine
             {
-                string v = string.Join(" ", partsSpaces.SkipWhile(x => x != ":").Skip(1));
-                LineWithTokens inLineTokens = TokenArray(v)[0];
-                string code = inLineTokens.Line.Value;
-                Line endline = new(code, lines[lineIndex].CodeLine);
-                lineWithTokens = [new LineWithTokens(inLineTokens.Tokens, endline)];
+                /*
+                 * if argument : //code
+                 */
+                string v = string.Join(" ", partsSpaces.SkipWhile(x => x != ":").Skip(1)); // get string value of parts until ':' is found
+                LineWithTokens inLineTokens = TokenArray(v, FilePath)[0]; // get lineWithToken object of code after the ':'
+                string code = inLineTokens.Line.Value; // code of inLineTokens
+                Line endline = new(code, lines[lineIndex].CodeLine, FilePath); // new Line
+                lineWithTokens = [new LineWithTokens(inLineTokens.Tokens, endline)]; // set statament lineWithTokens array
             }
-            else
+            else // multi line
             {
-                Line nextLine = lines[lineIndex + 1];
-                bool sameLineBracket = nextLine.Value.StartsWith('{');
-                if (!brackets && !sameLineBracket)
+                Line nextLine = lines[lineIndex + 1]; // the line after the current line
+                bool nextLineBracket = nextLine.Value.StartsWith('{'); // if the next line starts with '{'
+                if (!brackets && !nextLineBracket) // if the statament is not bracketed and isn't oneline
                 {
-                    LineWithTokens nextLineTokens = TokenArray(nextLine.Value)[0];
-                    nextLineTokens.Line.CodeLine = lines[lineIndex].CodeLine + 1;
-                    string code = nextLineTokens.Line.Value;
-                    lineWithTokens = [new(nextLineTokens.Tokens, nextLine)];
-                    List<Line> l = [.. lines];
-                    l.Remove(nextLine);
-                    lines = [.. l];
+                    /*
+                     * if argument
+                     *     //code
+                     */
+                    LineWithTokens nextLineTokens = TokenArray(nextLine.Value, FilePath)[0]; // get the next line's tokens
+                    nextLineTokens.Line.CodeLine = lines[lineIndex].CodeLine + 1; // set the code line
+                    lineWithTokens = [new(nextLineTokens.Tokens, nextLine)]; // set the statement's lineWithTokens array
+                    // remove the next line from lines
+                    lines = lines.Where(x => x != nextLine).ToArray();
                 }
                 else
                 {
-                    List<Line> l = [.. lines];
-                    int curleyBrackets = sameLineBracket ? 0 : 1;
-                    string code = "";
+                    /*
+                     * if argument {
+                     *     //code
+                     * }
+                     */
+                    List<Line> l = [.. lines]; // generate a list from lines
+                    int curleyBrackets = nextLineBracket ? 0 : 1; // keep track of how many curley brackets
+                    string code = ""; // code of lines
                     for (int i = lineIndex + 1; i < lines.Length; i++)
                     {
-                        Line bracketLine = lines[i];
-                        LineWithTokens bracketLineTokens = TokenArray(bracketLine.Value)[0];
-                        bracketLineTokens.Line.CodeLine = lines[lineIndex].CodeLine + i;
-                        if (bracketLine.Value.Contains('{'))
-                            curleyBrackets++;
-                        if (bracketLine.Value.Contains('}'))
-                            curleyBrackets--;
-                        l.Remove(bracketLine);
+                        Line bracketLine = lines[i]; // get current line inside the brackets
+                        LineWithTokens bracketLineTokens = TokenArray(bracketLine.Value, FilePath)[0]; // get the LineWithTokens from the TokenArray Function
+                        bracketLineTokens.Line.CodeLine = lines[lineIndex].CodeLine + i; // set the code line of the lineWithTokens array
+
+                        // set the curely bracket integer
+                        curleyBrackets += bracketLine.Value.Contains('{') ? 1 : 0;
+                        curleyBrackets -= bracketLine.Value.Contains('}') ? 1 : 0;
+                        
+                        l.Remove(bracketLine); // remove the current line from the lines list
+                        // if curleybrackets is equal to zero, break the loop
                         if (curleyBrackets == 0)
                             break;
+                        // add the current bracket's value to the code
                         code += bracketLine.Value + Environment.NewLine;
                     }
-                    lineWithTokens = Parse(code);
-                    lineWithTokens = lineWithTokens.Select(x => { x.Line.CodeLine++; return x; }).ToArray();
-                    if (lineWithTokens.Last().Line.Value.ToString() == "}")
+                    // set the statament's lineWithTokens array to code
+                    lineWithTokens = TokenArray(code, FilePath).Select(x => { x.Line.CodeLine++; return x; }).ToArray(); 
+
+                    if (lineWithTokens.Last().Line.Value.ToString() == "}") // if the last line is just '}'
                     {
-                        lineWithTokens = lineWithTokens.Where((x, y) => y != lineWithTokens.Length - 1).ToArray();
+                        lineWithTokens = lineWithTokens.Where((x, y) => y != lineWithTokens.Length - 1).ToArray(); // trim that off of the lineWithTokens array
                     }
-                    if (lineWithTokens[0].Line.Value == "{") lineWithTokens = lineWithTokens.Where((x, y) => y != 0).ToArray();
-                    lines = [.. l];
+                    if (lineWithTokens[0].Line.Value == "{") lineWithTokens = lineWithTokens.Where((x, y) => y != 0).ToArray(); // if the first line is just '{', trim it off of the array
+                    lines = [.. l]; // set lines to the line list
                 }
             }
-            for (int i = 0; i < lineWithTokens.Length; i++)
-                lineWithTokens[i].Line.CodeLine += 1;
+            // increment lineWithToken codelines so there is no 'line 0'
+            for (int i = 0; i < lineWithTokens.Length; i++) lineWithTokens[i].Line.CodeLine += 1;
+            // return the statement
             return new Statement(parts[partIndex].ToString(), lines[lineIndex], lineWithTokens, argument);
         }
         private Method SetMethod(Line[] lines, ref string[] strParts, int index) => SetMethod(ref lines, ref strParts, index, out _);
         private Method SetMethod(Line[] lines, ref string[] strParts, int index, out string returns) => SetMethod(ref lines, ref strParts, index, out returns);
         private Method SetMethod(ref Line[] lines, ref string[] strParts, int index, out string returns)
         {
-            // Get the current line
-            Line line = lines[index];
-            line.CodeLine += 1;
+            Line line = lines[index]; // Get the current codeLine
+            line.CodeLine += 1; // increment the current code line by 1 so there is no 'line 0'
             returns = "";
-            bool global = false;
+            
+            // if method is global
+            bool global = false; 
             if (new string(line.Value.Trim().Prepend(':').ToArray()).Contains(":global ") || 
                 new string(line.Value.Trim().Prepend(':').ToArray()).Contains(":nocol global ")) global = true;
+
+            // method settings
             Method.MethodSettings settings =
                 line.Value.Trim().StartsWith("nocol ") && !global ? Method.MethodSettings.NoCol :
                 line.Value.Contains(" nocol ") && global ? Method.MethodSettings.NoCol | Method.MethodSettings.Global :
                 global ? Method.MethodSettings.Global :
                 Method.MethodSettings.None;
-            DataType? _returns = null;
-            Var[]? param = [];
-            Token[] firstLineTokens = TokenArray(string.Join(" ", line.Value.Split(" ").SkipWhile(x => x != "method").Skip(1)))[0].Tokens;
-            string name = firstLineTokens[0].Value.ToString()!;
-            bool ret = false, req = true, para = false;
+
+            DataType? _returns = null; // datatype the method returns
+            Var[]? param = []; // parameters of method
+            Token[] firstLineTokens = TokenArray(string.Join(" ", line.Value.Split(" ").SkipWhile(x => x != "method").Skip(1)), FilePath)[0].Tokens; // Token array of the line
+            string name = firstLineTokens[0].Value.ToString()!; // name of method
+            
+            // for extracting parameters from method
+            bool ret = false, // method is returning
+                req = true, // parameter is required
+                para = false; // parameter is 'params'
             for (int i = 1; i < firstLineTokens.Length; i++)
             {
-                Token token = firstLineTokens[i];
-                if (ret)
+                Token token = firstLineTokens[i]; // current token
+                if (ret) // returning, (arrow has happened '=>')
                 {
-                    if(token.Type == TokenType.DataType)
+                    if(token.Type == TokenType.DataType) // if the type is a datatype
                     {
+                        // the method returns the datatype
                         returns = token.Value.ToString();
                         _returns = DataType.GetType(token.Value.ToString()!, Classes.ToArray());
                         break;
                     }
+                    else
+                    {
+                        // throw error
+                    }
                 }
-                if (token.Type == TokenType.Arrow)
+                if (token.Type == TokenType.Arrow) 
                 {
+                    // set 'ret' (return) to true 
                     ret = true;
                     continue;
                 }
                 if (token.Type == TokenType.QuestionMark)
                 {
+                    // set 'req' (required) to false
                     req = false;
                     continue;
                 }
                 if (token.Value.ToString() == "!")
                 {
+                    // set 'para' (params) to true
                     para = true;
                     continue;
                 }
 
+                // if the current token is either a comma or the first index and the current type is not an arrow or an opening bracket
                 if ((token.Type == TokenType.Comma || i == 1) && token.Type != TokenType.Arrow && token.Type != TokenType.OpenCurlyBracket)
                 {
-                    if (!para)
+                    // if 'para' (params) is false
+                    if (!para) 
                     {
+                        // if question mark is the next token 
                         if (firstLineTokens[i + 1].Type == TokenType.QuestionMark)
                         {
-                            req = false;
-                            i++;
+                            req = false; // set required to false
+                            i++; // increment the index
                         }
                         if (firstLineTokens[i + 1].Value.ToString() == "!")
                         {
-                            para = true;
-                            i++;
+                            para = true; // set params to true
+                            i++; // increment the index
                         }
-                        bool pTypeDef = firstLineTokens[i + 1].Type == TokenType.DataType;
-                        string pName = "";
-                        object? pVal = null;
-                        DataType pType = DataType.UnSet;
-                        if (pTypeDef)
+                        bool pTypeDef = firstLineTokens[i + 1].Type == TokenType.DataType; // If the next token is a datatype
+                        string pName = ""; // the parammeter name
+                        object? pVal = null; // parameter value
+                        DataType pType = DataType.UnSet; // parameter datatype
+                        if (pTypeDef) // if the token is a datatype
                         {
+                            // set the parameter datatype
                             pType = DataType.GetType(firstLineTokens[i + 1].Value.ToString()!, Classes.ToArray());
                             if (firstLineTokens[i + 2].Type == TokenType.Colon)
                             {
+                                // set the name and increment the index, 1-type 2-: 3-name
                                 pName = firstLineTokens[i + 3].Value.ToString()!;
                                 i += 3;
                             }
-                            else i += 1;
+                            else i += 1; // increment by 1, 1-name
                         }
                         else
                         {
+                            // if not, set the name and increment the index
                             pName = firstLineTokens[i + 1].Value.ToString()!;
                             i += 1;
                         }
+                        // set the value of the parameter if the next token is an identifier
                         if (firstLineTokens.Length - 1 > i + 1 && firstLineTokens[i + 1].Type == TokenType.Identifier)
                         {
+                            // grap all tokens until value is not an identifier
                             pVal = string.Join(" ", firstLineTokens.Skip(i + 1).TakeWhile(x => x.Type == TokenType.Identifier).Select(x => x.Value));
                         }
+                        // append the parameter to the list
                         param = param.Append(new Var(name: pName, value: pVal, line: line, type: pType, required: req, @params: para)).ToArray();
                     }
                     else
@@ -1468,85 +1522,114 @@ namespace EZCodeLanguage
                     }
                 }
             }
-            int start = index + 1;
-            LineWithTokens[] lineWithTokens = [];
-            Line nextLine = lines[start];
-            bool sameLineBracket = nextLine.Value.StartsWith('{');
-            int curleyBrackets = sameLineBracket ? 0 : 1;
+            int start = index + 1; // the start index of the method
+            LineWithTokens[] lineWithTokens = []; // the lines inside the method
+            Line nextLine = lines[start]; // the next line
+            bool sameLineBracket = nextLine.Value.StartsWith('{'); // if the bracket is on the same line as the method declaration
+            int curleyBrackets = sameLineBracket ? 0 : 1; // the curley bracket count
             for (int i = start; i < lines.Length; i++)
             {
-                Line bracketLine = lines[i];
-                Token[] bracketLineTokens = TokenArray(bracketLine.Value)[0].Tokens;
+                Line bracketLine = lines[i]; // the current line from the index
+                Token[] bracketLineTokens = TokenArray(bracketLine.Value, FilePath)[0].Tokens; // the tokens from the line
                 try
                 {
-                    if (Statement.Types.Contains(bracketLineTokens[0].Value))
+                    if (Statement.Types.Contains(bracketLineTokens[0].Value)) // if the token is a statement
                     {
-                        Statement statement = SetStatement(ref lines, ref strParts, i, 0);
-                        bracketLineTokens = [SingleToken([statement], 0, string.Join(" ", statement.Line.Value))];
-                        if (bracketLine.Value.Contains("{") && !bracketLine.Value.Contains("}")) curleyBrackets--;
+                        Statement statement = SetStatement(ref lines, ref strParts, i, 0); // set the statement
+                        bracketLineTokens = [SingleToken([statement], 0, string.Join(" ", statement.Line.Value))]; // set the method's lines
+                        if (bracketLine.Value.Contains("{") && !bracketLine.Value.Contains("}")) curleyBrackets--; // set the curley bracket var
                     }
                 } catch { }
-                if (bracketLine.Value.Contains('{'))
-                    curleyBrackets++;
-                if (bracketLine.Value.Contains('}'))
-                    curleyBrackets--;
+
+                // set the curely bracket integer
+                curleyBrackets += bracketLine.Value.Contains('{') ? 1 : 0;
+                curleyBrackets -= bracketLine.Value.Contains('}') ? 1 : 0;
+
+                // add the line to the list
                 lineWithTokens = [.. lineWithTokens, new LineWithTokens(bracketLineTokens, bracketLine)];
+
+                // if curleybrackets is equal to zero, break the loop
                 if (curleyBrackets == 0)
                     break;
+                
             }
+            // remove the method lines from the main lines array
             for (int i = 0; i < lineWithTokens.Length; i++)
                 lines = lines.Where((x, y) => y != start).ToArray();
-            
-            if (lineWithTokens.Last().Line.Value.ToString() == "}")
-            {
-                lineWithTokens = lineWithTokens.Where((x, y) => y != lineWithTokens.Length - 1).ToArray();
-            }
-            if (lineWithTokens[0].Line.Value == "{") lineWithTokens = lineWithTokens.Where((x, y) => y != 0).ToArray();
 
+            // set the statament's lineWithTokens array to code
+            if (lineWithTokens.Last().Line.Value.ToString() == "}") // if the last line is just '}'
+            {
+                lineWithTokens = lineWithTokens.Where((x, y) => y != lineWithTokens.Length - 1).ToArray(); // trim that off of the lineWithTokens array
+            }
+            if (lineWithTokens[0].Line.Value == "{") lineWithTokens = lineWithTokens.Where((x, y) => y != 0).ToArray(); // if the first line is just '{', trim it off of the array
+
+            // increment the methods code lines by one so there is no 'line 0'
             for (int i = 0; i < lineWithTokens.Length; i++)
                 lineWithTokens[i].Line.CodeLine += 1;
             return new Method(name, line, settings, lineWithTokens, param, _returns);
         }
         private GetValueMethod SetGetVal(Line[] lines, int index)
         {
-            Line line = new Line(string.Join(" ", lines[index].Value.Split(" ").Prepend("method")), index);
-            line.CodeLine += 1;
+            // get method
+            /*
+             * get => @type {
+             *     return value
+             * }
+             */
+            // turn get method into, 'method get => @type' so it can be set like a normal method 
+
+
+            Line line = new Line(string.Join(" ", lines[index].Value.Split(" ").Prepend("method")), index, FilePath); // codeLine of method
+            line.CodeLine += 1; // increment value codeLine so there is not 'codeLine 0'
+
+            // refined version of lines where the index of the get method is set to 'codeLine'
             Line[] liness = lines.Select((x, y) => y == index ? line : x).ToArray();
-            string[] r = { };
-            Method method = SetMethod(liness, ref r, index, out string returns);
-            method.Line = lines[index];
-            method.Name = null;
-            GetValueMethod getValue = new GetValueMethod(method.Returns, method, returns);
+            
+            string[] r = []; // empty array that is only used for the setmethod
+            Method method = SetMethod(liness, ref r, index, out string returns); // set the method
+            method.Line = lines[index]; // set the codeLine to the original codeLine 'get => @type'
+            method.Name = null; // set name to null because get methods don't have names
+            GetValueMethod getValue = new GetValueMethod(method.Returns, method, returns); // convert method to getValueMethod
             return getValue;
         }
         private Var? SetVar(Line line, Token[] tokens)
         {
-            line.CodeLine += 1;
-            Var? var = null;
-            if (tokens[0].Type == TokenType.Identifier)
+            line.CodeLine += 1; // increment codeLine by 1 so there is no 'codeLine 0'
+            Var? var = null; // set var to null
+            if (tokens[0].Type == TokenType.Identifier) // if the first token is an identifier, 'type'
             {
-                if (tokens[1].Type == TokenType.Identifier)
+                if (tokens[1].Type == TokenType.Identifier) // if the second token is an identifier, 'name'
                 {
-                    if (tokens[2].Type == TokenType.New)
+                    if (tokens[2].Type == TokenType.New)// if the third token is 'new'
                     {
-                        if (tokens.Length > 3)
+                        if (tokens.Length > 3) // if the var has a value
                         {
-                            if (tokens[3].Type == TokenType.Colon)
+                            if (tokens[3].Type == TokenType.Colon) // if the next token is a colon
                             {
+                                // type name new : value
+
+                                // set variable
                                 var = new(tokens[1].Value.ToString(), string.Join(" ", tokens.Skip(4).Select(x => x.Value)), line);
+                            }
+                            else
+                            {
+                                // throw error
                             }
                         }
                         else
                         {
+                            // if it doesn't have a value
                             var = new(tokens[1].Value.ToString(), tokens[2], line);
                         }
                     }
                 }
             }
-            if (tokens[0].Type == TokenType.Undefined)
+            if (tokens[0].Type == TokenType.Undefined) // if the first token is 'undeifined'
             {
-                if (tokens[1].Type == TokenType.Identifier)
+                if (tokens[1].Type == TokenType.Identifier) // if the second token is an identifier, 'name'
                 {
+                    // set variable
                     var = new(tokens[1].Value.ToString(), null, line);
                 }
             }
@@ -1554,21 +1637,21 @@ namespace EZCodeLanguage
         }
         internal static string[] SplitWithDelimiters(string input, char[] delimiters)
         {
-            string pattern = $"({string.Join("|", delimiters.Select(c => Regex.Escape(c.ToString())))})";
-            return Regex.Split(input, pattern);
+            string pattern = $"({string.Join("|", delimiters.Select(c => Regex.Escape(c.ToString())))})"; // pattern to split by with regex
+            return Regex.Split(input, pattern); // using regex to split string
         }
-        private static Line[] SplitLine(string code)
+        private static Line[] SplitLine(string code, string file)
         {
             // Generates an empty Line array to return
             Line[] lines = Array.Empty<Line>();
 
             int index = 0; // index of loop
             string[] string_lines = code.Split('\n');
-            string_lines = string_lines.Select(s => s.Trim()).ToArray(); // splits code by each line
+            string_lines = string_lines.Select(s => s.Trim()).ToArray(); // splits value by each codeLine
             foreach (var item in string_lines)
             {
-                // Append line to the array, 'lines'
-                lines = lines.Append(new Line(item, index)).ToArray();
+                // Append codeLine to the array, 'lines'
+                lines = lines.Append(new Line(item, index, file)).ToArray();
                 index++; // increment the index by one
             }
             return lines;

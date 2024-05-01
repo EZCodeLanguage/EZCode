@@ -8,7 +8,7 @@
 
         public class Config
         {
-            public bool Cache { get; set; } = false;
+            public string[] GlobalPackages { get; set; }
         }
     }
 }

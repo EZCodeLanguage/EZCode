@@ -1,28 +1,14 @@
-//include main
+include main
 
-bool running new : true
-int index new : 0
-list grades new
-loop 5 {
-	print Please input your grade \(Type END to end\)
-	var in new => input
-	
-	if in == END {
-		yield break
+class aaa {
+	undefined val => hi
+	method yes => @var {
+		return defrs
 	}
-
-	grades append : in
-	index + 1
 }
+str val new => str format : aaa:yes
+print val
 
-print grades
+exclude main
 
-int length new => grades length
-float added new => addAll : grades
-float result new : (added / length)
-
-print Your Grade: 'result'
-
-method addAll : array => @float {
-	return 5
-}
+print hu
