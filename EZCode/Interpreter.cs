@@ -165,17 +165,30 @@ namespace EZCodeLanguage
                 switch (FirstToken.Type)
                 {
                     case TokenType.Include:
-                        string[] packages = ["main"];
-                        parser = Package.ReturnParserWithPackages(parser, packages);
-                        Methods = [.. Methods, .. parser.Methods];
-                        Classes = [.. Classes, .. parser.Classes];
-                        break;
                     case TokenType.Exclude:
-                        packages = ["main"];
-                        Parser except = Package.ReturnParserWithPackages(new Parser("", ""), packages);
-                        parser = Package.RemovePackageFromParser(parser, except);
-                        Methods = parser.Methods.ToArray();
-                        Classes = parser.Classes.ToArray();
+                        try
+                        {
+                            string combined_packages = string.Join(" ", line.Tokens.Skip(1).Select(x => x.StringValue));
+                            string[] packages = combined_packages.Split(",").Select(x=>x.Trim()).ToArray();
+
+                            if (FirstToken.StringValue == "include")
+                            {
+                                parser = Package.ReturnParserWithPackages(parser, packages);
+                                Methods = [.. Methods, .. parser.Methods];
+                                Classes = [.. Classes, .. parser.Classes];
+                            }
+                            else
+                            {
+                                Parser except = Package.ReturnParserWithPackages(new Parser("", ""), packages);
+                                parser = Package.RemovePackageFromParser(parser, except);
+                                Methods = parser.Methods.ToArray();
+                                Classes = parser.Classes.ToArray();
+                            }
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Error with \"{FirstToken.StringValue}\", Error Message:\"{ex.Message}\"");
+                        }
                         break;
 
                     case TokenType.Identifier:

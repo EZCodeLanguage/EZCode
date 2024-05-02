@@ -1,4 +1,4 @@
-include main
+include main, math
 
 class aaa {
 	undefined val => hi
@@ -8,6 +8,8 @@ class aaa {
 }
 str val new => str format : aaa:yes
 print val
+
+print 'add 5, 6'
 
 exclude main
 
