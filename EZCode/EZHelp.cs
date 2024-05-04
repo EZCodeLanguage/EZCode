@@ -1,4 +1,5 @@
 ﻿using static EZCodeLanguage.Parser;
+using static EZCodeLanguage.Interpreter;
 using System.Data;
 
 namespace EZCodeLanguage
@@ -547,7 +548,7 @@ namespace EZCodeLanguage
         {
             try
             {
-                string sep = "|\\@@@@@__~>=>=//\\:@@@@@@#:#####{}}{sd\\___gpgdfpsg14702580690, ";
+                string sep = "|\\@@@@@__~>=>=//\\@@@@@@######{}}{sd\\___gpgdfpsg14702580690, ";
                 return ObjectParse(array, "list", to_string: false, arraySeperator: sep).ToString().Split(sep).Length;
             }
             catch (Exception e)
@@ -582,6 +583,43 @@ namespace EZCodeLanguage
             catch (Exception e)
             {
                 Error = e.Message;
+                throw;
+            }
+        }
+        public float MathFunc(object obj, object op)
+        {
+            try
+            {
+                obj = ObjectParse(obj, "str");
+                bool obj2_is_null = !obj.ToString().Contains(",");
+                object obj1 = obj;
+                if (!obj2_is_null) obj1 = obj.ToString().Split(",")[0];
+                object? obj2 = null;
+                obj1 = ObjectParse(obj1, "float");
+                if (!obj2_is_null) obj2 = ObjectParse(obj.ToString().Split(",")[1], "float");
+                op = StringParse(op);
+
+                if (!float.TryParse(obj1.ToString(), out float val1))
+                {
+                    throw new Exception("Could not parse 'obj' to type 'float'");
+                }
+                if (!float.TryParse(!obj2_is_null ? obj2.ToString() : "", out float val2))
+                {
+                    if (!obj2_is_null)
+                    {
+                        throw new Exception("Could not parse 'obj' to type 'float'");
+                    }
+                }
+                string operation = string.Join("", op.ToString().ToLower().ToCharArray().Select((x, y) => { if (y == 0) return char.Parse(x.ToString().ToUpper()); else return x; }));
+
+                object[] parameters = [val1];
+                if (!obj2_is_null) parameters = [..parameters, val2];
+
+                return float.Parse(InvokeMethod($"System.MathF.{operation}", parameters, this).ToString());
+            }
+            catch (Exception ex)
+            {
+                Error = ex.Message;
                 throw;
             }
         }

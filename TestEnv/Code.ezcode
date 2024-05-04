@@ -1,16 +1,14 @@
-include main, math
+include main
 
-class aaa {
-	undefined val => hi
-	method yes => @var {
-		return defrs
-	}
+list numbers new : 1;2;3;4
+int length new => numbers length
+print 'length'
+int i new : 0
+loop (length > i) {
+    print 'length' > 'i' = '(length > i)'
+    print 'numbers index : i'
+    i + 1
 }
-str val new => str format : aaa:yes
-print val
 
-print 'add 5, 6'
-
-exclude main
-
-print hu
+print 'operate max, 60, 88'
+print 'avg 50, 80, 90'

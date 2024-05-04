@@ -545,8 +545,15 @@ namespace EZCodeLanguage
                             string stringReturns = string.Join(" ", line.Tokens.Select(x => x.StringValue));
                             if (stringReturns != string.Empty && ex.Message.Contains($"Error Message:\"The identifier \"{line.Tokens.First().StringValue}\" does not exist in this current context\""))
                             {
-                                Return = stringReturns;
-                                returned = Return;
+                                try
+                                {
+                                    Return = GetValue(stringReturns);
+                                    returned = Return;
+                                }
+                                catch
+                                {
+                                    throw new Exception($"Error with \"return\", Error Message:\"{ex.Message}\"");
+                                }
                             }
                             else
                             {
@@ -793,7 +800,21 @@ namespace EZCodeLanguage
             LineWithTokens line = new LineWithTokens(argument.Tokens, argument.Line);
             object? result = null;
             string exc = "";
-            try { result = SingleLine(line) ?? throw new Exception(); } catch (Exception e) { exc = EZHelp.Error; EZHelp.Error = null; result = GetValue(argument.Tokens, DataType.GetType("bool", Classes)); }
+            try 
+            {
+                result = SingleLine(line) ?? throw new Exception(); 
+            }
+            catch (Exception e) 
+            { 
+                exc = EZHelp.Error;
+                EZHelp.Error = null;
+                string[] before = line.Tokens.Select(x => x.Value.ToString()).ToArray();
+                result = GetValue(argument.Tokens, DataType.GetType("bool", Classes));
+                if (before.SequenceEqual(result.ToString().Split(' ')))
+                {
+                    try { result = EZHelp.Expression(result.ToString()); } catch { }
+                }
+            }
             if (result is Class c)
                 result = Argument.EvaluateTerm(c.Properties.FirstOrDefault(x => x.Name.ToLower() == "value").Value.ToString());
             if (result == null)
@@ -1059,6 +1080,18 @@ namespace EZCodeLanguage
                             {
                                 return v.Value;
                             }
+                            else if (c.Methods.FirstOrDefault(x => x.Name == property_name) is Method m)
+                            {
+                                Methods = [.. Methods, .. c.Methods];
+                                Vars = [.. Vars, .. c.Properties];
+                                Parser parser = new Parser(property_name, m.Line.FilePath);
+                                Token[] parsertokens = parser.Parse()[0].Tokens;
+                                LineWithTokens lineWithTokens = new LineWithTokens(parsertokens, CurrentLine);
+                                obj = SingleLine(lineWithTokens);
+                                Methods = Methods.Except(c.Methods).ToArray();
+                                Vars = Vars.Except(c.Properties).ToArray();
+                                return obj;
+                            }
                             else
                             {
                                 throw new Exception($"Could not find the property \"{property_name}\" in the class instance \"{firstpart}\"");
@@ -1165,6 +1198,7 @@ namespace EZCodeLanguage
                     Class cl = new Class(Classes.FirstOrDefault(x => x.Name == run.ClassName));
                     Method[] backupMethods = Methods;
                     Var[] backupVars = Vars;
+                    Var[] backupRunParameters = run.Parameters.Select(x => new Var(x.Name, x.Value, x.Line, x.StackNumber, x.DataType, x.Required, x.Global, x.IsParams)).ToArray();
                     Vars = [.. Vars, .. cl.Properties];
                     Methods = [.. Methods, .. cl.Methods];
 
@@ -1184,6 +1218,7 @@ namespace EZCodeLanguage
 
                     Methods = backupMethods;
                     Vars = backupVars;
+                    run.Parameters = backupRunParameters;
                     return o;
                 }
                 else

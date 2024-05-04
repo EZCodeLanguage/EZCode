@@ -464,6 +464,25 @@ namespace EZCodeLanguage
                     stringParts = SplitParts(ref Lines, i, arrow_input_index, ref stringParts, out _, out _, insideClass, true).Select(x => x.ToString()).ToArray();
                     // gets the token's values
                     object[] parts = SplitParts(ref Lines, i, arrow_input_index, ref stringParts, out continues, out arrow_output_index, insideClass);
+
+                    // check if the line is an include or exclude
+                    if (parts.Length > 1 && parts[0].ToString() == "include")
+                    {
+                        // grab the packages and return the parser with those packages
+                        string combined_packages = string.Join(" ", parts.Skip(1).Select(x => x.ToString()));
+                        string[] packages = combined_packages.Split(",").Select(x => x.Trim()).ToArray();
+                        Parser parser = Package.ReturnParserWithPackages(this, packages);
+                    }
+                    if (parts.Length > 1 && parts[0].ToString() == "exclude")
+                    {
+                        // grab the packages to except and get it as a parser instance
+                        string combined_packages = string.Join(" ", parts.Skip(1).Select(x => x.ToString()));
+                        string[] packages = combined_packages.Split(",").Select(x => x.Trim()).ToArray();
+                        Parser except = Package.ReturnParserWithPackages(new Parser("", ""), packages);
+                        // remove the except parser from the current parser instance
+                        Parser parser = Package.RemovePackageFromParser(this, except);
+                    }
+
                     // loops through each part and creates the token from it
                     for (int j = 0; j < parts.Length; j++)
                     {
