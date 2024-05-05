@@ -40,9 +40,9 @@ static class ez
                 }
                 break;
             case "run":
-                Parser parser = new Parser(string.Join(" ", args.Skip(1).ToArray()));
+                Parser parser = new Parser(string.Join(" ", args.Skip(1).ToArray()), AppDomain.CurrentDomain.BaseDirectory);
                 parser = Package.ReturnParserWithPackages(parser, ["main"]);
-                parser.Parse(AppDomain.CurrentDomain.BaseDirectory);
+                parser.Parse();
                 Interpreter interpreter = new Interpreter(parser);
                 interpreter.Interperate();
                 break;
@@ -70,8 +70,8 @@ static class ez
                     error_message = 1;
                     break;
                 }
-                parser = new Parser(contents);
-                parser.Parse(path);
+                parser = new Parser(contents, path);
+                parser.Parse();
                 interpreter = new Interpreter(parser);
                 interpreter.Interperate();
                 break;
@@ -100,9 +100,9 @@ static class ez
             string line = Console.ReadLine();
             if (line == "RUN")
             {
-                Parser parser = new Parser();
+                Parser parser = new Parser(string.Join(System.Environment.NewLine, contents), AppDomain.CurrentDomain.BaseDirectory + "ez.exe");
                 parser = Package.ReturnParserWithPackages(parser, ["main"]);
-                parser.Parse(AppDomain.CurrentDomain.BaseDirectory + "ez.exe", string.Join(System.Environment.NewLine, contents));
+                parser.Parse();
                 Interpreter interpreter = new Interpreter(parser);
                 interpreter.Interperate();
                 again = true;

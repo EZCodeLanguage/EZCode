@@ -49,15 +49,17 @@ namespace EZCodeLanguage
             Input = null;
             return input;
         }
+        public bool ContinueOnBreakpoint;
         public Parser parser { get; set; }
         public EZHelp EZHelp { get; private set; }
-        public Interpreter(Parser parser)
+        public Interpreter(Parser parser, Debug.Breakpoint[]? breakpoints = null)
         {
             StackTrace = new Stack<string>();
             this.parser = parser;
             EZHelp = new EZHelp(this);
             Methods = parser.Methods.ToArray();
             Classes = parser.Classes.ToArray();
+            Breakpoints = breakpoints;
 
             for (int i = 0; i < Classes.Length; i++)
             {
@@ -104,53 +106,54 @@ namespace EZCodeLanguage
         public Var[] Vars { get; set; } = [];
         public Method[] Methods { get; set; } = [];
         public Class[] Classes { get; set; }
+        public Debug.Breakpoint[]? Breakpoints { get; set; }
         public Line CurrentLine { get; private set; }
         private bool StartMethodEntry = false;
-        public int Interperate() => Interperate(parser.LinesWithTokens);
-        public int Interperate(LineWithTokens[] LineTokens)
+        public async Task Interperate() => Interperate(parser.LinesWithTokens);
+        public async Task Interperate(LineWithTokens[] LineTokens)
         {
-            int endcode = 0;
             var temp_stack = new Stack<string>(StackTrace);
+
 
             if (Methods.Any(x => x.Name.ToLower() == "start") && !StartMethodEntry)
             {
                 StartMethodEntry = true;
                 LineWithTokens[] lines_with_global = LineTokens.Where(x => x.Tokens.Length > 1).Where(x => x.Tokens[0].Type == TokenType.Global).ToArray();
-                if(lines_with_global.Length > 0)
-                    Interperate(lines_with_global);
-                
-                return Interperate(Methods.First(x=>x.Name.ToLower() == "start").Lines);
-            }
+                if (lines_with_global.Length > 0)
+                    await Interperate(lines_with_global);
 
-            foreach (LineWithTokens line in LineTokens)
+                await Interperate(Methods.First(x => x.Name.ToLower() == "start").Lines);
+            }
+            else
             {
-                if (line.Tokens.Length == 0 || (line.Tokens.Length == 1 && line.Tokens[0].Value is Class or Method))
-                    continue;
+                foreach (LineWithTokens line in LineTokens)
+                {
+                    if (line.Tokens.Length == 0 || (line.Tokens.Length == 1 && line.Tokens[0].Value is Class or Method))
+                        continue;
 
-                var backup_vars = Vars.Select(x => new Var(x.Name, x.Value, x.Line, x.StackNumber, x.DataType, x.Required)).ToArray();
-                var backup_methods = Methods.Select(x => new Method(x.Name, x.Line, x.Settings, x.Lines, x.Parameters, x.Returns)).ToArray();
-                try
-                {
-                    temp_stack = new Stack<string>(StackTrace);
-                    SingleLine(line);
-                }
-                catch (Exception ex)
-                {
-                    string stack = string.Join("\n\t", StackTrace.Reverse());
-                    string message = ex.Message + ", StackTrace: \n\t" + (stack != "" ? stack : "Stack Empty");
-                    Output = [.. Output, message];
-                    Console.WriteLine(message);
-                    Errors = Errors.Append(ex).ToArray();
-                    StackTrace = temp_stack;
-                    Vars = backup_vars;
-                    Methods = backup_methods;
-                    EZHelp.Error = null;
+                    var backup_vars = Vars.Select(x => new Var(x.Name, x.Value, x.Line, x.StackNumber, x.DataType, x.Required)).ToArray();
+                    var backup_methods = Methods.Select(x => new Method(x.Name, x.Line, x.Settings, x.Lines, x.Parameters, x.Returns)).ToArray();
+                    try
+                    {
+                        temp_stack = new Stack<string>(StackTrace);
+                        await SingleLine(line);
+                    }
+                    catch (Exception ex)
+                    {
+                        string stack = string.Join("\n\t", StackTrace.Reverse());
+                        string message = ex.Message + ", StackTrace: \n\t" + (stack != "" ? stack : "Stack Empty");
+                        Output = [.. Output, message];
+                        Console.WriteLine(message);
+                        Errors = Errors.Append(ex).ToArray();
+                        StackTrace = temp_stack;
+                        Vars = backup_vars;
+                        Methods = backup_methods;
+                        EZHelp.Error = null;
+                    }
                 }
             }
-
-            return endcode;
         }
-        internal object? SingleLine(LineWithTokens line)
+        internal async Task<object?> SingleLine(LineWithTokens line)
         {
             StackNumber++;
             try
@@ -160,6 +163,12 @@ namespace EZCodeLanguage
                 try { duplicate_stack = StackTrace.First() != message; } catch { }
                 if (!duplicate_stack) StackTrace.Push(message);
                 CurrentLine = line.Line;
+
+                while (Breakpoints != null && Debug.IsHit(line.Line, Breakpoints, this))
+                {
+                    await Task.Delay(100);
+                }
+
                 Token FirstToken = line.Tokens.FirstOrDefault(new Token(TokenType.None, "", ""));
                 object? Return = null;
                 switch (FirstToken.Type)
@@ -209,7 +218,7 @@ namespace EZCodeLanguage
                                             if (line.Tokens[1].Type == TokenType.Arrow)
                                             {
                                                 var tok = line.Tokens.Skip(2).ToArray();
-                                                var.Value = SingleLine(new LineWithTokens(tok, line.Line));
+                                                var.Value = await SingleLine(new LineWithTokens(tok, line.Line));
                                                 Return = var.Value;
                                             }
                                             else
@@ -222,7 +231,7 @@ namespace EZCodeLanguage
                                                         Token[] backup_tokens = line.Tokens.Select(x => new Token(x.Type, x.Value, x.StringValue)).ToArray();
                                                         for (int i = 2; i < line.Tokens.Length; i++)
                                                         {
-                                                            line.Tokens[i].Value = GetValue(line.Tokens[i].Value, var.DataType);
+                                                            line.Tokens[i].Value = await GetValue(line.Tokens[i].Value, var.DataType);
                                                             line.Tokens[i].StringValue = line.Tokens[i].Value is string or int or float or bool ? line.Tokens[i].Value.ToString() : line.Tokens[i].StringValue;
                                                             line.Tokens[i].Type = parser.SingleToken([line.Tokens[i].StringValue == line.Tokens[i].Value.ToString() ? line.Tokens[i].StringValue : line.Tokens[i].Value], 0, line.Tokens[i].StringValue).Type;
                                                         }
@@ -231,7 +240,7 @@ namespace EZCodeLanguage
                                                         Var[] backupVars = Vars.Concat(Vars.Where(x => x.Global)).ToArray();
                                                         Vars = c.Properties;
                                                         line.Tokens = line.Tokens.Skip(1).ToArray();
-                                                        object value = SingleLine(line);
+                                                        object value = await SingleLine(line);
                                                         line.Tokens = backup_tokens;
                                                         Methods = backupMethods;
                                                         Vars = backupVars;
@@ -300,7 +309,7 @@ namespace EZCodeLanguage
                                                                     if (v.Value is string) v.Value = string.Join(" ", line.Tokens.Select(x => x.Value).Skip(4));
                                                                     else
                                                                     {
-                                                                        v.Value = GetValue(new Token(TokenType.Identifier, line.Tokens.Skip(4).ToArray(), string.Join(" ", line.Tokens.Select(x => x.StringValue))));
+                                                                        v.Value = await GetValue(new Token(TokenType.Identifier, line.Tokens.Skip(4).ToArray(), string.Join(" ", line.Tokens.Select(x => x.StringValue))));
                                                                         v.DataType = DataType.TypeFromValue(v.Value.ToString(), Classes);
                                                                     }
                                                                 }
@@ -335,7 +344,7 @@ namespace EZCodeLanguage
                                                                 if (cl.Properties.Any(x => x.Name == before))
                                                                 {
                                                                     Var v = cl.Properties.FirstOrDefault(x => x.Name == before);
-                                                                    after = GetValue(after).ToString();
+                                                                    after = (await GetValue(after)).ToString();
                                                                     prop = [.. prop, new Var(v.Name, after, line.Line, stackNumber: StackNumber, type: v.DataType)];
                                                                 }
                                                                 else
@@ -354,7 +363,7 @@ namespace EZCodeLanguage
                                                 else if (line.Tokens[3].Type == TokenType.Arrow)
                                                 {
                                                     line.Tokens = line.Tokens.Skip(4).ToArray();
-                                                    var value = SingleLine(line);
+                                                    var value = await SingleLine(line);
                                                     if (value == null)
                                                     {
                                                         throw new Exception("Expected method that returns value");
@@ -380,7 +389,7 @@ namespace EZCodeLanguage
                                             Methods = [.. Methods, .. cl.Methods];
                                             Vars = [.. Vars, .. cl.Properties];
                                             line.Tokens = line.Tokens.Skip(1).ToArray();
-                                            Return = SingleLine(line);
+                                            Return = await SingleLine(line);
                                             Methods = Methods.Except(cl.Methods).ToArray();
                                             Vars = Vars.Except(cl.Properties).ToArray();
                                         }
@@ -441,7 +450,7 @@ namespace EZCodeLanguage
                                                 {
                                                     for (int i = 0; i < r.Parameters.Length; i++)
                                                     {
-                                                        r.Parameters[i].Value = GetValue(r.Parameters[i], r.Parameters[i].DataType);
+                                                        r.Parameters[i].Value = await GetValue(r.Parameters[i], r.Parameters[i].DataType);
                                                     }
                                                 }
                                                 if (vals.Length > 0)
@@ -494,7 +503,7 @@ namespace EZCodeLanguage
                         {
                             CSharpMethod method = FirstToken.Value as CSharpMethod;
                             StackTrace.Push($"csharp-method: \"{(method.Path != "" ? method.Path : "Null")}\", file: \"{line.Line.FilePath}\", line: {line.Line.CodeLine}");
-                            object obj = Reflect(method!);
+                            object obj = await Reflect(method!);
                             StackTrace.TryPop(out _);
                             Return = obj;
                         }
@@ -513,7 +522,7 @@ namespace EZCodeLanguage
                                 if (line.Tokens[2].Type == TokenType.Arrow)
                                 {
                                     line.Tokens = line.Tokens.Skip(3).ToArray();
-                                    value = SingleLine(line);
+                                    value = await SingleLine(line);
                                     if (value == null)
                                     {
                                         throw new Exception("Expected method that returns value");
@@ -537,7 +546,7 @@ namespace EZCodeLanguage
                         try
                         {
                             line.Tokens = line.Tokens.Skip(1).ToArray();
-                            Return = SingleLine(line) ?? GetValue(line.Tokens);
+                            Return = await SingleLine(line) ?? await GetValue(line.Tokens);
                             returned = Return;
                         }
                         catch (Exception ex)
@@ -547,7 +556,7 @@ namespace EZCodeLanguage
                             {
                                 try
                                 {
-                                    Return = GetValue(stringReturns);
+                                    Return = await GetValue(stringReturns);
                                     returned = Return;
                                 }
                                 catch
@@ -565,7 +574,7 @@ namespace EZCodeLanguage
                         try
                         {
                             line.Tokens = line.Tokens.Skip(1).ToArray();
-                            Return = SingleLine(line);
+                            Return = await SingleLine(line);
                             if (Return is not Var)
                                 throw new Exception("Expected variable declaration after use of \"global\" keyword");
                             else (Return as Var).Global = true;
@@ -584,7 +593,7 @@ namespace EZCodeLanguage
                             for (int i = 0; i < arguments.Length; i++)
                             {
                                 Argument arg = arguments[i];
-                                bool? istrue = ArgumentIsTrue(arg);
+                                bool? istrue = await ArgumentIsTrue(arg);
                                 parts = [.. parts, istrue.ToString()];
                                 if (arg.ArgAdd != Argument.ArgAdds.None) parts = [.. parts, arg.ArgAdd.ToString()];
                             }
@@ -592,7 +601,7 @@ namespace EZCodeLanguage
                             if (run)
                             {
                                 LastIfWasTrue = true;
-                                RunStatement(statement, out _);
+                                await RunStatement(statement);
                             }
                             else
                             {
@@ -614,7 +623,7 @@ namespace EZCodeLanguage
                             for (int i = 0; i < arguments.Length; i++)
                             {
                                 Argument arg = arguments[i];
-                                bool? istrue = ArgumentIsTrue(arg);
+                                bool? istrue = await ArgumentIsTrue(arg);
                                 parts = [.. parts, istrue.ToString()];
                                 if (arg.ArgAdd != Argument.ArgAdds.None) parts = [.. parts, arg.ArgAdd.ToString()];
                             }
@@ -622,7 +631,7 @@ namespace EZCodeLanguage
                             if (run)
                             {
                                 LastIfWasTrue = true;
-                                RunStatement(statement, out _);
+                                await RunStatement(statement);
                             }
                             else
                             {
@@ -640,7 +649,7 @@ namespace EZCodeLanguage
                             if (LastIfWasTrue) break;
                             Statement? statement = FirstToken.Value as Statement;
                             LastIfWasTrue = true;
-                            RunStatement(statement, out _);
+                            await RunStatement(statement);
                         }
                         catch (Exception ex)
                         {
@@ -658,9 +667,10 @@ namespace EZCodeLanguage
                                 {
                                     for (int i = 0; i < parse; i++)
                                     {
-                                        RunStatement(statement, out bool broke);
-                                        if (broke) break;
+                                        await RunStatement(statement);
+                                        if (brokeFromOutRunStatement) break;
                                     }
+                                    brokeFromOutRunStatement = false;
                                 }
                                 else throw new Exception("Expected integer for loop count");
                             }
@@ -673,16 +683,17 @@ namespace EZCodeLanguage
                                     for (int i = 0; i < arguments.Length; i++)
                                     {
                                         Argument arg = arguments[i];
-                                        bool? istrue = ArgumentIsTrue(arg);
+                                        bool? istrue = await ArgumentIsTrue(arg);
                                         parts = [.. parts, istrue.ToString()];
                                         if (arg.ArgAdd != Argument.ArgAdds.None) parts = [.. parts, arg.ArgAdd.ToString()];
                                     }
                                     run = EZHelp.Evaluate(string.Join(" ", parts));
                                     if (run)
                                     {
-                                        RunStatement(statement, out bool broke);
-                                        if (broke) break;
+                                        await RunStatement(statement);
+                                        if (brokeFromOutRunStatement) break;
                                     }
+                                    brokeFromOutRunStatement = false;
                                 } while (run);
                             }
                         }
@@ -696,7 +707,7 @@ namespace EZCodeLanguage
                         {
                             Statement? statement = FirstToken.Value as Statement;
                             LastTryNotFailed = null;
-                            RunStatement(statement, out _);
+                            await RunStatement(statement);
                         }
                         catch (Exception ex)
                         {
@@ -712,7 +723,7 @@ namespace EZCodeLanguage
                             Vars = [.. Vars, exception];
                             Statement? statement = FirstToken.Value as Statement;
                             LastTryNotFailed = null;
-                            RunStatement(statement, out _);
+                            await RunStatement(statement);
                             Vars = Vars.Where(x => x.Name != "error").ToArray();
                         }
                         catch (Exception ex)
@@ -732,7 +743,7 @@ namespace EZCodeLanguage
                             else
                             {
                                 line.Tokens[0].Type = TokenType.Identifier;
-                                Return = SingleLine(line);
+                                Return = await SingleLine(line);
                             }
                         }
                         catch (Exception ex)
@@ -750,19 +761,20 @@ namespace EZCodeLanguage
                 throw new Exception(e.Message, e);
             }
         }
-        private object? RunStatement(Statement statement, out bool broke)
+        internal bool brokeFromOutRunStatement = false;
+        private async Task<object?> RunStatement(Statement statement)
         {
             statement = new Statement(statement.Type, statement.Line, statement.InBrackets.Select(x => new LineWithTokens(x.Tokens.Select(y => new Token(y.Type, y.Value, y.StringValue)).ToArray(), x.Line)).ToArray());
-            broke = false;
+            brokeFromOutRunStatement = false;
             object? result = null;
             foreach (LineWithTokens line in statement.InBrackets)
             {
-                result = SingleLine(new LineWithTokens(line));
+                result = await SingleLine(new LineWithTokens(line));
 
                 if (yielded)
                 {
                     yielded = false;
-                    broke = true;
+                    brokeFromOutRunStatement = true;
                     break;
                 }
 
@@ -776,7 +788,7 @@ namespace EZCodeLanguage
                     {
                         if (line.Tokens[1].Type == TokenType.Break)
                         {
-                            broke = true;
+                            brokeFromOutRunStatement = true;
                             break;
                         }
                         else throw new Exception("Expected the \"break\" keyword after yield");
@@ -788,28 +800,28 @@ namespace EZCodeLanguage
                 }
                 if (line.Tokens[0].Type == TokenType.Break)
                 {
-                    broke = true;
+                    brokeFromOutRunStatement = true;
                     break;
                 }
             }
             StackTrace.TryPop(out _);
             return result;
         }
-        private bool? ArgumentIsTrue(Argument argument)
+        private async Task<bool?> ArgumentIsTrue(Argument argument)
         {
             LineWithTokens line = new LineWithTokens(argument.Tokens, argument.Line);
             object? result = null;
             string exc = "";
             try 
             {
-                result = SingleLine(line) ?? throw new Exception(); 
+                result = await SingleLine(line) ?? throw new Exception(); 
             }
             catch (Exception e) 
             { 
                 exc = EZHelp.Error;
                 EZHelp.Error = null;
                 string[] before = line.Tokens.Select(x => x.Value.ToString()).ToArray();
-                result = GetValue(argument.Tokens, DataType.GetType("bool", Classes));
+                result = await GetValue(argument.Tokens, DataType.GetType("bool", Classes));
                 if (before.SequenceEqual(result.ToString().Split(' ')))
                 {
                     try { result = EZHelp.Expression(result.ToString()); } catch { }
@@ -849,7 +861,7 @@ namespace EZCodeLanguage
             type = null;
             return IdentType.Other;
         }
-        public object? MethodRun(Method method, Var[]? parameters)
+        public async Task<object?> MethodRun(Method method, Var[]? parameters)
         {
             StackTrace.Push($"method: {method.Name}, file: {method.Line.FilePath}, line: {method.Line.CodeLine}");
             parameters ??= [];
@@ -890,7 +902,7 @@ namespace EZCodeLanguage
             returned = null;
             foreach (LineWithTokens line in lines)
             {
-                result = SingleLine(line);
+                result = await SingleLine(line);
 
                 if (line.Tokens[0].Type == TokenType.Return || returned != null)
                     break;
@@ -922,7 +934,7 @@ namespace EZCodeLanguage
 
             return t1 != t2;
         }
-        public object GetValue(object obj, DataType? type = null, string arraySeperator = " ")
+        public async Task<object> GetValue(object obj, DataType? type = null, string arraySeperator = " ")
         {
             if (obj.GetType().IsArray)
             {
@@ -936,7 +948,7 @@ namespace EZCodeLanguage
                         {
                             return (a[i] as object[])[0];
                         }
-                        all += GetValue(a[i], type, arraySeperator) + (i < a.Length - 1 ? arraySeperator : "");
+                        all += await GetValue(a[i], type, arraySeperator) + (i < a.Length - 1 ? arraySeperator : "");
                     }
                 }
                 return all;
@@ -997,7 +1009,7 @@ namespace EZCodeLanguage
                             {
                                 try
                                 {
-                                    return GetValue(var.Value, type, arraySeperator);
+                                    return await GetValue(var.Value, type, arraySeperator);
                                 }
                                 catch { }
                                 throw new Exception("Error returning correct value");
@@ -1056,7 +1068,7 @@ namespace EZCodeLanguage
                         }
                         else if (var.Value != null)
                         {
-                            return GetValue(var.Value, var.DataType, arraySeperator) ?? obj;
+                            return await GetValue(var.Value, var.DataType, arraySeperator) ?? obj;
                         }
                         else
                         {
@@ -1065,7 +1077,7 @@ namespace EZCodeLanguage
                     }
                     else
                     {
-                        return GetValue(var.Value, var.DataType, arraySeperator) ?? obj;
+                        return await GetValue(var.Value, var.DataType, arraySeperator) ?? obj;
                     }
                 }
                 else if (obj.ToString().Contains(':'))
@@ -1087,7 +1099,7 @@ namespace EZCodeLanguage
                                 Parser parser = new Parser(property_name, m.Line.FilePath);
                                 Token[] parsertokens = parser.Parse()[0].Tokens;
                                 LineWithTokens lineWithTokens = new LineWithTokens(parsertokens, CurrentLine);
-                                obj = SingleLine(lineWithTokens);
+                                obj = await SingleLine(lineWithTokens);
                                 Methods = Methods.Except(c.Methods).ToArray();
                                 Vars = Vars.Except(c.Properties).ToArray();
                                 return obj;
@@ -1125,7 +1137,7 @@ namespace EZCodeLanguage
                             if (m.Parameters.Select(x => x.Required).ToArray().Length != 0) 
                                 throw new Exception($"Method \"{property_name}\" can not have any required parameters if being called like a property");
                             
-                            return MethodRun(m, []);
+                            return await MethodRun(m, []);
                         }
                         else
                         {
@@ -1170,21 +1182,21 @@ namespace EZCodeLanguage
                         {
                             DoClass(c, 0);
                         }
-                        void DoMethod(Method m, int skip = 1)
+                        async void DoMethod(Method m, int skip = 1)
                         {
                             Parser parser = new Parser(input, m.Line.FilePath);
                             Token[] parsertokens = parser.Parse()[0].Tokens;
                             LineWithTokens lineWithTokens = new LineWithTokens(parsertokens.Skip(skip).ToArray(), CurrentLine);
-                            obj = SingleLine(lineWithTokens);
+                            obj = await SingleLine(lineWithTokens);
                         }
-                        void DoClass(Class c, int skip = 1)
+                        async void DoClass(Class c, int skip = 1)
                         {
                             Methods = [.. Methods, .. c.Methods];
                             Vars = [.. Vars, .. c.Properties];
                             Parser parser = new Parser(input, c.Line.FilePath);
                             Token[] parsertokens = parser.Parse()[0].Tokens;
                             LineWithTokens lineWithTokens = new LineWithTokens(parsertokens.Skip(skip).ToArray(), CurrentLine);
-                            obj = SingleLine(lineWithTokens);
+                            obj = await SingleLine(lineWithTokens);
                             Methods = Methods.Except(c.Methods).ToArray();
                             Vars = Vars.Except(c.Properties).ToArray();
                         }
@@ -1207,14 +1219,14 @@ namespace EZCodeLanguage
                         string[] parts = run.Parameters[i].Value.ToString().Split(" ");
                         for (int j = 0; j < parts.Length; j++)
                         {
-                            parts[j] = GetValue(parts[j], DataType.GetType("str", Classes), arraySeperator).ToString();
+                            parts[j] = (await GetValue(parts[j], DataType.GetType("str", Classes), arraySeperator)).ToString();
                         }
                         run.Parameters[i].Value = string.Join(" ", parts);
                     }
                     Vars = Vars.Except(backupVars).ToArray();
                     Methods = Methods.Except(backupMethods).ToArray();
-                    object o = MethodRun(run.Runs, run.Parameters);
-                    try { o = GetValue(cl, type, arraySeperator); } catch { }
+                    object o = await MethodRun(run.Runs, run.Parameters);
+                    try { o = await GetValue(cl, type, arraySeperator); } catch { }
 
                     Methods = backupMethods;
                     Vars = backupVars;
@@ -1230,9 +1242,13 @@ namespace EZCodeLanguage
             {
                 return GetValue(t.Value, type, arraySeperator);
             }
+            else if (obj is LineWithTokens lwt)
+            {
+                return GetValue(lwt.Tokens, type, arraySeperator);
+            }
             return obj;
         }
-        public object Reflect(CSharpMethod method)
+        public async Task<object> Reflect(CSharpMethod method)
         {
             if (method.IsVar)
             {
@@ -1244,9 +1260,9 @@ namespace EZCodeLanguage
                 method = o[0] as CSharpMethod;
             }
 
-            return InvokeMethod(method.Path, method.Params != null ? method.Params.Select(x => x).ToArray() : [], EZHelp);
+            return await InvokeMethod(method.Path, method.Params != null ? method.Params.Select(x => x).ToArray() : [], EZHelp);
         }
-        public static object? InvokeMethod(string methodPath, object[] parameters, EZHelp e)
+        public static async Task<object?> InvokeMethod(string methodPath, object[] parameters, EZHelp e)
         {
             // Split the method path into type and method name
             string[] pathParts = methodPath.Split('.');
@@ -1295,6 +1311,9 @@ namespace EZCodeLanguage
                 try
                 {
                     object result = methodInfo.Invoke(instance, parameters);
+                    
+                    if (result is Task) result = (result as Task).ToString();
+                    
                     return result;
                 }
                 catch

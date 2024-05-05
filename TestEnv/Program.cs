@@ -27,11 +27,11 @@ Console.WriteLine(save);
 Stopwatch stopwatch = Stopwatch.StartNew();
 Parser parser = new Parser(code, file);
 parser.Parse();
-Parser.LineWithTokens[] tokens = parser.Parse();
+Parser.LineWithTokens[] lines = parser.Parse();
 List<Parser.Token[]> tokenTypes = [];
-for (int i = 0; i < tokens.Length; i++)
+for (int i = 0; i < lines.Length; i++)
 {
-    tokenTypes.Add(tokens[i].Tokens);
+    tokenTypes.Add(lines[i].Tokens);
 }
 string tokenString = "";
 for (int i = 0; i < tokenTypes.Count; i++)
@@ -45,6 +45,10 @@ for (int i = 0; i < tokenTypes.Count; i++)
     }
     tokenString += "\n";    
 }
+
+EZCodeLanguage.Debug.Breakpoint[] breakpoints = [
+    //new EZCodeLanguage.Debug.Breakpoint(lines[2].Line)
+    ];
 
 string ch = "⁚";
 bool overHundred = code.Split("\n").Length > 100;
@@ -61,7 +65,7 @@ Console.WriteLine(code + "\n" + len
 
 stopwatch.Restart();
 
-Interpreter interpreter = new Interpreter(parser);
+Interpreter interpreter = new Interpreter(parser, breakpoints);
 interpreter.Interperate();
 
 
