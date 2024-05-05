@@ -13,39 +13,9 @@ namespace EZCodeLanguage
             Interpreter = interpreter;
         }
         public EZHelp() { }
-        public async Task Await(object val)
+        public void Print(string text)
         {
-            try
-            {
-                string wait = StringParse(val);
-                if (bool.TryParse(wait, out bool res))
-                {
-                    while (res)
-                    {
-                        res = bool.Parse(ObjectParse(val, "bool").ToString());
-                    }
-                }
-                else if (int.TryParse(wait, out int num))
-                {
-                    await WaitForMiliseconds(num);
-                }
-            }
-            catch (Exception e)
-            {
-                Error = e.ToString();
-                throw;
-            }
-        }
-        internal static async Task WaitForMiliseconds(int mililseconds)
-        {
-            for (int i = 0; i < mililseconds; i++)
-            {
-                await Task.Delay(1);
-            }
-        }
-        public async void Print(string text)
-        {
-            text = await Format(text.ToString());
+            text = Format(text.ToString());
             Interpreter.Output = [.. Interpreter.Output, text.ToString()];
             Console.WriteLine(text);
         }
@@ -59,13 +29,13 @@ namespace EZCodeLanguage
             string input = Interpreter.ConsoleInput();
             return input;
         }
-        public async Task<string> Format(object _text) => await Format(_text, "'");
-        public async Task<string> Format(object _text, object _char)
+        public string Format(object _text) => Format(_text, "'");
+        public string Format(object _text, object _char)
         {
             try
             {
                 char c = char.Parse(_char.ToString());
-                string text = (await ObjectParse(_text.ToString(), "str", true)).ToString();
+                string text = ObjectParse(_text.ToString(), "str", true).ToString();
                 string format = "";
                 char[] chars = text.ToCharArray();
                 bool open = true, backslash = false;
@@ -144,14 +114,14 @@ namespace EZCodeLanguage
                     }
                     if (Interpreter.Vars.Any(x => x.Name == instance_name))
                     {
-                        format = format.Remove(range.Start, range.Count).Insert(range.Start, (await Interpreter.GetValue(name, DataType.GetType("str", Interpreter.Classes))).ToString());
+                        format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(name, DataType.GetType("str", Interpreter.Classes)).ToString());
                     }
                     else
                     {
                         Interpreter.parser.WatchIsFound([name], 0, out ExplicitWatch watch, out _);
 
-                        object val = await Interpreter.GetValue(watch != null ? watch.Runs : name, DataType.GetType("str", Interpreter.Classes));
-                        format = format.Remove(range.Start, range.Count).Insert(range.Start, (await Interpreter.GetValue(val, new DataType(DataType.Types._string, null))).ToString());
+                        object val = Interpreter.GetValue(watch != null ? watch.Runs : name, DataType.GetType("str", Interpreter.Classes));
+                        format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(val, new DataType(DataType.Types._string, null)).ToString());
                     }
                 }
 
@@ -172,8 +142,8 @@ namespace EZCodeLanguage
         {
             return string.Empty;
         }
-        public async Task<object> ObjectParse(object obj, object type) => await ObjectParse(obj, type, false);
-        public async Task<object> ObjectParse(object obj, object type, bool to_string, string arraySeperator = " ", bool returnNull = false)
+        public object ObjectParse(object obj, object type) => ObjectParse(obj, type, false);
+        public object ObjectParse(object obj, object type, bool to_string, string arraySeperator = " ", bool returnNull = false)
         {
             try
             {
@@ -190,7 +160,7 @@ namespace EZCodeLanguage
                         o = obj;
                         DataType data = DataType.GetType(type.ToString(), Interpreter.Classes);
                         if (Interpreter.Vars.Any(x => x.Name == n)) Interpreter.Vars.FirstOrDefault(x => x.Name == n).DataType = data;
-                        obj = await Interpreter.GetValue(n, data, arraySeperator);
+                        obj = Interpreter.GetValue(n, data, arraySeperator);
                     } while (obj != o);
                 }
                 catch when(returnNull) { return null; }
@@ -492,7 +462,7 @@ namespace EZCodeLanguage
             }
         }
         public int StringLength(object str) => StringParse(str).Length;
-        public void RunEZCode(string code)
+        public int RunEZCode(string code)
         {
             try
             {
@@ -500,7 +470,7 @@ namespace EZCodeLanguage
                 Parser parser = new Parser(string.Join(" ", code), "(instance running from inside file)");
                 parser.Parse();
                 Interpreter interpreter = new Interpreter(parser);
-                interpreter.Interperate();
+                return interpreter.Interperate();
             }
             catch (Exception e)
             {
