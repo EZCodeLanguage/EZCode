@@ -5,6 +5,45 @@ namespace EZCodeLanguage
     public static class Package
     {
         public static string PackagesDirectory = "D:\\EZCodeLanguage\\Packages\\";
+        public static void AddPackageToExecutionDirectory(Project project, string executionDirectory)
+        {
+            string projectPath = GetPackageDirectory(project.Name);
+            string libraryDirectory = Path.Combine(projectPath, project.LibraryDirectory ?? throw new Exception("Project.LibraryDirectory is null"));
+            string executionSubDirectoryName = project.LibraryDirectory.Split(['/', '\\']).First();
+            string executionSubDirectory = Path.Combine(executionDirectory, executionSubDirectoryName);
+
+            Directory.CreateDirectory(executionSubDirectory);
+
+            string[] libraryFiles = Directory.GetFiles(libraryDirectory, "*");
+            foreach (string libraryFile in libraryFiles)
+            {
+                string libraryFileName = Path.GetFileName(libraryFile);
+                string executionSubDirectoryFile = Path.Combine(executionSubDirectory, libraryFileName);
+                File.Copy(libraryFile, executionSubDirectoryFile);
+            }
+        }
+        public static void RemovePackageFromExecutionDirectory(Project project, string executionDirectory)
+        {
+            string libraryDirectory = project.LibraryDirectory ?? throw new Exception("Project.LibraryDirectory is null");
+            string executionSubDirectory = Path.Combine(executionDirectory, libraryDirectory);
+
+            Directory.Delete(executionSubDirectory, true);
+        }
+        public static void RemoveAllPackagesFromExecutionDirectory(string executionDirectory)
+        {
+            string[] directories = Directory.GetDirectories(executionDirectory);
+            foreach (string directory in directories)
+            {
+                try
+                {
+                    Directory.Delete(directory, true);
+                }
+                catch
+                {
+
+                }
+            }
+        }
         public static string GetPackageDirectory(string package_name)
         {
             return Path.Combine(PackagesDirectory, package_name);
@@ -22,7 +61,7 @@ namespace EZCodeLanguage
             string file = GetPackageFile(package_name);
             string pack_dir = GetPackageDirectory(package_name);
             Project project = JsonConvert.DeserializeObject<Project>(File.ReadAllText(file));
-            string[] global_packages = project.Configuration.GlobalPackages ?? [];
+            string[] global_packages = project.Configuration != null ? project.Configuration.GlobalPackages ?? [] : [];
             Parser[] parsers = [];
             foreach (var pack in global_packages)
             {

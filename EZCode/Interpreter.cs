@@ -6,6 +6,7 @@ namespace EZCodeLanguage
 {
     public class Interpreter
     {
+        public static Interpreter Instance { get; private set; }
         public static string Version = "3.0.0-beta";
         public event EventHandler OutputWrote;
         public event EventHandler OutputCleared;
@@ -54,6 +55,7 @@ namespace EZCodeLanguage
         public EZHelp EZHelp { get; private set; }
         public Interpreter(Parser parser, Debug.Breakpoint[]? breakpoints = null)
         {
+            Instance = this;
             StackTrace = new Stack<string>();
             this.parser = parser;
             EZHelp = new EZHelp(this);
@@ -115,6 +117,7 @@ namespace EZCodeLanguage
             int endcode = 0;
             var temp_stack = new Stack<string>(StackTrace);
 
+            Package.RemoveAllPackagesFromExecutionDirectory(AppDomain.CurrentDomain.BaseDirectory);
 
             if (Methods.Any(x => x.Name.ToLower() == "start") && !StartMethodEntry)
             {
@@ -153,6 +156,8 @@ namespace EZCodeLanguage
                     }
                 }
             }
+
+            Package.RemoveAllPackagesFromExecutionDirectory(AppDomain.CurrentDomain.BaseDirectory);
         }
         internal object? SingleLine(LineWithTokens line)
         {
@@ -180,6 +185,22 @@ namespace EZCodeLanguage
                         {
                             string combined_packages = string.Join(" ", line.Tokens.Skip(1).Select(x => x.StringValue));
                             string[] packages = combined_packages.Split(",").Select(x=>x.Trim()).ToArray();
+                            Project[] projects = new Project[packages.Length];
+
+                            for (int i = 0; i < packages.Length; i++)
+                                projects[i] = Package.GetPackageAsProject(packages[i]);
+
+                            if (projects.Any(x => !string.IsNullOrEmpty(x.LibraryDirectory)))
+                            {
+                                string destination = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Libraries");
+                                foreach (var project in projects)
+                                {
+                                    if (FirstToken.StringValue == "include")
+                                        Package.AddPackageToExecutionDirectory(project, destination);
+                                    else 
+                                        Package.RemovePackageFromExecutionDirectory(project, destination);
+                                }
+                            }
 
                             if (FirstToken.StringValue == "include")
                             {
@@ -902,7 +923,7 @@ namespace EZCodeLanguage
             {
                 result = SingleLine(line);
 
-                if (line.Tokens[0].Type == TokenType.Return || returned != null)
+                if (line.Tokens.Length > 0 && line.Tokens[0].Type == TokenType.Return || returned != null)
                     break;
             }
             result ??= returned;
@@ -932,6 +953,7 @@ namespace EZCodeLanguage
 
             return t1 != t2;
         }
+        internal int getValueLoopIndex = 0;
         public object GetValue(object obj, DataType? type = null, string arraySeperator = " ")
         {
             if (obj.GetType().IsArray)
@@ -1005,11 +1027,20 @@ namespace EZCodeLanguage
                             }
                             catch
                             {
-                                try
+                                if (getValueLoopIndex < 50)
                                 {
-                                    return GetValue(var.Value, type, arraySeperator);
+                                    try
+                                    {
+                                        getValueLoopIndex++;
+                                        return GetValue(var.Value, type, arraySeperator);
+                                    }
+                                    catch { }
                                 }
-                                catch { }
+                                else
+                                {
+                                    getValueLoopIndex = 0;
+                                    return obj;
+                                }
                                 throw new Exception("Error returning correct value");
                             }
                         }
@@ -1038,26 +1069,20 @@ namespace EZCodeLanguage
                                         return result;
                                     else throw new Exception($"The Class of the instance does not contain a \"get\" method for the expected datatype \"{type.Type.ToString().Remove(0, 1)}\"");
                                 }
-                                else
+                            }
+                            if (var.DataType.Type == DataType.Types._object && type.Type == DataType.Types._null)
+                            {
+                                obj = var.Value;
+                                if (obj is Class _c)
                                 {
-                                    if (var.DataType.Type == DataType.Types._object && type.Type == DataType.Types._null)
-                                    {
-                                        obj = var.Value;
-                                        if (obj is Class _c)
-                                        {
-                                            obj = _c.Properties.FirstOrDefault(x => x.Name.Equals("value", StringComparison.CurrentCultureIgnoreCase)).Value ?? var.Value;
-                                        }
-                                        return obj;
-                                    }
-                                    else if (var.DataType == type || var.DataType.Type == type.Type)
-                                    {
-                                        return var.Value;
-                                    }
-                                    else
-                                    {
-                                        throw new Exception($"The Class of the instance does not contain a \"get\" method for the expected datatype \"{type.Type.ToString().Remove(0, 1)}\"");
-                                    }
+                                    Var? v = _c.Properties.FirstOrDefault(x => x.Name.Equals("value", StringComparison.CurrentCultureIgnoreCase));
+                                    obj = v != null ? v.Value : var.Value;
                                 }
+                                return obj;
+                            }
+                            else if (var.DataType == type || var.DataType.Type == type.Type)
+                            {
+                                return var.Value;
                             }
                             else
                             {
@@ -1224,6 +1249,13 @@ namespace EZCodeLanguage
                     Vars = Vars.Except(backupVars).ToArray();
                     Methods = Methods.Except(backupMethods).ToArray();
                     object o = MethodRun(run.Runs, run.Parameters);
+                    cl.Properties = cl.Properties.Select(x => 
+                    { 
+                        if (x.Value == null && Vars.FirstOrDefault(y => y.Name == x.Name) is Var v) 
+                            return new Var(x.Name, v.Value, x.Line, x.StackNumber, x.DataType, x.Required, x.Global, x.IsParams); 
+                        else return x; 
+                    }).ToArray();
+
                     try { o = GetValue(cl, type, arraySeperator); } catch { }
 
                     Methods = backupMethods;
@@ -1269,52 +1301,100 @@ namespace EZCodeLanguage
                 throw new ArgumentException("Invalid method path");
             }
 
-            // Get the type from the full type name
-            string typeName = string.Join(".", pathParts.Take(pathParts.Length - 1));
-            // Include the assembly information for types in the System namespace
-            if (typeName.StartsWith("System."))
+            if (pathParts.Length >= 2 && pathParts[1].Equals("dll"))
             {
-                typeName += ", mscorlib";
-            }
-            Type type = Type.GetType(typeName);
-            if (type == null)
-            {
-                throw new ArgumentException($"Type \"{typeName}\" not found");
-            }
+                // If the method path contains an assembly name, load the assembly
+                string assemblyPath = pathParts[0] + "." + pathParts[1];
+                string subdirectory = pathParts[0]; // Name of the subdirectory is first part of namespace
+                string fullAssemblyPath = Path.Combine(subdirectory, assemblyPath); // Combine subdirectory path with assembly name
+                Assembly assembly = Assembly.LoadFrom(fullAssemblyPath);
 
-            // Get the method name from the path
-            string methodName = pathParts.Last();
+                // Get the type name
+                string typeName = string.Join(".", pathParts.Skip(2).Take(pathParts.Length - 3));
 
-            // Find the method in the type
-            MethodInfo methodInfo = type.GetMethod(methodName, parameters.Select(p => p.GetType()).ToArray());
-            if (methodInfo == null)
-            {
-                throw new ArgumentException($"Method \"{methodName}\" not found in type \"{typeName}\"");
-            }
+                // Get the method name
+                string methodName = pathParts.Last();
 
-            // If the method is static, no need to create an instance
-            if (methodInfo.IsStatic)
-            {
-                // Invoke the method with the specified parameters
-                object result = methodInfo.Invoke(null, parameters);
-                return result;
-            }
-            else
-            {
-                // Create an instance of the type
-                object instance = Activator.CreateInstance(type);
-                if (typeName == "EZCodeLanguage.EZHelp") instance = e;
-
-                // Invoke the non-static method with the specified parameters
-                try
+                // Get the type from the assembly
+                Type type = assembly.GetType(typeName);
+                if (type == null)
                 {
+                    throw new ArgumentException($"Type \"{typeName}\" not found in assembly \"{fullAssemblyPath}\"");
+                }
+
+                // Get the method from the type
+                MethodInfo methodInfo = type.GetMethod(methodName);
+                if (methodInfo == null)
+                {
+                    throw new ArgumentException($"Method \"{methodName}\" not found in type \"{typeName}\"");
+                }
+
+                // If the method is static, no need to create an instance
+                if (methodInfo.IsStatic)
+                {
+                    // Invoke the method with the specified parameters
+                    object result = methodInfo.Invoke(null, parameters);
+                    return result;
+                }
+                else
+                {
+                    // Create an instance of the type
+                    object instance = Activator.CreateInstance(type);
+
+                    // Invoke the non-static method with the specified parameters
                     object result = methodInfo.Invoke(instance, parameters);
                     return result;
                 }
-                catch
+            }
+            else
+            {
+                // Get the type from the full type name
+                string typeName = string.Join(".", pathParts.Take(pathParts.Length - 1));
+                // Include the assembly information for types in the System namespace
+                if (typeName.StartsWith("System."))
                 {
-                    string? message = e.Error;
-                    throw new Exception(message ?? $"Error occured in \"{methodPath}\"");
+                    typeName += ", mscorlib";
+                }
+                Type type = Type.GetType(typeName);
+                if (type == null)
+                {
+                    throw new ArgumentException($"Type \"{typeName}\" not found");
+                }
+
+                // Get the method name from the path
+                string methodName = pathParts.Last();
+
+                // Find the method in the type
+                MethodInfo methodInfo = type.GetMethod(methodName, parameters.Select(p => p.GetType()).ToArray());
+                if (methodInfo == null)
+                {
+                    throw new ArgumentException($"Method \"{methodName}\" not found in type \"{typeName}\"");
+                }
+
+                // If the method is static, no need to create an instance
+                if (methodInfo.IsStatic)
+                {
+                    // Invoke the method with the specified parameters
+                    object result = methodInfo.Invoke(null, parameters);
+                    return result;
+                }
+                else
+                {
+                    // Create an instance of the type
+                    object instance = Activator.CreateInstance(type);
+                    if (typeName == "EZCodeLanguage.EZHelp") instance = e;
+
+                    // Invoke the non-static method with the specified parameters
+                    try
+                    {
+                        object result = methodInfo.Invoke(instance, parameters);
+                        return result;
+                    }
+                    catch
+                    {
+                        string? message = EZHelp.Error;
+                        throw new Exception(message ?? $"Error occured in \"{methodPath}\"");
+                    }
                 }
             }
         }

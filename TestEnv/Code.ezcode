@@ -1,18 +1,8 @@
-include main
+include winforms
 
-print 1
-await 2500
-print 2
+window main new : title:Hello World
 
-/*list numbers new : 1;2;3;4
-int length new => numbers length
-print 'length'
-int i new : 0
-loop (length > i) {
-    print 'length' > 'i' = '(length > i)'
-    print 'numbers index : i'
-    i + 1
-}
+defaultsettings
+runapp : main
 
-print 'operate max, 60, 88'
-print 'avg 50, 80, 90'*/
+main open

@@ -13,7 +13,7 @@
 	<PackageReadmeFile>README.md</PackageReadmeFile>
 	<RepositoryUrl>https://github.com/JBrosDevelopment/EZCode.git</RepositoryUrl>
 	<RepositoryType>git</RepositoryType>
-	<PackageTags>EZCode;Code;Programming;Language;Windows;Forms;WinForms;WinForm</PackageTags>
+	<PackageTags>EZCode;Code;Programming;Language;ProgrammingLanguage;Windows;C#;CSharp</PackageTags>
 	<PackageReleaseNotes></PackageReleaseNotes>
 	<PackageLicenseFile>LICENSE</PackageLicenseFile>
 	<Company>JBros Development</Company>
@@ -58,5 +58,5 @@
       <PackagePath>\</PackagePath>
     </None>
   </ItemGroup>
-
+	
 </Project>

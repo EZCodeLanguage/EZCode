@@ -7,7 +7,7 @@ namespace EZCodeLanguage
     public class EZHelp
     {
         public Interpreter Interpreter { get; set; }
-        public string? Error = null;
+        public static string? Error = null;
         public EZHelp(Interpreter interpreter)
         {
             Interpreter = interpreter;
@@ -178,6 +178,12 @@ namespace EZCodeLanguage
                 Error = e.Message;
                 throw;
             }
+        }
+        public static object GetParameter(object obj, string type)
+        {
+            EZHelp e = new EZHelp(Instance);
+
+            return e.ObjectParse(obj, type);
         }
         public bool Evaluate(string expression)
         {
@@ -462,7 +468,7 @@ namespace EZCodeLanguage
             }
         }
         public int StringLength(object str) => StringParse(str).Length;
-        public int RunEZCode(string code)
+        public void RunEZCode(string code)
         {
             try
             {
@@ -470,7 +476,7 @@ namespace EZCodeLanguage
                 Parser parser = new Parser(string.Join(" ", code), "(instance running from inside file)");
                 parser.Parse();
                 Interpreter interpreter = new Interpreter(parser);
-                return interpreter.Interperate();
+                interpreter.Interperate();
             }
             catch (Exception e)
             {
@@ -622,6 +628,13 @@ namespace EZCodeLanguage
                 Error = ex.Message;
                 throw;
             }
+        }
+        public float Average(object obj)
+        {
+            object[] array = ArrayParse(obj, ",") as object[];
+            float[] numbers = array.Select((x, y) => float.Parse(ObjectParse(array[y], "float").ToString())).ToArray();
+            float all = numbers.Sum();
+            return all / numbers.Length;
         }
     }
 }
