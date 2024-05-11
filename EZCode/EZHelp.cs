@@ -185,6 +185,11 @@ namespace EZCodeLanguage
 
             return e.ObjectParse(obj, type);
         }
+        public static Exception SetError(Exception exception)
+        {
+            Error = exception.Message;
+            throw exception;
+        }
         public bool Evaluate(string expression)
         {
             try
@@ -617,7 +622,6 @@ namespace EZCodeLanguage
                     }
                 }
                 string operation = string.Join("", op.ToString().ToLower().ToCharArray().Select((x, y) => { if (y == 0) return char.Parse(x.ToString().ToUpper()); else return x; }));
-
                 object[] parameters = [val1];
                 if (!obj2_is_null) parameters = [..parameters, val2];
 
@@ -636,5 +640,30 @@ namespace EZCodeLanguage
             float all = numbers.Sum();
             return all / numbers.Length;
         }
+        public float Pi() => MathF.PI;
+        public float E() => MathF.E;
+        public float Clamp(object _val, object _min, object _max)
+        {
+            float val = FloatParse(_val);
+            float min = FloatParse(_min);
+            float max = FloatParse(_max);
+
+            if (val < min) return min;
+            else if (val > max) return max;
+            else return val;
+        }
+        public float Power(object _val, object _pow)
+        {
+            float val = FloatParse(_val);
+            float pow = FloatParse(_pow);
+            return MathF.Pow(val, pow);
+        }
+        public string Trim(object text) => StringParse(text).Trim();
+        public string ToLower(object text) => StringParse(text).ToLower();
+        public string ToUpper(object text) => StringParse(text).ToUpper();
+        public string Replace(object text, object older, object newwer) => StringParse(text).Replace(StringParse(older), StringParse(newwer));
+        public string Substring(object text, object index, object length) => StringParse(text).Substring(IntParse(index), IntParse(length));
+        public bool StartsWith(object text, object val) => StringParse(text).StartsWith(StringParse(val));
+        public bool EndsWith(object text, object val) => StringParse(text).EndsWith(StringParse(val));
     }
 }

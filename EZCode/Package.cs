@@ -5,11 +5,13 @@ namespace EZCodeLanguage
     public static class Package
     {
         public static string PackagesDirectory = "D:\\EZCodeLanguage\\Packages\\";
-        public static void AddPackageToExecutionDirectory(Project project, string executionDirectory)
+        public static string LibraryDirName = "Libraries";
+        public static void AddPackageToExecutionDirectory(Project project, string executionDirectory, out string[] files)
         {
+            files = [];
             string projectPath = GetPackageDirectory(project.Name);
             string libraryDirectory = Path.Combine(projectPath, project.LibraryDirectory ?? throw new Exception("Project.LibraryDirectory is null"));
-            string executionSubDirectoryName = project.LibraryDirectory.Split(['/', '\\']).First();
+            string executionSubDirectoryName = LibraryDirName;
             string executionSubDirectory = Path.Combine(executionDirectory, executionSubDirectoryName);
 
             Directory.CreateDirectory(executionSubDirectory);
@@ -20,28 +22,37 @@ namespace EZCodeLanguage
                 string libraryFileName = Path.GetFileName(libraryFile);
                 string executionSubDirectoryFile = Path.Combine(executionSubDirectory, libraryFileName);
                 File.Copy(libraryFile, executionSubDirectoryFile);
+                files = [.. files, executionSubDirectoryFile];
             }
         }
-        public static void RemovePackageFromExecutionDirectory(Project project, string executionDirectory)
+        public static void RemovePackageFromExecutionDirectory(string[] projectFileNames)
         {
-            string libraryDirectory = project.LibraryDirectory ?? throw new Exception("Project.LibraryDirectory is null");
-            string executionSubDirectory = Path.Combine(executionDirectory, libraryDirectory);
-
-            Directory.Delete(executionSubDirectory, true);
+            foreach(string file in projectFileNames)
+            {
+                File.Delete(file);
+            }
         }
         public static void RemoveAllPackagesFromExecutionDirectory(string executionDirectory)
         {
-            string[] directories = Directory.GetDirectories(executionDirectory);
-            foreach (string directory in directories)
+            try
             {
-                try
+                string executionSubDirectory = Path.Combine(executionDirectory, LibraryDirName);
+                string[] files = Directory.GetFiles(executionSubDirectory);
+                foreach (string file in files)
                 {
-                    Directory.Delete(directory, true);
-                }
-                catch
-                {
+                    try
+                    {
+                        File.Delete(file);
+                    }
+                    catch
+                    {
 
+                    }
                 }
+            }
+            catch
+            {
+
             }
         }
         public static string GetPackageDirectory(string package_name)

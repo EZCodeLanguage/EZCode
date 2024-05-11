@@ -1,8 +1,3 @@
-include winforms
+include main
 
-window main new : title:Hello World
-
-defaultsettings
-runapp : main
-
-main open
+print 'str startswith : Hello World, He'

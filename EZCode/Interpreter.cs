@@ -30,10 +30,10 @@ namespace EZCodeLanguage
         private string? Input = null;
         public enum EZInputType { Console, InputMethod }
         public EZInputType InputType { get; set; } = EZInputType.Console;
-        public void SetInput(string input, EZInputType inputType = EZInputType.InputMethod) 
+        public void SetInput(string input, EZInputType inputType = EZInputType.InputMethod)
         {
             InputType = inputType;
-            Input = input; 
+            Input = input;
         }
         public string ConsoleInput()
         {
@@ -104,6 +104,8 @@ namespace EZCodeLanguage
         private DataType? Returning = null;
         private int StackNumber = 0;
         public Stack<string> StackTrace { get; private set; }
+        internal record Library(string name, string[] files);
+        internal List<Library> DllLibraries { get; set; } = [];
         public Exception[] Errors { get; private set; } = [];
         public Var[] Vars { get; set; } = [];
         public Method[] Methods { get; set; } = [];
@@ -114,7 +116,6 @@ namespace EZCodeLanguage
         public void Interperate() => Interperate(parser.LinesWithTokens);
         public void Interperate(LineWithTokens[] LineTokens)
         {
-            int endcode = 0;
             var temp_stack = new Stack<string>(StackTrace);
 
             Package.RemoveAllPackagesFromExecutionDirectory(AppDomain.CurrentDomain.BaseDirectory);
@@ -192,13 +193,19 @@ namespace EZCodeLanguage
 
                             if (projects.Any(x => !string.IsNullOrEmpty(x.LibraryDirectory)))
                             {
-                                string destination = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "Libraries");
+                                string destination = AppDomain.CurrentDomain.BaseDirectory;
                                 foreach (var project in projects)
                                 {
                                     if (FirstToken.StringValue == "include")
-                                        Package.AddPackageToExecutionDirectory(project, destination);
-                                    else 
-                                        Package.RemovePackageFromExecutionDirectory(project, destination);
+                                    {
+                                        Package.AddPackageToExecutionDirectory(project, destination, out var files);
+                                        DllLibraries.Add(new Library(project.Name, files));
+                                    }
+                                    else
+                                    {
+                                        var library = DllLibraries.FirstOrDefault(x => x.name == project.Name);
+                                        Package.RemovePackageFromExecutionDirectory(library.files);
+                                    }
                                 }
                             }
 
@@ -1294,7 +1301,7 @@ namespace EZCodeLanguage
         }
         public static object? InvokeMethod(string methodPath, object[] parameters, EZHelp e)
         {
-            // Split the method path into type and method name
+            // Split the method files into type and method name
             string[] pathParts = methodPath.Split('.');
             if (pathParts.Length < 2)
             {
@@ -1303,10 +1310,10 @@ namespace EZCodeLanguage
 
             if (pathParts.Length >= 2 && pathParts[1].Equals("dll"))
             {
-                // If the method path contains an assembly name, load the assembly
+                // If the method files contains an assembly name, load the assembly
                 string assemblyPath = pathParts[0] + "." + pathParts[1];
-                string subdirectory = pathParts[0]; // Name of the subdirectory is first part of namespace
-                string fullAssemblyPath = Path.Combine(subdirectory, assemblyPath); // Combine subdirectory path with assembly name
+                string subdirectory = Package.LibraryDirName; // Name of the subdirectory is first part of namespace
+                string fullAssemblyPath = Path.Combine(subdirectory, assemblyPath); // Combine subdirectory files with assembly name
                 Assembly assembly = Assembly.LoadFrom(fullAssemblyPath);
 
                 // Get the type name
@@ -1361,7 +1368,7 @@ namespace EZCodeLanguage
                     throw new ArgumentException($"Type \"{typeName}\" not found");
                 }
 
-                // Get the method name from the path
+                // Get the method name from the files
                 string methodName = pathParts.Last();
 
                 // Find the method in the type

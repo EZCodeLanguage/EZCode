@@ -1,7 +1,7 @@
 ﻿using EZCodeLanguage;
 using System.Diagnostics;
 
-// set up path variables 
+// set up files variables 
 string path = "Code.ezcode";
 string full_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
 string code = File.ReadAllText(path);

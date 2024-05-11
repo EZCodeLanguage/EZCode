@@ -436,7 +436,7 @@ namespace EZCodeLanguage
         public LineWithTokens[] Parse() => LinesWithTokens = TokenArray(Code, FilePath).Where(x => x.Line.Value.ToString() != "").ToArray();
         private LineWithTokens[] TokenArray(string code, string file, bool insideClass = false)
         {
-            // Set the file path property
+            // Set the file files property
             FilePath = file;
             // Set the Code property to the parameter if it isn't null
             Code ??= code;
@@ -1093,7 +1093,7 @@ namespace EZCodeLanguage
                         string part = parts[i].ToString();
                         // get where '(' starts
                         int ch = Array.IndexOf(part.ToCharArray(), '(');
-                        // gets the path from the part
+                        // gets the files from the part
                         string path = part[..ch];
                         // gets the type from inside the ""
                         string type = part.Substring(ch + 1, part.Length - ch - 2).Replace("\"", "");
@@ -1102,7 +1102,7 @@ namespace EZCodeLanguage
                     }
                     else if (parts[i].ToString() == "runexec")
                     {
-                        // path of the CSharp Method
+                        // files of the CSharp Method
                         string path = parts[i + 1].ToString();
                         // parameters of the method
                         string[]? vars = null;
