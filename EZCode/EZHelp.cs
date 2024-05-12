@@ -665,5 +665,12 @@ namespace EZCodeLanguage
         public string Substring(object text, object index, object length) => StringParse(text).Substring(IntParse(index), IntParse(length));
         public bool StartsWith(object text, object val) => StringParse(text).StartsWith(StringParse(val));
         public bool EndsWith(object text, object val) => StringParse(text).EndsWith(StringParse(val));
+        public bool RegexMatch(object _text, object _match)
+        {
+            string input = StringParse(_text);
+            string oattern = StringParse(_match);
+            var match = System.Text.RegularExpressions.Regex.Match(input, oattern);
+            return match.Success;
+        }
     }
 }
