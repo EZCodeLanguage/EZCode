@@ -5,7 +5,7 @@ static class EZ
     public static int error_code = 0;
     public static void Main(string[] args)
     {
-
+        args = ["new", "package"];
         if (args.Length == 0)
         {
             args = ["help"];
@@ -18,11 +18,14 @@ static class EZ
                     Console.WriteLine("""
                     All commands:
                     
-                    help          Writes all of the possible commands
-                    version       Writes the current version of EZCode installed
-                    run [CODE]    Runs a line of code. 'main' Package is already imported
-                    start         Starts an EZCode environment
-                    [FILEPATH]    Runs file
+                    help              Writes all of the possible commands
+                    version           Writes the current version of EZCode installed
+                    run [CODE]        Runs a line of code. 'main' Package is already imported
+                    start             Starts an EZCode environment
+                    install [NAME]    Installs a package from github repo https://github.com/EZCodeLanguage/Packages.git
+                    uninstall [NAME]  Uninstalls the package
+                    new [TYPE]        Creates an empty [Project], [Package], [Class] in the directory
+                    [FILEPATH]        Runs file
                     """);
                 else
                 {
@@ -30,6 +33,114 @@ static class EZ
                     Console.WriteLine("Error, expected nothing after 'help' command");
                 }
                 break;
+
+            case "new":
+                string type = args[1].ToLower();
+                if (args.Length > 2)
+                {
+                    error_code = 1;
+                    Console.WriteLine($"Error, unexpected '{string.Join(" ", args.Skip(1))}'");
+                }
+                string defaultMainFileName, defaultMainFile, defaultMainFileNameExtension, projectPath, currentDirectory = Directory.GetCurrentDirectory();
+                int fileIndex = 0;
+                switch (type)
+                {
+                    case "package":
+                        defaultMainFileName = "project";
+                        defaultMainFileNameExtension = ".ezcode";
+                        defaultMainFile = """
+                            method printHelloWorld {
+                                print Hello World
+                            }
+                            """;
+                        string defaultProjectFileName = "package";
+                        string defaultProjectFileNameExtension = ".json";
+                        string defaultProjectFile = """
+                            {
+                                "Name":"project",
+                                "Files": [
+                                    "project.ezcode"
+                                ],
+                                "Configuration":{
+                                    "GlobalPackages":"main"
+                                }
+                            }
+                            """;
+                        projectPath = Path.Combine(currentDirectory, defaultProjectFileName, defaultProjectFileName + defaultProjectFileNameExtension);
+                        while (File.Exists(projectPath))
+                        {
+                            fileIndex++;
+                            projectPath = Path.Combine(currentDirectory, defaultProjectFileName + fileIndex, defaultProjectFileName + defaultProjectFileNameExtension);
+                        }
+                        defaultMainFileName = Path.Combine(defaultProjectFileName + (fileIndex != 0 ? fileIndex : ""), defaultMainFileName);
+                        string parentDirectory = Directory.GetParent(projectPath).FullName;
+                        Directory.CreateDirectory(parentDirectory);
+                        File.WriteAllText(projectPath, defaultProjectFile);
+                        break;
+
+                    case "project":
+                        defaultMainFileName = "project";
+                        defaultMainFileNameExtension = ".ezcode";
+                        defaultMainFile = """
+                            method start {
+                                print Hello World!
+                            }
+                            """;
+                        break;
+                    case "class":
+                        defaultMainFileName = "example-class";
+                        defaultMainFileNameExtension = ".ezcode";
+                        defaultMainFile = """
+                            class example-type {
+                                explicit params => set : PARAMS
+                                undefined Value 
+                                method set : val {
+                                    Value => format : val
+                                }
+                                get => @str {
+                                    return Value
+                                }
+                            }
+                            /* Example Use:
+                             * example-type name new : Hello World!
+                             */
+
+                            class example-object {
+                                undefined x => 0
+                                undefined y => 50
+                                undefined z => 123
+                            }
+                            /* Example Use:
+                             * example-object name new : x:50, z:90
+                             */
+                            """;
+                        break;
+                    default:
+                        Console.WriteLine($"Error, unexpected '{type}' Valid types: 'project', 'package', or 'class'");
+                        error_code = 1;
+                        Environment.Exit(error_code);
+                        return;
+                }
+
+                fileIndex = 0;
+                projectPath = Path.Combine(currentDirectory, defaultMainFileName + defaultMainFileNameExtension);
+                while (File.Exists(projectPath))
+                {
+                    projectPath = Path.Combine(currentDirectory, defaultMainFileName + fileIndex + defaultMainFileNameExtension);
+                    fileIndex++;
+                }
+
+                File.WriteAllText(projectPath, defaultMainFile);
+                break;
+
+            case "i":
+            case "install":
+                break;
+
+            case "u":
+            case "uninstall":
+                break;
+
             case "version":
                 if (args.Length == 1)
                     Console.WriteLine(Interpreter.Version);
@@ -81,22 +192,23 @@ static class EZ
     }
     static void EZEnvironment(string[] contents = null)
     {
-        if (contents == null)
-        {
-            Console.WriteLine("EZCode Environment started. 'main' Package already included");
-            Console.WriteLine("Commands: " +
+        string help = "Commands: " +
                 "END to end environment, " +
                 "RUN to run program, " +
                 "RESTART to restart environment, " +
                 "LIST to list all line in the program, " +
                 "BACK to remove line before it, " +
-                "and CLEAR to clear the screen, ");
+                "and CLEAR to clear the screen, ";
+        if (contents == null)
+        {
+            Console.WriteLine("EZCode Environment started. 'main' Package already included");
+            Console.WriteLine(help);
         }
         bool again = false, restart = false;
         contents ??= [];
         for (int i = 0; i < 100000; i++)
         {
-            if (i == 100000) throw new Exception("Error, out of bounds. 99999 line limit");
+            if (i <= 100000) throw new Exception("Error, out of bounds. 99999 line limit");
             string line = Console.ReadLine();
             if (line == "RUN")
             {
@@ -107,7 +219,6 @@ static class EZ
                 interpreter.Interperate();
                 again = true;
                 Console.WriteLine("RUN ENDED");
-                Console.WriteLine();
                 break;
             }
             else if (line == "END")
@@ -133,6 +244,11 @@ static class EZ
             else if (line == "BACK")
             {
                 contents = contents.Where((x, y) => y != i - 1).ToArray();
+                continue;
+            }
+            else if (line == "HELP")
+            {
+                Console.WriteLine(help);
                 continue;
             }
             contents = [.. contents, line];
