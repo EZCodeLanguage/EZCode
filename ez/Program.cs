@@ -1,11 +1,11 @@
 ﻿using EZCodeLanguage;
-using System.IO;
 
-static class ez
+static class EZ
 {
-    public static int error_message = 0;
+    public static int error_code = 0;
     public static void Main(string[] args)
     {
+
         if (args.Length == 0)
         {
             args = ["help"];
@@ -26,7 +26,7 @@ static class ez
                     """);
                 else
                 {
-                    error_message = 1;
+                    error_code = 1;
                     Console.WriteLine("Error, expected nothing after 'help' command");
                 }
                 break;
@@ -35,7 +35,7 @@ static class ez
                     Console.WriteLine(Interpreter.Version);
                 else
                 {
-                    error_message = 1;
+                    error_code = 1;
                     Console.WriteLine("Error, expected nothing after 'version' command");
                 }
                 break;
@@ -49,12 +49,12 @@ static class ez
             case "start":
                 try
                 {
-                    Environment();
+                    EZEnvironment();
                 }
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    error_message = 1;
+                    error_code = 1;
                 }
                 break;
             default:
@@ -67,7 +67,7 @@ static class ez
                 catch (Exception e)
                 {
                     Console.WriteLine(e.Message);
-                    error_message = 1;
+                    error_code = 1;
                     break;
                 }
                 parser = new Parser(contents, path);
@@ -77,9 +77,9 @@ static class ez
                 break;
         }
 
-        System.Environment.Exit(error_message);
+        Environment.Exit(error_code);
     }
-    static void Environment(string[] contents = null)
+    static void EZEnvironment(string[] contents = null)
     {
         if (contents == null)
         {
@@ -100,7 +100,7 @@ static class ez
             string line = Console.ReadLine();
             if (line == "RUN")
             {
-                Parser parser = new Parser(string.Join(System.Environment.NewLine, contents), AppDomain.CurrentDomain.BaseDirectory + "ez.exe");
+                Parser parser = new Parser(string.Join(Environment.NewLine, contents), AppDomain.CurrentDomain.BaseDirectory + "ez.exe");
                 parser = Package.ReturnParserWithPackages(parser, ["main"]);
                 parser.Parse();
                 Interpreter interpreter = new Interpreter(parser);
@@ -121,7 +121,7 @@ static class ez
             }
             else if (line == "LIST")
             {
-                Console.WriteLine(string.Join(System.Environment.NewLine, contents));
+                Console.WriteLine(string.Join(Environment.NewLine, contents));
                 Console.WriteLine("LIST ENDED");
                 continue;
             }
@@ -137,7 +137,7 @@ static class ez
             }
             contents = [.. contents, line];
         }
-        if (again) Environment(contents);
-        if (restart) Environment();
+        if (again) EZEnvironment(contents);
+        if (restart) EZEnvironment();
     }
 }
