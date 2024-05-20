@@ -5,13 +5,11 @@ namespace EZCodeLanguage
     public static class Package
     {
         public static string PackagesDirectory = "D:\\EZCodeLanguage\\Packages\\";
-        public static string LibraryDirName = "Libraries";
-        public static void AddPackageToExecutionDirectory(Project project, string executionDirectory, out string[] files)
+        public static void AddPackageToExecutionDirectory(Project project, string executionDirectory)
         {
-            files = [];
             string projectPath = GetPackageDirectory(project.Name);
-            string libraryDirectory = Path.Combine(projectPath, project.LibraryDirectory ?? throw new Exception("Project.LibraryDirectory is null"));
-            string executionSubDirectoryName = LibraryDirName;
+            string libraryDirectory = Path.Combine(projectPath, project.Configuration?.LibraryDirectory ?? throw new Exception("Project.LibraryDirectory is null"));
+            string executionSubDirectoryName = project.Configuration.LibraryDirectory.Split(['/', '\\']).First();
             string executionSubDirectory = Path.Combine(executionDirectory, executionSubDirectoryName);
 
             Directory.CreateDirectory(executionSubDirectory);
@@ -22,37 +20,28 @@ namespace EZCodeLanguage
                 string libraryFileName = Path.GetFileName(libraryFile);
                 string executionSubDirectoryFile = Path.Combine(executionSubDirectory, libraryFileName);
                 File.Copy(libraryFile, executionSubDirectoryFile);
-                files = [.. files, executionSubDirectoryFile];
             }
         }
-        public static void RemovePackageFromExecutionDirectory(string[] projectFileNames)
+        public static void RemovePackageFromExecutionDirectory(Project project, string executionDirectory)
         {
-            foreach(string file in projectFileNames)
-            {
-                File.Delete(file);
-            }
+            string libraryDirectory = project.Configuration?.LibraryDirectory ?? throw new Exception("Project.LibraryDirectory is null");
+            string executionSubDirectory = Path.Combine(executionDirectory, libraryDirectory);
+
+            Directory.Delete(executionSubDirectory, true);
         }
         public static void RemoveAllPackagesFromExecutionDirectory(string executionDirectory)
         {
-            try
+            string[] directories = Directory.GetDirectories(executionDirectory);
+            foreach (string directory in directories)
             {
-                string executionSubDirectory = Path.Combine(executionDirectory, LibraryDirName);
-                string[] files = Directory.GetFiles(executionSubDirectory);
-                foreach (string file in files)
+                try
                 {
-                    try
-                    {
-                        File.Delete(file);
-                    }
-                    catch
-                    {
-
-                    }
+                    Directory.Delete(directory, true);
                 }
-            }
-            catch
-            {
+                catch
+                {
 
+                }
             }
         }
         public static string GetPackageDirectory(string package_name)
@@ -76,10 +65,7 @@ namespace EZCodeLanguage
             Parser[] parsers = [];
             foreach (var pack in global_packages)
             {
-                string path = GetPackageFile(pack);
-                string contents = File.ReadAllText(path);
-                Parser p = new Parser(contents, path);
-                p.Parse();
+                Parser p = GetPackageAsParser(pack);
                 parsers = [.. parsers, p];
             }
             foreach (string f in project.Files)
@@ -104,6 +90,8 @@ namespace EZCodeLanguage
                 Parser p = GetPackageAsParser(package_names[i]);
                 parser = CombineParsers(parser, p);
             }
+            parser.Classes = parser.Classes.DistinctBy(x => x.Name).ToList();
+            parser.Methods = parser.Methods.DistinctBy(x => x.Name).ToList();
             return parser;
         }
         public static Parser RemovePackageFromParser(Parser main_parser, Parser remove)
