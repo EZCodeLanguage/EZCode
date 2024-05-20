@@ -179,13 +179,14 @@ namespace EZCodeLanguage
                 throw;
             }
         }
-        public static object GetParameter(object obj, string type)
+        public static T GetParameter<T>(object obj, Type type) => GetParameter<T>(obj, type.Name);
+        public static T GetParameter<T>(object obj, string type)
         {
             EZHelp e = new EZHelp(Instance);
 
-            return e.ObjectParse(obj, type);
+            return (T)e.ObjectParse(obj, type);
         }
-        public static Exception SetError(Exception exception)
+        public static Exception ThrowError(Exception exception)
         {
             Error = exception.Message;
             throw exception;
@@ -246,6 +247,12 @@ namespace EZCodeLanguage
                 string e = parts[i];
                 if ((new[] { "=", ">", "<", "=", "!=", "!", ">=", "<=" }).Any(x => x == e))
                 {
+                    if (parts[i] == "!" && parts.Length > i + 1 && parts[i + 1] == "=")
+                    {
+                        parts[i] = "!=";
+                        parts = parts.ToList().Where((item, index) => index != i + 1).ToArray();
+                    }
+
                     if (!allIsText && !(float.TryParse(parts[i + 1], out _) || bool.TryParse(parts[i + 1], out _) || symbols.Any(x => x.ToString() == parts[i + 1])))
                     {
                         parts[i - 1] = $"'{StringParse(parts[i - 1])}'";
@@ -262,6 +269,7 @@ namespace EZCodeLanguage
                 e = !isText ? StringParse(e) : $"'{StringParse(e)}'";
                 parts[i] = e;
             }
+
             expression = string.Join(" ", parts);
             return Evaluate(expression.Trim());
         }
@@ -426,6 +434,7 @@ namespace EZCodeLanguage
                 {
                     values[i] = ObjectParse(values[i], "str");
                 }
+
                 string all = string.Join(" ", values.Select(x => x.ToString()));
                 try
                 {
@@ -625,7 +634,7 @@ namespace EZCodeLanguage
                 object[] parameters = [val1];
                 if (!obj2_is_null) parameters = [..parameters, val2];
 
-                return float.Parse(InvokeMethod($"System.MathF.{operation}", parameters, this).ToString());
+                return float.Parse(InvokeMethod($"System.MathF.{operation}", parameters, this, out _).ToString());
             }
             catch (Exception ex)
             {
@@ -658,6 +667,13 @@ namespace EZCodeLanguage
             float pow = FloatParse(_pow);
             return MathF.Pow(val, pow);
         }
+        public int RandomNumber(object _min, object _max)
+        {
+            Random random = new Random();
+            int min = IntParse(_min);
+            int max = IntParse(_max);
+            return random.Next(min, max);
+        }
         public string Trim(object text) => StringParse(text).Trim();
         public string ToLower(object text) => StringParse(text).ToLower();
         public string ToUpper(object text) => StringParse(text).ToUpper();
@@ -671,6 +687,155 @@ namespace EZCodeLanguage
             string oattern = StringParse(_match);
             var match = System.Text.RegularExpressions.Regex.Match(input, oattern);
             return match.Success;
+        }
+        public static string FixDirPath(string path) => path.Replace("/", "\\").Replace(" : \\", ":\\");
+        public static string FixUrlPath(string path)
+        {
+            string replacedPath = path.Replace("\\", "/").Replace(" : ", ":");
+            return !(replacedPath.StartsWith("https://") || replacedPath.StartsWith("http://")) ? ("https://" + replacedPath) : replacedPath;
+        }
+        public string FileRead(object _path)
+        {
+            try
+            {
+                string path = StringParse(_path);
+                path = FixDirPath(path);
+                return File.ReadAllText(path);
+            }
+            catch (Exception e)
+            {
+                throw ThrowError(e);
+            }
+        }
+        public void FileWrite(object _path, object _text)
+        {
+            try
+            {
+                string path = StringParse(_path);
+                string text = StringParse(_text);
+                path = FixDirPath(path);
+                File.WriteAllText(path, text);
+            }
+            catch (Exception e)
+            {
+                throw EZHelp.ThrowError(e);
+            }
+        }
+        public void FileCreate(object _path)
+        {
+            try
+            {
+                string path = StringParse(_path);
+                path = FixDirPath(path);
+                File.Create(path).Close();
+            }
+            catch (Exception e)
+            {
+                throw ThrowError(e);
+            }
+        }
+        public void FileDelete(object _path)
+        {
+            try
+            {
+                string path = StringParse(_path);
+                path = FixDirPath(path);
+                File.Delete(path);
+            }
+            catch (Exception e)
+            {
+                throw ThrowError(e);
+            }
+        }
+        public object? Try(Func<object> function)
+        {
+            try
+            {
+                return function();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        public object? Try(Func<object> function, Func<object> handle)
+        {
+            try
+            {
+                return function();
+            }
+            catch
+            {
+                return handle();
+            }
+        }
+        public void Exit() => Interpreter.hasexited = true;
+        public object? EnvironmentOS(object _property, object? _val1, object? _val2)
+        {
+            try
+            {
+                string? property = Try(() => StringParse(_property).ToLower(), () => throw ThrowError(new Exception("Error occured while getting property name from parameter")))?.ToString();
+                string? val1 = _val1 != null ? Try(() => StringParse(_val1))?.ToString() : null;
+                string? val2 = _val2 != null ? Try(() => StringParse(_val2))?.ToString() : null;
+                switch (property)
+                {
+                    case "newline": return Environment.NewLine;
+                    case "osversion": return Environment.OSVersion;
+                    case "processpath": return Environment.ProcessPath;
+                    case "is64bitprocess": return Environment.Is64BitProcess;
+                    case "processid": return Environment.ProcessId;
+                    case "commandline": return Environment.CommandLine;
+                    case "currentdirectory": return Environment.CurrentDirectory;
+                    case "currentmanagedthreadid": return Environment.CurrentManagedThreadId;
+                    case "exitcode": return Environment.ExitCode;
+                    case "hasshutdownstarted": return Environment.HasShutdownStarted;
+                    case "is64bitoperatingsystem": return Environment.Is64BitOperatingSystem;
+                    case "isprivilegedprocess": return Environment.IsPrivilegedProcess;
+                    case "machinename": return Environment.MachineName;
+                    case "processorcount": return Environment.ProcessorCount;
+                    case "stacktrace": return Environment.StackTrace;
+                    case "systemdirectory": return Environment.SystemDirectory;
+                    case "systempagesize": return Environment.SystemPageSize;
+                    case "tickcount": return Environment.TickCount;
+                    case "tickcount64": return Environment.TickCount64;
+                    case "userdomainname": return Environment.UserDomainName;
+                    case "userinteractive": return Environment.UserInteractive;
+                    case "username": return Environment.UserName;
+                    case "version": return Environment.Version;
+                    case "workingset": return Environment.WorkingSet;
+                    case "getcommandlineargs": return Environment.GetCommandLineArgs();
+                    case "getenvironmentvariables": return Environment.GetEnvironmentVariables();
+                    case "getlogicaldrives": return Environment.GetLogicalDrives();
+                }
+                if (val1 != null)
+                {
+                    Enum.TryParse(val1, out Environment.SpecialFolder fval1);
+                    int.TryParse(val1, out int ival1);
+                    switch (property)
+                    {
+                        case "exit": Environment.Exit(ival1); return null;
+                        case "expandenvironmentvariables": return Environment.ExpandEnvironmentVariables(val1);
+                        case "failfast": Environment.FailFast(val1); return null;
+                        case "getenvironmentvariable": return Environment.GetEnvironmentVariable(val1);
+                        case "getfolderpath": return Environment.GetFolderPath(fval1);
+                    }
+                    if (val2 != null)
+                    {
+                        switch (property)
+                        {
+                            case "equals": return Equals(val1, val2);
+                            case "referenceequals": return ReferenceEquals(val1, val2);
+                            case "setenvironmentvariable": Environment.SetEnvironmentVariable(val1, val2); return null;
+                        }
+                    }
+                }
+
+                throw new Exception($"The environment property '{property}' does not exist");
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
         }
     }
 }
