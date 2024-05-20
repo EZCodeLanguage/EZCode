@@ -1,11 +1,12 @@
 ﻿using EZCodeLanguage;
+using System.IO.Compression;
+using System.Net;
 
 static class EZ
 {
     public static int error_code = 0;
     public static void Main(string[] args)
     {
-        args = ["new", "package"];
         if (args.Length == 0)
         {
             args = ["help"];
@@ -62,7 +63,9 @@ static class EZ
                                     "project.ezcode"
                                 ],
                                 "Configuration":{
-                                    "GlobalPackages":"main"
+                                    "GlobalPackages":[
+                                        "main"
+                                    ]
                                 }
                             }
                             """;
@@ -135,10 +138,87 @@ static class EZ
 
             case "i":
             case "install":
+                if (args.Length < 2)
+                {
+                    Console.WriteLine("Error, Expected package name");
+                    error_code = 1;
+                    break;
+                }
+                string package = args[1];
+
+                if (args.Length > 2)
+                {
+                    Console.WriteLine($"Error, unexpected '{string.Join(" ", args.Skip(1))}'");
+                    error_code = 1;
+                    break;
+                }
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Starting Install of '{package}' package");
+                Console.ResetColor();
+
+                string downloadFilePath = Path.Combine(Package.PackagesDirectory, package),
+                    downloadUrl = $"https://github.com/EZCodeLanguage/Packages/releases/download/{package}-package/{package}.zip";
+
+                try
+                {
+                    InstallAndExtract(downloadUrl, downloadFilePath);
+
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("Install Complete");
+                }
+                catch (Exception ex)
+                {
+                    error_code = 1;
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.WriteLine(ex.Message);
+                }
+                Console.ResetColor();
                 break;
 
             case "u":
             case "uninstall":
+                if (args.Length < 2)
+                {
+                    Console.WriteLine("Error, Expected package name");
+                    error_code = 1;
+                    break;
+                }
+                package = args[1];
+
+                if (args.Length > 2)
+                {
+                    Console.WriteLine($"Error, unexpected '{string.Join(" ", args.Skip(1))}'");
+                    error_code = 1;
+                    break;
+                }
+
+                Console.ForegroundColor = ConsoleColor.Green;
+                Console.WriteLine($"Starting uninstalling of '{package}' package");
+                Console.ResetColor();
+
+                try
+                {
+                    downloadFilePath = Path.Combine(Package.PackagesDirectory, package);
+                    if (!Directory.Exists(downloadFilePath))
+                    {
+                        throw new Exception($"Error, Package '{package}' can't be found");
+                    }
+                    else
+                    {
+                        Directory.Delete(downloadFilePath, true);
+                    }
+
+                    Console.ForegroundColor = ConsoleColor.Green;
+                    Console.WriteLine("Uninstall Complete");
+                }
+                catch (Exception ex)
+                {
+                    error_code = 1;
+                    Console.ForegroundColor = ConsoleColor.DarkRed;
+                    Console.WriteLine(ex.Message);
+                }
+                Console.ResetColor();
                 break;
 
             case "version":
@@ -190,6 +270,20 @@ static class EZ
 
         Environment.Exit(error_code);
     }
+    static void InstallAndExtract(string downloadUrl, string downloadFilePath)
+    {
+        using (WebClient webClient = new WebClient())
+        {
+            string tempDownloadFilePath = downloadFilePath + "_.zip";
+
+            webClient.DownloadFile(downloadUrl, tempDownloadFilePath);
+
+            ZipFile.ExtractToDirectory(tempDownloadFilePath, downloadFilePath, true);
+
+            File.Delete(tempDownloadFilePath);
+        }
+    }
+
     static void EZEnvironment(string[] contents = null)
     {
         string help = "Commands: " +
