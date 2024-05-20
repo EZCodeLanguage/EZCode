@@ -1,4 +1,5 @@
-include main
+include main, time
 
-bool match new => regexmatch : hello, hi|hello
-print 'match'
+method start {
+	print 'time current'
+}

@@ -419,7 +419,8 @@ namespace EZCodeLanguage
             Exclude,
             Global,
             True, 
-            False
+            False,
+            Throw
         }
         public static char[] Delimeters = [' ', '{', '}', '@', ':', ',', '?', '!'];
         public string Code { get; set; }
@@ -428,12 +429,23 @@ namespace EZCodeLanguage
         public List<Class> Classes = [];
         public List<Method> Methods = [];
         public LineWithTokens[] LinesWithTokens = [];
+        private Parser[] IncludingExcludingPackages = [];
         public Parser(string code, string file)
         {
             Code = code;
             FilePath = file;
         }
-        public LineWithTokens[] Parse() => LinesWithTokens = TokenArray(Code, FilePath).Where(x => x.Line.Value.ToString() != "").ToArray();
+        public LineWithTokens[] Parse()
+        {
+            var parse = LinesWithTokens = TokenArray(Code, FilePath).Where(x => x.Line.Value.ToString() != "").ToArray();
+
+            foreach (var remove in IncludingExcludingPackages)
+            {
+                Package.RemovePackageFromParser(this, remove);
+            }
+
+            return parse;
+        }
         private LineWithTokens[] TokenArray(string code, string file, bool insideClass = false)
         {
             // Set the file files property
@@ -472,6 +484,14 @@ namespace EZCodeLanguage
                         string combined_packages = string.Join(" ", parts.Skip(1).Select(x => x.ToString()));
                         string[] packages = combined_packages.Split(",").Select(x => x.Trim()).ToArray();
                         Parser parser = Package.ReturnParserWithPackages(this, packages);
+                        IncludingExcludingPackages = [.. IncludingExcludingPackages, new Parser(parser.Code, parser.FilePath) 
+                        { 
+                            Methods = parser.Methods.Select(x=> new Method(x.Name, x.Line, x.Settings, x.Lines, x.Parameters, x.Returns)).ToList(), 
+                            Classes = parser.Classes.Select(x=> new Class(x.Name, x.Line, x.Methods, x.Properties, x.WatchFormat, x.Params, x.TypeOf, x.GetTypes, x.Classes, x.Length, x.Aliases)).ToList(), 
+                            commentBlock = parser.commentBlock,
+                            IncludingExcludingPackages = parser.IncludingExcludingPackages,
+                            LinesWithTokens = parser.LinesWithTokens 
+                        }];
                     }
                     if (parts.Length > 1 && parts[0].ToString() == "exclude")
                     {
@@ -481,6 +501,7 @@ namespace EZCodeLanguage
                         Parser except = Package.ReturnParserWithPackages(new Parser("", ""), packages);
                         // remove the except parser from the current parser instance
                         Parser parser = Package.RemovePackageFromParser(this, except);
+                        IncludingExcludingPackages = IncludingExcludingPackages.Except([parser]).ToArray();
                     }
 
                     // loops through each part and creates the token from it
@@ -549,6 +570,7 @@ namespace EZCodeLanguage
                     case "null": tokenType = TokenType.Null; parts[partIndex] = ""; break;
                     case "include": tokenType = TokenType.Include; break;
                     case "exclude": tokenType = TokenType.Exclude; break;
+                    case "throw": tokenType = TokenType.Throw; break;
                 }
                 if (part.StartsWith("//")) tokenType = TokenType.Comment; // If the part starts with '//', it is comment
                 if (part.StartsWith('@')) tokenType = TokenType.DataType; // If the part starts with '@', it is a datatype
@@ -645,6 +667,17 @@ namespace EZCodeLanguage
                             // return parts only in the current part of the codeLine
                             return parts.Take(i).ToArray();
                         }
+                    }
+                    else if (parts[i].ToString() == "!" && parts.Length > i + 1 && parts[i + 1].ToString() == "=")
+                    {
+                        /* if the current part is '!' and the next token is '=', combine the 
+                         * parts into a single token. */
+
+                        // turn the current part into both parts
+                        parts[i] = "!=";
+                        // remove the next part
+                        parts = parts.ToList().Where((item, index) => index != i + 1).ToArray();
+
                     }
                     else if (parts[i].ToString() == "@")
                     {

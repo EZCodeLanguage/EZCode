@@ -1,5 +1,5 @@
-﻿using System.Linq;
-using System.Reflection;
+﻿using System.Reflection;
+using System.Runtime.Loader;
 using static EZCodeLanguage.Parser;
 
 namespace EZCodeLanguage
@@ -103,9 +103,9 @@ namespace EZCodeLanguage
         private object? returned = null;
         private DataType? Returning = null;
         private int StackNumber = 0;
+        internal bool hasexited = false;
+        public CustomAssemblyLoadContext[] LoadedAssemblies = [];
         public Stack<string> StackTrace { get; private set; }
-        internal record Library(string name, string[] files);
-        internal List<Library> DllLibraries { get; set; } = [];
         public Exception[] Errors { get; private set; } = [];
         public Var[] Vars { get; set; } = [];
         public Method[] Methods { get; set; } = [];
@@ -123,6 +123,12 @@ namespace EZCodeLanguage
             if (Methods.Any(x => x.Name.ToLower() == "start") && !StartMethodEntry)
             {
                 StartMethodEntry = true;
+                LineWithTokens[] lines_with_include = LineTokens.Where(x => x.Tokens.Length > 1).Where(x => x.Tokens[0].Type == TokenType.Include).ToArray();
+                LineWithTokens[] lines_with_exclude = LineTokens.Where(x => x.Tokens.Length > 1).Where(x => x.Tokens[0].Type == TokenType.Exclude).ToArray();
+                if (lines_with_include.Length > 0)
+                    Interperate(lines_with_include);
+                if (lines_with_exclude.Length > 0)
+                    Interperate(lines_with_exclude);
                 LineWithTokens[] lines_with_global = LineTokens.Where(x => x.Tokens.Length > 1).Where(x => x.Tokens[0].Type == TokenType.Global).ToArray();
                 if (lines_with_global.Length > 0)
                     Interperate(lines_with_global);
@@ -131,8 +137,9 @@ namespace EZCodeLanguage
             }
             else
             {
-                foreach (LineWithTokens line in LineTokens)
+                foreach (LineWithTokens line in LineTokens) 
                 {
+                    if (hasexited) break;
                     if (line.Tokens.Length == 0 || (line.Tokens.Length == 1 && line.Tokens[0].Value is Class or Method))
                         continue;
 
@@ -158,6 +165,18 @@ namespace EZCodeLanguage
                 }
             }
 
+            // Unload each assembly
+            foreach (var assembly in LoadedAssemblies)
+            {
+                assembly.Unload();
+            }
+            // Let the garbage collector collect to ensure assemblies are fully unloaded
+            for (int i = 0; i < 3; i++)
+            {
+                GC.Collect();
+                GC.WaitForPendingFinalizers();
+            }
+            // Exclude every package
             Package.RemoveAllPackagesFromExecutionDirectory(AppDomain.CurrentDomain.BaseDirectory);
         }
         internal object? SingleLine(LineWithTokens line)
@@ -187,29 +206,24 @@ namespace EZCodeLanguage
                             string combined_packages = string.Join(" ", line.Tokens.Skip(1).Select(x => x.StringValue));
                             string[] packages = combined_packages.Split(",").Select(x=>x.Trim()).ToArray();
                             Project[] projects = new Project[packages.Length];
+                            bool include = FirstToken.StringValue == "include";
 
                             for (int i = 0; i < packages.Length; i++)
                                 projects[i] = Package.GetPackageAsProject(packages[i]);
 
-                            if (projects.Any(x => !string.IsNullOrEmpty(x.LibraryDirectory)))
+                            if (projects.Any(x => !string.IsNullOrEmpty(x.Configuration?.LibraryDirectory)))
                             {
                                 string destination = AppDomain.CurrentDomain.BaseDirectory;
                                 foreach (var project in projects)
                                 {
-                                    if (FirstToken.StringValue == "include")
-                                    {
-                                        Package.AddPackageToExecutionDirectory(project, destination, out var files);
-                                        DllLibraries.Add(new Library(project.Name, files));
-                                    }
+                                    if (include)
+                                        Package.AddPackageToExecutionDirectory(project, destination);
                                     else
-                                    {
-                                        var library = DllLibraries.FirstOrDefault(x => x.name == project.Name);
-                                        Package.RemovePackageFromExecutionDirectory(library.files);
-                                    }
+                                        Package.RemovePackageFromExecutionDirectory(project, destination);
                                 }
                             }
 
-                            if (FirstToken.StringValue == "include")
+                            if (include)
                             {
                                 parser = Package.ReturnParserWithPackages(parser, packages);
                                 Methods = [.. Methods, .. parser.Methods];
@@ -429,7 +443,10 @@ namespace EZCodeLanguage
                                         break;
 
                                     case IdentType.Method:
-                                        Method method = (type is Method m) ? new Method(m.Name, m.Line, m.Settings, m.Lines.Select(x => new LineWithTokens(x.Tokens.Select(y => new Token(y.Type, y.Value, y.StringValue)).ToArray(), x.Line)).ToArray(), m.Parameters, m.Returns) : null;
+                                        Method method = (type is Method m) ?
+                                            new Method(m.Name, m.Line, m.Settings, m.Lines.Select(
+                                                x => new LineWithTokens(x.Tokens.Select(y => new Token(
+                                                    y.Type, y.Value, y.StringValue)).ToArray(), x.Line)).ToArray(), m.Parameters, m.Returns)! : new Method();
 
                                         Method.MethodSettings settings = method.Settings;
                                         bool nocol = (settings & Method.MethodSettings.NoCol) != 0;
@@ -570,6 +587,20 @@ namespace EZCodeLanguage
                         {
                             throw new Exception($"Error with \"undefined\", Error Message:\"{ex.Message}\"");
                         }
+                        break;
+                    case TokenType.Throw:
+                        string err_message = "";
+                        try
+                        {
+                            line.Tokens = line.Tokens.Skip(1).Prepend(new Token(TokenType.Return, "return", "return")).ToArray();
+                            err_message = SingleLine(line).ToString();
+                        }
+                        catch (Exception ex)
+                        {
+                            throw new Exception($"Error with \"throw\", Error Message:\"{ex.Message}\"");
+                        }
+                        if (err_message != "")
+                            throw new Exception(err_message);
                         break;
                     case TokenType.Return:
                         try
@@ -797,6 +828,7 @@ namespace EZCodeLanguage
             {
                 result = SingleLine(new LineWithTokens(line));
 
+                if (hasexited) break;
                 if (yielded)
                 {
                     yielded = false;
@@ -930,6 +962,7 @@ namespace EZCodeLanguage
             {
                 result = SingleLine(line);
 
+                if (hasexited) break;
                 if (line.Tokens.Length > 0 && line.Tokens[0].Type == TokenType.Return || returned != null)
                     break;
             }
@@ -1297,32 +1330,39 @@ namespace EZCodeLanguage
                 method = o[0] as CSharpMethod;
             }
 
-            return InvokeMethod(method.Path, method.Params != null ? method.Params.Select(x => x).ToArray() : [], EZHelp);
+            object val = InvokeMethod(method.Path, method.Params != null ? method.Params.Select(x => x).ToArray() : [], EZHelp, out var assembly);
+            LoadedAssemblies = LoadedAssemblies.Append(assembly).Where(x => x != null).Distinct().ToArray();
+
+            return val;
         }
-        public static object? InvokeMethod(string methodPath, object[] parameters, EZHelp e)
+        public static object? InvokeMethod(string methodPath, object[] parameters, EZHelp e, out CustomAssemblyLoadContext? assemblyContext)
         {
+            assemblyContext = null;
             // Split the method files into type and method name
             string[] pathParts = methodPath.Split('.');
             if (pathParts.Length < 2)
             {
                 throw new ArgumentException("Invalid method path");
             }
-
             if (pathParts.Length >= 2 && pathParts[1].Equals("dll"))
             {
-                // If the method files contains an assembly name, load the assembly
+                // If the method path contains an assemblyContext name, load the assemblyContext
                 string assemblyPath = pathParts[0] + "." + pathParts[1];
-                string subdirectory = Package.LibraryDirName; // Name of the subdirectory is first part of namespace
-                string fullAssemblyPath = Path.Combine(subdirectory, assemblyPath); // Combine subdirectory files with assembly name
-                Assembly assembly = Assembly.LoadFrom(fullAssemblyPath);
+                string subdirectory = pathParts[0]; // Name of the subdirectory is first part of namespace
+                string relativeAssemblyPath = Path.Combine(subdirectory, assemblyPath); // Combine subdirectory path with assemblyContext name
+                string fullAssemblyPath = Path.GetFullPath(relativeAssemblyPath); // Get the absolute path of the assembly
+
+                // Get Assemblies
+                assemblyContext = new CustomAssemblyLoadContext();
+                Assembly assembly = assemblyContext.LoadFromAssemblyPath(fullAssemblyPath);
 
                 // Get the type name
                 string typeName = string.Join(".", pathParts.Skip(2).Take(pathParts.Length - 3));
-
+                
                 // Get the method name
                 string methodName = pathParts.Last();
 
-                // Get the type from the assembly
+                // Get the type from the assemblyContext
                 Type type = assembly.GetType(typeName);
                 if (type == null)
                 {
@@ -1357,7 +1397,7 @@ namespace EZCodeLanguage
             {
                 // Get the type from the full type name
                 string typeName = string.Join(".", pathParts.Take(pathParts.Length - 1));
-                // Include the assembly information for types in the System namespace
+                // Include the assemblyContext information for types in the System namespace
                 if (typeName.StartsWith("System."))
                 {
                     typeName += ", mscorlib";
@@ -1403,6 +1443,18 @@ namespace EZCodeLanguage
                         throw new Exception(message ?? $"Error occured in \"{methodPath}\"");
                     }
                 }
+            }
+        }
+        public class CustomAssemblyLoadContext : AssemblyLoadContext
+        {
+            public CustomAssemblyLoadContext() : base(isCollectible: true)
+            {
+            }
+
+            protected override Assembly Load(AssemblyName assemblyName)
+            {
+                // Implement if needed: load dependencies, etc.
+                return null;
             }
         }
     }
