@@ -13,6 +13,9 @@ namespace EZCodeLanguage
             Interpreter = interpreter;
         }
         public EZHelp() { }
+
+        // Main Package:
+        //     include main
         public void Print(string text)
         {
             text = Format(text.ToString());
@@ -121,7 +124,7 @@ namespace EZCodeLanguage
                         Interpreter.parser.WatchIsFound([name], 0, out ExplicitWatch watch, out _);
 
                         object val = Interpreter.GetValue(watch != null ? watch.Runs : name, DataType.GetType("str", Interpreter.Classes));
-                        format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(val, new DataType(DataType.Types._string, null)).ToString());
+                        format = format.Remove(range.Start, range.Count).Insert(range.Start, Interpreter.GetValue(val, new DataType(DataType.Types._string, null, "str")).ToString());
                     }
                 }
 
@@ -178,18 +181,6 @@ namespace EZCodeLanguage
                 Error = e.Message;
                 throw;
             }
-        }
-        public static T GetParameter<T>(object obj, Type type) => GetParameter<T>(obj, type.Name);
-        public static T GetParameter<T>(object obj, string type)
-        {
-            EZHelp e = new EZHelp(Instance);
-
-            return (T)e.ObjectParse(obj, type);
-        }
-        public static Exception ThrowError(Exception exception)
-        {
-            Error = exception.Message;
-            throw exception;
         }
         public bool Evaluate(string expression)
         {
@@ -718,7 +709,7 @@ namespace EZCodeLanguage
             }
             catch (Exception e)
             {
-                throw EZHelp.ThrowError(e);
+                throw ThrowError(e);
             }
         }
         public void FileCreate(object _path)
@@ -745,28 +736,6 @@ namespace EZCodeLanguage
             catch (Exception e)
             {
                 throw ThrowError(e);
-            }
-        }
-        public object? Try(Func<object> function)
-        {
-            try
-            {
-                return function();
-            }
-            catch
-            {
-                return null;
-            }
-        }
-        public object? Try(Func<object> function, Func<object> handle)
-        {
-            try
-            {
-                return function();
-            }
-            catch
-            {
-                return handle();
             }
         }
         public void Exit() => Interpreter.hasexited = true;
@@ -836,6 +805,328 @@ namespace EZCodeLanguage
             {
                 throw ThrowError(ex);
             }
+        }
+
+        // EZHelp static functions:
+        public static T GetParameter<T>(object obj, Type type) => GetParameter<T>(obj, type.Name);
+        public static T GetParameter<T>(object obj, string type)
+        {
+            EZHelp e = new EZHelp(Instance);
+
+            return (T)e.ObjectParse(obj, type);
+        }
+        public static Exception ThrowError(Exception exception)
+        {
+            Error = exception.Message;
+            throw exception;
+        }
+        public static object? Try(Func<object> function)
+        {
+            try
+            {
+                return function();
+            }
+            catch
+            {
+                return null;
+            }
+        }
+        public static object? Try(Func<object> function, Func<object> handle)
+        {
+            try
+            {
+                return function();
+            }
+            catch
+            {
+                return handle();
+            }
+        }
+
+        // Time Package:
+        //     include time
+        public string DateTimeNow(object? _format)
+        {
+            try
+            {
+                string? format = Try(() => StringParse(_format))?.ToString();
+                if (format is not null)
+                {
+                    return DateTime.Now.ToString(format);
+                }
+                else
+                {
+                    return DateTime.Now.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public DateTime DateTimeExtract(object _t1)
+        {
+
+            try
+            {
+                if (_t1.ToString().StartsWith("{") && _t1.ToString().EndsWith("}"))
+                    _t1 = _t1.ToString().Substring(1, _t1.ToString().Length - 2).Trim();
+
+                Var? vart1 = Interpreter?.Vars?.FirstOrDefault(x => x.Name == _t1.ToString());
+                Class? classt1 = (Class)Try(() => vart1?.Value as Class);
+                DateTime t1;
+
+                if (classt1 is not null)
+                {
+                    t1 = new DateTime(
+                        year: int.Parse(classt1.Properties.FirstOrDefault(x => x.Name == "year").Value.ToString()),
+                        month: int.Parse(classt1.Properties.FirstOrDefault(x => x.Name == "month").Value.ToString()),
+                        day: int.Parse(classt1.Properties.FirstOrDefault(x => x.Name == "day").Value.ToString()),
+                        hour: int.Parse(classt1.Properties.FirstOrDefault(x => x.Name == "hour").Value.ToString()),
+                        minute: int.Parse(classt1.Properties.FirstOrDefault(x => x.Name == "minute").Value.ToString()),
+                        second: int.Parse(classt1.Properties.FirstOrDefault(x => x.Name == "second").Value.ToString()),
+                        millisecond: int.Parse(classt1.Properties.FirstOrDefault(x => x.Name == "milisecond").Value.ToString())
+                        );
+                }
+                else
+                {
+                    if (vart1.Value is Var)
+                    {
+                        var interVar = (Var)vart1.Value;
+                        var contains = Interpreter.Vars.Any(x => x.Name == interVar.Name);
+                        if (!contains)
+                            Interpreter.Vars = [.. Interpreter.Vars, interVar];
+
+                        var result = DateTimeExtract(interVar.Name);
+
+                        if (!contains)
+                            Interpreter.Vars = Interpreter.Vars.Where(x => x.Name != interVar.Name).ToArray();
+
+                        return result;
+                    }
+
+                    t1 = DateTime.Parse(vart1.Value.ToString());
+                }
+                return t1;
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public int DateTimeCompare(object _t1, object _t2)
+        {
+            try
+            {
+
+                DateTime 
+                    t1 = DateTimeExtract(_t1),
+                    t2 = DateTimeExtract(_t2);
+
+                return DateTime.Compare(t1, t2);
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public object DateTimeParses(object _val)
+        {
+            try
+            {
+                string val = StringParse(_val);
+                return DateTime.Parse(val);
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public int DateTimeTakeYear(object _time)
+        {
+            DateTime dateTime = DateTimeExtract(_time);
+            return dateTime.Year;
+        }
+        public int DateTimeTakeMonth(object _time)
+        {
+            DateTime dateTime = DateTimeExtract(_time);
+            return dateTime.Month;
+        }
+        public int DateTimeTakeDay(object _time)
+        {
+            DateTime dateTime = DateTimeExtract(_time);
+            return dateTime.Day;
+        }
+        public int DateTimeTakeHour(object _time)
+        {
+            DateTime dateTime = DateTimeExtract(_time);
+            return dateTime.Hour;
+        }
+        public int DateTimeTakeMinute(object _time)
+        {
+            DateTime dateTime = DateTimeExtract(_time);
+            return dateTime.Minute;
+        }
+        public int DateTimeTakeSecond(object _time)
+        {
+            DateTime dateTime = DateTimeExtract(_time);
+            return dateTime.Second;
+        }
+        public int DateTimeTakeMilisecond(object _time)
+        {
+            DateTime dateTime = DateTimeExtract(_time);
+            return dateTime.Millisecond;
+        }
+        public string DateTimeUtcNow(object? _format)
+        {
+            try
+            {
+                string? format = Try(() => StringParse(_format))?.ToString();
+                if (format is not null)
+                {
+                    return DateTime.UtcNow.ToString(format);
+                }
+                else
+                {
+                    return DateTime.UtcNow.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public string DateTimeToday(object? _format)
+        {
+            try
+            {
+                string? format = Try(() => StringParse(_format))?.ToString();
+                if (format is not null)
+                {
+                    return DateTime.Today.ToString(format);
+                }
+                else
+                {
+                    return DateTime.Today.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public string DateTimeMaxValue(object? _format)
+        {
+            try
+            {
+                string? format = Try(() => StringParse(_format))?.ToString();
+                if (format is not null)
+                {
+                    return DateTime.MaxValue.ToString(format);
+                }
+                else
+                {
+                    return DateTime.MaxValue.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public string DateTimeMinValue(object? _format)
+        {
+            try
+            {
+                string? format = Try(() => StringParse(_format))?.ToString();
+                if (format is not null)
+                {
+                    return DateTime.MinValue.ToString(format);
+                }
+                else
+                {
+                    return DateTime.MinValue.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public string DateTimeUnixEpoch(object? _format)
+        {
+            try
+            {
+                string? format = Try(() => StringParse(_format))?.ToString();
+                if (format is not null)
+                {
+                    return DateTime.UnixEpoch.ToString(format);
+                }
+                else
+                {
+                    return DateTime.UnixEpoch.ToString();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public int DateTimeDaysInMonth(object _year, object _month)
+        {
+            try
+            {
+                int year = IntParse(_year);
+                int month = IntParse(_month);
+
+                return DateTime.DaysInMonth(year, month);
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public string DateTimeFormat(object _format, object _time)
+        {
+            try
+            {
+                string format = StringParse(_format);
+                DateTime dateTime = DateTimeExtract(_time);
+
+                return dateTime.ToString(format);
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public bool DateTimeIsLeepYear(object _time)
+        {
+            try
+            {
+                DateTime dateTime = DateTimeExtract(_time);
+                return DateTime.IsLeapYear(dateTime.Year);
+            }
+            catch
+            {
+                int year = IntParse(_time);
+                return DateTime.IsLeapYear(year);
+            }
+        }
+        public bool DateTimeIsDaylightSavingsTime(object _time)
+        {
+            DateTime dateTime = DateTimeExtract(_time);
+            return dateTime.IsDaylightSavingTime();
+        }
+        public int DateTimeDayOfYear(object _time)
+        {
+            DateTime dateTime = DateTimeExtract(_time);
+            return dateTime.DayOfYear;
+        }
+        public string DateTimeDayOfWeek(object _time)
+        {
+            DateTime dateTime = DateTimeExtract(_time);
+            return dateTime.DayOfWeek.ToString();
         }
     }
 }

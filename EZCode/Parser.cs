@@ -124,12 +124,14 @@ namespace EZCodeLanguage
                 _uint,
                 _ulong,
             }
+            public string StringType { get; set; }
             public Types Type { get; set; }
             public Class? ObjectClass { get; set; }
-            public DataType(Types type, Class? _class)
+            public DataType(Types type, Class? _class, string stringType)
             {
                 Type = type;
                 ObjectClass = _class;
+                StringType = stringType;
             }
             public DataType() { }
             public static DataType UnSet = new DataType() { Type = Types._null };
@@ -150,7 +152,7 @@ namespace EZCodeLanguage
                 }
                 _class = classes.FirstOrDefault(x => x.Name == param, null);
 
-                return new(types, _class);
+                return new(types, _class, param);
             }
             public static DataType TypeFromValue(string value, Class[] classes)
             {
@@ -420,7 +422,8 @@ namespace EZCodeLanguage
             Global,
             True, 
             False,
-            Throw
+            Throw,
+            Dispose
         }
         public static char[] Delimeters = [' ', '{', '}', '@', ':', ',', '?', '!'];
         public string Code { get; set; }
@@ -571,6 +574,7 @@ namespace EZCodeLanguage
                     case "include": tokenType = TokenType.Include; break;
                     case "exclude": tokenType = TokenType.Exclude; break;
                     case "throw": tokenType = TokenType.Throw; break;
+                    case "dispose": tokenType = TokenType.Dispose; break;
                 }
                 if (part.StartsWith("//")) tokenType = TokenType.Comment; // If the part starts with '//', it is comment
                 if (part.StartsWith('@')) tokenType = TokenType.DataType; // If the part starts with '@', it is a datatype
