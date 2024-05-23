@@ -554,7 +554,7 @@ namespace EZCodeLanguage
                 throw;
             }
         }
-        public object ArrayParse(object array, object separator) => ObjectParse(array, "list").ToString().Split(StringParse(separator)).Select(x => x.Trim()).ToArray();
+        public object ArrayParse(object array, object separator) => ObjectParse(array, "list").ToString().Split(StringParse(separator)).Select(x => x.Trim()).ToArray(); 
         public string ArrayStringParse(object array) => ObjectParse(array, "list", to_string: false, arraySeperator: ", ").ToString();
         public int ArrayLength(object array)
         {
