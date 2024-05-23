@@ -166,7 +166,7 @@ namespace EZCodeLanguage
                         obj = Interpreter.GetValue(n, data, arraySeperator);
                     } while (obj != o);
                 }
-                catch when(returnNull) { return null; }
+                catch when (returnNull) { return null; }
                 if (!to_string)
                 {
                     if (int.TryParse(obj.ToString(), out int i)) return i;
@@ -273,8 +273,8 @@ namespace EZCodeLanguage
         {
             try
             {
-                string m = mod.ToString(), 
-                    a = ObjectParse(x.ToString(), "str", true).ToString(), 
+                string m = mod.ToString(),
+                    a = ObjectParse(x.ToString(), "str", true).ToString(),
                     b = ObjectParse(y.ToString(), "str", true).ToString();
                 switch (m)
                 {
@@ -555,7 +555,7 @@ namespace EZCodeLanguage
             }
         }
         public object ArrayParse(object array, object separator) => ObjectParse(array, "list").ToString().Split(StringParse(separator)).Select(x => x.Trim()).ToArray();
-        public string ArrayStringParse(object array) => ObjectParse(array, "list", to_string:false, arraySeperator:", ").ToString();
+        public string ArrayStringParse(object array) => ObjectParse(array, "list", to_string: false, arraySeperator: ", ").ToString();
         public int ArrayLength(object array)
         {
             try
@@ -624,7 +624,7 @@ namespace EZCodeLanguage
                 }
                 string operation = string.Join("", op.ToString().ToLower().ToCharArray().Select((x, y) => { if (y == 0) return char.Parse(x.ToString().ToUpper()); else return x; }));
                 object[] parameters = [val1];
-                if (!obj2_is_null) parameters = [..parameters, val2];
+                if (!obj2_is_null) parameters = [.. parameters, val2];
 
                 return float.Parse(InvokeMethod($"System.MathF.{operation}", parameters, this, out _).ToString());
             }
@@ -920,7 +920,7 @@ namespace EZCodeLanguage
             try
             {
 
-                DateTime 
+                DateTime
                     t1 = DateTimeExtract(_t1),
                     t2 = DateTimeExtract(_t2);
 
@@ -1129,6 +1129,5 @@ namespace EZCodeLanguage
             DateTime dateTime = DateTimeExtract(_time);
             return dateTime.DayOfWeek.ToString();
         }
-
     }
 }
