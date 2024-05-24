@@ -268,7 +268,7 @@ namespace EZCodeLanguage
                                             {
                                                 if (var.Value is Class || (var.DataType.ObjectClass != null && var.DataType.Type != DataType.Types._null))
                                                 {
-                                                    Class c = var.Value is Class ? new Class(var.Value as Class) : new Class(var.DataType.ObjectClass);
+                                                    Class c = var.Value is Class ? var.Value as Class : var.DataType.ObjectClass;
 
                                                     if (c.Properties.Any(x => x.Name.ToLower() == "value"))
                                                         c.Properties.FirstOrDefault(x => x.Name.ToLower() == "value").Value ??= var.Value;
@@ -290,15 +290,7 @@ namespace EZCodeLanguage
                                                         object value = SingleLine(line);
                                                         line.Tokens = backup_tokens;
                                                         Methods = backupMethods;
-                                                        Vars = backupVars.Select(x =>
-                                                        {
-                                                            if (x.Name == var.Name)
-                                                            {
-                                                                var.Value = Vars.FirstOrDefault(x => x.Name.ToLower() == "value").Value;
-                                                                return var;
-                                                            }
-                                                            else return x;
-                                                        }).ToArray();
+                                                        Vars = backupVars;
                                                         Return = value;
                                                     }
                                                     else
@@ -1298,6 +1290,10 @@ namespace EZCodeLanguage
                                 {
                                     DoClass(_c);
                                 }
+                            }
+                            else if (v.Value is not null)
+                            {
+                                obj = v.Value;
                             }
                         }
                         else if (Methods.FirstOrDefault(x => x.Name == first) is Method m)

@@ -1,5 +1,16 @@
 include main, time
 
 method start {
-	print 'datetime dayofweek : 5/5/2024'
+	stopwatch clock new
+	clock start
+
+	int i new : 0
+	loop 10 {
+		i + 1
+		print 'i'
+	}
+	dispose i
+
+	clock end
+	print 'clock elapsed-seconds'
 }

@@ -1145,7 +1145,7 @@ namespace EZCodeLanguage
                         string[]? vars = null;
                         int skip = 1; // what to skip for the rest of the codeLine
                         // checks if there are any parameters and if the arrow '~>' is used. Similar to ':' in normal methods
-                        if (parts.Length - 1 > 2 && parts[i + 2].ToString() == "~>")
+                        if (parts.Length - 1 > i + 1 && parts[i + 2].ToString() == "~>")
                         {
                             // increment skip
                             skip++;

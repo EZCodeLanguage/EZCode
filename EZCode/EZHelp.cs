@@ -1,6 +1,7 @@
 ﻿using static EZCodeLanguage.Parser;
 using static EZCodeLanguage.Interpreter;
 using System.Data;
+using System.Diagnostics;
 
 namespace EZCodeLanguage
 {
@@ -159,10 +160,10 @@ namespace EZCodeLanguage
                     object o = obj;
                     do
                     {
-                        string n = obj.ToString();
+                        object n = obj;
                         o = obj;
                         DataType data = DataType.GetType(type.ToString(), Interpreter.Classes);
-                        if (Interpreter.Vars.Any(x => x.Name == n)) Interpreter.Vars.FirstOrDefault(x => x.Name == n).DataType = data;
+                        if (Interpreter.Vars.Any(x => x.Name == n.ToString())) Interpreter.Vars.FirstOrDefault(x => x.Name == n.ToString()).DataType = data;
                         obj = Interpreter.GetValue(n, data, arraySeperator);
                     } while (obj != o);
                 }
@@ -1128,6 +1129,25 @@ namespace EZCodeLanguage
         {
             DateTime dateTime = DateTimeExtract(_time);
             return dateTime.DayOfWeek.ToString();
+        }
+        public Stopwatch StopwatchStart()
+        {
+            return Stopwatch.StartNew();
+        }
+        public void StopwatchEnd(object _stopwatch)
+        {
+            Stopwatch stopwatch = (Stopwatch)ObjectParse(_stopwatch, "stopwatch");
+            stopwatch.Stop();
+        }
+        public float StopwatchElapsedSeconds(object _stopwatch)
+        {
+            Stopwatch stopwatch = (Stopwatch)ObjectParse(_stopwatch, "stopwatch");
+            return (float)stopwatch.Elapsed.TotalSeconds;
+        }
+        public float StopwatchElapsedMiliseconds(object _stopwatch)
+        {
+            Stopwatch stopwatch = (Stopwatch)ObjectParse(_stopwatch, "stopwatch");
+            return (float)stopwatch.Elapsed.TotalMilliseconds;
         }
     }
 }
