@@ -2,6 +2,8 @@
 using static EZCodeLanguage.Interpreter;
 using System.Data;
 using System.Diagnostics;
+using System.Timers;
+using Timer = System.Timers.Timer;
 
 namespace EZCodeLanguage
 {
@@ -251,7 +253,7 @@ namespace EZCodeLanguage
                     }
                     continue;
                 }
-                if ((new[] { "&", "|", "and", "or", "&&", "||" }).Any(x => x == e))
+                if ((new[] { "&", "|", "and", "not", "or", "&&", "||" }).Any(x => x == e))
                 {
                     allIsText = false;
                     continue;
@@ -666,6 +668,11 @@ namespace EZCodeLanguage
             int min = IntParse(_min);
             int max = IntParse(_max);
             return random.Next(min, max);
+        }
+        public int RoundToInt(object _num)
+        {
+            var num = FloatParse(_num);
+            return (int)Math.Round(num);
         }
         public string Trim(object text) => StringParse(text).Trim();
         public string ToLower(object text) => StringParse(text).ToLower();
@@ -1139,15 +1146,34 @@ namespace EZCodeLanguage
             Stopwatch stopwatch = (Stopwatch)ObjectParse(_stopwatch, "stopwatch");
             stopwatch.Stop();
         }
-        public float StopwatchElapsedSeconds(object _stopwatch)
+        public float StopwatchElapsedNanoseconds(object _stopwatch) => (float)(ObjectParse(_stopwatch, "stopwatch") as Stopwatch).Elapsed.TotalNanoseconds;
+        public float StopwatchElapsedMiliseconds(object _stopwatch) => (float)(ObjectParse(_stopwatch, "stopwatch") as Stopwatch).Elapsed.TotalMilliseconds;
+        public float StopwatchElapsedSeconds(object _stopwatch) => (float)(ObjectParse(_stopwatch, "stopwatch") as Stopwatch).Elapsed.TotalSeconds;
+        public float StopwatchElapsedMinutes(object _stopwatch) => (float)(ObjectParse(_stopwatch, "stopwatch") as Stopwatch).Elapsed.TotalMinutes;
+        public float StopwatchElapsedHours(object _stopwatch) => (float)(ObjectParse(_stopwatch, "stopwatch") as Stopwatch).Elapsed.TotalHours;
+        public Timer TimerNewInstance(object _hours, object _minutes, object _seconds, object _milliseconds)
         {
-            Stopwatch stopwatch = (Stopwatch)ObjectParse(_stopwatch, "stopwatch");
-            return (float)stopwatch.Elapsed.TotalSeconds;
+            var hours = IntParse(_hours);
+            var minutes = IntParse(_minutes);
+            var seconds = IntParse(_seconds);
+            var miliseconds = IntParse(_milliseconds);
+
+            var timespan = new TimeSpan(0, hours, minutes, seconds, miliseconds);
+            var timer = new Timer(timespan);
+
+            timer.Elapsed += Timer_Elapsed;
+            _Timers.Add(timer, false);
+
+            return timer;
         }
-        public float StopwatchElapsedMiliseconds(object _stopwatch)
+        public void TimerStart(object _timer) => (ObjectParse(_timer, "timer") as Timer).Start();
+        public void TimerStop(object _timer) => (ObjectParse(_timer, "timer") as Timer).Stop();
+        public bool TimerIsDone(object _timer) => _Timers[ObjectParse(_timer, "timer") as Timer];
+        private void Timer_Elapsed(object? sender, ElapsedEventArgs e)
         {
-            Stopwatch stopwatch = (Stopwatch)ObjectParse(_stopwatch, "stopwatch");
-            return (float)stopwatch.Elapsed.TotalMilliseconds;
+            var timer = (Timer)sender;
+            _Timers[timer] = true;
         }
+        public Dictionary<Timer, bool> _Timers = [];
     }
 }

@@ -474,20 +474,9 @@ namespace EZCodeLanguage
                                                     string[] all_parts = all.Split(',');
                                                     if (all_parts.Length > method.Parameters.Select(x => x.Required).ToArray().Length && !method.Parameters.Any(x => x.IsParams))
                                                         throw new Exception($"Expects {(method.Parameters.Any(x => x.Required) ? "at least" : "")} {(method.Parameters.Any(x => x.Required) ? method.Parameters.Select(x => x.Required).ToArray().Length : method.Parameters.Length)} parameter for method \"{method.Name}\" but {all_parts.Length} were given");
-                                                    if (method.Parameters.Any(x => x.IsParams))
-                                                    {
-                                                        string[] new_parts = [];
-                                                        for (int j = 0; j < method.Parameters.Length; j++)
-                                                        {
-                                                            if (method.Parameters[j].IsParams)
-                                                            {
-                                                                new_parts = [.. new_parts, string.Join(",", all_parts.Skip(j)).Replace(" ,", ",")];
-                                                                break;
-                                                            }
-                                                            new_parts = [.. new_parts, all_parts[j]];
-                                                        }
-                                                        all_parts = new_parts;
-                                                    }
+
+                                                    all_parts = GetIsParamParameters(all_parts, method);
+
                                                     vals = all_parts.Select(x => x.Trim()).Select( (selectValue, selectIndex) => 
                                                         selectValue.StartsWith("@:|") && selectValue.EndsWith("{}") ? 
                                                         line.Tokens[int.Parse( selectValue.Substring(3, selectValue.Length - 5)) ].Value : 
@@ -848,6 +837,24 @@ namespace EZCodeLanguage
             {
                 throw new Exception(e.Message, e);
             }
+        }
+        private string[] GetIsParamParameters(string[] all_parts, Method method)
+        {
+            if (method.Parameters.Any(x => x.IsParams))
+            {
+                string[] new_parts = [];
+                for (int j = 0; j < method.Parameters.Length; j++)
+                {
+                    if (method.Parameters[j].IsParams)
+                    {
+                        new_parts = [.. new_parts, string.Join(",", all_parts.Skip(j)).Replace(" ,", ",")];
+                        break;
+                    }
+                    new_parts = [.. new_parts, all_parts[j]];
+                }
+                all_parts = new_parts;
+            }
+            return all_parts;
         }
         private object? RunStatement(Statement statement, out bool broke)
         {

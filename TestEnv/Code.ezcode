@@ -1,16 +1,18 @@
 include main, time
 
 method start {
-	stopwatch clock new
-	clock start
+	print the timer started
 
-	int i new : 0
-	loop 10 {
-		i + 1
-		print 'i'
+	timer time new : seconds:5
+	time start
+
+	stopwatch stop new 
+	stop start
+
+	loop time is-not-done {
+		float i new => stop elapsed-seconds
+		print i
 	}
-	dispose i
 
-	clock end
-	print 'clock elapsed-seconds'
+	print the timer ended
 }
