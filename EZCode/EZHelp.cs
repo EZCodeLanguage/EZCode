@@ -1,9 +1,11 @@
 ﻿using static EZCodeLanguage.Parser;
 using static EZCodeLanguage.Interpreter;
+using Timer = System.Timers.Timer;
 using System.Data;
 using System.Diagnostics;
 using System.Timers;
-using Timer = System.Timers.Timer;
+using Microsoft.Win32;
+using System.Reflection;
 
 namespace EZCodeLanguage
 {
@@ -557,7 +559,7 @@ namespace EZCodeLanguage
                 throw;
             }
         }
-        public object ArrayParse(object array, object separator) => ObjectParse(array, "list").ToString().Split(StringParse(separator)).Select(x => x.Trim()).ToArray(); 
+        public object ArrayParse(object array, object separator) => ObjectParse(array, "list").ToString().Split(StringParse(separator)).Select(x => x.Trim()).ToArray();
         public string ArrayStringParse(object array) => ObjectParse(array, "list", to_string: false, arraySeperator: ", ").ToString();
         public int ArrayLength(object array)
         {
@@ -824,6 +826,7 @@ namespace EZCodeLanguage
 
             return (T)e.ObjectParse(obj, type);
         }
+        public static Exception ThrowError(string message) => ThrowError(new Exception(message));
         public static Exception ThrowError(Exception exception)
         {
             Error = exception.Message;
@@ -1175,5 +1178,197 @@ namespace EZCodeLanguage
             _Timers[timer] = true;
         }
         public Dictionary<Timer, bool> _Timers = [];
+
+        // OS Package:
+        //     include os
+        public void RegistrySetKey(object _keyName, object _key, object _value)
+        {
+            try
+            {
+                string keyName = StringParse(_keyName),
+                    key = StringParse(_key);
+                object value = ObjectParse(_value, "str");
+
+                using (var v = Registry.CurrentUser.CreateSubKey(keyName))
+                {
+                    Type type = value.GetType();
+                    if (type == typeof(int))
+                    {
+                        value = $"_ {value}";
+                    }
+                    v.SetValue(key, value);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public object RegistryGetKey(object _keyName, object _key)
+        {
+            try
+            {
+                string keyName = StringParse(_keyName),
+                    key = StringParse(_key);
+
+                using (var v = Registry.CurrentUser.OpenSubKey(keyName))
+                {
+                    if (v != null)
+                    {
+                        return v.GetValue(key);
+                    }
+                    else
+                    {
+                        throw new Exception($"Could not find registry key at '{Path.Combine(keyName, key)}'");
+                    }
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public string RegistryLocalMachine() => Registry.LocalMachine.ToString();
+        public string RegistryCurrentUser() => Registry.CurrentUser.ToString();
+        public string RegistryUsers() => Registry.Users.ToString();
+        public string RegistryClassesRoot() => Registry.ClassesRoot.ToString();
+        public string RegistryPerformanceData() => Registry.PerformanceData.ToString();
+        public string RegistryCurrentConfig() => Registry.CurrentConfig.ToString();
+        public Process ProcessStart(object _path, object? _arguments)
+        {
+            try
+            {
+                string path = FixDirPath( StringParse(_path) );
+                object? arguments = Try(() => StringParse(_arguments));
+
+                if (arguments != null)
+                {
+                    return Process.Start(path, arguments.ToString());
+                }
+                else
+                {
+                    return Process.Start(path);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public string ProcessName(object _process) => (ObjectParse(_process, "process") as Process).ProcessName;
+        public Process ProcessGetCurrentProcess() => Process.GetCurrentProcess();
+        public Process ProcessGetProcessById(object _id, object? _machineName)
+        {
+            try
+            {
+                int id = IntParse(_id);
+                object? machineName = Try(() => StringParse(_machineName));
+
+                if (machineName != null)
+                {
+                    return Process.GetProcessById(id, machineName.ToString());
+                }
+                else
+                {
+                    return Process.GetProcessById(id);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public Process[] ProcessGetProcesses(object? _machineName)
+        {
+            try
+            {
+                object? machineName = Try(() => StringParse(_machineName));
+
+                if (machineName != null)
+                {
+                    return Process.GetProcesses(machineName.ToString());
+                }
+                else
+                {
+                    return Process.GetProcesses();
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public Process[] ProcessGetProcessByName(object _name, object? _machineName)
+        {
+            try
+            {
+                string name = StringParse(_name);
+                object? machineName = Try(() => StringParse(_machineName));
+
+                if (machineName != null)
+                {
+                    return Process.GetProcessesByName(name, machineName.ToString());
+                }
+                else
+                {
+                    return Process.GetProcessesByName(name);
+                }
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public void ProcessKill(object _process) => (ObjectParse(_process, "process") as Process).Kill();
+        public object? ProcessGetProperty(object _process, object _property)
+        {
+            try
+            {
+                var process = ObjectParse(_process, "process") as Process;
+                var property = StringParse(_property);
+
+                if (process == null)
+                {
+                    throw new ArgumentNullException(nameof(_process), "The process object is null.");
+                }
+
+                PropertyInfo propertyInfo = typeof(Process).GetProperty(property, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                if (propertyInfo == null)
+                {
+                    throw new ArgumentException($"Property \"{property}\" not found on type \"Process\".");
+                }
+
+                return propertyInfo.GetValue(process);
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
+        public object? ProcessRunFunction(object _process, object _function)
+        {
+            try
+            {
+                var process = ObjectParse(_process, "process") as Process;
+                var function = StringParse(_function);
+
+                if (process == null)
+                {
+                    throw new ArgumentNullException(nameof(_process), "The process object is null.");
+                }
+
+                MethodInfo methodInfo = typeof(Process).GetMethod(function, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
+                if (methodInfo == null)
+                {
+                    throw new ArgumentException($"Method \"{function}\" not found on type \"Process\".");
+                }
+
+                return methodInfo.Invoke(process, null);
+            }
+            catch (Exception ex)
+            {
+                throw ThrowError(ex);
+            }
+        }
     }
 }

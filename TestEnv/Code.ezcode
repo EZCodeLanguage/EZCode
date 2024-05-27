@@ -1,18 +1,5 @@
-include main, time
+include os, time
 
-method start {
-	print the timer started
+undefined v => process get-process-by-id : 2496
 
-	timer time new : seconds:5
-	time start
-
-	stopwatch stop new 
-	stop start
-
-	loop time is-not-done {
-		float i new => stop elapsed-seconds
-		print i
-	}
-
-	print the timer ended
-}
+print v
