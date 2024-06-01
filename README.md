@@ -53,7 +53,7 @@ The [Official Docs](https://github.com/EZCodeLanguage/EZCode/wiki/EZCode-Docs) a
 <details open>
 <summary><h2>Packages</h2></summary>
 
-All the official Packages are in [EZCode Packages Repository](https://github.com/EZCodeLanguage/Packages.git). To add your own, create a pull request and it will be looked over. 
+All the official Packages are in [Packages Repository](https://github.com/EZCodeLanguage/Packages.git). To add your own, create a pull request and it will be looked over. 
 
 </details>
 
