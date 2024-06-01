@@ -1,6 +1,7 @@
 ﻿using EZCodeLanguage;
 using System.Diagnostics;
 
+/*
 // set up files variables 
 string path = "Code.ezcode";
 string full_path = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, path);
@@ -16,7 +17,7 @@ parser.Parse();
 
 // breakpoints
 EZCodeLanguage.Debug.Breakpoint[] breakpoints = [
-    //new EZCodeLanguage.Debug.Breakpoint(lines[2].Line)
+    //new EZCodeLanguage.Debug.Breakpoint(parser.LinesWithTokens[2].Line)
     ];
 
 // print code and file
@@ -42,3 +43,7 @@ interpreter.Interperate();
 stopwatch.Stop();
 long mili = stopwatch.ElapsedMilliseconds;
 Console.WriteLine(len + "\n" + "Parser Miliseconds:" + Omili.ToString() + "\nInterperate Miliseconds:" + mili.ToString() + "\nOverall Miliseconds:" + (Omili + mili).ToString());
+*/
+
+// or
+EZCode.RunProject("FirstProject.json");

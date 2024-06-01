@@ -8,7 +8,6 @@ namespace EZCodeLanguage
     public class Interpreter
     {
         public static Interpreter Instance { get; private set; }
-        public static string Version = "3.0.0-beta";
         public event EventHandler OutputWrote;
         public event EventHandler OutputCleared;
         private string[] _output = [];
@@ -51,7 +50,7 @@ namespace EZCodeLanguage
             Input = null;
             return input;
         }
-        public bool ContinueOnBreakpoint;
+        public bool ContinuedForBreakpoint = false;
         public Parser parser { get; set; }
         public EZHelp EZHelp { get; private set; }
         public Interpreter(Parser parser, Debug.Breakpoint[]? breakpoints = null)
@@ -193,10 +192,11 @@ namespace EZCodeLanguage
                 if (!duplicate_stack) StackTrace.Push(message);
                 CurrentLine = line.Line;
 
-                while (Breakpoints != null && Debug.IsHit(line.Line, Breakpoints, this))
+                while (Breakpoints != null && Debug.IsHit(line.Line, Breakpoints, this) && !ContinuedForBreakpoint)
                 {
                     Task.Delay(100);
                 }
+                ContinuedForBreakpoint = false;
 
                 Token FirstToken = line.Tokens.FirstOrDefault(new Token(TokenType.None, "", ""));
                 object? Return = null;
@@ -208,7 +208,7 @@ namespace EZCodeLanguage
                         {
                             string combined_packages = string.Join(" ", line.Tokens.Skip(1).Select(x => x.StringValue));
                             string[] packages = combined_packages.Split(",").Select(x=>x.Trim()).ToArray();
-                            Project[] projects = new Project[packages.Length];
+                            PackageClass[] projects = new PackageClass[packages.Length];
                             bool include = FirstToken.StringValue == "include";
 
                             for (int i = 0; i < packages.Length; i++)

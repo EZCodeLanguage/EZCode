@@ -39,7 +39,7 @@ static class EZ
                 if (args.Length > 3)
                 {
                     error_code = 1;
-                    Console.WriteLine($"Error, unexpected '{string.Join(" ", args.Skip(3))}'");
+                    Console.WriteLine($"Error, unexpected '{string.Join(" ", args.Skip(3))}' Please use '-' or '_' instead of spaces");
                     break;
                 }
                 if (args.Length < 3)
@@ -50,7 +50,7 @@ static class EZ
                 }
                 string type = args[1].ToLower();
                 string name = args[2];
-
+                 
                 string mainFileName, mainFileContents, mainFileNameExtension, projectPath, currentDirectory = Directory.GetCurrentDirectory();
                 int fileIndex = 0;
                 switch (type)
@@ -66,8 +66,7 @@ static class EZ
                         string projectDirectoryName = name;
                         string projectFileName = "package";
                         string projectFileNameExtension = ".json";
-                        string ProjectFileContents = @"
-{
+                        string ProjectFileContents = @"{
     ""$schema"":""https://raw.githubusercontent.com/EZCodeLanguage/Packages/main/ezcode.package.schema.json"",
     ""Name"":""" + name + @""",
     ""Files"": [
@@ -89,15 +88,58 @@ static class EZ
                         string parentDirectory = Directory.GetParent(projectPath).FullName;
                         Directory.CreateDirectory(parentDirectory);
                         File.WriteAllText(projectPath, ProjectFileContents);
+
+                        fileIndex = 0;
+                        projectPath = Path.Combine(currentDirectory, mainFileName + mainFileNameExtension);
+                        while (File.Exists(projectPath))
+                        {
+                            projectPath = Path.Combine(currentDirectory, mainFileName + fileIndex + mainFileNameExtension);
+                            fileIndex++;
+                        }
+
+                        File.WriteAllText(projectPath, mainFileContents);
                         break;
                     case "project":
-                        mainFileName = "name";
+                        mainFileName = "entry";
                         mainFileNameExtension = ".ezcode";
                         mainFileContents = """
-                            method start {
-                                print Hello World! 
+                            method start { 
+                                print Hello World 
                             }
                             """;
+                        projectDirectoryName = name;
+                        projectFileName = "project";
+                        projectFileNameExtension = ".json";
+                        ProjectFileContents = @"{
+    ""$schema"":""https://raw.githubusercontent.com/EZCodeLanguage/Projects/main/ezcode.project.schema.json"",
+    ""Name"":""" + name + @""",
+    ""Files"": [
+        ""entry.ezcode""
+    ],
+    ""GlobalPackages"":[
+        ""main""
+    ]
+}";
+                        projectPath = Path.Combine(currentDirectory, projectDirectoryName, projectFileName + projectFileNameExtension);
+                        while (File.Exists(projectPath))
+                        {
+                            fileIndex++;
+                            projectPath = Path.Combine(currentDirectory, projectDirectoryName + fileIndex, projectFileName + projectFileNameExtension);
+                        }
+                        mainFileName = Path.Combine(projectDirectoryName + (fileIndex != 0 ? fileIndex : ""), mainFileName);
+                        parentDirectory = Directory.GetParent(projectPath).FullName;
+                        Directory.CreateDirectory(parentDirectory);
+                        File.WriteAllText(projectPath, ProjectFileContents); 
+
+                        fileIndex = 0;
+                        projectPath = Path.Combine(currentDirectory, mainFileName + mainFileNameExtension);
+                        while (File.Exists(projectPath))
+                        {
+                            projectPath = Path.Combine(currentDirectory, mainFileName + fileIndex + mainFileNameExtension);
+                            fileIndex++;
+                        }
+
+                        File.WriteAllText(projectPath, mainFileContents);
                         break;
                     case "class":
                         mainFileName = "name";
@@ -126,6 +168,16 @@ class " + name + @"-example-object {
     * " + name + @"-example-object name new : x:50, z:90
     */
 ";
+
+                        fileIndex = 0;
+                        projectPath = Path.Combine(currentDirectory, mainFileName + mainFileNameExtension);
+                        while (File.Exists(projectPath))
+                        {
+                            projectPath = Path.Combine(currentDirectory, mainFileName + fileIndex + mainFileNameExtension);
+                            fileIndex++;
+                        }
+
+                        File.WriteAllText(projectPath, mainFileContents);
                         break;
                     default:
                         Console.WriteLine($"Error, unexpected '{type}' Valid types: 'project', 'package', or 'class'");
@@ -133,16 +185,6 @@ class " + name + @"-example-object {
                         Environment.Exit(error_code);
                         return;
                 }
-
-                fileIndex = 0;
-                projectPath = Path.Combine(currentDirectory, mainFileName + mainFileNameExtension);
-                while (File.Exists(projectPath))
-                {
-                    projectPath = Path.Combine(currentDirectory, mainFileName + fileIndex + mainFileNameExtension);
-                    fileIndex++;
-                }
-
-                File.WriteAllText(projectPath, mainFileContents);
                 break;
 
             case "i":
@@ -232,7 +274,7 @@ class " + name + @"-example-object {
 
             case "version":
                 if (args.Length == 1)
-                    Console.WriteLine(Interpreter.Version);
+                    Console.WriteLine(EZCode.Version);
                 else
                 {
                     error_code = 1;
@@ -240,11 +282,7 @@ class " + name + @"-example-object {
                 }
                 break;
             case "run":
-                Parser parser = new Parser(string.Join(" ", args.Skip(1).ToArray()), AppDomain.CurrentDomain.BaseDirectory);
-                parser = Package.ReturnParserWithPackages(parser, ["main"]);
-                parser.Parse();
-                Interpreter interpreter = new Interpreter(parser);
-                interpreter.Interperate();
+                EZCode.RunCodeWithMain(string.Join(" ", args.Skip(1).ToArray()), AppDomain.CurrentDomain.BaseDirectory);
                 break;
             case "start":
                 try
@@ -270,10 +308,7 @@ class " + name + @"-example-object {
                     error_code = 1;
                     break;
                 }
-                parser = new Parser(contents, path);
-                parser.Parse();
-                interpreter = new Interpreter(parser);
-                interpreter.Interperate();
+                EZCode.RunCodeWithMain(contents, path);
                 break;
         }
 
@@ -315,11 +350,7 @@ class " + name + @"-example-object {
             string line = Console.ReadLine();
             if (line == "RUN")
             {
-                Parser parser = new Parser(string.Join(Environment.NewLine, contents), AppDomain.CurrentDomain.BaseDirectory + "ez.exe");
-                parser = Package.ReturnParserWithPackages(parser, ["main"]);
-                parser.Parse();
-                Interpreter interpreter = new Interpreter(parser);
-                interpreter.Interperate();
+                EZCode.RunCodeWithMain(string.Join(Environment.NewLine, contents), AppDomain.CurrentDomain.BaseDirectory + "ez.exe");
                 again = true;
                 Console.WriteLine("RUN ENDED");
                 break;

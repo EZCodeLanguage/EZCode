@@ -30,7 +30,7 @@ namespace EZCodeLanguage
             var point = breakpoints.FirstOrDefault(x => x.Line.FilePath == line.FilePath && x.Line.CodeLine == line.CodeLine);
             bool hit = point != null && point.Enabled;
 
-            if (hit)
+            if (hit && point != null)
             {
                 if (point.EZCodeConditionToHit != null)
                 {

@@ -1,0 +1,9 @@
+{
+	"Name": "First Project",
+	"Files": [
+		"Code.ezcode"
+	],
+	"GlobalPackages": [
+		"main"
+	]
+}

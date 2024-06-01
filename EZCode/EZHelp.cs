@@ -70,8 +70,9 @@ namespace EZCodeLanguage
                             chars[i] == 'a' ? '@' :
                             chars[i] == ';' ? ':' :
                             chars[i] == 's' ? ';' :
+                            chars[i] == 'i' ? '!' :
                             chars[i];
-                        if (chars[i] == '!')
+                        if (chars[i] == 'E')
                         {
                             chars = chars.ToList().Where((x, y) => y != i).ToArray();
                             minus++;

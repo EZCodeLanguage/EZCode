@@ -438,6 +438,13 @@ namespace EZCodeLanguage
             Code = code;
             FilePath = file;
         }
+        public Parser(FileInfo file)
+        {
+            string code = File.ReadAllText(file.FullName);
+            string path = file.FullName;
+            Code = code;
+            FilePath = path;
+        }
         public LineWithTokens[] Parse()
         {
             var parse = LinesWithTokens = TokenArray(Code, FilePath).Where(x => x.Line.Value.ToString() != "").ToArray();

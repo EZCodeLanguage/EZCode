@@ -2,10 +2,22 @@
 
 namespace EZCodeLanguage
 {
+    public class PackageClass
+    {
+        public string Name { get; set; }
+        public string[] Files { get; set; }
+        public Config? Configuration { get; set; }
+        public class Config
+        {
+            public string? LibraryDirectory { get; set; }
+            public string[]? GlobalPackages { get; set; }
+        }
+    }
+
     public static class Package
     {
         public static string PackagesDirectory = "D:\\EZCodeLanguage\\Packages\\";
-        public static void AddPackageToExecutionDirectory(Project project, string executionDirectory)
+        public static void AddPackageToExecutionDirectory(PackageClass project, string executionDirectory)
         {
             string projectPath = GetPackageDirectory(project.Name);
             string libraryDirectory = Path.Combine(projectPath, project.Configuration?.LibraryDirectory ?? throw new Exception("Project.LibraryDirectory is null"));
@@ -22,7 +34,7 @@ namespace EZCodeLanguage
                 File.Copy(libraryFile, executionSubDirectoryFile);
             }
         }
-        public static void RemovePackageFromExecutionDirectory(Project project, string executionDirectory)
+        public static void RemovePackageFromExecutionDirectory(PackageClass project, string executionDirectory)
         {
             string libraryDirectory = project.Configuration?.LibraryDirectory ?? throw new Exception("Project.LibraryDirectory is null");
             string executionSubDirectory = Path.Combine(executionDirectory, libraryDirectory);
@@ -52,15 +64,15 @@ namespace EZCodeLanguage
         {
             return Path.Combine(PackagesDirectory, package_name, "package.json");
         }
-        public static Project GetPackageAsProject(string package_name)
+        public static PackageClass GetPackageAsProject(string package_name)
         {
-            return JsonConvert.DeserializeObject<Project>(File.ReadAllText(GetPackageFile(package_name)));
+            return JsonConvert.DeserializeObject<PackageClass>(File.ReadAllText(GetPackageFile(package_name)));
         }
         public static Parser GetPackageAsParser(string package_name)
         {
             string file = GetPackageFile(package_name);
             string pack_dir = GetPackageDirectory(package_name);
-            Project project = JsonConvert.DeserializeObject<Project>(File.ReadAllText(file));
+            PackageClass project = JsonConvert.DeserializeObject<PackageClass>(File.ReadAllText(file));
             string[] global_packages = project.Configuration != null ? project.Configuration.GlobalPackages ?? [] : [];
             Parser[] parsers = [];
             foreach (var pack in global_packages)
