@@ -1,6 +1,6 @@
 ---
 name: Bug Report
-description: Bug or error in program or application
+about: Bug or error in program or application
 title: '[bug]'
 
 ---
