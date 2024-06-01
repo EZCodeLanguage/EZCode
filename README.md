@@ -61,5 +61,5 @@ Please join our [Discord Server](https://discord.gg/DpBrp6Zy) to get closer to t
 <details open>
 <summary><h2>License</h2></summary>
 
-EzCode is released under the [MIT License](LICENSE).
+EZCode is released under the [MIT License](LICENSE).
 </details>
