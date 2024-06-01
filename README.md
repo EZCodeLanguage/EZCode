@@ -45,6 +45,22 @@ method printColor : @color:c {
 </details>
 
 <details open>
+<summary><h2>Command Line</h2></summary>
+
+To run EZCode, use the following command (assuming you have installed it [HERE](https://github.com/EZCodeLanguage/EZCode/releases/latest))
+> `ez FILE_PATH`
+
+To start a integrated environment, use:
+> `ez start`
+
+To create a project, use:
+> `ez new project NAME`
+
+View all commands with: 
+> `ez help`
+
+
+<details open>
 <summary><h2>Docs</h2></summary>
 
 The [Official Docs](https://github.com/EZCodeLanguage/EZCode/wiki/EZCode-Docs) are on the our [GitHub Wiki Page](https://github.com/EZCodeLanguage/EZCode/wiki). Please refer to this for any detailed instrictions.

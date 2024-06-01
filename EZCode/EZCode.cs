@@ -2,7 +2,7 @@
 {
     public class EZCode
     {
-        public static string Version = "3.0.0-beta";
+        public static string Version = "3.0.0";
         public static void RunFileWithMain(string file)
         {
             Parser parser = new Parser(new FileInfo(Path.GetFullPath(file)));
