@@ -4,7 +4,7 @@
 
 ## \*\**Version 3.0.0 Currently in Development*\*\*
 *What EZCode v3 is going to look like,*
-```ezcode
+```c
 include main
 
 make ^int {NAME} {VALUE} => int {NAME} new : {VALUE}
@@ -41,7 +41,7 @@ method printColor : @color:c {
 <details open>
 <summary><h2>Welcome!</h2></summary>
 
-**Welcome to EZCode!** EZCode is a comprehensive programming language built off of Microsoft WinForms. EZCode strives to make it as easy as possible to build a Windows program ranging from a Visual Application to simple console programs. Refer to [Community](#community) to learn more on how to contribute and where to join our Discord Server!
+**Welcome to EZCode!** EZCode is a comprehensive programming language built with C#. EZCode is designed to be easy to use straightforward, *although sometimes it can be tuff*. Refer to [Community](#community) to learn more on how to contribute and where to join our Discord Server!
 </details>
 
 <details open>
