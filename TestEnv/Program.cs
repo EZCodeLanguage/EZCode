@@ -46,4 +46,4 @@ Console.WriteLine(len + "\n" + "Parser Miliseconds:" + Omili.ToString() + "\nInt
 */
 
 // or
-EZCode.RunProject("FirstProject.json");
+EZCode.RunProject("FirstProject.json", AppDomain.CurrentDomain.BaseDirectory);

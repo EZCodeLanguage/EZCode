@@ -2,6 +2,9 @@
 using System.IO.Compression;
 using System.Net;
 
+// Release command:
+// dotnet publish -o "out/ez/publish" ez/ez.csproj -r win-x64 -c Release -p:PublishReadyToRun=true -p:PublishSingleFile=true --self-contained
+// dotnet publish -o "out/installer/publish" Installer/Installer.csproj -r win-x64 -c Release -p:PublishReadyToRun=true -p:PublishSingleFile=true --self-contained
 static class EZ
 {
     public static int error_code = 0;
@@ -308,6 +311,10 @@ class " + name + @"-example-object {
                     error_code = 1;
                     break;
                 }
+                if (Path.GetExtension(path) == ".json")
+                {
+                    EZCode.RunProject(path, Path.GetDirectoryName(path));
+                }
                 EZCode.RunCodeWithMain(contents, path);
                 break;
         }
@@ -344,9 +351,9 @@ class " + name + @"-example-object {
         }
         bool again = false, restart = false;
         contents ??= [];
-        for (int i = 0; i < 100000; i++)
+        for (int i = 0; i < 10000; i++)
         {
-            if (i <= 100000) throw new Exception("Error, out of bounds. 99999 line limit");
+            if (i >= 10000) throw new Exception("Error, out of bounds. 99999 line limit");
             string line = Console.ReadLine();
             if (line == "RUN")
             {

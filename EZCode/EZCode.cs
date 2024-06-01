@@ -45,15 +45,15 @@
             Interpreter interpreter = new Interpreter(parser, breakpoints);
             interpreter.Interperate();
         }
-        public static void RunProject(string path)
+        public static void RunProject(string path, string directory)
         {
             ProjectClass project = Project.GetProjectFromPath(path);
-            Project.Run(project);
+            Project.Run(project, directory);
         }
-        public static void DebugProject(Debug.Breakpoint[] breakpoints, string path)
+        public static void DebugProject(Debug.Breakpoint[] breakpoints, string path, string directory)
         {
             ProjectClass project = Project.GetProjectFromPath(path);
-            Parser par = Project.GetParserFromProject(project);
+            Parser par = Project.GetParserFromProject(project, directory);
             Interpreter interpreter = new Interpreter(par, breakpoints);
             interpreter.Interperate();
         }

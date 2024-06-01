@@ -1,10 +1,9 @@
 ![Main Image](https://raw.githubusercontent.com/JBrosDevelopment/EZCode/master/docs/Images/EZCode_Wide_Logo.png)
 
----
 
-## \*\**Version 3.0.0 Currently in Development*\*\*
-*What EZCode v3 is going to look like,*
+# *EZCode v3.0.0 Example*
 ```c
+// include main package
 include main
 
 make ^int {NAME} {VALUE} => int {NAME} new : {VALUE}
@@ -36,16 +35,14 @@ method printColor : @color:c {
 // The color: 50 60 90
 ```
 
----
 
-<details open>
-<summary><h2>Welcome!</h2></summary>
+# Welcome!
 
 **Welcome to EZCode!** EZCode is a comprehensive programming language built with C#. EZCode is designed to be easy to use straightforward, *although sometimes it can be tuff*. Refer to [Community](#community) to learn more on how to contribute and where to join our Discord Server!
-</details>
 
-<details open>
-<summary><h2>Command Line</h2></summary>
+Install EZCode using the installer from the [latest release](https://github.com/EZCodeLanguage/EZCode/releases/latest) and click **Installer.zip** to download it.
+
+# Command Line
 
 To run EZCode, use the following command (assuming you have installed it [HERE](https://github.com/EZCodeLanguage/EZCode/releases/latest))
 > `ez FILE_PATH`
@@ -60,29 +57,21 @@ View all commands with:
 > `ez help`
 
 
-<details open>
-<summary><h2>Docs</h2></summary>
+# Docs
 
 The [Official Docs](https://github.com/EZCodeLanguage/EZCode/wiki/EZCode-Docs) are on the our [GitHub Wiki Page](https://github.com/EZCodeLanguage/EZCode/wiki). Please refer to this for any detailed instrictions.
-</details>
 
-<details open>
-<summary><h2>Packages</h2></summary>
+# Packages
 
 All the official Packages are in [Packages Repository](https://github.com/EZCodeLanguage/Packages.git). To add your own, create a pull request and it will be looked over. 
 
-</details>
 
-<details open>
-<summary><h2>Community</h2></summary>
+# Community
 
 Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/EZCodeLanguage/Projects.git). To contribute, create a pull request and it will be accepted as soon as possible. 
 
 Please join our [Discord Server](https://discord.gg/DpBrp6Zy) to get closer to the community!
-</details>
 
-<details open>
-<summary><h2>License</h2></summary>
+# License
 
 EZCode is released under the [MIT License](LICENSE).
-</details>
