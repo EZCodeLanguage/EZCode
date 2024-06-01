@@ -51,9 +51,16 @@ The [Official Docs](https://github.com/EZCodeLanguage/EZCode/wiki/EZCode-Docs) a
 </details>
 
 <details open>
+<summary><h2>Packages</h2></summary>
+
+All the official Packages are in [EZCode Packages Repository](https://github.com/EZCodeLanguage/Packages.git). To add your own, create a pull request and it will be looked over. 
+
+</details>
+
+<details open>
 <summary><h2>Community</h2></summary>
 
-Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/EZCodeLanguage/EZCode-Projects.git). Create a pull request and it will be accepted as soon as possible. 
+Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/EZCodeLanguage/Projects.git). To contribute, create a pull request and it will be accepted as soon as possible. 
 
 Please join our [Discord Server](https://discord.gg/DpBrp6Zy) to get closer to the community!
 </details>
