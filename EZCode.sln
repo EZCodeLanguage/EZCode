@@ -9,6 +9,8 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestEnv", "TestEnv\TestEnv.
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "ez", "ez\ez.csproj", "{A9062E15-5201-47CC-917D-C210E41A1AEC}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Installer", "Installer\Installer.csproj", "{5DB25D5B-AA77-4198-9BEE-17D8CF77DE23}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -27,6 +29,10 @@ Global
 		{A9062E15-5201-47CC-917D-C210E41A1AEC}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{A9062E15-5201-47CC-917D-C210E41A1AEC}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{A9062E15-5201-47CC-917D-C210E41A1AEC}.Release|Any CPU.Build.0 = Release|Any CPU
+		{5DB25D5B-AA77-4198-9BEE-17D8CF77DE23}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{5DB25D5B-AA77-4198-9BEE-17D8CF77DE23}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{5DB25D5B-AA77-4198-9BEE-17D8CF77DE23}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{5DB25D5B-AA77-4198-9BEE-17D8CF77DE23}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
