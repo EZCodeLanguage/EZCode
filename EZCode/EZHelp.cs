@@ -559,49 +559,93 @@ namespace EZCodeLanguage
                 throw;
             }
         }
-        public object ArrayParse(object array, object separator) => ObjectParse(array, "list").ToString().Split(StringParse(separator)).Select(x => x.Trim()).ToArray();
-        public string ArrayStringParse(object array) => ObjectParse(array, "list", to_string: false, arraySeperator: ", ").ToString();
-        public int ArrayLength(object array)
+        public Array ArrayGetArray(object _array)
         {
-            try
+            if (_array.ToString().StartsWith("{") && _array.ToString().EndsWith("}"))
             {
-                string sep = "|\\@@@@@__~>=>=//\\@@@@@@######{}}{sd\\___gpgdfpsg14702580690, ";
-                return ObjectParse(array, "list", to_string: false, arraySeperator: sep).ToString().Split(sep).Length;
+                _array = _array.ToString().Substring(1, _array.ToString().Length - 2).Trim();
             }
-            catch (Exception e)
+            return Interpreter.Vars.FirstOrDefault(x => x.Name == _array.ToString())?.Value as Array;
+        }
+        public Array ArrayGenerateArray(object? _length)
+        {
+            object? lengthObj = Try(() => IntParse(_length));
+            if (lengthObj == null)
             {
-                Error = e.Message;
-                throw;
+                return Array.Empty<object>();
+            }
+            else
+            {
+                int length = int.Parse(lengthObj.ToString()!);
+                return Array.CreateInstance(typeof(object), length);
             }
         }
-        public object ArrayAppend(object array, object appends, object separator)
+        public object? ArrayGetIndex(object _array, object _index)
         {
             try
             {
-                string sep = "|\\@@@@@__~>=>=//\\:@@@@@@#:#####{}}{sd\\___gpgdfpsg14702580690, ";
-                var tempA = ObjectParse(array, "list", to_string: false, arraySeperator: sep, returnNull: true);
-                object[] a = (tempA != null) ? tempA.ToString().Split(sep) : [];
-                object[] b = (object[])ArrayParse(appends, separator);
-                return a.Concat(b).ToArray();
+                Array array = ArrayGetArray(_array);
+                int index = IntParse(_index);
+
+                return array.GetValue(index) ?? throw new Exception("Index outside bounds of array");
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Error = e.Message;
-                throw;
+                throw ThrowError(ex);
             }
         }
-        public object ArrayIndex(object array, object index)
+        public void ArraySetIndex(object _array, object _index, object _value)
         {
             try
             {
-                string sep = "|\\@@@@@__~>=>=//\\:@@@@@@#:#####{}}{sd\\___gpgdfpsg14702580690, ";
-                return ObjectParse(array, "list", to_string: false, arraySeperator: sep).ToString().Split(sep)[int.Parse(StringParse(index))];
+                Array array = ArrayGetArray(_array);
+                int index = IntParse(_index);
+                object value = ObjectParse(_value, "str");
+
+                array.SetValue(value, index);
             }
-            catch (Exception e)
+            catch (Exception ex)
             {
-                Error = e.Message;
-                throw;
+                throw ThrowError(ex);
             }
+        }
+        public int ArrayLength(object _array)
+        {
+            Array array = ArrayGetArray(_array);
+            return array.Length;
+        }
+        public int ArrayHashCodes(object _array)
+        {
+            Array array = ArrayGetArray(_array);
+            return array.GetHashCode();
+        }
+        public Array ArrayAppends(object _array, object _value)
+        {
+            object[] array = (object[])ArrayGetArray(_array);
+            object value = ObjectParse(_value, "str");
+            return array.Append(value).ToArray();
+        }
+        public Array ArrayPrepends(object _array, object _value)
+        {
+            object[] array = (object[])ArrayGetArray(_array);
+            object value = ObjectParse(_value, "str");
+            return array.Prepend(value).ToArray();
+        }
+        public object? ArrayFirst(object _array)
+        {
+            object[] array = (object[])ArrayGetArray(_array);
+            return array.First();
+        }
+        public object? ArrayLast(object _array)
+        {
+            object[] array = (object[])ArrayGetArray(_array);
+            return array.Last();
+        }
+        public Array ArraySplitString(object _text, object _splitter)
+        {
+            string text = StringParse(_text);
+            string splitter = Format(_splitter);
+            return text.Split(splitter);
         }
         public float MathFunc(object obj, object op)
         {
@@ -641,7 +685,7 @@ namespace EZCodeLanguage
         }
         public float Average(object obj)
         {
-            object[] array = ArrayParse(obj, ",") as object[];
+            object[] array = ObjectParse(obj, "str").ToString().Split(",");
             float[] numbers = array.Select((x, y) => float.Parse(ObjectParse(array[y], "float").ToString())).ToArray();
             float all = numbers.Sum();
             return all / numbers.Length;
@@ -819,12 +863,18 @@ namespace EZCodeLanguage
         }
 
         // EZHelp static functions:
-        public static T GetParameter<T>(object obj, Type type) => GetParameter<T>(obj, type.Name);
+        public static T GetParameter<T>(object obj) => GetParameter<T>(obj, typeof(T).ToString());
         public static T GetParameter<T>(object obj, string type)
         {
             EZHelp e = new EZHelp(Instance);
 
             return (T)e.ObjectParse(obj, type);
+        }
+        public static object GetParameter(object obj, string type)
+        {
+            EZHelp e = new EZHelp(Instance);
+
+            return e.ObjectParse(obj, type);
         }
         public static Exception ThrowError(string message) => ThrowError(new Exception(message));
         public static Exception ThrowError(Exception exception)
@@ -832,6 +882,7 @@ namespace EZCodeLanguage
             Error = exception.Message;
             throw exception;
         }
+        public static T? Try<T>(Func<object> function) => (T)Try(function);
         public static object? Try(Func<object> function)
         {
             try
@@ -843,6 +894,7 @@ namespace EZCodeLanguage
                 return null;
             }
         }
+        public static T? Try<T>(Func<object> function, Func<object> handle) => (T)Try(function, handle);
         public static object? Try(Func<object> function, Func<object> handle)
         {
             try
@@ -1178,197 +1230,5 @@ namespace EZCodeLanguage
             _Timers[timer] = true;
         }
         public Dictionary<Timer, bool> _Timers = [];
-
-        // OS Package:
-        //     include os
-        public void RegistrySetKey(object _keyName, object _key, object _value)
-        {
-            try
-            {
-                string keyName = StringParse(_keyName),
-                    key = StringParse(_key);
-                object value = ObjectParse(_value, "str");
-
-                using (var v = Registry.CurrentUser.CreateSubKey(keyName))
-                {
-                    Type type = value.GetType();
-                    if (type == typeof(int))
-                    {
-                        value = $"_ {value}";
-                    }
-                    v.SetValue(key, value);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ThrowError(ex);
-            }
-        }
-        public object RegistryGetKey(object _keyName, object _key)
-        {
-            try
-            {
-                string keyName = StringParse(_keyName),
-                    key = StringParse(_key);
-
-                using (var v = Registry.CurrentUser.OpenSubKey(keyName))
-                {
-                    if (v != null)
-                    {
-                        return v.GetValue(key);
-                    }
-                    else
-                    {
-                        throw new Exception($"Could not find registry key at '{Path.Combine(keyName, key)}'");
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ThrowError(ex);
-            }
-        }
-        public string RegistryLocalMachine() => Registry.LocalMachine.ToString();
-        public string RegistryCurrentUser() => Registry.CurrentUser.ToString();
-        public string RegistryUsers() => Registry.Users.ToString();
-        public string RegistryClassesRoot() => Registry.ClassesRoot.ToString();
-        public string RegistryPerformanceData() => Registry.PerformanceData.ToString();
-        public string RegistryCurrentConfig() => Registry.CurrentConfig.ToString();
-        public Process ProcessStart(object _path, object? _arguments)
-        {
-            try
-            {
-                string path = FixDirPath( StringParse(_path) );
-                object? arguments = Try(() => StringParse(_arguments));
-
-                if (arguments != null)
-                {
-                    return Process.Start(path, arguments.ToString());
-                }
-                else
-                {
-                    return Process.Start(path);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ThrowError(ex);
-            }
-        }
-        public string ProcessName(object _process) => (ObjectParse(_process, "process") as Process).ProcessName;
-        public Process ProcessGetCurrentProcess() => Process.GetCurrentProcess();
-        public Process ProcessGetProcessById(object _id, object? _machineName)
-        {
-            try
-            {
-                int id = IntParse(_id);
-                object? machineName = Try(() => StringParse(_machineName));
-
-                if (machineName != null)
-                {
-                    return Process.GetProcessById(id, machineName.ToString());
-                }
-                else
-                {
-                    return Process.GetProcessById(id);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ThrowError(ex);
-            }
-        }
-        public Process[] ProcessGetProcesses(object? _machineName)
-        {
-            try
-            {
-                object? machineName = Try(() => StringParse(_machineName));
-
-                if (machineName != null)
-                {
-                    return Process.GetProcesses(machineName.ToString());
-                }
-                else
-                {
-                    return Process.GetProcesses();
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ThrowError(ex);
-            }
-        }
-        public Process[] ProcessGetProcessByName(object _name, object? _machineName)
-        {
-            try
-            {
-                string name = StringParse(_name);
-                object? machineName = Try(() => StringParse(_machineName));
-
-                if (machineName != null)
-                {
-                    return Process.GetProcessesByName(name, machineName.ToString());
-                }
-                else
-                {
-                    return Process.GetProcessesByName(name);
-                }
-            }
-            catch (Exception ex)
-            {
-                throw ThrowError(ex);
-            }
-        }
-        public void ProcessKill(object _process) => (ObjectParse(_process, "process") as Process).Kill();
-        public object? ProcessGetProperty(object _process, object _property)
-        {
-            try
-            {
-                var process = ObjectParse(_process, "process") as Process;
-                var property = StringParse(_property);
-
-                if (process == null)
-                {
-                    throw new ArgumentNullException(nameof(_process), "The process object is null.");
-                }
-
-                PropertyInfo propertyInfo = typeof(Process).GetProperty(property, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                if (propertyInfo == null)
-                {
-                    throw new ArgumentException($"Property \"{property}\" not found on type \"Process\".");
-                }
-
-                return propertyInfo.GetValue(process);
-            }
-            catch (Exception ex)
-            {
-                throw ThrowError(ex);
-            }
-        }
-        public object? ProcessRunFunction(object _process, object _function)
-        {
-            try
-            {
-                var process = ObjectParse(_process, "process") as Process;
-                var function = StringParse(_function);
-
-                if (process == null)
-                {
-                    throw new ArgumentNullException(nameof(_process), "The process object is null.");
-                }
-
-                MethodInfo methodInfo = typeof(Process).GetMethod(function, BindingFlags.Public | BindingFlags.Instance | BindingFlags.IgnoreCase);
-                if (methodInfo == null)
-                {
-                    throw new ArgumentException($"Method \"{function}\" not found on type \"Process\".");
-                }
-
-                return methodInfo.Invoke(process, null);
-            }
-            catch (Exception ex)
-            {
-                throw ThrowError(ex);
-            }
-        }
     }
 }

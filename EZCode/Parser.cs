@@ -36,12 +36,12 @@ namespace EZCodeLanguage
             public ArgAdds ArgAdd = ArgAdds.None;
             public Token[] Tokens { get; set; }
             public Line Line { get; set; }
-            public string Value { get; set; }
+            public string StringValue { get; set; }
             public Argument(Token[] tokens, Line line, string value, ArgAdds argAdds = ArgAdds.None)
             {
                 Tokens = tokens;
                 Line = line;
-                Value = value;
+                StringValue = value;
                 ArgAdd = argAdds;
             }
             public Argument[]? Args()

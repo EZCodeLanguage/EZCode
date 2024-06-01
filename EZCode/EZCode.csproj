@@ -24,7 +24,7 @@
 	<GenerateDocumentationFile>False</GenerateDocumentationFile>
 	<Nullable>Enable</Nullable>
   </PropertyGroup>
-
+  
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <GenerateAssemblyInfo>True</GenerateAssemblyInfo>
   </PropertyGroup>

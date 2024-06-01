@@ -1,5 +1,1 @@
-include os, time
-
-undefined v => process get-process-by-id : 2496
-
-print v
+include main

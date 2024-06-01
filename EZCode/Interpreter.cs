@@ -1,4 +1,5 @@
-﻿using System.Reflection;
+﻿using System.Linq;
+using System.Reflection;
 using System.Runtime.Loader;
 using static EZCodeLanguage.Parser;
 
@@ -97,6 +98,7 @@ namespace EZCodeLanguage
                 }
             }
         }
+        private bool MessageHandled = false;
         private bool LastIfWasTrue = true;
         private Exception? LastTryNotFailed = null;
         private bool yielded = false;
@@ -152,6 +154,7 @@ namespace EZCodeLanguage
                     }
                     catch (Exception ex)
                     {
+                        MessageHandled = false;
                         string stack = string.Join("\n\t", StackTrace.Reverse());
                         string message = ex.Message + ", StackTrace: \n\t" + (stack != "" ? stack : "Stack Empty");
                         Output = [.. Output, message];
@@ -538,6 +541,8 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
+                            if (MessageHandled) throw;
+                            MessageHandled = true;
                             throw new Exception($"Error with \"{line.Line.Value}\", Error Message:\"{ex.Message}\"");
                         }
                         break;
@@ -552,7 +557,7 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
-                            throw new Exception($"Error with \"runexec\" and with C# method. The reason may be because the method does not exist. Error Message:\"{ex.Message}\"");
+                            throw new Exception($"Error with \"runexec\" in C# method. Error Message:\"{ex.Message}\"");
                         }
                         break;
                     case TokenType.Undefined:
@@ -582,6 +587,8 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
+                            if (MessageHandled) throw;
+                            MessageHandled = true;
                             throw new Exception($"Error with \"undefined\", Error Message:\"{ex.Message}\"");
                         }
                         break;
@@ -594,6 +601,8 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
+                            if (MessageHandled) throw;
+                            MessageHandled = true;
                             throw new Exception($"Error with \"throw\", Error Message:\"{ex.Message}\"");
                         }
                         if (err_message != "")
@@ -618,6 +627,8 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
+                            if (MessageHandled) throw;
+                            MessageHandled = true;
                             throw new Exception($"Error with \"dispose\", Error Message:\"{ex.Message}\"");
                         }
                         break;
@@ -640,11 +651,15 @@ namespace EZCodeLanguage
                                 }
                                 catch
                                 {
+                                    if (MessageHandled) throw;
+                                    MessageHandled = true;
                                     throw new Exception($"Error with \"return\", Error Message:\"{ex.Message}\"");
                                 }
                             }
                             else
                             {
+                                if (MessageHandled) throw;
+                                MessageHandled = true;
                                 throw new Exception($"Error with \"return\", Error Message:\"{ex.Message}\"");
                             }
                         }
@@ -660,6 +675,8 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
+                            if (MessageHandled) throw;
+                            MessageHandled = true;
                             throw new Exception($"Error with \"global\", Error Message:\"{ex.Message}\"");
                         }
                         break;
@@ -667,7 +684,7 @@ namespace EZCodeLanguage
                         try
                         {
                             Statement? statement = FirstToken.Value as Statement;
-                            Argument[]? arguments = statement!.Argument!.Args() ?? throw new Exception($"Problem with argument \"{statement.Argument.Value}\"");
+                            Argument[]? arguments = statement!.Argument!.Args() ?? throw new Exception($"Problem with argument \"{statement.Argument.StringValue}\"");
                             string[] parts = [];
                             for (int i = 0; i < arguments.Length; i++)
                             {
@@ -689,6 +706,8 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
+                            if (MessageHandled) throw;
+                            MessageHandled = true;
                             throw new Exception($"Error with \"if\", Error Message:\"{ex.Message}\"");
                         }
                         break;
@@ -697,7 +716,7 @@ namespace EZCodeLanguage
                         {
                             if (LastIfWasTrue) break;
                             Statement? statement = FirstToken.Value as Statement;
-                            Argument[]? arguments = statement!.Argument!.Args() ?? throw new Exception($"Problem with argument \"{statement.Argument.Value}\"");
+                            Argument[]? arguments = statement!.Argument!.Args() ?? throw new Exception($"Problem with argument \"{statement.Argument.StringValue}\"");
                             string[] parts = [];
                             for (int i = 0; i < arguments.Length; i++)
                             {
@@ -719,6 +738,8 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
+                            if (MessageHandled) throw;
+                            MessageHandled = true;
                             throw new Exception($"Error with \"elif\", Error Message:\"{ex.Message}\"");
                         }
                         break;
@@ -732,6 +753,8 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
+                            if (MessageHandled) throw;
+                            MessageHandled = true;
                             throw new Exception($"Error with \"else\", Error Message:\"{ex.Message}\"");
                         }
                         break;
@@ -739,8 +762,11 @@ namespace EZCodeLanguage
                         try
                         {
                             Statement? statement = FirstToken.Value as Statement;
-                            Argument[]? arguments = statement!.Argument!.Args() ?? throw new Exception($"Problem with argument \"{statement.Argument.Value}\"");
-                            if (statement.Argument.Tokens.Length == 1 && float.TryParse(statement.Argument.Tokens[0].Value.ToString(), out float floatParse))
+                            Argument[]? arguments = statement!.Argument!.Args() ?? throw new Exception($"Problem with argument \"{statement.Argument.StringValue}\"");
+
+                            object TryFloat = GetValue(statement.Argument.Tokens, DataType.GetType("float", Classes));
+                            float? floatParse = EZHelp.Try<float?>(() => float.Parse(TryFloat.ToString()!));
+                            if (floatParse != null) 
                             {
                                 if (int.TryParse(floatParse.ToString(), out int parse))
                                 {
@@ -776,6 +802,8 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
+                            if (MessageHandled) throw;
+                            MessageHandled = true;
                             throw new Exception($"Error with \"loop\", Error Message:\"{ex.Message}\"");
                         }
                         break;
@@ -805,6 +833,8 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
+                            if (MessageHandled) throw;
+                            MessageHandled = true;
                             throw new Exception($"Error with \"fail\", Error Message:\"{ex.Message}\"");
                         }
                         break;
@@ -825,6 +855,8 @@ namespace EZCodeLanguage
                         }
                         catch (Exception ex)
                         {
+                            if (MessageHandled) throw;
+                            MessageHandled = true;
                             throw new Exception($"Error with boolean, Error Message:\"{ex.Message}\"");
                         }
                         break;
@@ -912,7 +944,7 @@ namespace EZCodeLanguage
                 result = SingleLine(line) ?? throw new Exception(); 
             }
             catch 
-            { 
+            {
                 exc = EZHelp.Error;
                 EZHelp.Error = null;
                 string[] before = line.Tokens.Select(x => x.Value.ToString()).ToArray();
@@ -925,9 +957,9 @@ namespace EZCodeLanguage
             if (result is Class c)
                 result = Argument.EvaluateTerm(c.Properties.FirstOrDefault(x => x.Name.ToLower() == "value").Value.ToString());
             if (result == null)
-                result = argument.Value;
+                result = argument.StringValue;
             bool? term = Argument.EvaluateTerm(result.ToString());
-            if (term == null) throw new Exception($"Expected the argument section's method \"{argument.Value}\" to return boolean{(exc != "" ? $", Message: \"{exc}\"" : "")}");
+            if (term == null) throw new Exception($"Expected the argument section's method \"{argument.StringValue}\" to return boolean{(exc != "" ? $", Message: \"{exc}\"" : "")}");
             return term;
         }
         private enum IdentType { Var, Class, Method, Other }
@@ -1048,6 +1080,8 @@ namespace EZCodeLanguage
                 {
                     for (int i = 0; i < a.Length; i++)
                     {
+                        if (a[i] is null) continue;
+
                         if (a[i].GetType().IsArray)
                         {
                             return (a[i] as object[])[0];

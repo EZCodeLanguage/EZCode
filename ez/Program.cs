@@ -19,14 +19,14 @@ static class EZ
                     Console.WriteLine("""
                     All commands:
                     
-                    help              Writes all of the possible commands
-                    version           Writes the current version of EZCode installed
-                    run [CODE]        Runs a line of code. 'main' Package is already imported
-                    start             Starts an EZCode environment
-                    install [NAME]    Installs a package from github repo https://github.com/EZCodeLanguage/Packages.git
-                    uninstall [NAME]  Uninstalls the package
-                    new [TYPE]        Creates an empty [Project], [Package], [Class] in the directory
-                    [FILEPATH]        Runs file
+                    help                Writes all of the possible commands
+                    version             Writes the current version of EZCode installed
+                    run [CODE]          Runs a line of code. 'main' Package is already imported
+                    start               Starts an EZCode environment
+                    install [NAME]      Installs a package from github repo https://github.com/EZCodeLanguage/Packages.git
+                    uninstall [NAME]    Uninstalls the package
+                    new [TYPE] [NAME]   Creates an empty [Project], [Package], [Class] in the directory
+                    [FILEPATH]          Runs file
                     """);
                 else
                 {
@@ -36,87 +36,96 @@ static class EZ
                 break;
 
             case "new":
-                string type = args[1].ToLower();
-                if (args.Length > 2)
+                if (args.Length > 3)
                 {
                     error_code = 1;
-                    Console.WriteLine($"Error, unexpected '{string.Join(" ", args.Skip(1))}'");
+                    Console.WriteLine($"Error, unexpected '{string.Join(" ", args.Skip(3))}'");
+                    break;
                 }
-                string defaultMainFileName, defaultMainFile, defaultMainFileNameExtension, projectPath, currentDirectory = Directory.GetCurrentDirectory();
+                if (args.Length < 3)
+                {
+                    error_code = 1;
+                    Console.WriteLine($"Error, expected syntax 'ez [TYPE] [NAME]");
+                    break;
+                }
+                string type = args[1].ToLower();
+                string name = args[2];
+
+                string mainFileName, mainFileContents, mainFileNameExtension, projectPath, currentDirectory = Directory.GetCurrentDirectory();
                 int fileIndex = 0;
                 switch (type)
                 {
                     case "package":
-                        defaultMainFileName = "project";
-                        defaultMainFileNameExtension = ".ezcode";
-                        defaultMainFile = """
-                            method printHelloWorld {
-                                print Hello World
+                        mainFileName = name;
+                        mainFileNameExtension = ".ezcode";
+                        mainFileContents = """
+                            method printHelloWorld { 
+                                print Hello World 
                             }
                             """;
-                        string defaultProjectFileName = "package";
-                        string defaultProjectFileNameExtension = ".json";
-                        string defaultProjectFile = """
-                            {
-                                "Name":"project",
-                                "Files": [
-                                    "project.ezcode"
-                                ],
-                                "Configuration":{
-                                    "GlobalPackages":[
-                                        "main"
-                                    ]
-                                }
-                            }
-                            """;
-                        projectPath = Path.Combine(currentDirectory, defaultProjectFileName, defaultProjectFileName + defaultProjectFileNameExtension);
+                        string projectDirectoryName = name;
+                        string projectFileName = "package";
+                        string projectFileNameExtension = ".json";
+                        string ProjectFileContents = @"
+{
+    ""$schema"":""https://raw.githubusercontent.com/EZCodeLanguage/Packages/main/ezcode.package.schema.json"",
+    ""Name"":""" + name + @""",
+    ""Files"": [
+        """ + name + @".ezcode""
+    ],
+    ""Configuration"":{
+        ""GlobalPackages"":[
+            ""main""
+        ]
+    }
+}";
+                        projectPath = Path.Combine(currentDirectory, projectDirectoryName, projectFileName + projectFileNameExtension);
                         while (File.Exists(projectPath))
                         {
                             fileIndex++;
-                            projectPath = Path.Combine(currentDirectory, defaultProjectFileName + fileIndex, defaultProjectFileName + defaultProjectFileNameExtension);
+                            projectPath = Path.Combine(currentDirectory, projectDirectoryName + fileIndex, projectFileName + projectFileNameExtension);
                         }
-                        defaultMainFileName = Path.Combine(defaultProjectFileName + (fileIndex != 0 ? fileIndex : ""), defaultMainFileName);
+                        mainFileName = Path.Combine(projectDirectoryName + (fileIndex != 0 ? fileIndex : ""), mainFileName);
                         string parentDirectory = Directory.GetParent(projectPath).FullName;
                         Directory.CreateDirectory(parentDirectory);
-                        File.WriteAllText(projectPath, defaultProjectFile);
+                        File.WriteAllText(projectPath, ProjectFileContents);
                         break;
-
                     case "project":
-                        defaultMainFileName = "project";
-                        defaultMainFileNameExtension = ".ezcode";
-                        defaultMainFile = """
+                        mainFileName = "name";
+                        mainFileNameExtension = ".ezcode";
+                        mainFileContents = """
                             method start {
-                                print Hello World!
+                                print Hello World! 
                             }
                             """;
                         break;
                     case "class":
-                        defaultMainFileName = "example-class";
-                        defaultMainFileNameExtension = ".ezcode";
-                        defaultMainFile = """
-                            class example-type {
-                                explicit params => set : PARAMS
-                                undefined Value 
-                                method set : val {
-                                    Value => format : val
-                                }
-                                get => @str {
-                                    return Value
-                                }
-                            }
-                            /* Example Use:
-                             * example-type name new : Hello World!
-                             */
+                        mainFileName = "name";
+                        mainFileNameExtension = ".ezcode";
+                        mainFileContents = @"
+class " + name + @"-example-type {
+    explicit params => set : PARAMS
+    undefined Value 
+    method set : val {
+        Value => format : val
+    }
+    get => @str {
+        return Value
+    }
+}
+/* Example Use:
+    * " + name + @"-example-type name new : Hello World!
+    */
 
-                            class example-object {
-                                undefined x => 0
-                                undefined y => 50
-                                undefined z => 123
-                            }
-                            /* Example Use:
-                             * example-object name new : x:50, z:90
-                             */
-                            """;
+class " + name + @"-example-object {
+    undefined x => 0
+    undefined y => 50
+    undefined z => 123
+}
+/* Example Use:
+    * " + name + @"-example-object name new : x:50, z:90
+    */
+";
                         break;
                     default:
                         Console.WriteLine($"Error, unexpected '{type}' Valid types: 'project', 'package', or 'class'");
@@ -126,14 +135,14 @@ static class EZ
                 }
 
                 fileIndex = 0;
-                projectPath = Path.Combine(currentDirectory, defaultMainFileName + defaultMainFileNameExtension);
+                projectPath = Path.Combine(currentDirectory, mainFileName + mainFileNameExtension);
                 while (File.Exists(projectPath))
                 {
-                    projectPath = Path.Combine(currentDirectory, defaultMainFileName + fileIndex + defaultMainFileNameExtension);
+                    projectPath = Path.Combine(currentDirectory, mainFileName + fileIndex + mainFileNameExtension);
                     fileIndex++;
                 }
 
-                File.WriteAllText(projectPath, defaultMainFile);
+                File.WriteAllText(projectPath, mainFileContents);
                 break;
 
             case "i":
