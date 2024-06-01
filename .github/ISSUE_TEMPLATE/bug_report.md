@@ -1,9 +1,7 @@
 ---
-name: Feature request
-about: Suggest an idea for this project
+name: Bug Report
+description: Bug or error in program or application
 title: '[bug]'
-labels: ''
-assignees: ''
 
 ---
 
