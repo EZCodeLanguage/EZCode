@@ -8,6 +8,10 @@
 
 [Documentaion for EZCode Language](EZCode.md)
 
+## Docs For CLI
+
+[Documentaion ez.exe](CLI.md)
+
 ## Package Docs
 
 [Documentation for creating and using packages](Packages.md)
