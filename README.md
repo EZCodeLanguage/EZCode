@@ -2,7 +2,7 @@
 
 # Welcome!
 
-**Welcome to EZCode!** EZCode is a comprehensive programming language built with C#. EZCode is designed to be easy to use straightforward, *although sometimes it can be tuff*. Refer to [Community](#community) to learn more on how to contribute and where to join our Discord Server!
+**Welcome to EZCode!** EZCode is a comprehensive programming language built with C#. EZCode is designed to be easy to use straightforward, *although sometimes it can be tuff*. Refer to [Community](#community) to learn more on how to contribute!
 
 Install EZCode using the installer from the [latest release](https://github.com/EZCodeLanguage/EZCode/releases/latest) and click **Installer.zip** to download it.
 ## *EZCode v3.0.0 Example*
@@ -62,8 +62,6 @@ All the official Packages are in [Packages Repository](https://github.com/EZCode
 # Community
 
 Contribute to the community in many ways including the [EZCode Project Repository](https://github.com/EZCodeLanguage/Projects.git). To contribute, create a pull request and it will be accepted as soon as possible. 
-
-Please join our [Discord Server](https://discord.gg/DpBrp6Zy) to get closer to the community!
 
 # License
 
