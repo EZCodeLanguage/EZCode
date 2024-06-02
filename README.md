@@ -53,6 +53,10 @@ To create a project, use:
 View all commands with: 
 > `ez help`
 
+# Docs
+
+All [Documentation for EZCode v3](docs/README.md). [Docs for EZCode v2](docs/v2%20docs/Home.md) in wiki 
+
 # Packages
 
 All the official Packages are in [Packages Repository](https://github.com/EZCodeLanguage/Packages.git). To add your own, create a pull request and it will be looked over. 
