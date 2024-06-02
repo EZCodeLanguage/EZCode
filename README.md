@@ -55,7 +55,7 @@ View all commands with:
 
 # Docs
 
-All [Documentation for EZCode v3](docs/README.md). [Docs for EZCode v2](docs/v2%20docs/Home.md) in wiki 
+All [Documentation for EZCode v3](docs/README.md). [Docs for EZCode v2](docs/v2%20docs/Home.md)
 
 # Packages
 
