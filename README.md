@@ -53,11 +53,9 @@ To create a project, use:
 View all commands with: 
 > `ez help`
 
-
 # Packages
 
 All the official Packages are in [Packages Repository](https://github.com/EZCodeLanguage/Packages.git). To add your own, create a pull request and it will be looked over. 
-
 
 # Community
 
