@@ -40,11 +40,10 @@
             Interpreter interpreter = new Interpreter(parser);
             interpreter.Interperate();
         }
-        public static void DebugCodeWithMain(Debug.Breakpoint[] breakpoints, string code, string path = "Running from inside program")
+        public static void DebugCode(Debug.Breakpoint[] breakpoints, string code, string path = "Running from inside program")
         {
             Parser parser = new Parser(code, path);
             parser.Parse();
-            parser = Package.ReturnParserWithPackages(parser, ["main"]);
             Interpreter interpreter = new Interpreter(parser, breakpoints);
             interpreter.Interperate();
         }
