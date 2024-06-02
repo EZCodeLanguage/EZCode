@@ -6,6 +6,7 @@
         public static void RunFileWithMain(string file)
         {
             Parser parser = new Parser(new FileInfo(Path.GetFullPath(file)));
+            parser.Parse();
             parser = Package.ReturnParserWithPackages(parser, ["main"]);
             Interpreter interpreter = new Interpreter(parser);
             interpreter.Interperate();
@@ -34,6 +35,7 @@
         public static void RunCodeWithMain(string code, string path = "Running from inside program")
         {
             Parser parser = new Parser(code, path);
+            parser.Parse();
             parser = Package.ReturnParserWithPackages(parser, ["main"]);
             Interpreter interpreter = new Interpreter(parser);
             interpreter.Interperate();
@@ -41,6 +43,7 @@
         public static void DebugCodeWithMain(Debug.Breakpoint[] breakpoints, string code, string path = "Running from inside program")
         {
             Parser parser = new Parser(code, path);
+            parser.Parse();
             parser = Package.ReturnParserWithPackages(parser, ["main"]);
             Interpreter interpreter = new Interpreter(parser, breakpoints);
             interpreter.Interperate();

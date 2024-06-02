@@ -1,7 +1,11 @@
 ![Main Image](https://raw.githubusercontent.com/JBrosDevelopment/EZCode/master/docs/Images/EZCode_Wide_Logo.png)
 
+# Welcome!
 
-# *EZCode v3.0.0 Example*
+**Welcome to EZCode!** EZCode is a comprehensive programming language built with C#. EZCode is designed to be easy to use straightforward, *although sometimes it can be tuff*. Refer to [Community](#community) to learn more on how to contribute and where to join our Discord Server!
+
+Install EZCode using the installer from the [latest release](https://github.com/EZCodeLanguage/EZCode/releases/latest) and click **Installer.zip** to download it.
+## *EZCode v3.0.0 Example*
 ```c
 // include main package
 include main
@@ -35,13 +39,6 @@ method printColor : @color:c {
 // The color: 50 60 90
 ```
 
-
-# Welcome!
-
-**Welcome to EZCode!** EZCode is a comprehensive programming language built with C#. EZCode is designed to be easy to use straightforward, *although sometimes it can be tuff*. Refer to [Community](#community) to learn more on how to contribute and where to join our Discord Server!
-
-Install EZCode using the installer from the [latest release](https://github.com/EZCodeLanguage/EZCode/releases/latest) and click **Installer.zip** to download it.
-
 # Command Line
 
 To run EZCode, use the following command (assuming you have installed it [HERE](https://github.com/EZCodeLanguage/EZCode/releases/latest))
@@ -56,10 +53,6 @@ To create a project, use:
 View all commands with: 
 > `ez help`
 
-
-# Docs
-
-The [Official Docs](https://github.com/EZCodeLanguage/EZCode/wiki/EZCode-Docs) are on the our [GitHub Wiki Page](https://github.com/EZCodeLanguage/EZCode/wiki). Please refer to this for any detailed instrictions.
 
 # Packages
 

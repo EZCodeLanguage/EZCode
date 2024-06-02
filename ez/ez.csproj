@@ -17,7 +17,7 @@
 
   <ItemGroup>
     <Content Include="EZCode_Logo.ico">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+      <CopyToOutputDirectory>Never</CopyToOutputDirectory>
     </Content>
   </ItemGroup>
 
