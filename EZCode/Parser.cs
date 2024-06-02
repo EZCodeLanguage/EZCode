@@ -375,7 +375,6 @@ namespace EZCodeLanguage
             public override string ToString() => $"{Path}(\"{Type}\")";
         }
         #endregion
-        #region
         public enum TokenType
         {
             None,
@@ -1719,6 +1718,5 @@ namespace EZCodeLanguage
             }
             return lines;
         }
-        #endregion
     }
 }
