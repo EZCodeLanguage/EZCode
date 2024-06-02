@@ -16,7 +16,7 @@ namespace EZCodeLanguage
 
     public static class Package
     {
-        public static string PackagesDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.ProgramFilesX86), "EZCodeLanguage", "Packages");
+        public static string PackagesDirectory = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.UserProfile), "EZCodeLanguage", "Packages");
         public static void AddPackageToExecutionDirectory(PackageClass project, string executionDirectory)
         {
             string projectPath = GetPackageDirectory(project.Name);

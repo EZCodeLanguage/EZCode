@@ -3,8 +3,7 @@ using System.IO.Compression;
 using System.Net;
 
 // Release command:
-// dotnet publish -o "out/ez" ez/ez.csproj -r win-x64 -c Release -p:PublishReadyToRun=true -p:PublishSingleFile=true --self-contained
-// dotnet publish -o "out/installer" Installer/Installer.csproj -r win-x64 -c Release -p:PublishReadyToRun=true -p:PublishSingleFile=true --self-contained
+// dotnet clean ; dotnet publish -o "out/ez" ez/ez.csproj -r win-x64 -c Release -p:PublishReadyToRun=true -p:PublishSingleFile=true --self-contained ; dotnet publish -o "out/installer" Installer/Installer.csproj -r win-x64 -c Release -p:PublishReadyToRun=true -p:PublishSingleFile=true --self-contained
 static class EZ
 {
     public static int error_code = 0;
