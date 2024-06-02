@@ -17,7 +17,7 @@ namespace EZCodeLanguage
         {
             Interpreter = interpreter;
         }
-        public EZHelp() { }
+        public EZHelp() { Interpreter ??= Instance; }
 
         // Main Package:
         //     include main
@@ -34,7 +34,7 @@ namespace EZCodeLanguage
         }
         public string Input()
         {
-            string input = Interpreter.ConsoleInput();
+            string input = Interpreter.GetInput();
             return input;
         }
         public string Format(object _text) => Format(_text, "'");

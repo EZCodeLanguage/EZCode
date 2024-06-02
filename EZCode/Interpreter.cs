@@ -35,7 +35,7 @@ namespace EZCodeLanguage
             InputType = inputType;
             Input = input;
         }
-        public string ConsoleInput()
+        internal string GetInput()
         {
             string input;
             if (InputType == EZInputType.Console) input = Console.ReadLine();
@@ -51,7 +51,7 @@ namespace EZCodeLanguage
             return input;
         }
         public bool ContinuedForBreakpoint = false;
-        public Parser parser { get; set; }
+        public Parser parser { get; private set; }
         public EZHelp EZHelp { get; private set; }
         public Interpreter(Parser parser, Debug.Breakpoint[]? breakpoints = null)
         {
@@ -988,7 +988,7 @@ namespace EZCodeLanguage
             type = null;
             return IdentType.Other;
         }
-        public object? MethodRun(Method method, Var[]? parameters)
+        internal object? MethodRun(Method method, Var[]? parameters)
         {
             StackTrace.Push($"method: {method.Name}, file: {method.Line.FilePath}, line: {method.Line.CodeLine}");
             parameters ??= [];
@@ -1070,7 +1070,7 @@ namespace EZCodeLanguage
             return t1 != t2;
         }
         internal int getValueLoopIndex = 0;
-        public object GetValue(object obj, DataType? type = null, string arraySeperator = " ")
+        internal object GetValue(object obj, DataType? type = null, string arraySeperator = " ")
         {
             if (obj.GetType().IsArray)
             {
@@ -1418,7 +1418,7 @@ namespace EZCodeLanguage
             }
             return obj;
         }
-        public object Reflect(CSharpMethod method)
+        internal object Reflect(CSharpMethod method)
         {
             if (method.IsVar)
             {
@@ -1548,17 +1548,10 @@ namespace EZCodeLanguage
                 }
             }
         }
-        public class CustomAssemblyLoadContext : AssemblyLoadContext
+        public class CustomAssemblyLoadContext: AssemblyLoadContext
         {
-            public CustomAssemblyLoadContext() : base(isCollectible: true)
-            {
-            }
-
-            protected override Assembly Load(AssemblyName assemblyName)
-            {
-                // Implement if needed: load dependencies, etc.
-                return null;
-            }
+            public CustomAssemblyLoadContext() : base(isCollectible: true) { }
+            protected override Assembly Load(AssemblyName assemblyName) => null;
         }
     }
 }

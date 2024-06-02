@@ -427,10 +427,10 @@ namespace EZCodeLanguage
         public static char[] Delimeters = [' ', '{', '}', '@', ':', ',', '?', '!'];
         public string Code { get; set; }
         public string FilePath { get; set; }
-        internal bool commentBlock = false;
         public List<Class> Classes = [];
         public List<Method> Methods = [];
         public LineWithTokens[] LinesWithTokens = [];
+        internal bool commentBlock = false;
         private Parser[] IncludingExcludingPackages = [];
         public Parser(string code, string file)
         {
@@ -629,7 +629,7 @@ namespace EZCodeLanguage
 
             return new Token(tokenType, parts[partIndex], stringPart);
         }
-        public object[] SplitParts(ref Line[] lines, int lineIndex, int partStart, ref string[] stringParts, out int continues, out int arrow, bool insideClass = false, bool tostring = false)
+        internal object[] SplitParts(ref Line[] lines, int lineIndex, int partStart, ref string[] stringParts, out int continues, out int arrow, bool insideClass = false, bool tostring = false)
         {
             // Current Line
             string line = lines[lineIndex].Value;
