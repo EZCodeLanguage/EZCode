@@ -1,21 +1,16 @@
 # EZCode v3 Docs
 
-## API Docs
+-  **EZCode Docs**
+   -  [Documentaion for EZCode Language](EZCode.md)
 
-[C# API for EZCode](API.md)
+- **API Docs**
+  - [C# API for EZCode](API.md)
 
-## EZCode Docs
+- **Docs For CLI**
+  - [Documentaion ez.exe](CLI.md)
 
-[Documentaion for EZCode Language](EZCode.md)
-
-## Docs For CLI
-
-[Documentaion ez.exe](CLI.md)
-
-## Package Docs
-
-[Documentation for creating and using packages](Packages.md)
-
-## Project Docs
-
-[Documentation for EZCode Projects](Projects.md)
+- **Package Docs**
+  - [Documentation for creating and using packages](Packages.md)
+  
+- **Project Docs**
+  - [Documentation for EZCode Projects](Projects.md)
