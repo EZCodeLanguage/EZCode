@@ -12,11 +12,11 @@ EZCode's supported file extensions are _.ezcode_ and _.ezproj_. The _ezcode_ ext
 
 ### Syntax
 
-EZCode has simple syntax designed to make coding easy. There are two sets of syntax, the main one being [EZCode](EZCode-Docs). The second syntax is [EZProj](EZProject-Docs). 
+EZCode has simple syntax designed to make coding easy. There are two sets of syntax, the main one being [EZCode](EZCode-Docs.md). The second syntax is [EZProj](EZProject-Docs.md). 
 
 ### Programs
 
-There are many programs that make up EZCode. To make it simple and prevent any errors, [EZCode Installer](https://github.com/JBrosDevelopment/EZCode/releases/latest) was created to download the necessary programs and give optional installation for other programs. One of the programs (Test Environment) isn't on the Installer because it isn't made for just any user. If that is something that you might like to install, download it directly from GitHub yourself! The current list of the programs available to download from the [Installer](Programs#installer) are: [EZ Player](Programs#ezplayer), [SLN Builder](Programs#sln-builder), and the [EZ Integrated Development Environment (IDE).](Programs#ez-ide)
+There are many programs that make up EZCode. To make it simple and prevent any errors, [EZCode Installer](https://github.com/JBrosDevelopment/EZCode/releases/latest) was created to download the necessary programs and give optional installation for other programs. One of the programs (Test Environment) isn't on the Installer because it isn't made for just any user. If that is something that you might like to install, download it directly from GitHub yourself! The current list of the programs available to download from the [Installer](Programs.md#installer) are: [EZ Player](Programs.md#ezplayer), [SLN Builder](Programs.md#sln-builder), and the [EZ Integrated Development Environment (IDE).](Programs.md#ez-ide)
 
 ### API
 

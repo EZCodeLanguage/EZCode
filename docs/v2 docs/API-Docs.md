@@ -70,7 +70,7 @@ internal static class Program
 
 First decide which type of program you are using EZCode for,
 - A text based program with only text input/output.
-- A [Console](Programs#console) and [Visual Output](Programs#visual-output) program.
+- A [Console](Programs.md#console) and [Visual Output](Programs.md#visual-output) program.
 - A Window based program.
 
 Create an Instance of EZCode and optionally add the code to run,
@@ -89,7 +89,7 @@ ezcode.Initialize(bool inpanel = false, string _directory = "", Control _space =
 - `directory` the directory the program is running in.
 - `_space` the visual output of the program. Any control but usually a panel
 - `_console` the console output of the program. Always a RichTextBox.
-- `_showFileWithErrors`, `_showStartAndEnd`, and `_clearConsole` are some of the project properties that can be set without using an [EZProject](ezproject-docs).
+- `_showFileWithErrors`, `_showStartAndEnd`, and `_clearConsole` are some of the project properties that can be set without using an [EZProject](ezproject-docs.md).
 
 So for a **text based program**, all of the default values can be used unless you want to input the directory, `Initialize(_directory:"C:\\");`.\
 For a **console based program**, input either or both `_space` and `_console`. Also can input the `_directory`, `Initialize(true, "C:/", VisualOutput, Console);`\
@@ -119,7 +119,7 @@ this.MouseUp += ezcode.MouseInput_Up;
 Console.MouseUp += ezcode.MouseInput_Up;
 Visualoutput.MouseUp += ezcode.MouseInput_Up;
 ```
-This is nessicary if any [input](EZCode-docs#input) is used in the program, then these event listeners are nessicary. The Unhandled Exception error is optional incase your program takes care of that. Each listener has two methods. For example with Key Down Input,
+This is nessicary if any [input](EZCode-docs.md#input) is used in the program, then these event listeners are nessicary. The Unhandled Exception error is optional incase your program takes care of that. Each listener has two methods. For example with Key Down Input,
 - `KeyInput_Down(object sender, KeyEventArgs e)`
 - `KeyInput_Down(KeyEventArgs e)`
 
@@ -145,7 +145,7 @@ Once that is done, the last step is to play the EZCode,
 ezcode.Play("print Hello World!");
 ```
 
-# Set Up [EZProject](EZProject-docs) in Program
+# Set Up [EZProject](EZProject-docs.md) in Program
 
 Before going over this section, read over the [section](#set-up-ezcode-in-program) before this. After EZCode has been initialized and all of the nessicary event listeners have been added, use the `PlayFromProj` method to play.
 ```csharp
@@ -166,7 +166,7 @@ public EZProj(string contents, string filepath) // FilePath and Contents seperat
 public EZProj(FileInfo file) // FilePath and Contents from FileInfo
 public EZProj(Stream file, string filepath = "") // Contents and optionally FilePath from Stream.
 ```
-In most cases, you want to use `EZProj(EzCode code, string _file = "")` incase `# project properties` are used in the EZCode file with the (see [Special Keywords](EZCode-Docs#project-properties)).
+In most cases, you want to use `EZProj(EzCode code, string _file = "")` incase `# project properties` are used in the EZCode file with the (see [Special Keywords](EZCode-Docs.md#project-properties)).
 
 # Set Up EZPlayer For Program
 
@@ -179,7 +179,7 @@ public partial class Player : Form
     public Player(EZProj eZProj, bool closeAppOnQuit = true)
 }
 ```
-All that is needed is the [EZProject](ezproject-docs) to run and it will take care of everything. It is a Form and acts like that so it can be easily used. Here is an example of it being used,
+All that is needed is the [EZProject](ezproject-docs.md) to run and it will take care of everything. It is a Form and acts like that so it can be easily used. Here is an example of it being used,
 ```csharp
 using EZCode;
 using EZCode.EZPlayer;
@@ -212,7 +212,7 @@ public void AddText(string text, bool error = false, RichTextBox? control = null
 
 ### `ConsoleInput()`
 
-This is how EZCode recieves [console input](EZCode-Docs#input). If `help` is inputted and it is not playing, this will be sent to the console, `@"Need help? Please go to the official EZCode website: https://ez-code.web.app"`. 
+This is how EZCode recieves [console input](EZCode-Docs.md#input). If `help` is inputted and it is not playing, this will be sent to the console, `@"Need help? Please go to the official EZCode website: https://ez-code.web.app"`. 
 ```csharp
 public void ConsoleInput(string text)
 ```
@@ -235,7 +235,7 @@ This is used to make it easier to add an error to the console.
 ```csharp
 public string ErrorText(string[] parts, ErrorTypes error, string keyword = "keyword", string name = "name", string custom = "An Error Occured", bool returnoutput = true, bool dontshowsegment = false, bool dontshowcode = false)
 ```
-- `parts` The array of the current line split by spaces `line.Split(" ")` to check if there is a [`# suppress error`](EZCode-Docs#suppress-error) in the line.
+- `parts` The array of the current line split by spaces `line.Split(" ")` to check if there is a [`# suppress error`](EZCode-Docs.md#suppress-error) in the line.
 - `error` The type of error from [`ErrorTypes`](#ErrorTypes) enum.
 - `keyword` The keyword (first word in line `parts[0]`) of the line.
 - `name` The name of control/variable.
@@ -272,7 +272,7 @@ ezcode.Initialize(bool inpanel = false, string _directory = "", Control _space =
 - `directory` the directory the program is running in.
 - `_space` the visual output of the program. Any control but usually a panel
 - `_console` the console output of the program. Always a RichTextBox.
-- `_showFileWithErrors`, `_showStartAndEnd`, and `_clearConsole` are some of the project properties that can be set without using an [EZProject](ezproject-docs).
+- `_showFileWithErrors`, `_showStartAndEnd`, and `_clearConsole` are some of the project properties that can be set without using an [EZProject](ezproject-docs.md).
 
 ### `KeyInput_Down`
 
@@ -352,7 +352,7 @@ public async Task<string> Play(string code, bool clearsconsole = true, Debugger?
 
 ### `PlayFromProject()`
 
-This will Play an [EZProject](EZProject-Docs) using EZCode.
+This will Play an [EZProject](EZProject-Docs.md) using EZCode.
 
 ```csharp
 public async Task<string> PlayFromProj(EZProj proj)
@@ -409,7 +409,7 @@ This stops the current EZCode run.
 ```csharp
 public void Stop()
 ```
-This stops the EZCode run as well as any [sounds](EZCode-Docs#sound) going on. 
+This stops the EZCode run as well as any [sounds](EZCode-Docs.md#sound) going on. 
 
 ## Enums
 

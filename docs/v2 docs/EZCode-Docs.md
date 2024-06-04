@@ -77,7 +77,7 @@ A common use of the `bringto` keyword is to make sure the control added is sent 
 
 ### Button
 
-The `button` keyword is used to create a button. It will create it to the [visual output](Programs#visual-output) or create an instance that can be displayed to a window. The syntax is relatively simple, `button name` or `button name properties`. The default values for the properties are as follows. `backcolor:[255;255;255]`, `x:0`, `y:0`, `width:75`, and `height:25`.
+The `button` keyword is used to create a button. It will create it to the [visual output](Programs.md#visual-output) or create an instance that can be displayed to a window. The syntax is relatively simple, `button name` or `button name properties`. The default values for the properties are as follows. `backcolor:[255;255;255]`, `x:0`, `y:0`, `width:75`, and `height:25`.
 ```
 button btn1                                 // create a button with default values
 button btn2 x:50, y:50, text:Press Me!      // create a button with custom values
@@ -88,14 +88,14 @@ See [Properties](#properties) for more details on property values.
 
 ### Clear
 
-The `clear` keyword is used to clear the [console](Programs#console). It can be used by itself, or have an [argument](#arguments) after it `clear argument`.
+The `clear` keyword is used to clear the [console](Programs.md#console). It can be used by itself, or have an [argument](#arguments) after it `clear argument`.
 ```
 print Input Your Name
-var _input : input [console](Programs#console)
+var _input : input console
 clear
 print Welcome, `_input`
 ```
-This code will ask for the name of the user, clears the [console](Programs#console), and then welcomes the user. This is an ordinary use of the keyword `clear`.
+This code will ask for the name of the user, clears the [console](Programs.md#console), and then welcomes the user. This is an ordinary use of the keyword `clear`.
 
 ### Destroy
 
@@ -174,17 +174,17 @@ The `file` keyword is used to manipulate files. There is `read`, `write`, `valid
   - `file write This\_is\_a\_test\_file C:/file.txt => result`: Outputs a boolean if writing was successful
 - `file validpath text_or_var`: This returns a boolean if the inputted text could be a valid file.
   - ```
-    var inputted_file : input [console](Programs#console)
+    var inputted_file : input [console](Programs.md#console)
     file validpath inputted_file => valid
     if valid : print Valid Path!
     else : print Invalid Path ):
     ```
 - `file play filepath`: This plays a file using EZCode.
   - `file play ~/code.ezcode`: Plays the file in the program
-  - `file play ~/code.ezcde => results`: This outputs the [console](Programs#console) of the file into a variable`
+  - `file play ~/code.ezcde => results`: This outputs the [console](Programs.md#console) of the file into a variable`
 - `file playproj filepath`: This plays a EZProj file
   - `file playproj ~/Project.ezproj`: Plays the project in the program
-  - `file playproj ~/Project.ezproj => result` This outputs the [console](Programs#console) of the file into a variable
+  - `file playproj ~/Project.ezproj => result` This outputs the [console](Programs.md#console) of the file into a variable
 - `file create filepath`: This creates a file and outputs a boolean if successful
   - `file create file.txt`: Creates the file
   - `file create file.txt => result` Creates the file and outputs boolean if successful
@@ -253,8 +253,8 @@ To extend the argument to have more than one condition is can be done with the `
 ### Input
 
 The `input` keyword is used for getting inputs from the computer. This keyword outputs its value using output characters ( See [Output Characters](#output-characters)). The syntax is as follows.
-- `input console`: waits for the user to input into the [console](Programs#console).
-    - `input console => var_input`: `var_input` is equal to what the user inputted into the [console](Programs#console).
+- `input console`: waits for the user to input into the [console](Programs.md#console).
+    - `input console => var_input`: `var_input` is equal to what the user inputted into the [console](Programs.md#console).
 - `input key`: returns all of the Keys being pressed as text.
     - `input key => keys`: `keys` is equal to all of the keys being pressed separated by `, `. As an example, if 'A' and 'B' were being pressed at the same time, then the output would be `A, B`. 
 - `input key keyName`: returns a boolean if the key is being pressed.
@@ -303,7 +303,7 @@ intersects obj1 obj2 => touching
 
 ### Label
 
-The `label` keyword is used to create a label. It will create it to the [visual output](Programs#visual-output) or create an instance that can be displayed to a window. The syntax is relatively simple, `label name` or `label name properties`. The default values for the properties are as follows. `x:0`, `y:0`, `backcolor:[255;255;255]`, and `autosize:true`.
+The `label` keyword is used to create a label. It will create it to the [visual output](Programs.md#visual-output) or create an instance that can be displayed to a window. The syntax is relatively simple, `label name` or `label name properties`. The default values for the properties are as follows. `x:0`, `y:0`, `backcolor:[255;255;255]`, and `autosize:true`.
 ```
 label lb1                                 // create a label with default values
 label lb2 x:50, y:50, text:Hello World    // create a label with custom values
@@ -472,7 +472,7 @@ endmethod
 
 ### Print
 
-The `print` keyword has the simple function of printing values to the [console](Programs#console). The syntax is simple, `print text...`. Here is a simple example.
+The `print` keyword has the simple function of printing values to the [console](Programs.md#console). The syntax is simple, `print text...`. Here is a simple example.
 ```
 var name John Doe
 print Hello, `name`
@@ -480,7 +480,7 @@ print Hello, `name`
 
 ### Shape
 
-The `shape` keyword is used to create a shape. It will create it to the [visual output](Programs#visual-output) or create an instance that can be displayed to a window. The syntax is relatively simple, `shape name` or `shape name properties`. The default values for the properties are as follows. `backcolor:[0;0;0]`, `x:0`, `y:0`, `width:50`, and `height:50`.
+The `shape` keyword is used to create a shape. It will create it to the [visual output](Programs.md#visual-output) or create an instance that can be displayed to a window. The syntax is relatively simple, `shape name` or `shape name properties`. The default values for the properties are as follows. `backcolor:[0;0;0]`, `x:0`, `y:0`, `width:50`, and `height:50`.
 ```
 shape shp1                                 // create a shape with default values
 shape shp2 x:50, y:50                      // create a shape with custom values
@@ -522,7 +522,7 @@ This will stop the method before it prints `next` while still printing `end` in 
 
 ### Textbox
 
-The `textbox` keyword is used to create a textbox. It will create it to the [visual output](Programs#visual-output) or create an instance that can be displayed to a window. The syntax is relatively simple, `textbox name` or `textbox name properties`. The default values for the properties are as follows. `x:0`, `y:0`, `width:75`, `height:50`, and `backcolor:[255;255;255]`.
+The `textbox` keyword is used to create a textbox. It will create it to the [visual output](Programs.md#visual-output) or create an instance that can be displayed to a window. The syntax is relatively simple, `textbox name` or `textbox name properties`. The default values for the properties are as follows. `x:0`, `y:0`, `width:75`, `height:50`, and `backcolor:[255;255;255]`.
 ```
 textbox tbox1                                 // create a textbox with default values
 textbox tbox2 x:50, y:50, text:Hello World    // create a textbox with custom values
@@ -598,19 +598,19 @@ This is used to create an error to the console. It can be used in its own line, 
 
 ### Current File
 
-This will set the current file that is being played. It is really only used in the background by the [Player](programs#ezplayer) to tell the code what file is currently being played. The syntax is simple, `# current file URL_PATH`.
+This will set the current file that is being played. It is really only used in the background by the [Player](Programs.md#ezplayer) to tell the code what file is currently being played. The syntax is simple, `# current file URL_PATH`.
 
 ### Project Properties
 
-This is used to set the project properties without using an EZProj file. This is mainly used by the [Player](programs#ezplayer) to set the Project properties from the EZProj file. The syntax is, `# project properties : properties...` The properties are syntaxed like control's properties with, `propertyName:Value`. Here is an example, 
+This is used to set the project properties without using an EZProj file. This is mainly used by the [Player](Programs.md#ezplayer) to set the Project properties from the EZProj file. The syntax is, `# project properties : properties...` The properties are syntaxed like control's properties with, `propertyName:Value`. Here is an example, 
 ```
 # project properties : name:Project Properties Test, isviusal:true
 ```
-All the properties are the [EZProj Properties](EZProject-Docs).
+All the properties are the [EZProj Properties](EZProject-Docs.md).
 
 ### EZText Start and End
 
-This is used to start and end [EZText](eztext-docs). Here is an example,
+This is used to start and end [EZText](EZText-Docs.md). Here is an example,
 ```
 print This is EZCode
 
@@ -728,7 +728,7 @@ Output characters is a special syntax to output value from a line of code that a
 
 ## Comments
 
-Comments are apart of the code that doesn't run. It is started with `//` and the rest of that line is excluded from bing executed. Here is an example, `print Hello World // This outputs to the [console](Programs#console) 'Hello World' and doesn't output anything after the '//'`.
+Comments are apart of the code that doesn't run. It is started with `//` and the rest of that line is excluded from bing executed. Here is an example, `print Hello World // This outputs to the [console](Programs.md#console) 'Hello World' and doesn't output anything after the '//'`.
 
 ## Code Seperation
 
@@ -751,7 +751,7 @@ Here is the list of special characters.
 - `\!`: Value is nothing ''
   - `btn text:\!`: This sets a control named `btn` text to nothing.
 - `\n`: Value of newline
-  - `print Hello\nWorld!`: This outputs to the [console](Programs#console):
+  - `print Hello\nWorld!`: This outputs to the [console](Programs.md#console):
       - ```
         Hello
         World!
@@ -768,7 +768,7 @@ Here is the list of special characters.
   - `label name text:Hi\c everybody!`: This creates a label and sets its text to `Hi, everybody!` and doesn't mess up the properties by using a comma.
 - `\e`: Value of exclamation mark '!'
   - `var name \e`:  The `\e` is changed to `!`. Although `var name !` could also output the same thing.
-- `\p`: Value of period '.'. No great use for this except in [EZText](EZtext-Docs)
+- `\p`: Value of period '.'. No great use for this except in [EZText](EZText-Docs.md)
 - `\$`: Value of pipe '|'
   - `print Agency \$ Thing`: This outputs `Agency | Thing` without causing an error of there be a pipe `|` character separating the lines of code.
 - `\&`: Value of semicolon ';'
@@ -884,8 +884,8 @@ Here is a tree graph made from all of the system values. Use the path as referen
   - `isnumber`: Returns 1 or 0 if the input given is a number, `system:isnumber:inputvalue`.
     - ```
       print Input a number!
-      var [console](Programs#console)Input : input [console](Programs#console)
-      var isNumber system:isnumber:[console](Programs#console)Input
+      var [console](Programs.md#console)Input : input [console](Programs.md#console)
+      var isNumber system:isnumber:[console](Programs.md#console)Input
       ```
 
   - `currentfile`: Returns the current file path that is being played. If the file is unkown, returns empty.
@@ -1186,7 +1186,7 @@ $"Expected '{word}' keyword after '#{keyword}'"
 
 #### **ex17**
 
-Error from [EZText](eztext-docs). 
+Error from [EZText](EZText-Docs.md). 
 
 #### **ex18**
 
