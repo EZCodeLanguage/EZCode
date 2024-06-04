@@ -74,9 +74,9 @@ namespace EZCodeLanguage
             public static bool? EvaluateTerm(string input)
             {
                 bool not = false;
-                if (input.StartsWith("!"))
+                if (input.StartsWith("!") || input.StartsWith("not "))
                 {
-                    input = input.Remove(0,1);
+                    input = input.Remove(0, input.StartsWith("not ") ? 4 : 1);
                     not = true;
                 }
                 switch (input.ToLower().Trim())
