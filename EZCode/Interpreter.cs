@@ -279,11 +279,20 @@ namespace EZCodeLanguage
                                                     if (c.Methods.Any(x => x.Name == line.Tokens[1].Value.ToString()))
                                                     {
                                                         Token[] backup_tokens = line.Tokens.Select(x => new Token(x.Type, x.Value, x.StringValue)).ToArray();
-                                                        for (int i = 2; i < line.Tokens.Length; i++)
+                                                        try
                                                         {
-                                                            line.Tokens[i].Value = GetValue(line.Tokens[i].Value, var.DataType);
-                                                            line.Tokens[i].StringValue = line.Tokens[i].Value is string or int or float or bool ? line.Tokens[i].Value.ToString() : line.Tokens[i].StringValue;
-                                                            line.Tokens[i].Type = parser.SingleToken([line.Tokens[i].StringValue == line.Tokens[i].Value.ToString() ? line.Tokens[i].StringValue : line.Tokens[i].Value], 0, line.Tokens[i].StringValue).Type;
+                                                            for (int i = 2; i < line.Tokens.Length; i++)
+                                                            {
+                                                                line.Tokens[i].Value = GetValue(line.Tokens[i].Value, var.DataType);
+                                                                line.Tokens[i].StringValue = line.Tokens[i].Value is string or int or float or bool ? line.Tokens[i].Value.ToString() : line.Tokens[i].StringValue;
+                                                                line.Tokens[i].Type = parser.SingleToken([line.Tokens[i].StringValue == line.Tokens[i].Value.ToString() ? line.Tokens[i].StringValue : line.Tokens[i].Value], 0, line.Tokens[i].StringValue).Type;
+                                                            }
+                                                        }
+                                                        catch 
+                                                        {
+                                                            line.Tokens[2].Value = GetValue(string.Join(" ", line.Tokens.Skip(2).Select(x => x.StringValue)));
+                                                            line.Tokens[2].StringValue = line.Tokens[2].Value.ToString();
+                                                            line.Tokens = line.Tokens.Take(3).ToArray();
                                                         }
                                                         Method[] backupMethods = Methods;
                                                         Methods = c.Methods.Concat(Methods.Where(x => (x.Settings & Method.MethodSettings.Global) == Method.MethodSettings.Global)).ToArray();
@@ -295,6 +304,10 @@ namespace EZCodeLanguage
                                                         Methods = backupMethods;
                                                         Vars = backupVars;
                                                         Return = value;
+                                                    }
+                                                    else if (c.Properties.FirstOrDefault(x => x.Name == line.Tokens[1].Value.ToString()) is Var v)
+                                                    {
+                                                        return v.Value;
                                                     }
                                                     else
                                                     {
