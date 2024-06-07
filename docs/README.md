@@ -14,3 +14,6 @@
   
 - **Project Docs**
   - [Documentation for EZCode Projects](Projects.md)
+
+- **Main Package**
+  - [Documentation for EZCode Projects](Projects.md)

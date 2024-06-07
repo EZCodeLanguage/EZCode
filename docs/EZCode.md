@@ -317,6 +317,31 @@
     // Assign variable to method result
     undefined value => add : 5, 6
     ``` 
+  - To modify the type of parameter, use `?` for optional parameter and `!` for params parameter. To add default value to parameter, put the default value after the name
+  - ```js
+    // optional parameter
+    method create-file : @str:path, ? @str:content {
+        // create file and maybe add content
+    }
+    create-file : PATH
+    creat-file : PATH, CONTENT
+    ```
+  - ```js
+    // params parameter
+    nocol method print : ! @str:text {
+        // print the text to the console
+    }
+    print Hello World
+    print Hello, World
+    ```
+  - ```js
+    // default value for parameter
+    method print : ? @str:text Hello World {
+        // print the text to the console
+    }
+    print // prints Hello World
+    print : Hi // prints Hi
+    ```
 
   ## `get`
 
@@ -672,6 +697,28 @@ class color {
 
 # Methods
 
-A method is similar (if not the same) as a *function* or *sub process*.  
+A method is basically (if not the same) as a *function* or *sub process*. To define and call a method, go to [methods](#method). Methods are used to to run code and return values
+
+```js
+method add : @int:left, @int:right => @int {
+    return (left + right)
+}
+
+undefined val => add : 5, 6
+print 5 + 6 = 'val'
+```
 
 # Variables
+
+Variables are used to store data. [Undefined](#undefined) is the base variable. To have a [variable as a class instane](#new), use `CLASS_NAME name new`. 
+
+```js
+undefined variable
+undefined variable => // returns a value
+variable => // returns a value
+
+int variable new 
+int variable new : Value:150
+variable => // returns a value
+variable methodName
+```
