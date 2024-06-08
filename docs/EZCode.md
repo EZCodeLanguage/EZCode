@@ -134,12 +134,29 @@
     // this code will print the error message from the code that has an error in the try statement
     ```
 
+  ## Include
+
+  - This is used to include a package into the EZCode Project
+  - ```js
+    include PACKAGE-NAME
+    include first, second
+    ```
+
+  ## Exclude
+
+  - This is used to exclude a package from the EZCode Project
+  - ```js
+    exclude PACKAGE-NAME
+    exclude first, second
+    ```
+
   ## `dispose`
 
   - To dispose variable from scope. 
   - ```js
     // removes variables x and y from scope
     dispose x, y 
+
     ```
 
   ## `explicit`

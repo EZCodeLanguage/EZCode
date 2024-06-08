@@ -502,4 +502,4 @@ This is a static class for Projects
 
 # EZCodeLanguage.EZHelp
 
-**The Api for making a package is in the [package docs](Packages.md#creating-a-package)**
+**The Api for making a package is in the [package docs](Packages.md#creating-the-library)**
