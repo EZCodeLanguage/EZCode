@@ -725,6 +725,16 @@ undefined val => add : 5, 6
 print 5 + 6 = 'val'
 ```
 
+## Entry
+
+The entry to any project the `start` method
+
+```js
+method start {
+  print Hello World
+}
+```
+
 # Variables
 
 Variables are used to store data. [Undefined](#undefined) is the base variable. To have a [variable as a class instane](#new), use `CLASS_NAME name new`. 
