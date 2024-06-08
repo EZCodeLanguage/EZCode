@@ -314,7 +314,10 @@ class " + name + @"-example-object {
                 {
                     EZCode.RunProject(path, Path.GetDirectoryName(path));
                 }
-                EZCode.RunCodeWithMain(contents, path);
+                else
+                {
+                    EZCode.RunCodeWithMain(contents, path);
+                }
                 break;
         }
 
