@@ -323,7 +323,7 @@
   - ```js
     // EXAMPLE: 
 
-    method add : @int:left, @int:right {
+    method add : @int:left, @int:right => @int {
         return (left + right)
     }
     ```
